@@ -67,6 +67,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AgencyCallout.cs" />
     <Compile Include="API\AgencyType.cs" />
     <Compile Include="Callouts\Priority\TrafficStopBackup.cs" />
     <Compile Include="Callouts\Traffic\StolenVehicleSpotted.cs" />
@@ -104,6 +105,9 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <None Include="AgencyCalloutsPlus.ini">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="AgencyCalloutsPlus\Errors.log">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
