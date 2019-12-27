@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<CalloutMeta>
+  <!-- 
+    A list of agency types that can take this type of callout, and the chances of 
+    that callout spawning. A higher probability, means a higher chance compared to
+    the other callouts against this AgencyType
+  -->
+  <Agencies>
+    <Agency type="CityPolice" probability="5" />
+    <Agency type="CountySheriff" probability="5" />
+    <Agency type="HighwayPatrol" probability="8" />
+  </Agencies>
+  <Scenario name="Default">
+    
+  </Scenario>
+</CalloutMeta>
