@@ -1,4 +1,5 @@
-﻿using LSPD_First_Response.Mod.API;
+﻿using AgencyCalloutsPlus.Integration;
+using LSPD_First_Response.Mod.API;
 using LSPD_First_Response.Mod.Callouts;
 using Rage;
 using System;
@@ -11,24 +12,55 @@ namespace AgencyCalloutsPlus
 {
     public abstract class AgencyCallout : Callout
     {
-        public void PlayScannerAudioUsingPrefix(string scanner, Vector3 position)
+        /// <summary>
+        /// Callout GUID for ComputerPlus
+        /// </summary>
+        public Guid CalloutID { get; protected set; } = Guid.Empty;
+
+        /// <summary>
+        /// Indicates whether Computer+ is running
+        /// </summary>
+        public bool ComputerPlusRunning => ComputerPlusAPI.IsRunning;
+
+        /// <summary>
+        /// Plays the Audio scanner with the Division Unit Beat prefix
+        /// </summary>
+        /// <param name="scanner"></param>
+        public void PlayScannerAudioUsingPrefix(string scanner)
         {
             // Pad zero
-            var divString = Settings.AudioDivision.ToString();
-            var beatString = Settings.AudioBeat.ToString();
+            var divString = Settings.AudioDivision.ToString("D2");
+            var beatString = Settings.AudioBeat.ToString("D2");
 
-            if (divString.Length == 1)
+            var prefix = $"DISP_ATTENTION_UNIT DIV_{divString} {Settings.AudioDivision} BEAT_{beatString} ";
+            Functions.PlayScannerAudioUsingPosition(prefix + scanner, CalloutPosition);
+        }
+
+        public override bool OnBeforeCalloutDisplayed()
+        {
+            return base.OnBeforeCalloutDisplayed();
+        }
+
+        public override bool OnCalloutAccepted()
+        {
+            if (ComputerPlusRunning)
             {
-                divString = divString.PadLeft(2, '0');
+                ComputerPlusAPI.SetCalloutStatusToUnitResponding(CalloutID);
+                Game.DisplayHelp("Further details about this call can be checked using ~b~Computer+.");
             }
 
-            if (beatString.Length == 1)
-            {
-                beatString = beatString.PadLeft(2, '0');
-            }
+            return base.OnCalloutAccepted();
+        }
 
-            var prefix = $"DISP_ATTENTION_UNIT_01 DIV_{divString} {Settings.AudioDivision} BEAT_{beatString} ";
-            Functions.PlayScannerAudioUsingPosition(prefix + scanner, position);
+        public override void OnCalloutNotAccepted()
+        {
+            base.OnCalloutNotAccepted();
+
+            // Update computer plus!
+            if (ComputerPlusRunning)
+            {
+                ComputerPlusAPI.AssignCallToAIUnit(CalloutID);
+            }
         }
     }
 }

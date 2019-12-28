@@ -1,4 +1,5 @@
 ﻿using AgencyCalloutsPlus.API;
+using AgencyCalloutsPlus.Integration;
 using LSPD_First_Response.Mod.API;
 using Rage;
 using System;
@@ -37,10 +38,7 @@ namespace AgencyCalloutsPlus
         /// </summary>
         public static string PluginFolderPath { get; internal set; }
 
-        /// <summary>
-        /// Gets the Agency type the Player chose when going on duty
-        /// </summary>
-        public static AgencyType PlayerAgencyType { get; private set; }
+        public static bool IsComputerPlusRunning = false;
 
         /// <summary>
         /// Main entry point for the plugin. Initializer
@@ -52,7 +50,7 @@ namespace AgencyCalloutsPlus
             Game.LogTrivial($"[TRACE] AgencyCalloutsPlus: Detected LSPDFR v{version}");
 
             /*
-            if (version.CompareTo(Version.Parse("0.4.6.0")) < 0)
+            if (version.CompareTo(new Version("0.4.6")) < 0)
             {
                 string message = $"Detected LSPDFR version {version}; v0.4.6 or greater is required";
                 Game.LogTrivial($"[ERROR] AgencyCalloutsPlus: {message}");
@@ -115,6 +113,12 @@ namespace AgencyCalloutsPlus
 
                 // Register callouts (this will only initialize once per game session)
                 AgencyCalloutManager.LoadCallouts();
+
+                // Wait!
+                GameFiber.Wait(1000);
+
+                // See what else is running
+                ComputerPlusAPI.Load();
             });
         }
 

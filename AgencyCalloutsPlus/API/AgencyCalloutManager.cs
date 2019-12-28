@@ -1,4 +1,5 @@
-﻿using LSPD_First_Response.Mod.API;
+﻿using AgencyCalloutsPlus.Extensions;
+using LSPD_First_Response.Mod.API;
 using LSPD_First_Response.Mod.Callouts;
 using Rage;
 using System;
@@ -37,12 +38,30 @@ namespace AgencyCalloutsPlus.API
         /// <returns></returns>
         public override bool OnBeforeCalloutDisplayed()
         {
-            // Loads a random callout from the callout selection based on CURRENT AGENCY
-            string name = Functions.GetCurrentAgencyScriptName();
-            AgencyType type = Agency.GetAgencyTypeByName(name);
-            Type calloutType = Callouts[type].Spawn().CalloutType;
+            try
+            {
+                // Loads a random callout from the callout selection based on CURRENT AGENCY
+                string name = Functions.GetCurrentAgencyScriptName();
+                AgencyType type = Agency.GetAgencyTypeByName(name);
+                if (!Callouts[type].TrySpawn(out SpawnableCallout spawned))
+                {
+                    Game.LogTrivial("[ERROR] AgencyCalloutsPlus: Unable to spawn callout (No spawnable entities?)");
+                    return false;
+                }
 
-            Functions.StartCallout(calloutType.FullName);
+                // Extract callouts name
+                Type calloutType = spawned.CalloutType;
+                string calloutName = calloutType.GetAttributeValue((CalloutInfoAttribute attr) => attr.Name);
+
+                // Start callout manually
+                Game.LogTrivial($"[TRACE] AgencyCalloutsPlus: Loading callout {calloutName}");
+                Functions.StartCallout(calloutName);
+            }
+            catch (Exception e)
+            {
+                ErrorHandler.HandleException(e);
+            }
+
             return false;
         }
 

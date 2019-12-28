@@ -73,6 +73,35 @@ namespace AgencyCalloutsPlus
             return retVal;
         }
 
+        /// <summary>
+        /// Returns an instance of <typeparamref name="T"/> based off of the 
+        /// RNG probability of that instance.
+        /// </summary>
+        /// <returns></returns>
+        public bool TrySpawn(out T retVal)
+        {
+            // Set to default
+            retVal = default(T);
+
+            // Ensure we have at least 1 object to spawn
+            if (SpawnableEntities.Count == 0)
+                return false;
+
+            // Generate the next random number
+            try
+            {
+                var i = Randomizer.Next(0, CumulativeProbability);
+                retVal = (from s in SpawnableEntities
+                             where (s.MaxThreshold > i && s.MinThreshold <= i)
+                             select s.Spawnable).First();
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
         private class SpawnableWrapper
         {
             public T Spawnable { get; protected set; }

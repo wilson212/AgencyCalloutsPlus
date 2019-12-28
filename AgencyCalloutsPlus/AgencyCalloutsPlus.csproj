@@ -49,6 +49,9 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="ComputerPlus">
+      <HintPath>..\..\__Dependencies\v1868\ComputerPlus.dll</HintPath>
+    </Reference>
     <Reference Include="LSPD First Response, Version=0.4.7204.1487, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\__Dependencies\v1868\LSPD First Response.dll</HintPath>
@@ -69,6 +72,7 @@
   <ItemGroup>
     <Compile Include="AgencyCallout.cs" />
     <Compile Include="API\AgencyType.cs" />
+    <Compile Include="Integration\ComputerPlusAPI.cs" />
     <Compile Include="Callouts\Priority\TrafficStopBackup.cs" />
     <Compile Include="Callouts\Traffic\StolenVehicleSpotted.cs" />
     <Compile Include="Callouts\Routine\StolenVehicle.cs" />
@@ -79,6 +83,7 @@
     <Compile Include="API\Location.cs" />
     <Compile Include="API\LocationType.cs" />
     <Compile Include="ErrorHandler.cs" />
+    <Compile Include="Extensions\AttributeExtensions.cs" />
     <Compile Include="GlobalFunctions.cs" />
     <Compile Include="ISpawnable.cs" />
     <Compile Include="Main.cs" />
