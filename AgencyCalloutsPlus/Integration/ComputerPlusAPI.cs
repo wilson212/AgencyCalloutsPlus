@@ -10,7 +10,7 @@ namespace AgencyCalloutsPlus.Integration
     {
         public static bool IsRunning { get; private set; }
 
-        public static void Load()
+        public static void Initialize()
         {
             IsRunning = GlobalFunctions.IsLSPDFRPluginRunning("ComputerPlus", new Version("1.4.1.1"));
         }

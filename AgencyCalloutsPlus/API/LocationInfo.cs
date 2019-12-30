@@ -6,7 +6,7 @@ using System.Xml;
 
 namespace AgencyCalloutsPlus.API
 {
-    public class Location
+    public abstract class LocationInfo
     {
         /// <summary>
         /// Gets the <see cref="Vector3"/> position of this location
@@ -14,19 +14,23 @@ namespace AgencyCalloutsPlus.API
         public Vector3 Position { get; protected set; }
 
         /// <summary>
-        /// Gets the heading of an object at this location
+        /// Containts a list of Ped spawn points for this location, if any
         /// </summary>
-        public float Heading { get; protected set; }
+        public List<SpawnPoint> PedSpawnPoints { get; internal set; }
+
+        /// <summary>
+        /// Containts a list of Vehicle spawn points for this location, if any
+        /// </summary>
+        public List<SpawnPoint> VehicleSpawnPoints { get; internal set; }
 
         /// <summary>
         /// Containts a hash table to locations, location types and Location data
         /// </summary>
-        private static Dictionary<string, Dictionary<LocationType, Location[]>> Locations { get; set; }
+        private static Dictionary<string, Dictionary<LocationType, LocationInfo[]>> Locations { get; set; }
 
-        private Location(Vector3 location, float heading = 0f)
+        protected LocationInfo(Vector3 position)
         {
-            this.Position = location;
-            this.Heading = heading;
+            this.Position = position;
         }
 
         /// <summary>
@@ -40,13 +44,13 @@ namespace AgencyCalloutsPlus.API
             // Create instance of not already!
             if (Locations == null)
             {
-                Locations = new Dictionary<string, Dictionary<LocationType, Location[]>>(zones.Length + 1);
+                Locations = new Dictionary<string, Dictionary<LocationType, LocationInfo[]>>(zones.Length + 1);
             }
 
             // Load backup.xml for agency backup mapping
             string[] names = Enum.GetNames(typeof(LocationType));
             string path = Path.Combine(Main.PluginFolderPath, "Locations.xml");
-            var items = new List<Location>(50);
+            var items = new List<LocationInfo>(50);
             int itemsAdded = 0;
 
             // Load XML document
@@ -76,7 +80,7 @@ namespace AgencyCalloutsPlus.API
                 if (!zoneNameNode.HasChildNodes) continue;
 
                 // Store data
-                var typeDict = new Dictionary<LocationType, Location[]>(names.Length);
+                var typeDict = new Dictionary<LocationType, LocationInfo[]>(names.Length);
                 items.Clear(); // clear out old stuff
 
                 // Select each location type as needed
@@ -91,7 +95,7 @@ namespace AgencyCalloutsPlus.API
                         //if (locationTypeNode == null)
                             //Game.LogTrivial($"[AgencyCalloutsPlus] TRACE: Zone is missing location type '{zone}->{name}'");
 
-                        typeDict.Add(type, new Location[0]);
+                        typeDict.Add(type, new LocationInfo[0]);
                         continue;
                     }
 
@@ -109,28 +113,28 @@ namespace AgencyCalloutsPlus.API
                         float x, y, z, heading = 0f;
                             
                         // Try and extract X value
-                        if (n.Attributes["X"].Value == null || !float.TryParse(n.Attributes["X"].Value, out x))
+                        if (n.Attributes["X"]?.Value == null || !float.TryParse(n.Attributes["X"].Value, out x))
                         {
                             Game.LogTrivial($"[WARN] AgencyCalloutsPlus: Unable to extract location X value for '{zone}->{name}->Location'");
                             continue;
                         }
 
                         // Try and extract Y value
-                        if (n.Attributes["Y"].Value == null || !float.TryParse(n.Attributes["Y"].Value, out y))
+                        if (n.Attributes["Y"]?.Value == null || !float.TryParse(n.Attributes["Y"].Value, out y))
                         {
                             Game.LogTrivial($"[WARN] AgencyCalloutsPlus: Unable to extract location Y value for '{zone}->{name}->Location'");
                             continue;
                         }
 
                         // Try and extract Z value
-                        if (n.Attributes["Z"].Value == null || !float.TryParse(n.Attributes["Z"].Value, out z))
+                        if (n.Attributes["Z"]?.Value == null || !float.TryParse(n.Attributes["Z"].Value, out z))
                         {
                             Game.LogTrivial($"[WARN] AgencyCalloutsPlus: Unable to extract location Z value for '{zone}->{name}->Location'");
                             continue;
                         }
 
                         // Try and extract heading value
-                        if (n.Attributes["heading"].Value != null && !float.TryParse(n.Attributes["heading"].Value, out heading))
+                        if (n.Attributes["Heading"]?.Value != null && !float.TryParse(n.Attributes["Heading"].Value, out heading))
                         {
                             Game.LogTrivial($"[WARN] AgencyCalloutsPlus: Unable to extract location heading value for '{zone}->{name}->Location'");
                             continue;
@@ -138,7 +142,7 @@ namespace AgencyCalloutsPlus.API
 
                         // Create the Vector3
                         Vector3 vector = new Vector3(x, y, z);
-                        items.Add(new Location(vector, heading));
+                        items.Add(new SideOfRoadLocation(vector, heading));
                         itemsAdded++;
 
                         // Does this node have children too???
@@ -156,21 +160,24 @@ namespace AgencyCalloutsPlus.API
                 Locations.Add(zone, typeDict);
             }
 
+            // Clean up
+            document = null;
+
             // Log and return
             Game.LogTrivial($"[TRACE] AgencyCalloutsPlus: Added {Locations.Count} zones with {itemsAdded} locations into memory'");
             return itemsAdded;
         }
 
         /// <summary>
-        /// Gets all <see cref="Location"/> entities in a zone by <see cref="LocationType"/>
+        /// Gets all <see cref="LocationInfo"/> entities in a zone by <see cref="LocationType"/>
         /// </summary>
         /// <param name="name"></param>
         /// <param name="type"></param>
-        /// <returns>an array of <see cref="Location"/> entities, or null if the zone has not been loaded yet</returns>
-        public static Location[] GetZoneLocationsByName(string name, LocationType type)
+        /// <returns>an array of <see cref="LocationInfo"/> entities, or null if the zone has not been loaded yet</returns>
+        public static LocationInfo[] GetZoneLocationsByName(string name, LocationType type)
         {
             // Ensure zone exists
-            if (Locations.TryGetValue(name, out Dictionary<LocationType, Location[]> locations))
+            if (Locations.TryGetValue(name, out Dictionary<LocationType, LocationInfo[]> locations))
             {
                 return locations[type];
             }

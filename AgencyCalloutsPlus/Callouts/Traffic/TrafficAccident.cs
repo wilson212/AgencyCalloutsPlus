@@ -1,14 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Rage;
-using LSPD_First_Response.Mod.API;
-using LSPD_First_Response.Mod.Callouts;
-using LSPD_First_Response.Engine.Scripting.Entities;
 using AgencyCalloutsPlus.API;
 using AgencyCalloutsPlus.Integration;
+using LSPD_First_Response.Mod.Callouts;
+using Rage;
 
 namespace AgencyCalloutsPlus.Callouts.Traffic
 {
@@ -17,7 +11,7 @@ namespace AgencyCalloutsPlus.Callouts.Traffic
     {
         private Blip Blip;
         private bool OnScene;
-        private Location SpawnPoint;
+        private LocationInfo SpawnPoint;
 
         private Ped Victim;
         private Vehicle VictimVehicle;
@@ -30,7 +24,7 @@ namespace AgencyCalloutsPlus.Callouts.Traffic
             Game.LogTrivial("[TRACE] AgencyCalloutsPlus.Callouts.Traffic.TrafficAccident");
 
             // Load spawnpoint and show area to player
-            SpawnPoint = Agency.GetRandomLocationInJurisdiction(LocationType.SideOfRoad, new Range<float>(100f, 2000f));
+            SpawnPoint = Agency.GetRandomLocationInJurisdiction(LocationType.SideOfRoad, new Range<float>(100f, 1000f));
             if (SpawnPoint == null)
             {
                 Game.LogTrivial($"[ERROR] AgencyCalloutsPlus: Unable to find a location for callout: Traffic.TrafficAccident");
@@ -39,7 +33,7 @@ namespace AgencyCalloutsPlus.Callouts.Traffic
 
             // Show are blip and message
             ShowCalloutAreaBlipBeforeAccepting(SpawnPoint.Position, 40f);
-            CalloutMessage = "~r~911 Report:~s~ Vehicle accident.";
+            CalloutMessage = "Vehicle Accident";
             CalloutPosition = SpawnPoint.Position;
 
             // Register callout with Computer+ if installed
@@ -63,7 +57,20 @@ namespace AgencyCalloutsPlus.Callouts.Traffic
 
         public override bool OnCalloutAccepted()
         {
+            // Example notification
+            Game.DisplayNotification(
+                "3dtextures", 
+                "mpgroundlogo_cops", 
+                "~o~ANPR Hit: ~r~Owner Wanted", 
+                "Dispatch to ~b~ |||", 
+                "The ~o~ANPR Hit ~s~is for ~r~ ||| . ~b~Use appropriate caution."
+            );
             return base.OnCalloutAccepted();
+        }
+
+        public override void OnCalloutNotAccepted()
+        {
+            base.OnCalloutNotAccepted();
         }
 
         public override void Process()

@@ -56,6 +56,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\__Dependencies\v1868\LSPD First Response.dll</HintPath>
     </Reference>
+    <Reference Include="RAGENativeUI">
+      <HintPath>..\..\__Dependencies\v1868\RAGENativeUI.dll</HintPath>
+    </Reference>
     <Reference Include="RagePluginHookSDK, Version=0.0.0.0, Culture=neutral, processorArchitecture=AMD64">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\__Dependencies\v1868\RagePluginHookSDK.dll</HintPath>
@@ -72,15 +75,19 @@
   <ItemGroup>
     <Compile Include="AgencyCallout.cs" />
     <Compile Include="API\AgencyType.cs" />
+    <Compile Include="API\SideOfRoadLocation.cs" />
+    <Compile Include="API\SpawnPoint.cs" />
+    <Compile Include="API\VehicleInfo.cs" />
+    <Compile Include="API\VehicleType.cs" />
     <Compile Include="Integration\ComputerPlusAPI.cs" />
     <Compile Include="Callouts\Priority\TrafficStopBackup.cs" />
     <Compile Include="Callouts\Traffic\StolenVehicleSpotted.cs" />
     <Compile Include="Callouts\Routine\StolenVehicle.cs" />
     <Compile Include="Callouts\Traffic\TrafficAccident.cs" />
-    <Compile Include="API\AgencyCalloutManager.cs" />
+    <Compile Include="API\AgencyCalloutDispatcher.cs" />
     <Compile Include="CryptoRandom.cs" />
     <Compile Include="API\Agency.cs" />
-    <Compile Include="API\Location.cs" />
+    <Compile Include="API\LocationInfo.cs" />
     <Compile Include="API\LocationType.cs" />
     <Compile Include="ErrorHandler.cs" />
     <Compile Include="Extensions\AttributeExtensions.cs" />
@@ -88,6 +95,8 @@
     <Compile Include="ISpawnable.cs" />
     <Compile Include="Main.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RageUIMenus\CalloutPedInteractionMenu.cs" />
+    <Compile Include="RageUIMenus\Events\SpeakWithPedArgs.cs" />
     <Compile Include="Range.cs" />
     <Compile Include="Settings.cs" />
     <Compile Include="SpawnableCallout.cs" />
@@ -102,6 +111,7 @@
     <Content Include="AgencyCalloutsPlus\Callouts\Traffic\TrafficAccident\CalloutMeta.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="AgencyCalloutsPlus\Peds.xml" />
     <Content Include="AgencyCalloutsPlus\Vehicles.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

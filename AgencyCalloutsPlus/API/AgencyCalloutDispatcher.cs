@@ -13,8 +13,8 @@ namespace AgencyCalloutsPlus.API
     /// A class that handles the dispatching of Callouts based on the current 
     /// <see cref="AgencyType"/> in thier Jurisdiction.
     /// </summary>
-    [CalloutInfo("AgencyCalloutManager", CalloutProbability.VeryHigh)]
-    public class AgencyCalloutManager : Callout
+    [CalloutInfo("AgencyCalloutDispatcher", CalloutProbability.VeryHigh)]
+    public class AgencyCalloutDispatcher : Callout
     {
         /// <summary>
         /// Indicates whether the AgecnyCalloutsPlus callouts have been registered yet.
@@ -26,9 +26,9 @@ namespace AgencyCalloutsPlus.API
         /// </summary>
         private static Dictionary<AgencyType, SpawnGenerator<SpawnableCallout>> Callouts { get; set; }
 
-        public AgencyCalloutManager()
+        public AgencyCalloutDispatcher()
         {
-            if (!IsInitialized) LoadCallouts();
+            if (!IsInitialized) Initialize();
         }
 
         /// <summary>
@@ -54,8 +54,14 @@ namespace AgencyCalloutsPlus.API
                 string calloutName = calloutType.GetAttributeValue((CalloutInfoAttribute attr) => attr.Name);
 
                 // Start callout manually
-                Game.LogTrivial($"[TRACE] AgencyCalloutsPlus: Loading callout {calloutName}");
-                Functions.StartCallout(calloutName);
+                // Make sure to do this in a new thread, other wise the callout will
+                // get cleaned up with this instance and fail to work properly.
+                Game.LogTrivial($"[TRACE] AgencyCalloutsPlus: Loading callout {calloutName}...");
+                GameFiber.StartNew(delegate
+                {
+                    GameFiber.Sleep(2000);
+                    Functions.StartCallout(calloutName);
+                });
             }
             catch (Exception e)
             {
@@ -68,7 +74,7 @@ namespace AgencyCalloutsPlus.API
         /// <summary>
         /// Static method called the first time this class is referenced anywhere
         /// </summary>
-        static AgencyCalloutManager()
+        static AgencyCalloutDispatcher()
         {
             // Initialize callout types
             Callouts = new Dictionary<AgencyType, SpawnGenerator<SpawnableCallout>>(10);
@@ -78,7 +84,7 @@ namespace AgencyCalloutsPlus.API
             }
 
             // Register this callout manager as a callout
-            Functions.RegisterCallout(typeof(AgencyCalloutManager));
+            Functions.RegisterCallout(typeof(AgencyCalloutDispatcher));
         }
 
         /// <summary>
@@ -119,7 +125,7 @@ namespace AgencyCalloutsPlus.API
         /// <returns>
         /// returns the number of callouts loaded
         /// </returns>
-        internal static int LoadCallouts()
+        internal static int Initialize()
         {
             if (IsInitialized) return 0;
 
@@ -128,7 +134,7 @@ namespace AgencyCalloutsPlus.API
 
             // Initialize vars
             int itemsAdded = 0;
-            var assembly = typeof(AgencyCalloutManager).Assembly;
+            var assembly = typeof(AgencyCalloutDispatcher).Assembly;
             XmlDocument document = new XmlDocument();
             string[] calloutTypes = { "Priority", "Routine", "Traffic" };
 

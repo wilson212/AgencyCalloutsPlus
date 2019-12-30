@@ -1,1 +1,36 @@
-﻿<?xml version="1.0" encoding="utf-8" ?> 
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<!-- 
+  Vehicle types: Compact, Coupe, Sedan, Sports, Muscle, Pickup, SUV, Van, Semi, Motorcycle, Moped
+-->
+<Vehicles>
+  <!-- Compacts -->
+  <Vehicle type="Compact" probability="5" seats="2" manufacturer="Dinka" name="Blista">BLISTA</Vehicle>
+  <Vehicle type="Compact" probability="5" seats="2" manufacturer="Grotti" name="Brioso R/A">BRIOSO</Vehicle>
+  <Vehicle type="Compact" probability="5" seats="4" manufacturer="Karin" name="Diletantte">DILETANTTE</Vehicle>
+  <Vehicle type="Compact" probability="5" seats="2" manufacturer="Weeny" name="Issy">ISSI2</Vehicle>
+  <Vehicle type="Compact" probability="5" seats="2" manufacturer="Benefactor" name="Panto">PANTO</Vehicle>
+  <Vehicle type="Compact" probability="5" seats="4" manufacturer="Bollokan" name="Prairie">PRAIRIE</Vehicle>
+  <Vehicle type="Compact" probability="5" seats="2" manufacturer="Declasse" name="Rhapsody">RHAPSODY</Vehicle>
+
+  <!-- Coupes -->
+  <Vehicle type="Coupe" probability="5" seats="2" manufacturer="Enus" name="Cognoscenti Cabrio">COGCABRIO</Vehicle>
+  <Vehicle type="Coupe" probability="5" seats="4" manufacturer="Dewbauchee" name="Exemplar">EXEMPLAR</Vehicle>
+  <Vehicle type="Coupe" probability="5" seats="2" manufacturer="Ocelot" name="F620">F620</Vehicle>
+  <Vehicle type="Coupe" probability="5" seats="4" manufacturer="Lampadati" name="Felon">FELON</Vehicle>
+  <Vehicle type="Coupe" probability="5" seats="2" manufacturer="Lampadati" name="Felon GT">FELON2</Vehicle>
+  <Vehicle type="Coupe" probability="5" seats="4" manufacturer="Ocelot" name="Jackal">JACKAL</Vehicle>
+  <Vehicle type="Coupe" probability="5" seats="4" manufacturer="Übermacht" name="Oracle">ORACLE</Vehicle>
+  <Vehicle type="Coupe" probability="5" seats="2" manufacturer="Übermacht" name="Sentinel">SENTINEL</Vehicle>
+  <Vehicle type="Coupe" probability="5" seats="2" manufacturer="Übermacht" name="Zion">ZION</Vehicle>
+  <Vehicle type="Coupe" probability="5" seats="2" manufacturer="Übermacht" name="Zion Cabrio">ZION2</Vehicle>
+
+  <!-- Sedans -->
+  <Vehicle type="Sedan" probability="5" seats="4" manufacturer="Declasse" name="Asea">ASEA</Vehicle>
+  <Vehicle type="Sedan" probability="5" seats="4" manufacturer="Karin" name="Asterope">ASTEROPE</Vehicle>
+  <Vehicle type="Sedan" probability="5" seats="4" manufacturer="Albany" name="Emperor">EMPEROR</Vehicle>
+  <Vehicle type="Sedan" probability="3" seats="4" manufacturer="Albany" name="Emperor">EMPEROR2</Vehicle>
+  <Vehicle type="Sedan" probability="5" seats="4" manufacturer="Cheval" name="Fugitive">FUGITIVE</Vehicle>
+  <Vehicle type="Sedan" probability="5" seats="4" manufacturer="Vulcar" name="Ingot">INGOT</Vehicle>
+  <Vehicle type="Sedan" probability="5" seats="4" manufacturer="Karin" name="Intruder">INTRUDER</Vehicle>
+  <Vehicle type="Sedan" probability="5" seats="4" manufacturer="Declasse" name="Premier">PREMIER</Vehicle>
+</Vehicles>

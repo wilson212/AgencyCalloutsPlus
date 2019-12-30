@@ -3,46 +3,46 @@
 
   <HIGHWAY>
     <SideOfRoad>
-      <Location X="1374.229" Y="682.4608" Z="79.23694" heading="138.1848" />
-      <Location X="1341.927" Y="611.697" Z="80.06128" heading="310.6091" />
-      <Location X="1543.265" Y="853.7671" Z="77.20865" heading="334.3522" />
-      <Location X="1653.714" Y="1174.292" Z="84.0813" heading="344.168" />
-      <Location X="1710.493" Y="1439.671" Z="85.1928" heading="347.8249" />
-      <Location X="1889.301" Y="1627.032" Z="80.87594" heading="256.4026" />
-      <Location X="2161.595" Y="1269.753" Z="75.61858" heading="209.0838" />
-      <Location X="2668.935" Y="3129.403" Z="50.35906" heading="322.6464" />
-      <Location X="2929.859" Y="3737.787" Z="52.38493" heading="348.9002" />
-      <Location X="2743.588" Y="4691.754" Z="44.06121" heading="12.73393" />
-      <Location X="2516.152" Y="5553.152" Z="44.50331" heading="21.36839" />
-      <Location X="2177.697" Y="6065.309" Z="51.7413" heading="66.28397" />
-      <Location X="1661.087" Y="6412.976" Z="29.40466" heading="70.84875" />
-      <Location X="1235.415" Y="6501.709" Z="20.5242" heading="89.03062" />
-      <Location X="762.86" Y="6515.305" Z="25.46921" heading="78.15271" />
-      <Location X="184.4049" Y="6574.211" Z="31.60049" heading="110.5664" />
-      <Location X="-578.1945" Y="5698.128" Z="37.44772" heading="153.7781" />
-      <Location X="-732.8299" Y="5531.087" Z="36.27608" heading="120.7709" />
-      <Location X="-769.0044" Y="5650.879" Z="23.81657" heading="340.9604" />
-      <Location X="-926.8969" Y="5429.035" Z="37.20631" heading="106.7766" />
-      <Location X="-1389.062" Y="5107.08" Z="60.91629" heading="121.7064" />
-      <Location X="-1642.61" Y="4871.636" Z="60.56958" heading="132.1071" />
-      <Location X="-2175.74" Y="4444.229" Z="61.81794" heading="141.5286" />
-      <Location X="-2361.031" Y="4046.449" Z="30.04111" heading="165.7798" />
-      <Location X="-2629.063" Y="2912.742" Z="16.4502" heading="171.0384" />
-      <Location X="-2692.788" Y="2475.685" Z="16.44287" heading="171.4319" />
-      <Location X="-2856.818" Y="2195.172" Z="33.0401" heading="118.6719" />
-      <Location X="-3013.057" Y="1961.991" Z="29.35463" heading="155.826" />
-      <Location X="-3037.866" Y="1674.911" Z="34.87879" heading="199.8088" />
-      <Location X="-3169.63" Y="1244.344" Z="10.57515" heading="353.6517" />
-      <Location X="-3135.381" Y="824.7528" Z="16.52175" heading="207.5225" />
-      <Location X="-3008.429" Y="365.8237" Z="14.47989" heading="169.5816" />
-      <Location X="-2858.971" Y="47.31013" Z="14.10655" heading="251.2645" />
-      <Location X="-2659.946" Y="-95.2246" Z="17.78703" heading="223.3282" />
-      <Location X="-2007.747" Y="-458.8983" Z="11.24626" heading="228.6517" />
-      <Location X="-1775.332" Y="-664.7091" Z="10.14362" heading="228.8256" />
-      <Location X="-825.9415" Y="-1715.502" Z="32.80603" heading="124.0214" />
-      <Location X="-852.8828" Y="-2034.954" Z="27.47351" heading="238.9382" />
+      <Location X="1374.229" Y="682.4608" Z="79.23694" Heading="138.1848" />
+      <Location X="1341.927" Y="611.697" Z="80.06128" Heading="310.6091" />
+      <Location X="1543.265" Y="853.7671" Z="77.20865" Heading="334.3522" />
+      <Location X="1653.714" Y="1174.292" Z="84.0813" Heading="344.168" />
+      <Location X="1710.493" Y="1439.671" Z="85.1928" Heading="347.8249" />
+      <Location X="1889.301" Y="1627.032" Z="80.87594" Heading="256.4026" />
+      <Location X="2161.595" Y="1269.753" Z="75.61858" Heading="209.0838" />
+      <Location X="2668.935" Y="3129.403" Z="50.35906" Heading="322.6464" />
+      <Location X="2929.859" Y="3737.787" Z="52.38493" Heading="348.9002" />
+      <Location X="2743.588" Y="4691.754" Z="44.06121" Heading="12.73393" />
+      <Location X="2516.152" Y="5553.152" Z="44.50331" Heading="21.36839" />
+      <Location X="2177.697" Y="6065.309" Z="51.7413" Heading="66.28397" />
+      <Location X="1661.087" Y="6412.976" Z="29.40466" Heading="70.84875" />
+      <Location X="1235.415" Y="6501.709" Z="20.5242" Heading="89.03062" />
+      <Location X="762.86" Y="6515.305" Z="25.46921" Heading="78.15271" />
+      <Location X="184.4049" Y="6574.211" Z="31.60049" Heading="110.5664" />
+      <Location X="-578.1945" Y="5698.128" Z="37.44772" Heading="153.7781" />
+      <Location X="-732.8299" Y="5531.087" Z="36.27608" Heading="120.7709" />
+      <Location X="-769.0044" Y="5650.879" Z="23.81657" Heading="340.9604" />
+      <Location X="-926.8969" Y="5429.035" Z="37.20631" Heading="106.7766" />
+      <Location X="-1389.062" Y="5107.08" Z="60.91629" Heading="121.7064" />
+      <Location X="-1642.61" Y="4871.636" Z="60.56958" Heading="132.1071" />
+      <Location X="-2175.74" Y="4444.229" Z="61.81794" Heading="141.5286" />
+      <Location X="-2361.031" Y="4046.449" Z="30.04111" Heading="165.7798" />
+      <Location X="-2629.063" Y="2912.742" Z="16.4502" Heading="171.0384" />
+      <Location X="-2692.788" Y="2475.685" Z="16.44287" Heading="171.4319" />
+      <Location X="-2856.818" Y="2195.172" Z="33.0401" Heading="118.6719" />
+      <Location X="-3013.057" Y="1961.991" Z="29.35463" Heading="155.826" />
+      <Location X="-3037.866" Y="1674.911" Z="34.87879" Heading="199.8088" />
+      <Location X="-3169.63" Y="1244.344" Z="10.57515" Heading="353.6517" />
+      <Location X="-3135.381" Y="824.7528" Z="16.52175" Heading="207.5225" />
+      <Location X="-3008.429" Y="365.8237" Z="14.47989" Heading="169.5816" />
+      <Location X="-2858.971" Y="47.31013" Z="14.10655" Heading="251.2645" />
+      <Location X="-2659.946" Y="-95.2246" Z="17.78703" Heading="223.3282" />
+      <Location X="-2007.747" Y="-458.8983" Z="11.24626" Heading="228.6517" />
+      <Location X="-1775.332" Y="-664.7091" Z="10.14362" Heading="228.8256" />
+      <Location X="-825.9415" Y="-1715.502" Z="32.80603" Heading="124.0214" />
+      <Location X="-852.8828" Y="-2034.954" Z="27.47351" Heading="238.9382" />
 
-      <Location X="" Y="" Z="" heading="" />
+      <Location X="" Y="" Z="" Heading="" />
     </SideOfRoad>
   </HIGHWAY>
   
@@ -155,8 +155,8 @@
     <Homes></Homes>
     <Stores></Stores>
     <SideOfRoad>
-      <Location X="-1389.062" Y="5107.08" Z="60.91629" heading="121.7064" />
-      <Location X="-1642.61" Y="4871.636" Z="60.56958" heading="132.1071" />
+      <Location X="-1389.062" Y="5107.08" Z="60.91629" Heading="121.7064" />
+      <Location X="-1642.61" Y="4871.636" Z="60.56958" Heading="132.1071" />
     </SideOfRoad>
   </CMSW>
 
@@ -172,9 +172,9 @@
     <Homes></Homes>
     <Stores></Stores>
     <SideOfRoad>
-      <Location X="-3169.63" Y="1244.344" Z="10.57515" heading="353.6517" />
-      <Location X="-3135.381" Y="824.7528" Z="16.52175" heading="207.5225" />
-      <Location X="-3008.429" Y="365.8237" Z="14.47989" heading="169.5816" />
+      <Location X="-3169.63" Y="1244.344" Z="10.57515" Heading="353.6517" />
+      <Location X="-3135.381" Y="824.7528" Z="16.52175" Heading="207.5225" />
+      <Location X="-3008.429" Y="365.8237" Z="14.47989" Heading="169.5816" />
     </SideOfRoad>
   </CHU>
 
@@ -197,9 +197,9 @@
     <Homes></Homes>
     <Stores></Stores>
     <SideOfRoad>
-      <Location X="-1775.332" Y="-664.7091" Z="10.14362" heading="228.8256" />
-      <Location X="-1369.16" Y="-867.0697" Z="14.94891" heading="136.6597" />
-      <Location X="-1278.625" Y="-991.2997" Z="9.592031" heading="195.9247" />
+      <Location X="-1775.332" Y="-664.7091" Z="10.14362" Heading="228.8256" />
+      <Location X="-1369.16" Y="-867.0697" Z="14.94891" Heading="136.6597" />
+      <Location X="-1278.625" Y="-991.2997" Z="9.592031" Heading="195.9247" />
     </SideOfRoad>
   </DELPE>
 
@@ -222,7 +222,7 @@
     <Homes></Homes>
     <Stores></Stores>
     <SideOfRoad>
-      <Location X="374.1024" Y="1732.583" Z="239.4723" heading="131.1164" />
+      <Location X="374.1024" Y="1732.583" Z="239.4723" Heading="131.1164" />
     </SideOfRoad>
   </DESRT>
 
@@ -350,9 +350,9 @@
     <Homes></Homes>
     <Stores></Stores>
     <SideOfRoad>
-      <Location X="-657.8961" Y="-1383.699" Z="10.26912" heading="180.5578" />
-      <Location X="-825.9415" Y="-1715.502" Z="32.80603" heading="124.0214" />
-      <Location X="-852.8828" Y="-2034.954" Z="27.47351" heading="238.9382" />
+      <Location X="-657.8961" Y="-1383.699" Z="10.26912" Heading="180.5578" />
+      <Location X="-825.9415" Y="-1715.502" Z="32.80603" Heading="124.0214" />
+      <Location X="-852.8828" Y="-2034.954" Z="27.47351" Heading="238.9382" />
     </SideOfRoad>
   </LOSPUER>
 
@@ -361,8 +361,8 @@
     <Homes></Homes>
     <Stores></Stores>
     <SideOfRoad>
-      <Location X="-2629.063" Y="2912.742" Z="16.4502" heading="171.0384" />
-      <Location X="-2692.788" Y="2475.685" Z="16.44287" heading="171.4319" />
+      <Location X="-2629.063" Y="2912.742" Z="16.4502" Heading="171.0384" />
+      <Location X="-2692.788" Y="2475.685" Z="16.44287" Heading="171.4319" />
     </SideOfRoad>
   </LAGO>
 
@@ -420,7 +420,7 @@
     <Homes></Homes>
     <Stores></Stores>
     <SideOfRoad>
-      <Location X="1661.087" Y="6412.976" Z="29.40466" heading="70.84875" />
+      <Location X="1661.087" Y="6412.976" Z="29.40466" Heading="70.84875" />
     </SideOfRoad>
   </MTGORDO>
 
@@ -451,9 +451,9 @@
     <Homes></Homes>
     <Stores></Stores>
     <SideOfRoad>
-      <Location X="-2175.74" Y="4444.229" Z="61.81794" heading="141.5286" />
-      <Location X="-2361.031" Y="4046.449" Z="30.04111" heading="165.7798" />
-      <Location X="-2526.426" Y="3528.103" Z="14.17548" heading="156.6137" />
+      <Location X="-2175.74" Y="4444.229" Z="61.81794" Heading="141.5286" />
+      <Location X="-2361.031" Y="4046.449" Z="30.04111" Heading="165.7798" />
+      <Location X="-2526.426" Y="3528.103" Z="14.17548" Heading="156.6137" />
     </SideOfRoad>
   </NCHU>
 
@@ -462,9 +462,9 @@
     <Homes></Homes>
     <Stores></Stores>
     <SideOfRoad>
-      <Location X="-2858.971" Y="47.31013" Z="14.10655" heading="251.2645" />
-      <Location X="-2659.946" Y="-95.2246" Z="17.78703" heading="223.3282" />
-      <Location X="-2007.747" Y="-458.8983" Z="11.24626" heading="228.6517" />
+      <Location X="-2858.971" Y="47.31013" Z="14.10655" Heading="251.2645" />
+      <Location X="-2659.946" Y="-95.2246" Z="17.78703" Heading="223.3282" />
+      <Location X="-2007.747" Y="-458.8983" Z="11.24626" Heading="228.6517" />
     </SideOfRoad>
   </PBLUFF>
 
@@ -480,17 +480,17 @@
     <Homes></Homes>
     <Stores></Stores>
     <SideOfRoad>
-      <Location X="184.4049" Y="6574.211" Z="31.60049" heading="110.5664" />
-      <Location X="-22.2518" Y="6633.133" Z="30.45876" heading="123.2169" />
-      <Location X="-324.5273" Y="6351.488" Z="30.07028" heading="134.4314" />
-      <Location X="-413.6339" Y="6024.99" Z="31.12768" heading="196.1808" />
-      <Location X="-272.4705" Y="6089.522" Z="30.97792" heading="315.1745" />
-      <Location X="-256.8849" Y="6189.933" Z="31.09116" heading="42.20694" />
-      <Location X="-255.5601" Y="6270.298" Z="31.02397" heading="315.8537" />
-      <Location X="-159.6443" Y="6337.343" Z="31.21975" heading="226.7266" />
-      <Location X="34.58875" Y="6395.486" Z="31.01769" heading="314.5241" />
-      <Location X="92.41862" Y="6486.325" Z="31.112" heading="135.7521" />
-      <Location X="-144.9072" Y="6247.682" Z="30.93605" heading="132.8918" />
+      <Location X="184.4049" Y="6574.211" Z="31.60049" Heading="110.5664" />
+      <Location X="-22.2518" Y="6633.133" Z="30.45876" Heading="123.2169" />
+      <Location X="-324.5273" Y="6351.488" Z="30.07028" Heading="134.4314" />
+      <Location X="-413.6339" Y="6024.99" Z="31.12768" Heading="196.1808" />
+      <Location X="-272.4705" Y="6089.522" Z="30.97792" Heading="315.1745" />
+      <Location X="-256.8849" Y="6189.933" Z="31.09116" Heading="42.20694" />
+      <Location X="-255.5601" Y="6270.298" Z="31.02397" Heading="315.8537" />
+      <Location X="-159.6443" Y="6337.343" Z="31.21975" Heading="226.7266" />
+      <Location X="34.58875" Y="6395.486" Z="31.01769" Heading="314.5241" />
+      <Location X="92.41862" Y="6486.325" Z="31.112" Heading="135.7521" />
+      <Location X="-144.9072" Y="6247.682" Z="30.93605" Heading="132.8918" />
     </SideOfRoad>
   </PALETO>
 
@@ -506,10 +506,10 @@
     <Homes></Homes>
     <Stores></Stores>
     <SideOfRoad>
-      <Location X="-578.1945" Y="5698.128" Z="37.44772" heading="153.7781" />
-      <Location X="-732.8299" Y="5531.087" Z="36.27608" heading="120.7709" />
-      <Location X="-769.0044" Y="5650.879" Z="23.81657" heading="340.9604" />
-      <Location X="-926.8969" Y="5429.035" Z="37.20631" heading="106.7766" />
+      <Location X="-578.1945" Y="5698.128" Z="37.44772" Heading="153.7781" />
+      <Location X="-732.8299" Y="5531.087" Z="36.27608" Heading="120.7709" />
+      <Location X="-769.0044" Y="5650.879" Z="23.81657" Heading="340.9604" />
+      <Location X="-926.8969" Y="5429.035" Z="37.20631" Heading="106.7766" />
     </SideOfRoad>
   </PALFOR>
 
@@ -539,8 +539,8 @@
     <Homes></Homes>
     <Stores></Stores>
     <SideOfRoad>
-      <Location X="1235.415" Y="6501.709" Z="20.5242" heading="89.03062" />
-      <Location X="762.86" Y="6515.305" Z="25.46921" heading="78.15271" />
+      <Location X="1235.415" Y="6501.709" Z="20.5242" Heading="89.03062" />
+      <Location X="762.86" Y="6515.305" Z="25.46921" Heading="78.15271" />
     </SideOfRoad>
   </PROCOB>
 
@@ -577,15 +577,15 @@
     <Homes></Homes>
     <Stores></Stores>
     <SideOfRoad>
-      <Location X="-879.0662" Y="239.9437" Z="72.22186" heading="64.38356" />
-      <Location X="-834.8604" Y="204.1598" Z="73.7544" heading="265.1725" />
-      <Location X="-755.9545" Y="155.7549" Z="64.3354" heading="187.7457" />
-      <Location X="-827.7767" Y="-9.064098" Z="40.30524" heading="212.4566" />
-      <Location X="-831.7559" Y="-76.78371" Z="37.33385" heading="117.9508" />
-      <Location X="-918.3644" Y="-33.06431" Z="40.35612" heading="39.54237" />
-      <Location X="-1043.305" Y="162.4217" Z="57.30809" heading="31.22434" />
-      <Location X="-1036.512" Y="250.366" Z="64.46606" heading="270.4566" />
-      <Location X="-860.7089" Y="357.527" Z="86.6208" heading="185.4379" />
+      <Location X="-879.0662" Y="239.9437" Z="72.22186" Heading="64.38356" />
+      <Location X="-834.8604" Y="204.1598" Z="73.7544" Heading="265.1725" />
+      <Location X="-755.9545" Y="155.7549" Z="64.3354" Heading="187.7457" />
+      <Location X="-827.7767" Y="-9.064098" Z="40.30524" Heading="212.4566" />
+      <Location X="-831.7559" Y="-76.78371" Z="37.33385" Heading="117.9508" />
+      <Location X="-918.3644" Y="-33.06431" Z="40.35612" Heading="39.54237" />
+      <Location X="-1043.305" Y="162.4217" Z="57.30809" Heading="31.22434" />
+      <Location X="-1036.512" Y="250.366" Z="64.46606" Heading="270.4566" />
+      <Location X="-860.7089" Y="357.527" Z="86.6208" Heading="185.4379" />
     </SideOfRoad>
   </ROCKF>
 
@@ -601,23 +601,27 @@
     <Homes></Homes>
     <Stores></Stores>
     <SideOfRoad>
-      <Location X="2866.91" Y="4425.019" Z="48.54592" heading="289.1848" />
-      <Location X="2743.588" Y="4691.754" Z="44.06121" heading="12.73393" />
-      <Location X="2725.749" Y="5086.909" Z="42.65204" heading="188.7374" />
-      <Location X="2722.724" Y="5123.943" Z="43.98761" heading="56.36723" />
+      <Location X="2866.91" Y="4425.019" Z="48.54592" Heading="289.1848" />
+      <Location X="2743.588" Y="4691.754" Z="44.06121" Heading="12.73393" />
+      <Location X="2725.749" Y="5086.909" Z="42.65204" Heading="188.7374" />
+      <Location X="2722.724" Y="5123.943" Z="43.98761" Heading="56.36723" />
     </SideOfRoad>
   </SANCHIA>
   
   <!-- Sandy Shores -->
   <SANDY>
-    <Locations>
-      <Homes>
-        <Location X="2190.89" Y="3313.61" />
-        <Location X="2176.25" Y="3317.86" />
-      </Homes>
-      <Stores></Stores>
-      <SideOfRoad></SideOfRoad>
-    </Locations>
+    <Homes>
+      <Location X="2190.89" Y="3313.61">
+        <SpawnPoints>
+          <Peds>
+            <SpawnLocation X="2190.89" Y="3313.61" Heading="289.1848" />
+          </Peds>
+        </SpawnPoints>
+      </Location>
+      <Location X="2176.25" Y="3317.86" />
+    </Homes>
+    <Stores></Stores>
+    <SideOfRoad></SideOfRoad>
   </SANDY>
 
   <!-- Mission Row -->
@@ -653,7 +657,7 @@
     <Homes></Homes>
     <Stores></Stores>
     <SideOfRoad>
-      <Location X="2597.98" Y="401.2059" Z="108.2211" heading="323.9391" />
+      <Location X="2597.98" Y="401.2059" Z="108.2211" Heading="323.9391" />
     </SideOfRoad>
   </TATAMO>
 
@@ -676,9 +680,9 @@
     <Homes></Homes>
     <Stores></Stores>
     <SideOfRoad>
-      <Location X="-2856.818" Y="2195.172" Z="33.0401" heading="118.6719" />
-      <Location X="-3013.057" Y="1961.991" Z="29.35463" heading="155.826" />
-      <Location X="-3037.866" Y="1674.911" Z="34.87879" heading="199.8088" />
+      <Location X="-2856.818" Y="2195.172" Z="33.0401" Heading="118.6719" />
+      <Location X="-3013.057" Y="1961.991" Z="29.35463" Heading="155.826" />
+      <Location X="-3037.866" Y="1674.911" Z="34.87879" Heading="199.8088" />
     </SideOfRoad>
   </TONGVAH>
 
@@ -694,10 +698,10 @@
     <Homes></Homes>
     <Stores></Stores>
     <SideOfRoad>
-      <Location X="-1187.188" Y="-1344.395" Z="4.593719" heading="118.2216" />
-      <Location X="-1076.621" Y="-1604.209" Z="4.032756" heading="218.6957" />
-      <Location X="-1074.099" Y="-1381.39" Z="4.731258" heading="346.9388" />
-      <Location X="-760.4246" Y="-1158.496" Z="10.27134" heading="216.7104" />
+      <Location X="-1187.188" Y="-1344.395" Z="4.593719" Heading="118.2216" />
+      <Location X="-1076.621" Y="-1604.209" Z="4.032756" Heading="218.6957" />
+      <Location X="-1074.099" Y="-1381.39" Z="4.731258" Heading="346.9388" />
+      <Location X="-760.4246" Y="-1158.496" Z="10.27134" Heading="216.7104" />
     </SideOfRoad>
   </VESP>
 
@@ -713,22 +717,22 @@
     <Homes></Homes>
     <Stores></Stores>
     <SideOfRoad>
-      <Location X="-860.7089" Y="357.527" Z="86.6208" heading="185.4379" />
-      <Location X="-792.9432" Y="438.9984" Z="92.48638" heading="278.3127" />
-      <Location X="-639.832" Y="496.3271" Z="108.3503" heading="281.5251" />
-      <Location X="-464.9353" Y="767.3813" Z="171.0595" heading="358.8197" />
-      <Location X="-661.0579" Y="921.9384" Z="229.3689" heading="66.88421" />
-      <Location X="-710.9297" Y="1051.119" Z="246.2212" heading="342.989" />
-      <Location X="-698.3875" Y="1181.562" Z="265.1107" heading="310.2824" />
-      <Location X="-665.4635" Y="1303.299" Z="281.8141" heading="343.3069" />
-      <Location X="-427.7723" Y="1407.998" Z="292.7688" heading="317.8205" />
-      <Location X="-87.9101" Y="1501.719" Z="282.9984" heading="250.5602" />
-      <Location X="93.38171" Y="1385.054" Z="259.5159" heading="267.1825" />
-      <Location X="193.3249" Y="1445.987" Z="239.6637" heading="42.75747" />
-      <Location X="1024.931" Y="1576.71" Z="170.1391" heading="169.2246" />
-      <Location X="1116.184" Y="832.7426" Z="152.1875" heading="329.595" />
-      <Location X="1136.974" Y="665.885" Z="123.035" heading="146.651" />
-      <Location X="1203.84" Y="643.5349" Z="99.16676" heading="325.7043" />
+      <Location X="-860.7089" Y="357.527" Z="86.6208" Heading="185.4379" />
+      <Location X="-792.9432" Y="438.9984" Z="92.48638" Heading="278.3127" />
+      <Location X="-639.832" Y="496.3271" Z="108.3503" Heading="281.5251" />
+      <Location X="-464.9353" Y="767.3813" Z="171.0595" Heading="358.8197" />
+      <Location X="-661.0579" Y="921.9384" Z="229.3689" Heading="66.88421" />
+      <Location X="-710.9297" Y="1051.119" Z="246.2212" Heading="342.989" />
+      <Location X="-698.3875" Y="1181.562" Z="265.1107" Heading="310.2824" />
+      <Location X="-665.4635" Y="1303.299" Z="281.8141" Heading="343.3069" />
+      <Location X="-427.7723" Y="1407.998" Z="292.7688" Heading="317.8205" />
+      <Location X="-87.9101" Y="1501.719" Z="282.9984" Heading="250.5602" />
+      <Location X="93.38171" Y="1385.054" Z="259.5159" Heading="267.1825" />
+      <Location X="193.3249" Y="1445.987" Z="239.6637" Heading="42.75747" />
+      <Location X="1024.931" Y="1576.71" Z="170.1391" Heading="169.2246" />
+      <Location X="1116.184" Y="832.7426" Z="152.1875" Heading="329.595" />
+      <Location X="1136.974" Y="665.885" Z="123.035" Heading="146.651" />
+      <Location X="1203.84" Y="643.5349" Z="99.16676" Heading="325.7043" />
     </SideOfRoad>
   </VINE>
 
@@ -737,7 +741,7 @@
     <Homes></Homes>
     <Stores></Stores>
     <SideOfRoad>
-      <Location X="-755.9545" Y="155.7549" Z="64.3354" heading="187.7457" />
+      <Location X="-755.9545" Y="155.7549" Z="64.3354" Heading="187.7457" />
     </SideOfRoad>
   </WVINE>
 
@@ -746,10 +750,10 @@
     <Homes></Homes>
     <Stores></Stores>
     <SideOfRoad>
-      <Location X="2476.985" Y="1296.132" Z="48.83939" heading="329.646" />
-      <Location X="2582.865" Y="1646.836" Z="28.1445" heading="90.17572" />
-      <Location X="2547.538" Y="2103.621" Z="19.32726" heading="355.7367" />
-      <Location X="2579.974" Y="2623.6" Z="36.76326" heading="20.09404" />
+      <Location X="2476.985" Y="1296.132" Z="48.83939" Heading="329.646" />
+      <Location X="2582.865" Y="1646.836" Z="28.1445" Heading="90.17572" />
+      <Location X="2547.538" Y="2103.621" Z="19.32726" Heading="355.7367" />
+      <Location X="2579.974" Y="2623.6" Z="36.76326" Heading="20.09404" />
     </SideOfRoad>
   </WINDF>
 

@@ -8,6 +8,9 @@ using System.Xml;
 
 namespace AgencyCalloutsPlus.API
 {
+    /// <summary>
+    /// Represents the Current Player Police Agency
+    /// </summary>
     public static class Agency
     {
         /// <summary>
@@ -175,7 +178,7 @@ namespace AgencyCalloutsPlus.API
         }
 
         /// <summary>
-        /// Gets a random <see cref="Location"/> on the side of the road within current jurisdiction
+        /// Gets a random <see cref="LocationInfo"/> within the Players current agency area of jurisdiction
         /// </summary>
         /// <remarks>
         /// This method is best NOT used by state troopers with full map jurisdiction
@@ -186,8 +189,8 @@ namespace AgencyCalloutsPlus.API
         /// <see cref="Vector3.TravelDistanceTo(Vector3)"/>. If the player is outside this range from all
         /// positions in his jurisdiction, this method with return null.
         /// </param>
-        /// <returns>returns a Vector3 location on success, or null on failure</returns>
-        public static Location GetRandomLocationInJurisdiction(LocationType type, Range<float> range = null)
+        /// <returns>returns a <see cref="LocationInfo"/> on success, or null on failure</returns>
+        public static LocationInfo GetRandomLocationInJurisdiction(LocationType type, Range<float> range = null)
         {
             // Load randomizer
             var rando = new CryptoRandom();
@@ -204,7 +207,7 @@ namespace AgencyCalloutsPlus.API
             foreach (string zoneName in zones.OrderBy(x => rando.Next()))
             {
                 // Grab zone positions
-                Location[] locations = Location.GetZoneLocationsByName(zoneName, type);
+                LocationInfo[] locations = LocationInfo.GetZoneLocationsByName(zoneName, type);
 
                 // No positions?
                 if (locations == null || locations.Length == 0)
@@ -235,7 +238,7 @@ namespace AgencyCalloutsPlus.API
             }
 
             // If we are here, we failed to find a position in our juristiction
-            return default(Location);
+            return default(LocationInfo);
         }
 
         /// <summary>

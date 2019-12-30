@@ -4,9 +4,11 @@ using LSPD_First_Response.Mod.Callouts;
 using Rage;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
 
 namespace AgencyCalloutsPlus
 {
@@ -32,8 +34,36 @@ namespace AgencyCalloutsPlus
             var divString = Settings.AudioDivision.ToString("D2");
             var beatString = Settings.AudioBeat.ToString("D2");
 
-            var prefix = $"DISP_ATTENTION_UNIT DIV_{divString} {Settings.AudioDivision} BEAT_{beatString} ";
-            Functions.PlayScannerAudioUsingPosition(prefix + scanner, CalloutPosition);
+            var prefix = $"DISP_ATTENTION_UNIT DIV_{divString} {Settings.AudioUnitType} BEAT_{beatString} ";
+            Functions.PlayScannerAudioUsingPosition(String.Concat(prefix, scanner), CalloutPosition);
+        }
+
+        /// <summary>
+        /// Loads an xml file and returns the XML document back as an object
+        /// </summary>
+        /// <param name="paths"></param>
+        /// <returns></returns>
+        public XmlDocument LoadScenarioFile(params string[] paths)
+        {
+            // Create file path
+            string path = Main.LSPDFRPluginPath;
+            foreach (string p in paths)
+                path = Path.Combine(path, p);
+
+            // Ensure file exists
+            if (File.Exists(path))
+            {
+                // Load XML document
+                XmlDocument document = new XmlDocument();
+                using (var file = new FileStream(path, FileMode.Open))
+                {
+                    document.Load(file);
+                }
+
+                return document;
+            }
+
+            return null;
         }
 
         public override bool OnBeforeCalloutDisplayed()
@@ -59,6 +89,7 @@ namespace AgencyCalloutsPlus
             // Update computer plus!
             if (ComputerPlusRunning)
             {
+                Functions.PlayScannerAudio("OTHER_UNIT_TAKING_CALL");
                 ComputerPlusAPI.AssignCallToAIUnit(CalloutID);
             }
         }

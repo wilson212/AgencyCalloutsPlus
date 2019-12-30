@@ -31,14 +31,12 @@ namespace AgencyCalloutsPlus
         /// <summary>
         /// Gets the root path to this DLL
         /// </summary>
-        public static string DllRootPath { get; internal set; }
+        public static string LSPDFRPluginPath { get; internal set; }
 
         /// <summary>
         /// Gets the root path to this DLL
         /// </summary>
         public static string PluginFolderPath { get; internal set; }
-
-        public static bool IsComputerPlusRunning = false;
 
         /// <summary>
         /// Main entry point for the plugin. Initializer
@@ -46,21 +44,20 @@ namespace AgencyCalloutsPlus
         public override void Initialize()
         {
             // Version check!
-            var version = Functions.GetVersion();
-            Game.LogTrivial($"[TRACE] AgencyCalloutsPlus: Detected LSPDFR v{version}");
+            var lspdfrVersion = Functions.GetVersion();
+            var requiredVersion = new Version("0.4.6");
 
-            /*
-            if (version.CompareTo(new Version("0.4.6")) < 0)
+            // Check LSPDFR compatibility
+            if (lspdfrVersion < requiredVersion)
             {
-                string message = $"Detected LSPDFR version {version}; v0.4.6 or greater is required";
+                string message = $"Detected LSPDFR version {lspdfrVersion}; v{requiredVersion} or greater is required";
                 Game.LogTrivial($"[ERROR] AgencyCalloutsPlus: {message}");
                 throw new Exception(message);
             }
-            */
-
-            // Register for On Duty state changes
-            Functions.OnOnDutyStateChanged += OnOnDutyStateChangedHandler;
-            Functions.PlayerWentOnDutyFinishedSelection += PlayerWentOnDutyFinishedSelection;
+            else
+            {
+                Game.LogTrivial($"[TRACE] AgencyCalloutsPlus: Detected LSPDFR v{lspdfrVersion}");
+            }
 
             // Define our plugin version and root paths
             var assembly = System.Reflection.Assembly.GetExecutingAssembly();
@@ -71,7 +68,7 @@ namespace AgencyCalloutsPlus
             UriBuilder uri = new UriBuilder(codeBase);
             string path = Uri.UnescapeDataString(uri.Path);
             GTARootPath = Path.GetDirectoryName(path);
-            DllRootPath = Path.Combine(GTARootPath, "Plugins", "lspdfr");
+            LSPDFRPluginPath = Path.Combine(GTARootPath, "Plugins", "lspdfr");
             PluginFolderPath = Path.Combine(GTARootPath, "Plugins", "lspdfr", "AgencyCalloutsPlus");
 
             // Ensure we are properly located
@@ -80,6 +77,10 @@ namespace AgencyCalloutsPlus
                 Game.LogTrivial("[ERROR] AgencyCalloutsPlus v" + PluginVersion + " failed to initialise! Cannot find GTA5.exe");
                 throw new Exception("[ERROR] AgencyCalloutsPlus v" + PluginVersion + " failed to initialise! Cannot find GTA5.exe");
             }
+
+            // Register for On Duty state changes
+            Functions.OnOnDutyStateChanged += OnOnDutyStateChangedHandler;
+            Functions.PlayerWentOnDutyFinishedSelection += PlayerWentOnDutyFinishedSelection;
 
             // Log stuff
             Game.LogTrivial("[TRACE] AgencyCalloutsPlus v" + PluginVersion + " has been initialised.");
@@ -104,21 +105,42 @@ namespace AgencyCalloutsPlus
             // Run this in a new thread, since this will block the main thread for awhile
             GameFiber.StartNew(delegate
             {
+                // Wait!
+                GameFiber.Wait(1000);
+
+                // We require traffic policer by Albo1125!
+                if (!GlobalFunctions.IsLSPDFRPluginRunning("Traffic Policer", new Version("6.16.0.0"), out Version version))
+                {
+                    string message = "";
+                    if (version.Major > 0)
+                        message = $"Detected Traffic Policer version {version}; v6.16.0.0 or greater is required";
+                    else
+                        message = $"Traffic Policer not detected and is required";
+
+                    // Log and exit
+                    Game.LogTrivial($"[ERROR] AgencyCalloutsPlus: {message}");
+                    return;
+                }
+                else
+                {
+                    Game.LogTrivial($"[TRACE] AgencyCalloutsPlus: Detected Traffic Policer version {version}");
+                }
+
                 // Load our agencies and such (this will only initialize once per game session)
                 Agency.Initialize();
 
                 // Load locations based on current agency jurisdiction.
                 // This method needs called everytime the player Agency is changed
-                Location.LoadZones(Agency.GetCurrentAgencyJurisdictionZones());
+                LocationInfo.LoadZones(Agency.GetCurrentAgencyJurisdictionZones());
+
+                // Load vehicles (this will only initialize once per game session)
+                VehicleInfo.Initialize();
 
                 // Register callouts (this will only initialize once per game session)
-                AgencyCalloutManager.LoadCallouts();
-
-                // Wait!
-                GameFiber.Wait(1000);
+                AgencyCalloutDispatcher.Initialize();
 
                 // See what else is running
-                ComputerPlusAPI.Load();
+                ComputerPlusAPI.Initialize();
             });
         }
 

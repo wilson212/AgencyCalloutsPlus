@@ -52,6 +52,15 @@ namespace AgencyCalloutsPlus
         }
 
         /// <summary>
+        /// Gets all items from this <see cref="SpawnGenerator{T}"/>
+        /// </summary>
+        /// <returns></returns>
+        public T[] GetItems()
+        {
+            return SpawnableEntities.Select(x => x.Spawnable).ToArray();
+        }
+
+        /// <summary>
         /// Returns an instance of <typeparamref name="T"/> based off of the 
         /// RNG probability of that instance.
         /// </summary>
