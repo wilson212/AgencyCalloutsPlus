@@ -48,65 +48,71 @@ namespace AgencyCalloutsPlus.API
             }
 
             // Add vehicles
-            foreach (XmlNode n in document.DocumentElement.ChildNodes)
+            foreach (VehicleType category in Enum.GetValues(typeof(VehicleType)))
             {
-                // Ignore comments!
-                if (n.NodeType == XmlNodeType.Comment)
-                    continue;
+                // Grab node
+                XmlNode categoryNode = document.DocumentElement.SelectSingleNode(category.ToString("F"));
 
-                // Fetch model name
-                string modelName = n.InnerText;
-                if (String.IsNullOrWhiteSpace(modelName))
+                // Skip and log errors
+                if (categoryNode == null)
                 {
-                    Game.LogTrivial("[WARN] AgencyCalloutsPlus: Vehicle item has no model name in Vehicles.xml");
+                    Game.LogTrivial($"[WARN] AgencyCalloutsPlus: Unable to load vehicle data for vehicle type '{category}'");
                     continue;
                 }
 
-                // Ensure we have attributes
-                if (n.Attributes == null)
+                // No data?
+                if (!categoryNode.HasChildNodes) continue;
+
+                // Itterate through items
+                foreach (XmlNode n in categoryNode.SelectNodes("Vehicle"))
                 {
-                    Game.LogTrivial($"[WARN] AgencyCalloutsPlus: Vehicle item has no attributes '{modelName}'");
-                    continue;
+                    // Fetch model name
+                    string modelName = n.InnerText;
+                    if (String.IsNullOrWhiteSpace(modelName))
+                    {
+                        Game.LogTrivial("[WARN] AgencyCalloutsPlus: Vehicle item has no model name in Vehicles.xml");
+                        continue;
+                    }
+
+                    // Ensure we have attributes
+                    if (n.Attributes == null)
+                    {
+                        Game.LogTrivial($"[WARN] AgencyCalloutsPlus: Vehicle item has no attributes '{modelName}'");
+                        continue;
+                    }
+
+                    // Try and extract Y value
+                    if (n.Attributes["probability"].Value == null || !int.TryParse(n.Attributes["probability"].Value, out int probability))
+                    {
+                        Game.LogTrivial($"[WARN] AgencyCalloutsPlus: Unable to extract vehicle probability value for '{modelName}'");
+                        continue;
+                    }
+
+                    // Create the vehicle
+                    var item = new VehicleInfo(modelName, category, probability);
+
+                    // Fetch the vehicle seat count
+                    if (n.Attributes["seats"]?.Value != null && int.TryParse(n.Attributes["seats"].Value, out int seats))
+                    {
+                        item.NumberOfSeats = seats;
+                    }
+
+                    // Fetch the vehicle manufacturer
+                    if (!String.IsNullOrWhiteSpace(n.Attributes["manufacturer"]?.Value))
+                    {
+                        item.Manufacturer = n.Attributes["manufacturer"].Value;
+                    }
+
+                    // Fetch the vehicle name
+                    if (!String.IsNullOrWhiteSpace(n.Attributes["name"]?.Value))
+                    {
+                        item.FriendlyName = n.Attributes["name"].Value;
+                    }
+
+                    // Add vehicle
+                    Vehicles[category].Add(item);
+                    itemsAdded++;
                 }
-
-                // Fetch the vehicle type
-                if (n.Attributes["type"].Value == null || !Enum.TryParse(n.Attributes["type"].Value, out VehicleType type))
-                {
-                    Game.LogTrivial($"[WARN] AgencyCalloutsPlus: Unable to extract VehicleType value for '{modelName}'");
-                    continue;
-                }
-
-                // Try and extract Y value
-                if (n.Attributes["probability"].Value == null || !int.TryParse(n.Attributes["probability"].Value, out int probability))
-                {
-                    Game.LogTrivial($"[WARN] AgencyCalloutsPlus: Unable to extract vehicle probability value for '{modelName}'");
-                    continue;
-                }
-
-                // Create the vehicle
-                var item = new VehicleInfo(modelName, type, probability);
-
-                // Fetch the vehicle seat count
-                if (n.Attributes["seats"].Value != null && int.TryParse(n.Attributes["seats"].Value, out int seats))
-                {
-                    item.NumberOfSeats = seats;
-                }
-
-                // Fetch the vehicle manufacturer
-                if (!String.IsNullOrWhiteSpace(n.Attributes["manufacturer"].Value))
-                {
-                    item.Manufacturer = n.Attributes["manufacturer"].Value;
-                }
-
-                // Fetch the vehicle name
-                if (!String.IsNullOrWhiteSpace(n.Attributes["name"].Value))
-                {
-                    item.FriendlyName = n.Attributes["name"].Value;
-                }
-
-                // Add vehicle
-                Vehicles[type].Add(item);
-                itemsAdded++;
             }
 
             // Clean up
@@ -120,9 +126,29 @@ namespace AgencyCalloutsPlus.API
         /// Gets a random vehicle indicated by type
         /// </summary>
         /// <param name="type"></param>
-        /// <returns></returns>
+        /// <returns>returns a <see cref="VehicleInfo"/> on success, or null on failure</returns>
         public static VehicleInfo GetRandomVehicleByType(VehicleType type)
         {
+            // Try and spawn a vehicle
+            if (Vehicles[type].TrySpawn(out VehicleInfo vehicle))
+            {
+                Game.LogTrivial("[TRACE] AgencyCalloutsPlus: GetRandomVehicleByType returning " + vehicle.ModelName);
+                return vehicle;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Gets a random vehicle indicated by using a random type provided
+        /// </summary>
+        /// <param name="types">An array of acceptable <see cref="VehicleType"/>s</param>
+        /// <returns>returns a <see cref="VehicleInfo"/> on success, or null on failure</returns>
+        public static VehicleInfo GetRandomVehicleByTypes(VehicleType[] types)
+        {
+            var rando = new CryptoRandom();
+            var type = types[rando.Next(types.Length - 1)];
+
             // Try and spawn a vehicle
             if (Vehicles[type].TrySpawn(out VehicleInfo vehicle))
             {

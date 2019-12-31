@@ -1,36 +1,138 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <!-- 
-  Vehicle types: Compact, Coupe, Sedan, Sports, Muscle, Pickup, SUV, Van, Semi, Motorcycle, Moped
+  Vehicle types: Compact, Coupe, Moped, Motorcycle, Muscle, Offroad, Pickup, Sedan, Semi, Sports, Super, SUV, Van  
 -->
 <Vehicles>
-  <!-- Compacts -->
-  <Vehicle type="Compact" probability="5" seats="2" manufacturer="Dinka" name="Blista">BLISTA</Vehicle>
-  <Vehicle type="Compact" probability="5" seats="2" manufacturer="Grotti" name="Brioso R/A">BRIOSO</Vehicle>
-  <Vehicle type="Compact" probability="5" seats="4" manufacturer="Karin" name="Diletantte">DILETANTTE</Vehicle>
-  <Vehicle type="Compact" probability="5" seats="2" manufacturer="Weeny" name="Issy">ISSI2</Vehicle>
-  <Vehicle type="Compact" probability="5" seats="2" manufacturer="Benefactor" name="Panto">PANTO</Vehicle>
-  <Vehicle type="Compact" probability="5" seats="4" manufacturer="Bollokan" name="Prairie">PRAIRIE</Vehicle>
-  <Vehicle type="Compact" probability="5" seats="2" manufacturer="Declasse" name="Rhapsody">RHAPSODY</Vehicle>
-
-  <!-- Coupes -->
-  <Vehicle type="Coupe" probability="5" seats="2" manufacturer="Enus" name="Cognoscenti Cabrio">COGCABRIO</Vehicle>
-  <Vehicle type="Coupe" probability="5" seats="4" manufacturer="Dewbauchee" name="Exemplar">EXEMPLAR</Vehicle>
-  <Vehicle type="Coupe" probability="5" seats="2" manufacturer="Ocelot" name="F620">F620</Vehicle>
-  <Vehicle type="Coupe" probability="5" seats="4" manufacturer="Lampadati" name="Felon">FELON</Vehicle>
-  <Vehicle type="Coupe" probability="5" seats="2" manufacturer="Lampadati" name="Felon GT">FELON2</Vehicle>
-  <Vehicle type="Coupe" probability="5" seats="4" manufacturer="Ocelot" name="Jackal">JACKAL</Vehicle>
-  <Vehicle type="Coupe" probability="5" seats="4" manufacturer="Übermacht" name="Oracle">ORACLE</Vehicle>
-  <Vehicle type="Coupe" probability="5" seats="2" manufacturer="Übermacht" name="Sentinel">SENTINEL</Vehicle>
-  <Vehicle type="Coupe" probability="5" seats="2" manufacturer="Übermacht" name="Zion">ZION</Vehicle>
-  <Vehicle type="Coupe" probability="5" seats="2" manufacturer="Übermacht" name="Zion Cabrio">ZION2</Vehicle>
-
-  <!-- Sedans -->
-  <Vehicle type="Sedan" probability="5" seats="4" manufacturer="Declasse" name="Asea">ASEA</Vehicle>
-  <Vehicle type="Sedan" probability="5" seats="4" manufacturer="Karin" name="Asterope">ASTEROPE</Vehicle>
-  <Vehicle type="Sedan" probability="5" seats="4" manufacturer="Albany" name="Emperor">EMPEROR</Vehicle>
-  <Vehicle type="Sedan" probability="3" seats="4" manufacturer="Albany" name="Emperor">EMPEROR2</Vehicle>
-  <Vehicle type="Sedan" probability="5" seats="4" manufacturer="Cheval" name="Fugitive">FUGITIVE</Vehicle>
-  <Vehicle type="Sedan" probability="5" seats="4" manufacturer="Vulcar" name="Ingot">INGOT</Vehicle>
-  <Vehicle type="Sedan" probability="5" seats="4" manufacturer="Karin" name="Intruder">INTRUDER</Vehicle>
-  <Vehicle type="Sedan" probability="5" seats="4" manufacturer="Declasse" name="Premier">PREMIER</Vehicle>
+  <Compact>
+    <Vehicle probability="5" seats="2" manufacturer="Dinka" name="Blista">BLISTA</Vehicle>
+    <Vehicle probability="5" seats="2" manufacturer="Grotti" name="Brioso R/A">BRIOSO</Vehicle>
+    <Vehicle probability="5" seats="4" manufacturer="Karin" name="Diletantte">DILETANTTE</Vehicle>
+    <Vehicle probability="5" seats="2" manufacturer="Weeny" name="Issy">ISSI2</Vehicle>
+    <Vehicle probability="5" seats="2" manufacturer="Benefactor" name="Panto">PANTO</Vehicle>
+    <Vehicle probability="5" seats="4" manufacturer="Bollokan" name="Prairie">PRAIRIE</Vehicle>
+    <Vehicle probability="5" seats="2" manufacturer="Declasse" name="Rhapsody">RHAPSODY</Vehicle>
+  </Compact>
+  <Coupe>
+    <Vehicle probability="5" seats="2" manufacturer="Enus" name="Cognoscenti Cabrio">COGCABRIO</Vehicle>
+    <Vehicle probability="5" seats="4" manufacturer="Dewbauchee" name="Exemplar">EXEMPLAR</Vehicle>
+    <Vehicle probability="5" seats="2" manufacturer="Ocelot" name="F620">F620</Vehicle>
+    <Vehicle probability="5" seats="4" manufacturer="Lampadati" name="Felon">FELON</Vehicle>
+    <Vehicle probability="5" seats="2" manufacturer="Lampadati" name="Felon GT">FELON2</Vehicle>
+    <Vehicle probability="5" seats="4" manufacturer="Ocelot" name="Jackal">JACKAL</Vehicle>
+    <Vehicle probability="5" seats="4" manufacturer="Übermacht" name="Oracle">ORACLE</Vehicle>
+    <Vehicle probability="5" seats="2" manufacturer="Übermacht" name="Sentinel">SENTINEL</Vehicle>
+    <Vehicle probability="5" seats="2" manufacturer="Übermacht" name="Zion">ZION</Vehicle>
+    <Vehicle probability="5" seats="2" manufacturer="Übermacht" name="Zion Cabrio">ZION2</Vehicle>
+  </Coupe>
+  <Moped>
+    
+  </Moped>
+  <Motorcycle>
+  
+  </Motorcycle>
+  <Muscle>
+    <Vehicle probability="5" seats="2" manufacturer="Albany" name="Buccaneer">BUCCANEER</Vehicle>
+    <Vehicle probability="5" seats="2" manufacturer="Vapid" name="Dominator">­DOMINATOR</Vehicle>
+    <Vehicle probability="5" seats="2" manufacturer="Imponte" name="Dukes">DUKES</Vehicle>
+    <Vehicle probability="5" seats="2" manufacturer="Bravado" name="Gauntlet">GAUNTLET</Vehicle>
+    <Vehicle probability="5" seats="2" manufacturer="Imponte" name="Phoenix">PHEONIX</Vehicle>
+    <Vehicle probability="5" seats="2" manufacturer="Cheval" name="Picador">PICADOR</Vehicle>
+    <Vehicle probability="5" seats="2" manufacturer="Imponte" name="Ruiner">RUINER</Vehicle>
+    <Vehicle probability="5" seats="2" manufacturer="Declasse" name="Sabre Turbo">SABREGT</Vehicle>
+    <Vehicle probability="5" seats="2" manufacturer="Declasse" name="Stallion">STALLION</Vehicle>
+    <Vehicle probability="5" seats="2" manufacturer="Declasse" name="Vigero">­VIGERO</Vehicle>
+    <Vehicle probability="5" seats="2" manufacturer="Declasse" name="Voodoo">VOODOO</Vehicle>
+  </Muscle>
+  <Offroad>
+    <Vehicle probability="5" seats="1" manufacturer="Nagasaki" name="Blazer">BLAZER</Vehicle>
+    <Vehicle probability="5" seats="2" manufacturer="BF" name="Dune Buggy">DUNE</Vehicle>
+  </Offroad>
+  <Pickup>
+    <Vehicle probability="5" seats="6" manufacturer="Bravado" name="Bison">BISON</Vehicle>
+    <Vehicle probability="4" seats="2" manufacturer="Vapid" name="Bobcat XL">BOBCATXL</Vehicle>
+    <Vehicle probability="4" seats="2" manufacturer="Karin" name="Rebel">REBEL2</Vehicle>
+    <Vehicle probability="3" seats="2" manufacturer="Vapid" name="Sandking SWB">SANDKING2</Vehicle>
+    <Vehicle probability="2" seats="2" manufacturer="Vapid" name="Sandking XL">SANDKING</Vehicle>
+  </Pickup>
+  <Sedan>
+    <Vehicle probability="5" seats="4" manufacturer="Declasse" name="Asea">ASEA</Vehicle>
+    <Vehicle probability="5" seats="4" manufacturer="Karin" name="Asterope">ASTEROPE</Vehicle>
+    <Vehicle probability="5" seats="4" manufacturer="Albany" name="Emperor">EMPEROR</Vehicle>
+    <Vehicle probability="3" seats="4" manufacturer="Albany" name="Emperor">EMPEROR2</Vehicle>
+    <Vehicle probability="5" seats="4" manufacturer="Cheval" name="Fugitive">FUGITIVE</Vehicle>
+    <Vehicle probability="5" seats="4" manufacturer="Vulcar" name="Ingot">INGOT</Vehicle>
+    <Vehicle probability="5" seats="4" manufacturer="Karin" name="Intruder">INTRUDER</Vehicle>
+    <Vehicle probability="5" seats="4" manufacturer="Declasse" name="Premier">PREMIER</Vehicle>
+    <Vehicle probability="5" seats="4" manufacturer="Albany" name="Primo">PRIMO</Vehicle>
+    <Vehicle probability="5" seats="4" manufacturer="Dundreary" name="Regina">REGINA</Vehicle>
+    <Vehicle probability="5" seats="4" manufacturer="Benefactor" name="Schafter">SCHAFTER</Vehicle>
+    <Vehicle probability="5" seats="4" manufacturer="Vapid" name="Stanier">STANIER</Vehicle>
+    <Vehicle probability="5" seats="4" manufacturer="Zirconium" name="Stratum">STRATUM</Vehicle>
+    <Vehicle probability="5" seats="4" manufacturer="Cheval" name="Surge">SURGE</Vehicle>
+    <Vehicle probability="5" seats="4" manufacturer="Obey" name="Tailgater">TAILGATER</Vehicle>
+    <Vehicle probability="5" seats="4" manufacturer="Albany" name="Washington">WASHINGTON</Vehicle>
+  </Sedan>
+  <Semi>
+    
+  </Semi>
+  <Sports>
+    <Vehicle probability="5" seats="2" manufacturer="Bravado" name="Banshee">BANSHEE</Vehicle>
+    <Vehicle probability="4" seats="4" manufacturer="Bravado" name="Buffalo">BUFFALO</Vehicle>
+    <Vehicle probability="3" seats="4" manufacturer="Bravado" name="Buffalo S">BUFFALO2</Vehicle>
+    <Vehicle probability="5" seats="2" manufacturer="Pfister" name="Comet">COMET2</Vehicle>
+    <Vehicle probability="5" seats="2" manufacturer="Invetero" name="Coquette">COQUETTE</Vehicle>
+    <Vehicle probability="5" seats="2" manufacturer="Grotti" name="Carbonizzare">CARBONIZZARE</Vehicle>
+    <Vehicle probability="5" seats="2" manufacturer="Annis" name="Elegy RH8">ELEGY2</Vehicle>
+    <Vehicle probability="5" seats="2" manufacturer="Benefactor" name="Feltzer">FELTZER2</Vehicle>
+    <Vehicle probability="5" seats="2" manufacturer="Schyster" name="Fusilade">FUSILADE</Vehicle>
+    <Vehicle probability="5" seats="2" manufacturer="Karin" name="Futo">FUTO</Vehicle>
+    <Vehicle probability="3" seats="2" manufacturer="Dinka" name="Jester">JESTER</Vehicle>
+    <Vehicle probability="2" seats="2" manufacturer="Dewbauchee" name="Massacro">MASSACRO</Vehicle>
+    <Vehicle probability="5" seats="2" manufacturer="Maibatsu" name="Penumbra">PENUMBRA</Vehicle>
+    <Vehicle probability="3" seats="2" manufacturer="Dewbauchee" name="Rapid GT">RAPIDGT</Vehicle>
+    <Vehicle probability="3" seats="2" manufacturer="Dewbauchee" name="Rapid GT">RAPIDGT2</Vehicle>
+    <Vehicle probability="5" seats="2" manufacturer="Benefactor" name="Schwartzer">SCHWARZER</Vehicle>
+    <Vehicle probability="5" seats="4" manufacturer="Karin" name="Sultan">SULTAN</Vehicle>
+    <Vehicle probability="5" seats="2" manufacturer="Benefactor" name="Surano">SURANO</Vehicle>
+  </Sports>
+  <Super>
+    <Vehicle probability="5" seats="2" manufacturer="Truffade" name="Adder">ADDER</Vehicle>
+    <Vehicle probability="5" seats="2" manufacturer="Vapid" name="Bullet">BULLET</Vehicle>
+    <Vehicle probability="4" seats="2" manufacturer="Grotti" name="Cheetah">CHEETAH</Vehicle>
+    <Vehicle probability="2" seats="2" manufacturer="Överflöd" name="Entity XF">ENTITYXF</Vehicle>
+    <Vehicle probability="5" seats="2" manufacturer="Pegassi" name="Infernus">INFERNUS</Vehicle>
+    <Vehicle probability="2" seats="2" manufacturer="Pegassi" name="Osiris">OSIRIS</Vehicle>
+    <Vehicle probability="1" seats="2" manufacturer="Progen" name="T20">T20</Vehicle>
+    <Vehicle probability="1" seats="2" manufacturer="Grotti" name="Turismo R">TURISMOR</Vehicle>
+    <Vehicle probability="5" seats="2" manufacturer="Pegassi" name="Vacca">VACCA</Vehicle>
+    <Vehicle probability="2" seats="2" manufacturer="Coil" name="Voltic">VOLTIC</Vehicle>
+    <Vehicle probability="2" seats="2" manufacturer="Coil" name="Voltic">VOLTIC2</Vehicle>
+  </Super>
+  <SUV>
+    <Vehicle probability="2" seats="4" manufacturer="Gallivanter" name="Baller">BALLER</Vehicle>
+    <Vehicle probability="3" seats="4" manufacturer="Gallivanter" name="Baller">BALLER2</Vehicle>
+    <Vehicle probability="5" seats="4" manufacturer="Karin" name="BeeJay XL">BJXL</Vehicle>
+    <Vehicle probability="2" seats="4" manufacturer="Albany" name="Cavalcade">CAVCADE</Vehicle>
+    <Vehicle probability="3" seats="4" manufacturer="Albany" name="Cavalcade">CAVCADE2</Vehicle>
+    <Vehicle probability="2" seats="4" manufacturer="Benefactor" name="Dubsta">DUBSTA</Vehicle>
+    <Vehicle probability="3" seats="4" manufacturer="Benefactor" name="Dubsta">DUBSTA2</Vehicle>
+    <Vehicle probability="5" seats="4" manufacturer="Fathom" name="FQ 2">FQ2</Vehicle>
+    <Vehicle probability="5" seats="4" manufacturer="Declasse" name="Granger">GRANGER</Vehicle>
+    <Vehicle probability="5" seats="4" manufacturer="Bravado" name="Gresley">GRESLEY</Vehicle>
+    <Vehicle probability="5" seats="4" manufacturer="Emperor" name="Habanero">HABANERO</Vehicle>
+    <Vehicle probability="4" seats="4" manufacturer="Enus" name="Huntley S">HUNTLEY</Vehicle>
+    <Vehicle probability="5" seats="4" manufacturer="Dundreary" name="Landstalker">LANSTALKER</Vehicle>
+    <Vehicle probability="5" seats="4" manufacturer="Canis" name="Mesa">MESA</Vehicle>
+    <Vehicle probability="5" seats="4" manufacturer="Mammoth" name="Patriot">PATRIOT</Vehicle>
+    <Vehicle probability="5" seats="4" manufacturer="Vapid" name="Radius">RADI</Vehicle>
+    <Vehicle probability="5" seats="4" manufacturer="Obey" name="Rocoto">ROCOTO</Vehicle>
+    <Vehicle probability="5" seats="4" manufacturer="Canis" name="Seminole">SEMINOLE</Vehicle>
+    <Vehicle probability="5" seats="4" manufacturer="Benefactor" name="Serrano">SERRANO</Vehicle>
+  </SUV>
+  <Van>
+    <Vehicle probability="3" seats="4" manufacturer="Declasse" name="Burrito">BURRITO3</Vehicle>
+    <Vehicle probability="5" seats="4" manufacturer="Vapid" name="Minivan">MINIVAN</Vehicle>
+    <Vehicle probability="3" seats="4" manufacturer="Vapid" name="Speedo">SPEEDO</Vehicle>
+    <Vehicle probability="3" seats="2" manufacturer="Bravado" name="Youga">YOUGA</Vehicle>
+  </Van>
 </Vehicles>

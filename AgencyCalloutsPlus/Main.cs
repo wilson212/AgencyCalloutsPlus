@@ -78,6 +78,9 @@ namespace AgencyCalloutsPlus
                 throw new Exception("[ERROR] AgencyCalloutsPlus v" + PluginVersion + " failed to initialise! Cannot find GTA5.exe");
             }
 
+            // Load settings
+            Settings.Initialize();
+
             // Register for On Duty state changes
             Functions.OnOnDutyStateChanged += OnOnDutyStateChangedHandler;
             Functions.PlayerWentOnDutyFinishedSelection += PlayerWentOnDutyFinishedSelection;

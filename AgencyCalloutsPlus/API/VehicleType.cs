@@ -4,14 +4,16 @@
     {
         Compact,
         Coupe,
-        Sedan,
-        Sports,
-        Muscle,
-        Pickup,
-        SUV,
-        Van,
-        Semi,
+        Moped,
         Motorcycle,
-        Moped
+        Muscle,
+        Offroad,
+        Pickup,
+        Sedan,
+        Semi,
+        Sports,
+        Super,
+        SUV,
+        Van
     }
 }
