@@ -11,7 +11,7 @@ namespace AgencyCalloutsPlus
 {
     public abstract class AgencyCallout : Callout
     {
-        private static Dictionary<string, SpawnGenerator<CalloutScenario>> Scenarios { get; set; }
+        private static Dictionary<string, SpawnGenerator<CalloutScenarioInfo>> Scenarios { get; set; }
 
         /// <summary>
         /// Callout GUID for ComputerPlus
@@ -66,18 +66,18 @@ namespace AgencyCalloutsPlus
         }
         
         /// <summary>
-        /// Attempts to spawn a <see cref="CalloutScenario"/> based on probability. If no
-        /// <see cref="CalloutScenario"/> can be spawned, the error is logged automatically.
+        /// Attempts to spawn a <see cref="CalloutScenarioInfo"/> based on probability. If no
+        /// <see cref="CalloutScenarioInfo"/> can be spawned, the error is logged automatically.
         /// </summary>
         /// <param name="calloutName">The name of the callout in the <see cref="CalloutInfoAttribute"/></param>
-        /// <returns>returns a <see cref="CalloutScenario"/> on success, or null otherwise</returns>
-        internal CalloutScenario LoadRandomScenario(string calloutName)
+        /// <returns>returns a <see cref="CalloutScenarioInfo"/> on success, or null otherwise</returns>
+        internal CalloutScenarioInfo LoadRandomScenario(string calloutName)
         {
             // Try and fetch the SpawnGenerator
-            if (Scenarios.TryGetValue(calloutName, out SpawnGenerator<CalloutScenario> spawner))
+            if (Scenarios.TryGetValue(calloutName, out SpawnGenerator<CalloutScenarioInfo> spawner))
             {
                 // Can we spawn a scenario?
-                if (!spawner.TrySpawn(out CalloutScenario scene))
+                if (!spawner.TrySpawn(out CalloutScenarioInfo scene))
                 {
                     Game.LogTrivial($"[ERROR] AgencyCalloutsPlus: Callout does not have any Scenarios registered '{calloutName}'");
                     return null;
@@ -126,11 +126,11 @@ namespace AgencyCalloutsPlus
         {
             // Ensure dictionary is created
             if (Scenarios == null)
-                Scenarios = new Dictionary<string, SpawnGenerator<CalloutScenario>>();
+                Scenarios = new Dictionary<string, SpawnGenerator<CalloutScenarioInfo>>();
 
             // Ensure callout is registed in dictionary
             if (!Scenarios.ContainsKey(calloutName))
-                Scenarios.Add(calloutName, new SpawnGenerator<CalloutScenario>());
+                Scenarios.Add(calloutName, new SpawnGenerator<CalloutScenarioInfo>());
 
             // Process the XML scenarios
             foreach (XmlNode n in doc.DocumentElement.SelectSingleNode("Scenarios").ChildNodes)
@@ -162,7 +162,7 @@ namespace AgencyCalloutsPlus
 
 
                 // Create scenario node
-                var scene = new CalloutScenario()
+                var scene = new CalloutScenarioInfo()
                 {
                     Name = n.Name,
                     Probability = probability,
@@ -170,51 +170,6 @@ namespace AgencyCalloutsPlus
                 };
                 Scenarios[calloutName].Add(scene);
             }
-        }
-
-        internal static API.VehicleType GetRandomCarTypeFromScenarioNodeList(XmlNodeList nodes)
-        {
-            // Create a new spawn generator
-            var generator = new SpawnGenerator<VehicleSpawn>();
-
-            // Add each item
-            foreach (XmlNode n in nodes)
-            {
-                // Ensure we have attributes
-                if (n.Attributes == null)
-                {
-                    Game.LogTrivial(
-                        $"[WARN] AgencyCalloutsPlus: Scenario VehicleTypes item has no attributes in 'CalloutMeta.xml->Sceanrios'"
-                    );
-                    continue;
-                }
-
-                // Try and extract type value
-                if (!Enum.TryParse(n.InnerText, out API.VehicleType vehicleType))
-                {
-                    Game.LogTrivial($"[WARN] AgencyCalloutsPlus: Unable to extract VehicleType value in 'CalloutMeta.xml'");
-                    continue;
-                }
-
-                // Try and extract probability value
-                if (n.Attributes["probability"]?.Value == null || !int.TryParse(n.Attributes["probability"].Value, out int probability))
-                {
-                    Game.LogTrivial($"[WARN] AgencyCalloutsPlus: Unable to extract VehicleType probability value in 'CalloutMeta.xml'");
-                    continue;
-                }
-
-                // Add vehicle type
-                generator.Add(new VehicleSpawn() { Probability = probability, Type = vehicleType });
-            }
-
-            return generator.Spawn().Type;
-        }
-
-        private class VehicleSpawn : ISpawnable
-        {
-            public int Probability { get; set; }
-
-            public API.VehicleType Type { get; set; }
         }
     }
 }

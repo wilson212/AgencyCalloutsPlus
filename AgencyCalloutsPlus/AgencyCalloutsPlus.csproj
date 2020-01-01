@@ -79,13 +79,14 @@
     <Compile Include="API\SideOfRoadLocation.cs" />
     <Compile Include="API\SpawnPoint.cs" />
     <Compile Include="API\VehicleInfo.cs" />
-    <Compile Include="API\VehicleType.cs" />
-    <Compile Include="CalloutScenario.cs" />
+    <Compile Include="CalloutScenarioInfo.cs" />
+    <Compile Include="Callouts\CalloutScenario.cs" />
+    <Compile Include="Callouts\Scenarios\TrafficAccident\RearEndNoInjuries.cs" />
+    <Compile Include="Callouts\TrafficAccident.cs" />
     <Compile Include="Extensions\PedExtensions.cs" />
     <Compile Include="Extensions\VehicleExtensions.cs" />
     <Compile Include="Integration\ComputerPlusAPI.cs" />
     <Compile Include="Callouts\StolenVehicleSpotted.cs" />
-    <Compile Include="Callouts\TrafficAccident.cs" />
     <Compile Include="API\AgencyCalloutDispatcher.cs" />
     <Compile Include="CryptoRandom.cs" />
     <Compile Include="API\Agency.cs" />

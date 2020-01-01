@@ -2,7 +2,7 @@
 
 namespace AgencyCalloutsPlus
 {
-    internal class CalloutScenario : ISpawnable
+    internal class CalloutScenarioInfo : ISpawnable
     {
         public int Probability { get; set; }
 

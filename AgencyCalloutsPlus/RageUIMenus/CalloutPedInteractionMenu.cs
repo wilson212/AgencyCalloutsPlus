@@ -22,17 +22,17 @@ namespace AgencyCalloutsPlus.RageUIMenus
         /// <summary>
         /// Speak with Subject button
         /// </summary>
-        private UIMenuItem SpeakWithButton;
+        public UIMenuItem SpeakWithButton { get; private set; }
 
         /// <summary>
         /// Contains a list of <see cref="Ped"/> entities that this menu can be used with
         /// </summary>
-        private List<Ped> Peds { get; set; }
+        private Dictionary<Ped, bool> Peds { get; set; }
 
         /// <summary>
-        /// Event fired when "Speak with Subject" button is clicked in the menu
+        /// Gets the Ped that was last within range and angle to have a conversation with
         /// </summary>
-        public EventHandler<SpeakWithPedArgs> SpeakWithPedEvent { get; protected set; }
+        private Ped CurrentPed { get; set; }
 
         /// <summary>
         /// Indicates whether this menu can be opened by the player
@@ -50,17 +50,28 @@ namespace AgencyCalloutsPlus.RageUIMenus
             MainUIMenu = new UIMenu(title, subTitle);
             MainUIMenu.MouseControlsEnabled = false;
             MainUIMenu.AllowCameraMovement = true;
+            MainUIMenu.SetMenuWidthOffset(12);
 
             // Add main menu buttons
             SpeakWithButton = new UIMenuItem("Speak with Subject", "Advance the conversation with the ~y~Subject");
             MainUIMenu.AddItem(SpeakWithButton);
+
+            // Internal tracker
+            SpeakWithButton.Activated += SpeakWithButton_Activated;
 
             // Create menu pool
             AllMenus = new MenuPool();
             AllMenus.Add(MainUIMenu);
 
             // internals
-            Peds = new List<Ped>();
+            Peds = new Dictionary<Ped, bool>();
+        }
+
+        private void SpeakWithButton_Activated(UIMenu sender, UIMenuItem selectedItem)
+        {
+            // Distance and facing check
+            if (CurrentPed == null) return;
+            Peds[CurrentPed] = true;
         }
 
         /// <summary>
@@ -88,16 +99,23 @@ namespace AgencyCalloutsPlus.RageUIMenus
                     return;
                 }
 
-                // Let player know they can open the menu
-                var k1 = Settings.OpenCalloutInteractionMenuModifierKey.ToString("F");
-                var k2 = Settings.OpenCalloutInteractionMenuKey.ToString("F");
-                if (hasModifier)
+                // Set current ped
+                CurrentPed = ped;
+
+                // Only show if we havent spoken with this ped yet!
+                if (Peds[ped] == false)
                 {
-                    Game.DisplayHelp($"Press the ~y~{k1}~s~ + ~y~{k2}~s~ keys to open the interaction menu.");
-                }
-                else
-                {
-                    Game.DisplayHelp($"Press the ~y~{k2}~s~ key to open the interaction menu.");
+                    // Let player know they can open the menu
+                    var k1 = Settings.OpenCalloutInteractionMenuModifierKey.ToString("F");
+                    var k2 = Settings.OpenCalloutInteractionMenuKey.ToString("F");
+                    if (hasModifier)
+                    {
+                        Game.DisplayHelp($"Press the ~y~{k1}~s~ + ~y~{k2}~s~ keys to open the interaction menu.");
+                    }
+                    else
+                    {
+                        Game.DisplayHelp($"Press the ~y~{k2}~s~ key to open the interaction menu.");
+                    }
                 }
 
                 // Is modifier key pressed
@@ -138,7 +156,7 @@ namespace AgencyCalloutsPlus.RageUIMenus
         {
             // Distance and facing check
             ped = null;
-            foreach (Ped subject in Peds)
+            foreach (Ped subject in Peds.Keys)
             {
                 // Is player within 3m of the ped?
                 if (player.Position.DistanceTo(subject.Position) > 3f)
@@ -183,7 +201,7 @@ namespace AgencyCalloutsPlus.RageUIMenus
         /// <param name="ped"></param>
         public void RegisterPed(Ped ped)
         {
-            Peds.Add(ped);
+            Peds.Add(ped, false);
         }
     }
 }

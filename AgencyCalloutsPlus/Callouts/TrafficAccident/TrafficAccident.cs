@@ -1,45 +1,35 @@
-﻿using AgencyCalloutsPlus.API;
-using AgencyCalloutsPlus.Callouts.Scenarios.TrafficAccident;
+﻿using System;
+using System.Xml;
+using AgencyCalloutsPlus.API;
+using AgencyCalloutsPlus.Extensions;
 using AgencyCalloutsPlus.Integration;
+using AgencyCalloutsPlus.RageUIMenus;
 using LSPD_First_Response.Mod.Callouts;
 using Rage;
-using System;
-using System.Xml;
 
 namespace AgencyCalloutsPlus.Callouts
 {
-    /// <summary>
-    /// A callout representing a routine traffic accident call with multiple scenarios
-    /// </summary>
-    /// <remarks>
-    /// All AgencyCallout type callouts must have a CalloutProbability of Never!
-    /// </remarks>
     [CalloutInfo("AgencyCallout.TrafficAccident", CalloutProbability.Never)]
     public class TrafficAccident : AgencyCallout
     {
-        /// <summary>
-        /// Stores the <see cref="LocationInfo"/> where the accident occured
-        /// </summary>
-        public LocationInfo SpawnPoint { get; protected set; }
+        private Blip Blip;
+        private bool OnScene;
+        private LocationInfo SpawnPoint;
 
-        /// <summary>
-        /// Stores the current randomized scenario
-        /// </summary>
+        private Ped Victim;
+        private API.VehicleType VictimVehicleType;
+        private Vehicle VictimVehicle;
+        private Blip VictimBlip;
+
+        private Ped Suspect;
+        private API.VehicleType SuspectVehicleType;
+        private Vehicle SuspectVehicle;
+        private Blip SuspectBlip;
+
+        private CalloutPedInteractionMenu Menu;
+
         private CalloutScenario Scenario;
-
-        /// <summary>
-        /// Stores the current <see cref="CalloutScenarioInfo"/>
-        /// </summary>
-        private CalloutScenarioInfo ScenarioInfo;
-
-        /// <summary>
-        /// Stores the CalloutMeta.xml document as an object
-        /// </summary>
         private XmlDocument ScenarioDocument;
-
-        /// <summary>
-        /// Stores the selected random scenario XmlNode
-        /// </summary>
         private XmlNode ScenarioNode;
 
         /// <summary>
@@ -51,7 +41,10 @@ namespace AgencyCalloutsPlus.Callouts
         /// <returns>false on failure, true otherwise</returns>
         public override bool OnBeforeCalloutDisplayed()
         {
-            // Load a random side of road location in our jurisdiction
+            // Debug tracing
+            Game.LogTrivial($"[TRACE] AgencyCalloutsPlus.Callouts.TrafficAccident.OnBeforeCalloutDisplayed()");
+
+            // Load spawnpoint and show area to player
             SpawnPoint = Agency.GetRandomLocationInJurisdiction(LocationType.SideOfRoad, new Range<float>(100f, 3000f));
             if (SpawnPoint == null)
             {
@@ -60,8 +53,8 @@ namespace AgencyCalloutsPlus.Callouts
             }
 
             // Select a random scenario based on probabilities
-            ScenarioInfo = LoadRandomScenario("AgencyCallout.TrafficAccident");
-            if (ScenarioInfo == null)
+            Scenario = LoadRandomScenario("AgencyCallout.TrafficAccident");
+            if (Scenario == null)
             {
                 Game.LogTrivial($"[ERROR] AgencyCalloutsPlus: AgencyCallout.TrafficAccident has no scenarios!");
                 return false;
@@ -73,12 +66,12 @@ namespace AgencyCalloutsPlus.Callouts
             );
 
             // Select our scenario node
-            ScenarioNode = ScenarioDocument.DocumentElement.SelectSingleNode("Scenarios").SelectSingleNode(ScenarioInfo.Name);
+            ScenarioNode = ScenarioDocument.DocumentElement.SelectSingleNode("Scenarios").SelectSingleNode(Scenario.Name);
             if (ScenarioNode == null)
             {
                 Game.LogTrivial(
-                    $"[ERROR] AgencyCalloutsPlus: AgencyCallout.TrafficAccident does not contain scenario named: '{ScenarioInfo.Name}'!"
-                );
+                    $"[ERROR] AgencyCalloutsPlus: AgencyCallout.TrafficAccident does not contain scenario named: '{Scenario.Name}'!"
+                    );
                 return false;
             }
 
@@ -93,13 +86,18 @@ namespace AgencyCalloutsPlus.Callouts
                     "Vehicle Accident",
                     "Vehicle Accident",
                     CalloutPosition,
-                    (ScenarioInfo.RespondCode3) ? 1 : 0,
+                    (Scenario.RespondCode3) ? 1 : 0,
                     details[rando.Next(0, details.Count - 1)].InnerText,
                     1, null, null);
             }
 
-            // Create scenario class handler
-            Scenario = CreateActiveSceneInstance();
+            // Get Victim 1 vehicle type using probability defined in the CalloutMeta.xml
+            var cars = ScenarioNode.SelectSingleNode("Victim1/VehicleTypes").ChildNodes;
+            VictimVehicleType = GetRandomCarTypeFromScenarioNodeList(cars);
+
+            // Get Victim 2 vehicle type using probability defined in the CalloutMeta.xml
+            cars = ScenarioNode.SelectSingleNode("Victim2/VehicleTypes").ChildNodes;
+            SuspectVehicleType = GetRandomCarTypeFromScenarioNodeList(cars);
 
             // Show are blip and message
             ShowCalloutAreaBlipBeforeAccepting(SpawnPoint.Position, 40f);
@@ -108,7 +106,7 @@ namespace AgencyCalloutsPlus.Callouts
 
             // Play scanner audio
             string scannerText = ScenarioNode.SelectSingleNode("Scanner").InnerText;
-            if (ScenarioInfo.RespondCode3)
+            if (Scenario.RespondCode3)
                 PlayScannerAudioUsingPrefix(String.Concat(scannerText, " UNITS_RESPOND_CODE_03_02"));
             else
                 PlayScannerAudioUsingPrefix(scannerText);
@@ -128,40 +126,60 @@ namespace AgencyCalloutsPlus.Callouts
                 "The ~o~ANPR Hit ~s~is for ~r~ ||| . ~b~Use appropriate caution."
             );*/
 
-            // Setup active scene
-            Scenario.Setup();
+            // Create victim car
+            var victimV = VehicleInfo.GetRandomVehicleByType(VictimVehicleType);
+            var sideLocation = (SideOfRoadLocation)SpawnPoint;
+            VictimVehicle = new Vehicle(victimV.ModelName, SpawnPoint.Position, sideLocation.Heading);
+            VictimVehicle.IsPersistent = true;
+            VictimVehicle.EngineHealth = 0;
+            VictimVehicle.Damage(200, 200);
 
-            // Return base
+            // Create Victim
+            Victim = VictimVehicle.CreateRandomDriver();
+            Victim.IsPersistent = true;
+            Victim.BlockPermanentEvents = true;
+
+            // Create suspect vehicle
+            var vector = VictimVehicle.GetOffsetPositionFront(-(VictimVehicle.Length + 1f));
+            var suspectV = VehicleInfo.GetRandomVehicleByType(SuspectVehicleType);
+
+            SuspectVehicle = new Vehicle(suspectV.ModelName, vector, sideLocation.Heading);
+            SuspectVehicle.IsPersistent = true;
+            SuspectVehicle.EngineHealth = 0;
+            SuspectVehicle.Damage(200, 200);
+
+            // Create suspect
+            Suspect = SuspectVehicle.CreateRandomDriver();
+            Suspect.IsPersistent = true;
+            Suspect.BlockPermanentEvents = true;
+
+            // Attach Blips
+            VictimBlip = Victim.AttachBlip();
+            VictimBlip.IsRouteEnabled = true;
+            SuspectBlip = Suspect.AttachBlip();
+
+            // Register menu
+            Menu = new CalloutPedInteractionMenu("Callout Interaction", "Ped Name Goes Here");
+            Menu.RegisterPed(Suspect);
+            Menu.RegisterPed(Victim);
+
             return base.OnCalloutAccepted();
         }
 
         public override void OnCalloutNotAccepted()
         {
-            // AgencyCallout base class will handle the Computer+ stuff
             base.OnCalloutNotAccepted();
         }
 
         public override void Process()
         {
             base.Process();
-            Scenario.Process();
+            Menu.Process();
         }
 
         public override void End()
         {
-            Scenario.Cleanup();
             base.End();
-        }
-
-        private CalloutScenario CreateActiveSceneInstance()
-        {
-            switch (ScenarioInfo.Name)
-            {
-                case "RearEndNoInjuries":
-                    return new RearEndNoInjuries(this, ScenarioNode);
-                default:
-                    throw new Exception($"Unsupported TrafficAccident Scenario '{ScenarioInfo.Name}'");
-            }
         }
     }
 }

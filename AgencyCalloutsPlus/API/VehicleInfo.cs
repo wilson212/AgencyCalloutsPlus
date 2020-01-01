@@ -2,9 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Xml;
 
 namespace AgencyCalloutsPlus.API
@@ -21,7 +18,7 @@ namespace AgencyCalloutsPlus.API
         /// <summary>
         /// Contains a list of Spawnable vehicles
         /// </summary>
-        private static Dictionary<VehicleType, SpawnGenerator<VehicleInfo>> Vehicles { get; set; }
+        private static Dictionary<VehicleClass, SpawnGenerator<VehicleInfo>> Vehicles { get; set; }
 
         public static void Initialize()
         {
@@ -33,10 +30,10 @@ namespace AgencyCalloutsPlus.API
             int itemsAdded = 0;
 
             // Initialize vehicle types
-            Vehicles = new Dictionary<VehicleType, SpawnGenerator<VehicleInfo>>(8);
-            foreach (var type in Enum.GetValues(typeof(VehicleType)))
+            Vehicles = new Dictionary<VehicleClass, SpawnGenerator<VehicleInfo>>(8);
+            foreach (var type in Enum.GetValues(typeof(VehicleClass)))
             {
-                Vehicles.Add((VehicleType)type, new SpawnGenerator<VehicleInfo>());
+                Vehicles.Add((VehicleClass)type, new SpawnGenerator<VehicleInfo>());
             }
 
             // Load XML document
@@ -48,7 +45,7 @@ namespace AgencyCalloutsPlus.API
             }
 
             // Add vehicles
-            foreach (VehicleType category in Enum.GetValues(typeof(VehicleType)))
+            foreach (VehicleClass category in Enum.GetValues(typeof(VehicleClass)))
             {
                 // Grab node
                 XmlNode categoryNode = document.DocumentElement.SelectSingleNode(category.ToString("F"));
@@ -127,7 +124,7 @@ namespace AgencyCalloutsPlus.API
         /// </summary>
         /// <param name="type"></param>
         /// <returns>returns a <see cref="VehicleInfo"/> on success, or null on failure</returns>
-        public static VehicleInfo GetRandomVehicleByType(VehicleType type)
+        public static VehicleInfo GetRandomVehicleByType(VehicleClass type)
         {
             // Try and spawn a vehicle
             if (Vehicles[type].TrySpawn(out VehicleInfo vehicle))
@@ -144,7 +141,7 @@ namespace AgencyCalloutsPlus.API
         /// </summary>
         /// <param name="types">An array of acceptable <see cref="VehicleType"/>s</param>
         /// <returns>returns a <see cref="VehicleInfo"/> on success, or null on failure</returns>
-        public static VehicleInfo GetRandomVehicleByTypes(VehicleType[] types)
+        public static VehicleInfo GetRandomVehicleByTypes(VehicleClass[] types)
         {
             var rando = new CryptoRandom();
             var type = types[rando.Next(types.Length - 1)];
@@ -168,9 +165,9 @@ namespace AgencyCalloutsPlus.API
         public string ModelName { get; internal set; }
 
         /// <summary>
-        /// Gets the <see cref="API.VehicleType"/> of the vehicle
+        /// Gets the <see cref="API.VehicleClass"/> of the vehicle
         /// </summary>
-        public VehicleType VehicleType { get; internal set; }
+        public VehicleClass VehicleType { get; internal set; }
 
         /// <summary>
         /// The probability of this <see cref="VehicleInfo"/> being spawned in comparison to other vehicles
@@ -196,7 +193,7 @@ namespace AgencyCalloutsPlus.API
         /// Creates a new instance of <see cref="VehicleInfo"/>
         /// </summary>
         /// <param name="modelName"></param>
-        internal VehicleInfo(string modelName, VehicleType type, int probability)
+        internal VehicleInfo(string modelName, VehicleClass type, int probability)
         {
             this.ModelName = modelName;
             this.VehicleType = type;
