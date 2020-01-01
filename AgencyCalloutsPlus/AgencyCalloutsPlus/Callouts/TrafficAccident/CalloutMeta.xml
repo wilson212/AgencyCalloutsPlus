@@ -1,0 +1,46 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<CalloutMeta>
+  <!-- 
+    A list of agency types that can take this type of callout, and the chances of 
+    that callout spawning. A higher probability, means a higher chance compared to
+    the other callouts against this AgencyType
+  -->
+  <Agencies>
+    <Agency type="CityPolice" probability="5" />
+    <Agency type="CountySheriff" probability="5" />
+    <Agency type="HighwayPatrol" probability="8" />
+  </Agencies>
+  <Scenarios>
+    <RearEndNoInjuries probability="5" respond="Code2">
+      <!-- Scanner Audio for call. Unit Division-UnitType-Beat will prefix this message -->
+      <Scanner>WE_HAVE_01 CRIME_TRAFFIC_ALERT IN_OR_ON_POSITION</Scanner>
+      <!-- Callout Details are for ComputerPlus -->
+      <CalloutDetails>
+        <Meta>We have received multiple reports of a vehicle collision near {{location}}. No medical response was requested. Please respond code 2.</Meta>
+        <Meta>A concerned citizen has called police stating that he witnessed a vehicle collision near {{location}}. Inuries are unknown. Please respond code 2.</Meta>
+      </CalloutDetails>
+      <Victim1>
+        <VehicleTypes>
+          <Meta probability="5">Compact</Meta>
+          <Meta probability="5">Sedan</Meta>
+          <Meta probability="5">Coupe</Meta>
+          <Meta probability="5">Sports</Meta>
+          <Meta probability="5">Suv</Meta>
+          <Meta probability="3">Pickup</Meta>
+          <Meta probability="3">Muscle</Meta>
+        </VehicleTypes>
+      </Victim1>
+      <Victim2>
+        <VehicleTypes>
+          <Meta probability="5">Compact</Meta>
+          <Meta probability="5">Sedan</Meta>
+          <Meta probability="5">Coupe</Meta>
+          <Meta probability="5">Sports</Meta>
+          <Meta probability="5">Suv</Meta>
+          <Meta probability="3">Pickup</Meta>
+          <Meta probability="3">Muscle</Meta>
+        </VehicleTypes>
+      </Victim2>
+    </RearEndNoInjuries>
+  </Scenarios>
+</CalloutMeta>

@@ -81,8 +81,8 @@ namespace AgencyCalloutsPlus.API
                         continue;
                     }
 
-                    // Try and extract Y value
-                    if (n.Attributes["probability"].Value == null || !int.TryParse(n.Attributes["probability"].Value, out int probability))
+                    // Try and extract probability value
+                    if (n.Attributes["probability"]?.Value == null || !int.TryParse(n.Attributes["probability"].Value, out int probability))
                     {
                         Game.LogTrivial($"[WARN] AgencyCalloutsPlus: Unable to extract vehicle probability value for '{modelName}'");
                         continue;

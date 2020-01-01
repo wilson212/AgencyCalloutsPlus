@@ -6,7 +6,7 @@
   <Compact>
     <Vehicle probability="5" seats="2" manufacturer="Dinka" name="Blista">BLISTA</Vehicle>
     <Vehicle probability="5" seats="2" manufacturer="Grotti" name="Brioso R/A">BRIOSO</Vehicle>
-    <Vehicle probability="5" seats="4" manufacturer="Karin" name="Diletantte">DILETANTTE</Vehicle>
+    <Vehicle probability="5" seats="4" manufacturer="Karin" name="Diletantte">DILETTANTE</Vehicle>
     <Vehicle probability="5" seats="2" manufacturer="Weeny" name="Issy">ISSI2</Vehicle>
     <Vehicle probability="5" seats="2" manufacturer="Benefactor" name="Panto">PANTO</Vehicle>
     <Vehicle probability="5" seats="4" manufacturer="Bollokan" name="Prairie">PRAIRIE</Vehicle>

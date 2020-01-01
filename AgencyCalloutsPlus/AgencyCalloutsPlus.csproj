@@ -80,13 +80,12 @@
     <Compile Include="API\SpawnPoint.cs" />
     <Compile Include="API\VehicleInfo.cs" />
     <Compile Include="API\VehicleType.cs" />
+    <Compile Include="CalloutScenario.cs" />
     <Compile Include="Extensions\PedExtensions.cs" />
     <Compile Include="Extensions\VehicleExtensions.cs" />
     <Compile Include="Integration\ComputerPlusAPI.cs" />
-    <Compile Include="Callouts\Priority\TrafficStopBackup.cs" />
-    <Compile Include="Callouts\Traffic\StolenVehicleSpotted.cs" />
-    <Compile Include="Callouts\Routine\StolenVehicle.cs" />
-    <Compile Include="Callouts\Traffic\TrafficAccident.cs" />
+    <Compile Include="Callouts\StolenVehicleSpotted.cs" />
+    <Compile Include="Callouts\TrafficAccident.cs" />
     <Compile Include="API\AgencyCalloutDispatcher.cs" />
     <Compile Include="CryptoRandom.cs" />
     <Compile Include="API\Agency.cs" />
@@ -105,13 +104,12 @@
     <Compile Include="SpawnableCallout.cs" />
     <Compile Include="SpawnGenerator.cs" />
   </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
-    <Folder Include="AgencyCalloutsPlus\Callouts\Priority\" />
-    <Folder Include="AgencyCalloutsPlus\Callouts\Routine\" />
-    <Folder Include="AgencyCalloutsPlus\Callouts\Traffic\TrafficAccident\Scenarios\" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="AgencyCalloutsPlus\Callouts\Traffic\TrafficAccident\CalloutMeta.xml">
+    <Content Include="AgencyCalloutsPlus\Callouts\TrafficAccident\CalloutMeta.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AgencyCalloutsPlus\Callouts\TrafficAccident\FlowSequence\RearEndNoInjuries\Victim1.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="AgencyCalloutsPlus\Peds.xml" />

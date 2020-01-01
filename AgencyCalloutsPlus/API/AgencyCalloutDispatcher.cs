@@ -136,89 +136,101 @@ namespace AgencyCalloutsPlus.API
             int itemsAdded = 0;
             var assembly = typeof(AgencyCalloutDispatcher).Assembly;
             XmlDocument document = new XmlDocument();
-            string[] calloutTypes = { "Priority", "Routine", "Traffic" };
 
-            // Itterate through each callout type
-            foreach (string type in calloutTypes)
+            // Load directory
+            var directory = new DirectoryInfo(Path.Combine(Main.PluginFolderPath, "Callouts"));
+            if (!directory.Exists)
             {
-                // Load directory
-                var directory = new DirectoryInfo(Path.Combine(Main.PluginFolderPath, "Callouts", type));
-                if (!directory.Exists) continue;
+                Game.LogTrivial($"[ERROR] AgencyCalloutsPlus: Callouts directory is missing");
+                throw new Exception($"[ERROR] AgencyCalloutsPlus: Callouts directory is missing");
+            }
 
-                // Load callout scripts
-                foreach (var calloutDirectory in directory.GetDirectories())
+            // Load callout scripts
+            foreach (var calloutDirectory in directory.GetDirectories())
+            {
+                // ensure CalloutMeta.xml exists
+                bool added = false;
+                string path = Path.Combine(calloutDirectory.FullName, "CalloutMeta.xml");
+                if (File.Exists(path))
                 {
-                    // ensure CalloutMeta.xml exists
-                    bool added = false;
-                    string path = Path.Combine(calloutDirectory.FullName, "CalloutMeta.xml");
-                    if (File.Exists(path))
+                    // define vars
+                    string calloutName = calloutDirectory.Name;
+                    Type calloutType = assembly.GetType($"AgencyCalloutsPlus.Callouts.{calloutName}");
+                    if (calloutType == null)
                     {
-                        // define vars
-                        string calloutName = calloutDirectory.Name;
-                        Type calloutType = assembly.GetType($"AgencyCalloutsPlus.Callouts.{type}.{calloutName}");
+                        Game.LogTrivial($"[ERROR] AgencyCalloutsPlus: Unable to find CalloutType in Assembly: '{calloutName}'");
+                        continue;
+                    }
 
-                        // Load XML document
-                        document = new XmlDocument();
-                        using (var file = new FileStream(path, FileMode.Open))
+                    // Load XML document
+                    document = new XmlDocument();
+                    using (var file = new FileStream(path, FileMode.Open))
+                    {
+                        document.Load(file);
+                    }
+
+                    // Grab agency list
+                    XmlNode agenciesNode = document.DocumentElement.SelectSingleNode("Agencies");
+
+                    // Skip and log errors
+                    if (agenciesNode == null)
+                    {
+                        Game.LogTrivial($"[ERROR] AgencyCalloutsPlus: Unable to load agency data in CalloutMeta for '{calloutDirectory.Name}'");
+                        continue;
+                    }
+
+                    // No data?
+                    if (!agenciesNode.HasChildNodes) continue;
+
+                    // Itterate through items
+                    foreach (XmlNode n in agenciesNode.SelectNodes("Agency"))
+                    {
+                        // Ensure we have attributes
+                        if (n.Attributes == null)
                         {
-                            document.Load(file);
-                        }
-
-                        // Grab agency list
-                        XmlNode agenciesNode = document.DocumentElement.SelectSingleNode("Agencies");
-
-                        // Skip and log errors
-                        if (agenciesNode == null)
-                        {
-                            Game.LogTrivial($"[ERROR] AgencyCalloutsPlus: Unable to load agency data in CalloutMeta for '{calloutDirectory.Name}'");
+                            Game.LogTrivial(
+                                $"[WARN] AgencyCalloutsPlus: Agency item has no attributes in '{calloutName}/CalloutMeta.xml->Agencies'"
+                            );
                             continue;
                         }
 
-                        // No data?
-                        if (!agenciesNode.HasChildNodes) continue;
-
-                        // Itterate through items
-                        foreach (XmlNode n in agenciesNode.SelectNodes("Agency"))
+                        // Try and extract type value
+                        if (!Enum.TryParse(n.Attributes["type"].Value, out AgencyType agencyType))
                         {
-                            // Ensure we have attributes
-                            if (n.Attributes == null)
-                            {
-                                Game.LogTrivial(
-                                    $"[WARN] AgencyCalloutsPlus: Agency item has no attributes in '{calloutName}/CalloutMeta.xml->Agencies'"
-                                );
-                                continue;
-                            }
-
-                            // Try and extract type value
-                            if (!Enum.TryParse(n.Attributes["type"].Value, out AgencyType agencyType))
-                            {
-                                Game.LogTrivial(
-                                    $"[WARN] AgencyCalloutsPlus: Unable to extract Agency type value for '{calloutName}/CalloutMeta.xml'"
-                                );
-                                continue;
-                            }
-
-                            // Try and extract probability value
-                            if (!int.TryParse(n.Attributes["probability"].Value, out int probability))
-                            {
-                                Game.LogTrivial(
-                                    $"[WARN] AgencyCalloutsPlus: Unable to extract Agency probability value for '{calloutName}/CalloutMeta.xml'"
-                                );
-                            }
-
-                            // Add callout to the registry
-                            Callouts[agencyType].Add(new SpawnableCallout(calloutType, probability));
-                            added = true;
+                            Game.LogTrivial(
+                                $"[WARN] AgencyCalloutsPlus: Unable to extract Agency type value for '{calloutName}/CalloutMeta.xml'"
+                            );
+                            continue;
                         }
 
-                        if (added)
+                        // Try and extract probability value
+                        if (!int.TryParse(n.Attributes["probability"].Value, out int probability))
                         {
-                            itemsAdded++;
-                            Functions.RegisterCallout(calloutType);
+                            Game.LogTrivial(
+                                $"[WARN] AgencyCalloutsPlus: Unable to extract Agency probability value for '{calloutName}/CalloutMeta.xml'"
+                            );
                         }
-                    }   
-                }
+
+                        // Add callout to the registry
+                        Callouts[agencyType].Add(new SpawnableCallout(calloutType, probability));
+                        added = true;
+                    }
+
+                    // If callout was added
+                    if (added)
+                    {
+                        itemsAdded++;
+
+                        // Cache scenarios
+                        calloutName = calloutType.GetAttributeValue((CalloutInfoAttribute attr) => attr.Name);
+                        AgencyCallout.CacheScenarios(calloutName, document);
+                        Functions.RegisterCallout(calloutType);
+                    }
+                }   
             }
+
+            // Cleanup
+            document = null;
 
             // Log and return
             Game.LogTrivial($"[TRACE] AgencyCalloutsPlus: Registered {itemsAdded} callouts into CalloutWrapper");

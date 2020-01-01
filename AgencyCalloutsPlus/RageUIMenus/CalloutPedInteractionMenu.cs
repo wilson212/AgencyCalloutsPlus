@@ -7,6 +7,7 @@ using RAGENativeUI.Elements;
 using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
+using LSPD_First_Response.Mod.Callouts;
 
 namespace AgencyCalloutsPlus.RageUIMenus
 {
@@ -62,6 +63,9 @@ namespace AgencyCalloutsPlus.RageUIMenus
             Peds = new List<Ped>();
         }
 
+        /// <summary>
+        /// Processes the menu. This should be called in your <see cref="Callout.Process()"/> method
+        /// </summary>
         public void Process()
         {
             // Process menus
@@ -75,44 +79,25 @@ namespace AgencyCalloutsPlus.RageUIMenus
             if (!MainUIMenu.Visible)
             {
                 // Only allow interaction menu to open on Foot
-                if (!player.IsOnFoot)
-                {
-                    return;
-                }
+                if (!player.IsOnFoot) return;
 
                 // Distance and facing check
-                Ped ped = null;
-                foreach (Ped p in Peds)
+                if (!TryGetPedForConversation(player, out Ped ped))
                 {
-                    // Is player within 5m of the ped?
-                    if (player.Position.DistanceTo(p.Position) < 3f)
-                    {
-                        // too far away
-                        continue;
-                    }
-
-                    // Check if player is facing the ped
-                    if (player.IsFacingPed(ped, 45f))
-                    {
-                        // Logic
-                        ped = p;
-                        break;
-                    }
+                    // No ped in range or facing? skip for now
+                    return;
                 }
-
-                // No ped in range or facing? skip for now
-                if (ped == null) return;
 
                 // Let player know they can open the menu
                 var k1 = Settings.OpenCalloutInteractionMenuModifierKey.ToString("F");
                 var k2 = Settings.OpenCalloutInteractionMenuKey.ToString("F");
                 if (hasModifier)
                 {
-                    Game.DisplayHelp($"Press the {k1} {k2} key to open the interaction menu.");
+                    Game.DisplayHelp($"Press the ~y~{k1}~s~ + ~y~{k2}~s~ keys to open the interaction menu.");
                 }
                 else
                 {
-                    Game.DisplayHelp($"Press the {k2} key to open the interaction menu.");
+                    Game.DisplayHelp($"Press the ~y~{k2}~s~ key to open the interaction menu.");
                 }
 
                 // Is modifier key pressed
@@ -131,33 +116,47 @@ namespace AgencyCalloutsPlus.RageUIMenus
                     MainUIMenu.Visible = true;
                 }
             }
-            else
+            else // Menu is open
             {
-                // Menu is open
                 // Distance and facing check
-                Ped ped = null;
-                foreach (Ped p in Peds)
+                if (!TryGetPedForConversation(player, out Ped ped))
                 {
-                    // Is player within 5m of the ped?
-                    if (player.Position.DistanceTo(p.Position) > 3f)
-                    {
-                        // too far away
-                        continue;
-                    }
+                    MainUIMenu.Visible = false;
+                    return;
+                }
+            }
+        }
 
-                    // Check if player is facing ped
-                    var range = new Range<float>(150f, 210f);
-                    float headingDiff = MathHelper.NormalizeHeading(player.Heading - p.Heading);
-                    if (range.ContainsValue(headingDiff))
-                    {
-                        ped = p;
-                        break;
-                    }
+        /// <summary>
+        /// Checks to see if a <see cref="Ped"/> is within 3 meters of the player,
+        /// and if the Player is facing that ped within the specified angle
+        /// </summary>
+        /// <param name="player"></param>
+        /// <param name="ped"></param>
+        /// <returns></returns>
+        private bool TryGetPedForConversation(Ped player, out Ped ped)
+        {
+            // Distance and facing check
+            ped = null;
+            foreach (Ped subject in Peds)
+            {
+                // Is player within 3m of the ped?
+                if (player.Position.DistanceTo(subject.Position) > 3f)
+                {
+                    // too far away
+                    continue;
                 }
 
-                // No ped in range or facing? skip for now
-                if (ped == null) return;
+                // Check if player is facing the ped
+                if (player.IsFacingPed(subject, 45f))
+                {
+                    // Logic
+                    ped = subject;
+                    return true;
+                }
             }
+
+            return false;
         }
 
         /// <summary>
@@ -166,88 +165,7 @@ namespace AgencyCalloutsPlus.RageUIMenus
         /// </summary>
         public void Enable()
         {
-            // DO NOT allow more than 1!
-            if (Enabled) return;
             Enabled = true;
-
-            // vars
-            var hasModifier = (Settings.OpenCalloutInteractionMenuModifierKey != Keys.None);
-            var player = Game.LocalPlayer.Character;
-
-            // Run menu in a new tread
-            GameFiber.StartNew(delegate
-            {
-                while (Enabled)
-                {
-                    // Process menus
-                    AllMenus.ProcessMenus();
-
-                    // Allow other plugins to tick
-                    GameFiber.Yield();
-
-                    // If player is close to and facing another ped, show press Y to open menu
-                    if (!MainUIMenu.Visible)
-                    {
-                        // Only allow interaction menu to open on Foot
-                        if (!player.IsOnFoot)
-                        {
-                            continue;
-                        }
-
-                        // Distance and facing check
-                        Ped ped = null;
-                        foreach (Ped p in Peds)
-                        {
-                            // Is player within 5m of the ped?
-                            if (player.Position.DistanceTo(p.Position) > 3f)
-                            {
-                                // too far away
-                                continue;
-                            }
-
-                            // Check if player is facing ped
-                            var range = new Range<float>(150f, 210f);
-                            float headingDiff = MathHelper.NormalizeHeading(player.Heading - p.Heading);
-                            if (range.ContainsValue(headingDiff))
-                            {
-                                ped = p;
-                                break;
-                            }
-                        }
-
-                        // No ped in range or facing? skip for now
-                        if (ped == null) continue;
-
-                        // Let player know they can open the menu
-                        var k1 = Settings.OpenCalloutInteractionMenuModifierKey.ToString("F");
-                        var k2 = Settings.OpenCalloutInteractionMenuKey.ToString("F");
-                        if (hasModifier)
-                        {
-                            Game.DisplayHelp($"Press the {k1} {k2} key to open the interaction menu.");
-                        }
-                        else
-                        {
-                            Game.DisplayHelp($"Press the {k2} key to open the interaction menu.");
-                        }
-
-                        // Is modifier key pressed
-                        if (hasModifier)
-                        {
-                            if (!Game.IsKeyDown(Settings.OpenCalloutInteractionMenuModifierKey))
-                            {
-                                continue;
-                            }
-                        }
-
-                        // Wait for key press, then open menu
-                        if (Game.IsKeyDown(Settings.OpenCalloutInteractionMenuKey))
-                        {
-                            Game.HideHelp();
-                            MainUIMenu.Visible = !MainUIMenu.Visible;
-                        }
-                    }
-                }
-            });
         }
 
         /// <summary>

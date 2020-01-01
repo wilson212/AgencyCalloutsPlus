@@ -8,11 +8,18 @@ using LSPD_First_Response.Mod.API;
 using LSPD_First_Response.Mod.Callouts;
 using LSPD_First_Response.Engine.Scripting.Entities;
 
-namespace AgencyCalloutsPlus.Callouts.Priority
+namespace AgencyCalloutsPlus.Callouts
 {
-    [CalloutInfo("TrafficStopBackup", CalloutProbability.Medium)]
-    public class TrafficStopBackup : Callout
+    [CalloutInfo("StolenVehicleSpotted", CalloutProbability.VeryLow)]
+    public class StolenVehicleSpotted : Callout
     {
+        private Ped Suspect;
+        private Vehicle SuspectVehicle;
+        private Vector3 SpawnPoint;
+        private Blip SuspectBlip;
+        private LHandle Pursuit;
+        private bool PursuitCreated = false;
+
         public override bool OnBeforeCalloutDisplayed()
         {
             return base.OnBeforeCalloutDisplayed();
