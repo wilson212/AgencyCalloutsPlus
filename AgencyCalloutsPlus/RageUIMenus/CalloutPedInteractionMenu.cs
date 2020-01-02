@@ -1,13 +1,9 @@
 ﻿using AgencyCalloutsPlus.Extensions;
-using AgencyCalloutsPlus.RageUIMenus.Events;
 using Rage;
-using Rage.Native;
 using RAGENativeUI;
 using RAGENativeUI.Elements;
-using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
-using LSPD_First_Response.Mod.Callouts;
 
 namespace AgencyCalloutsPlus.RageUIMenus
 {
@@ -18,6 +14,7 @@ namespace AgencyCalloutsPlus.RageUIMenus
     {
         private UIMenu MainUIMenu;
         private MenuPool AllMenus;
+        private bool HasModifier;
 
         /// <summary>
         /// Speak with Subject button
@@ -25,7 +22,8 @@ namespace AgencyCalloutsPlus.RageUIMenus
         public UIMenuItem SpeakWithButton { get; private set; }
 
         /// <summary>
-        /// Contains a list of <see cref="Ped"/> entities that this menu can be used with
+        /// Contains a list of <see cref="Ped"/> entities that this menu can be used with.
+        /// The bool value indicates wether the Ped has been spoken with yet.
         /// </summary>
         private Dictionary<Ped, bool> Peds { get; set; }
 
@@ -65,6 +63,7 @@ namespace AgencyCalloutsPlus.RageUIMenus
 
             // internals
             Peds = new Dictionary<Ped, bool>();
+            HasModifier = (Settings.OpenCalloutInteractionMenuModifierKey != Keys.None);
         }
 
         private void SpeakWithButton_Activated(UIMenu sender, UIMenuItem selectedItem)
@@ -83,7 +82,6 @@ namespace AgencyCalloutsPlus.RageUIMenus
             AllMenus.ProcessMenus();
 
             // vars
-            var hasModifier = (Settings.OpenCalloutInteractionMenuModifierKey != Keys.None);
             var player = Game.LocalPlayer.Character;
 
             // If player is close to and facing another ped, show press Y to open menu
@@ -108,7 +106,7 @@ namespace AgencyCalloutsPlus.RageUIMenus
                     // Let player know they can open the menu
                     var k1 = Settings.OpenCalloutInteractionMenuModifierKey.ToString("F");
                     var k2 = Settings.OpenCalloutInteractionMenuKey.ToString("F");
-                    if (hasModifier)
+                    if (HasModifier)
                     {
                         Game.DisplayHelp($"Press the ~y~{k1}~s~ + ~y~{k2}~s~ keys to open the interaction menu.");
                     }
@@ -119,7 +117,7 @@ namespace AgencyCalloutsPlus.RageUIMenus
                 }
 
                 // Is modifier key pressed
-                if (hasModifier)
+                if (HasModifier)
                 {
                     if (!Game.IsKeyDown(Settings.OpenCalloutInteractionMenuModifierKey))
                     {

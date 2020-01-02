@@ -84,7 +84,7 @@ namespace AgencyCalloutsPlus.Callouts.Scenarios.TrafficAccident
             SuspectBlip = Suspect.AttachBlip();
 
             // Register menu
-            Menu = new CalloutPedInteractionMenu("Callout Interaction", "Traffic Accident: Rear End Collision");
+            Menu = new CalloutPedInteractionMenu("Callout Interaction", "~b~Traffic Accident: ~y~Rear End Collision");
             Menu.RegisterPed(Suspect);
             Menu.RegisterPed(Victim);
 

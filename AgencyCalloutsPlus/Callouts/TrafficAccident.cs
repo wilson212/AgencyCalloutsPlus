@@ -52,7 +52,7 @@ namespace AgencyCalloutsPlus.Callouts
         public override bool OnBeforeCalloutDisplayed()
         {
             // Load a random side of road location in our jurisdiction
-            SpawnPoint = Agency.GetRandomLocationInJurisdiction(LocationType.SideOfRoad, new Range<float>(100f, 3000f));
+            SpawnPoint = Agency.GetRandomLocationInJurisdiction(LocationType.SideOfRoad, new Range<float>(100f, 9000f));
             if (SpawnPoint == null)
             {
                 Game.LogTrivial($"[ERROR] AgencyCalloutsPlus: Unable to find a location for callout: Traffic.TrafficAccident");

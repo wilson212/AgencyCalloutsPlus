@@ -24,10 +24,11 @@
           <Meta probability="5">Compact</Meta>
           <Meta probability="5">Sedan</Meta>
           <Meta probability="5">Coupe</Meta>
-          <Meta probability="5">Sports</Meta>
-          <Meta probability="5">Suv</Meta>
-          <Meta probability="3">Pickup</Meta>
+          <Meta probability="5">Sport</Meta>
+          <Meta probability="5">SUV</Meta>
+          <Meta probability="3">Emergency</Meta>
           <Meta probability="3">Muscle</Meta>
+          <Meta probability="3">Super</Meta>
         </VehicleTypes>
       </Victim1>
       <Victim2>
@@ -35,10 +36,11 @@
           <Meta probability="5">Compact</Meta>
           <Meta probability="5">Sedan</Meta>
           <Meta probability="5">Coupe</Meta>
-          <Meta probability="5">Sports</Meta>
-          <Meta probability="5">Suv</Meta>
-          <Meta probability="3">Pickup</Meta>
+          <Meta probability="5">Sport</Meta>
+          <Meta probability="5">SUV</Meta>
+          <Meta probability="3">Emergency</Meta>
           <Meta probability="3">Muscle</Meta>
+          <Meta probability="3">Super</Meta>
         </VehicleTypes>
       </Victim2>
     </RearEndNoInjuries>

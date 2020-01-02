@@ -6,8 +6,14 @@ using System.Collections.Generic;
 
 namespace AgencyCalloutsPlus.Integration
 {
+    /// <summary>
+    /// Provides a nice API to access Computer+
+    /// </summary>
     internal class ComputerPlusAPI
     {
+        /// <summary>
+        /// Indicates whether Computer+ is running
+        /// </summary>
         public static bool IsRunning { get; private set; }
 
         public static void Initialize()

@@ -16,7 +16,7 @@ namespace AgencyCalloutsPlus.Extensions
         {
             var model = vehicle.Model;
             model.GetDimensions(out var vector31, out var vector32);
-            var num = new Random().Next(10, 45);
+            var num = new CryptoRandom().Next(10, 45);
             for (var index = 0; index < num; ++index)
             {
                 var randomInt1 = MathHelper.GetRandomSingle(vector31.X, vector32.X);

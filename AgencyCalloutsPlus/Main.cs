@@ -3,6 +3,8 @@ using AgencyCalloutsPlus.Integration;
 using LSPD_First_Response.Mod.API;
 using Rage;
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 
 
@@ -39,43 +41,54 @@ namespace AgencyCalloutsPlus
         public static string PluginFolderPath { get; internal set; }
 
         /// <summary>
+        /// Contains a list of dynamic link libraries this Plugin depends on
+        /// </summary>
+        private static readonly List<Dependancy> DependenciesToCheck = new List<Dependancy>
+        {
+            new Dependancy("Plugins/LSPD First Response.dll", new Version("0.4.6")),
+            new Dependancy("Plugins/LSPDFR/Traffic Policer.dll",  new Version("6.16.0.0")),
+            new Dependancy("RAGENativeUI.dll", new Version("1.6.3.0")),
+        };
+
+        /// <summary>
         /// Main entry point for the plugin. Initializer
         /// </summary>
         public override void Initialize()
         {
-            // Version check!
-            var lspdfrVersion = Functions.GetVersion();
-            var requiredVersion = new Version("0.4.6");
-
-            // Check LSPDFR compatibility
-            if (lspdfrVersion < requiredVersion)
-            {
-                string message = $"Detected LSPDFR version {lspdfrVersion}; v{requiredVersion} or greater is required";
-                Game.LogTrivial($"[ERROR] AgencyCalloutsPlus: {message}");
-                throw new Exception(message);
-            }
-            else
-            {
-                Game.LogTrivial($"[TRACE] AgencyCalloutsPlus: Detected LSPDFR v{lspdfrVersion}");
-            }
-
             // Define our plugin version and root paths
             var assembly = System.Reflection.Assembly.GetExecutingAssembly();
             PluginVersion = assembly.GetName().Version;
+            UriBuilder uri = new UriBuilder(assembly.CodeBase);
 
             // Get GTA 5 root directory path
-            string codeBase = assembly.CodeBase;
-            UriBuilder uri = new UriBuilder(codeBase);
-            string path = Uri.UnescapeDataString(uri.Path);
-            GTARootPath = Path.GetDirectoryName(path);
+            GTARootPath = Path.GetDirectoryName(Uri.UnescapeDataString(uri.Path));
             LSPDFRPluginPath = Path.Combine(GTARootPath, "Plugins", "lspdfr");
             PluginFolderPath = Path.Combine(GTARootPath, "Plugins", "lspdfr", "AgencyCalloutsPlus");
 
-            // Ensure we are properly located
-            if (!File.Exists(Path.Combine(GTARootPath, "GTA5.exe")))
+            // Dependency checks
+            foreach (var dependency in DependenciesToCheck)
             {
-                Game.LogTrivial("[ERROR] AgencyCalloutsPlus v" + PluginVersion + " failed to initialise! Cannot find GTA5.exe");
-                throw new Exception("[ERROR] AgencyCalloutsPlus v" + PluginVersion + " failed to initialise! Cannot find GTA5.exe");
+                // Ensure file exists
+                string path = Path.Combine(GTARootPath, dependency.FilePath);
+                if (!File.Exists(path))
+                {
+                    Game.DisplayNotification(
+                        $"~r~Failed to locate {dependency.FilePath}, please make sure you have the dependency installed correctly."
+                    );
+
+                    throw new Exception($"Failed to locate missing dependency: {dependency.FilePath}");
+                }
+
+                // Check minimum version
+                var version = new Version(FileVersionInfo.GetVersionInfo(path).FileVersion);
+                if (version < dependency.MinimumVersion)
+                {
+                    Game.DisplayNotification(
+                        $"Detected that {dependency.FilePath} isn't up to date, please download the required version (~y~{dependency.MinimumVersion}~r~)."
+                    );
+
+                    throw new Exception($"Located a dependency that isn't up to date: {dependency.FilePath}");
+                }
             }
 
             // Load settings
@@ -110,24 +123,6 @@ namespace AgencyCalloutsPlus
             {
                 // Wait!
                 GameFiber.Wait(1000);
-
-                // We require traffic policer by Albo1125!
-                if (!GlobalFunctions.IsLSPDFRPluginRunning("Traffic Policer", new Version("6.16.0.0"), out Version version))
-                {
-                    string message = "";
-                    if (version.Major > 0)
-                        message = $"Detected Traffic Policer version {version}; v6.16.0.0 or greater is required";
-                    else
-                        message = $"Traffic Policer not detected and is required";
-
-                    // Log and exit
-                    Game.LogTrivial($"[ERROR] AgencyCalloutsPlus: {message}");
-                    return;
-                }
-                else
-                {
-                    Game.LogTrivial($"[TRACE] AgencyCalloutsPlus: Detected Traffic Policer version {version}");
-                }
 
                 // Load our agencies and such (this will only initialize once per game session)
                 Agency.Initialize();

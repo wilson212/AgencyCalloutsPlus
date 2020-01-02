@@ -83,6 +83,7 @@
     <Compile Include="Callouts\CalloutScenario.cs" />
     <Compile Include="Callouts\Scenarios\TrafficAccident\RearEndNoInjuries.cs" />
     <Compile Include="Callouts\TrafficAccident.cs" />
+    <Compile Include="Dependency.cs" />
     <Compile Include="Extensions\PedExtensions.cs" />
     <Compile Include="Extensions\VehicleExtensions.cs" />
     <Compile Include="Integration\ComputerPlusAPI.cs" />
@@ -99,7 +100,6 @@
     <Compile Include="Main.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RageUIMenus\CalloutPedInteractionMenu.cs" />
-    <Compile Include="RageUIMenus\Events\SpeakWithPedArgs.cs" />
     <Compile Include="Range.cs" />
     <Compile Include="Settings.cs" />
     <Compile Include="SpawnableCallout.cs" />

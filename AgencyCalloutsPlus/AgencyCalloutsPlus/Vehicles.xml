@@ -1,7 +1,4 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
-<!-- 
-  Vehicle types: Compact, Coupe, Moped, Motorcycle, Muscle, Offroad, Pickup, Sedan, Semi, Sports, Super, SUV, Van  
--->
 <Vehicles>
   <Compact>
     <Vehicle probability="5" seats="2" manufacturer="Dinka" name="Blista">BLISTA</Vehicle>
@@ -24,6 +21,14 @@
     <Vehicle probability="5" seats="2" manufacturer="Übermacht" name="Zion">ZION</Vehicle>
     <Vehicle probability="5" seats="2" manufacturer="Übermacht" name="Zion Cabrio">ZION2</Vehicle>
   </Coupe>
+  <!-- Emergency is Pickups! Not emergency vehicles-->
+  <Emergency>
+    <Vehicle probability="5" seats="6" manufacturer="Bravado" name="Bison">BISON</Vehicle>
+    <Vehicle probability="4" seats="2" manufacturer="Vapid" name="Bobcat XL">BOBCATXL</Vehicle>
+    <Vehicle probability="4" seats="2" manufacturer="Karin" name="Rebel">REBEL2</Vehicle>
+    <Vehicle probability="3" seats="2" manufacturer="Vapid" name="Sandking SWB">SANDKING2</Vehicle>
+    <Vehicle probability="2" seats="2" manufacturer="Vapid" name="Sandking XL">SANDKING</Vehicle>
+  </Emergency>
   <Moped>
     
   </Moped>
@@ -43,17 +48,10 @@
     <Vehicle probability="5" seats="2" manufacturer="Declasse" name="Vigero">­VIGERO</Vehicle>
     <Vehicle probability="5" seats="2" manufacturer="Declasse" name="Voodoo">VOODOO</Vehicle>
   </Muscle>
-  <Offroad>
+  <OffRoad>
     <Vehicle probability="5" seats="1" manufacturer="Nagasaki" name="Blazer">BLAZER</Vehicle>
     <Vehicle probability="5" seats="2" manufacturer="BF" name="Dune Buggy">DUNE</Vehicle>
-  </Offroad>
-  <Pickup>
-    <Vehicle probability="5" seats="6" manufacturer="Bravado" name="Bison">BISON</Vehicle>
-    <Vehicle probability="4" seats="2" manufacturer="Vapid" name="Bobcat XL">BOBCATXL</Vehicle>
-    <Vehicle probability="4" seats="2" manufacturer="Karin" name="Rebel">REBEL2</Vehicle>
-    <Vehicle probability="3" seats="2" manufacturer="Vapid" name="Sandking SWB">SANDKING2</Vehicle>
-    <Vehicle probability="2" seats="2" manufacturer="Vapid" name="Sandking XL">SANDKING</Vehicle>
-  </Pickup>
+  </OffRoad>
   <Sedan>
     <Vehicle probability="5" seats="4" manufacturer="Declasse" name="Asea">ASEA</Vehicle>
     <Vehicle probability="5" seats="4" manufacturer="Karin" name="Asterope">ASTEROPE</Vehicle>
@@ -72,10 +70,7 @@
     <Vehicle probability="5" seats="4" manufacturer="Obey" name="Tailgater">TAILGATER</Vehicle>
     <Vehicle probability="5" seats="4" manufacturer="Albany" name="Washington">WASHINGTON</Vehicle>
   </Sedan>
-  <Semi>
-    
-  </Semi>
-  <Sports>
+  <Sport>
     <Vehicle probability="5" seats="2" manufacturer="Bravado" name="Banshee">BANSHEE</Vehicle>
     <Vehicle probability="4" seats="4" manufacturer="Bravado" name="Buffalo">BUFFALO</Vehicle>
     <Vehicle probability="3" seats="4" manufacturer="Bravado" name="Buffalo S">BUFFALO2</Vehicle>
@@ -94,7 +89,7 @@
     <Vehicle probability="5" seats="2" manufacturer="Benefactor" name="Schwartzer">SCHWARZER</Vehicle>
     <Vehicle probability="5" seats="4" manufacturer="Karin" name="Sultan">SULTAN</Vehicle>
     <Vehicle probability="5" seats="2" manufacturer="Benefactor" name="Surano">SURANO</Vehicle>
-  </Sports>
+  </Sport>
   <Super>
     <Vehicle probability="5" seats="2" manufacturer="Truffade" name="Adder">ADDER</Vehicle>
     <Vehicle probability="5" seats="2" manufacturer="Vapid" name="Bullet">BULLET</Vehicle>

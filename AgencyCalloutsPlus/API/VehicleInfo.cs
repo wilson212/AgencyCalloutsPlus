@@ -129,11 +129,14 @@ namespace AgencyCalloutsPlus.API
             // Try and spawn a vehicle
             if (Vehicles[type].TrySpawn(out VehicleInfo vehicle))
             {
-                Game.LogTrivial("[TRACE] AgencyCalloutsPlus: GetRandomVehicleByType returning " + vehicle.ModelName);
+                Game.LogTrivial($"[TRACE] AgencyCalloutsPlus: GetRandomVehicleByType returning {vehicle.ModelName}");
                 return vehicle;
             }
-
-            return null;
+            else
+            {
+                Game.LogTrivial($"[TRACE] AgencyCalloutsPlus: GetRandomVehicleByType unable to find vehicle for class {type}");
+                return null;
+            }
         }
 
         /// <summary>
