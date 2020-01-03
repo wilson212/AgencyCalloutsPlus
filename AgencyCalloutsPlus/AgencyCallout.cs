@@ -79,7 +79,7 @@ namespace AgencyCalloutsPlus
                 // Can we spawn a scenario?
                 if (!spawner.TrySpawn(out CalloutScenarioInfo scene))
                 {
-                    Game.LogTrivial($"[ERROR] AgencyCalloutsPlus: Callout does not have any Scenarios registered '{calloutName}'");
+                    Game.LogTrivial($"[ERROR] AgencyCalloutsPlus: Callout '{calloutName}' does not have any Scenarios registered");
                     return null;
                 }
 

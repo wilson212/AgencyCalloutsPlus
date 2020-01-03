@@ -51,13 +51,25 @@ namespace AgencyCalloutsPlus.Callouts.Scenarios.TrafficAccident
         /// </summary>
         public override void Setup()
         {
+            // Show player notification
+            Game.DisplayNotification(
+                "3dtextures",
+                "mpgroundlogo_cops",
+                "~b~Dispatch",
+                "~r~MVA",
+                "Reports of a vehicle accident, respond ~b~CODE-2"
+            );
+
             // Create victim car
             var victimV = VehicleInfo.GetRandomVehicleByType(VictimVehicleType);
             var sideLocation = (SideOfRoadLocation)SpawnPoint;
             VictimVehicle = new Vehicle(victimV.ModelName, SpawnPoint.Position, sideLocation.Heading);
             VictimVehicle.IsPersistent = true;
             VictimVehicle.EngineHealth = 0;
-            VictimVehicle.Damage(200, 200);
+            VictimVehicle.DeformRear(200, 200);
+
+            var dime = VictimVehicle.Model.Dimensions;
+            Game.LogTrivial($"Victim1 dimensions: X={dime.X}; Y={dime.Y}; Z={dime.Z}");
 
             // Create Victim
             Victim = VictimVehicle.CreateRandomDriver();
@@ -71,7 +83,7 @@ namespace AgencyCalloutsPlus.Callouts.Scenarios.TrafficAccident
             SuspectVehicle = new Vehicle(suspectV.ModelName, vector, sideLocation.Heading);
             SuspectVehicle.IsPersistent = true;
             SuspectVehicle.EngineHealth = 0;
-            SuspectVehicle.Damage(200, 200);
+            SuspectVehicle.DeformFront(200, 200);
 
             // Create suspect
             Suspect = SuspectVehicle.CreateRandomDriver();
@@ -105,6 +117,10 @@ namespace AgencyCalloutsPlus.Callouts.Scenarios.TrafficAccident
         public override void Process()
         {
             Menu.Process();
+            if (Game.IsKeyDown(System.Windows.Forms.Keys.Enter))
+            {
+                World.TeleportLocalPlayer(SpawnPoint.Position.Around(15f), true);
+            }
         }
 
         public override void Cleanup()

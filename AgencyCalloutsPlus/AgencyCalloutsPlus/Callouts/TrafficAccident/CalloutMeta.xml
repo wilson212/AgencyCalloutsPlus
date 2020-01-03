@@ -17,7 +17,7 @@
       <!-- Callout Details are for ComputerPlus -->
       <CalloutDetails>
         <Meta>We have received multiple reports of a vehicle collision near {{location}}. No medical response was requested. Please respond code 2.</Meta>
-        <Meta>A concerned citizen has called police stating that he witnessed a vehicle collision near {{location}}. Inuries are unknown. Please respond code 2.</Meta>
+        <Meta>A concerned citizen has called police stating that he witnessed a vehicle collision near {{location}}. Caller indicated that there does not seem to be any injuries. Please respond code 2.</Meta>
       </CalloutDetails>
       <Victim1>
         <VehicleTypes>
@@ -28,7 +28,7 @@
           <Meta probability="5">SUV</Meta>
           <Meta probability="3">Emergency</Meta>
           <Meta probability="3">Muscle</Meta>
-          <Meta probability="3">Super</Meta>
+          <Meta probability="2">Super</Meta>
         </VehicleTypes>
       </Victim1>
       <Victim2>
@@ -40,7 +40,7 @@
           <Meta probability="5">SUV</Meta>
           <Meta probability="3">Emergency</Meta>
           <Meta probability="3">Muscle</Meta>
-          <Meta probability="3">Super</Meta>
+          <Meta probability="2">Super</Meta>
         </VehicleTypes>
       </Victim2>
     </RearEndNoInjuries>

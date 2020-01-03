@@ -1,0 +1,265 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<!--
+  This file contains a list of police agencies, defining thier agency type and which
+  vehicles will be spawned by callouts. Custom vehicle models are supported.
+  
+  Important notes:
+
+    # These are supported agency types:
+      - CityPolice
+      - CountySheriff
+      - DrugUnit
+      - EMS
+      - FireDepartment
+      - GangUnit
+      - HighwayPatrol
+      - ParkRanger
+      - SpecialAgent
+      - SWAT
+      
+    # The "Vehicle" entry has the following attributes:
+      - "probability" is the random probability for the vehicle model to be chosen relative to other vehicles probability
+      - "livery" the livery number on vehicle model (the first livery index is "1")
+      - "color" the color of the vehicle. It might be a "integer number" or "color name" (from https://docs.microsoft.com/en-us/dotnet/api/system.drawing.color?view=netframework-4.6.1 )
+      - "extras" specifies which extra's to enable when spawned
+-->
+<Agencies>
+  <!-- Police Departments -->
+  <Agency>
+    <Name>Los Santos Police Department</Name>
+    <ScriptName>lspd</ScriptName>
+    <AgencyType>CityPolice</AgencyType>
+    <Vehicles>
+      <LocalPatrol>
+        <Vehicle probability="5">POLICE</Vehicle>
+        <Vehicle probability="5">POLICE2</Vehicle>
+        <Vehicle probability="5">POLICE3</Vehicle>
+      </LocalPatrol>
+      <Detectives>
+        <Vehicle probability="5">POLICE4</Vehicle>
+      </Detectives>
+    </Vehicles>  
+  </Agency>
+  <Agency>
+    <Name>Del Parro Police Department</Name>
+    <ScriptName>dppd</ScriptName>
+    <AgencyType>CityPolice</AgencyType>
+    <Vehicles>
+      <LocalPatrol>
+        <Vehicle probability="5">POLICE</Vehicle>
+        <Vehicle probability="5">POLICE2</Vehicle>
+        <Vehicle probability="5">POLICE3</Vehicle>
+      </LocalPatrol>
+      <Detectives>
+        <Vehicle probability="5">POLICE4</Vehicle>
+      </Detectives>
+    </Vehicles>
+  </Agency>
+  <Agency>
+    <Name>Vespucci Police Department</Name>
+    <ScriptName>vppd</ScriptName>
+    <AgencyType>CityPolice</AgencyType>
+    <Vehicles>
+      <LocalPatrol>
+        <Vehicle probability="5">POLICE</Vehicle>
+        <Vehicle probability="5">POLICE2</Vehicle>
+        <Vehicle probability="5">POLICE3</Vehicle>
+      </LocalPatrol>
+      <Detectives>
+        <Vehicle probability="5">POLICE4</Vehicle>
+      </Detectives>
+    </Vehicles>
+  </Agency>
+  <Agency>
+    <Name>Vinewood Police Department</Name>
+    <ScriptName>vwpd</ScriptName>
+    <AgencyType>CityPolice</AgencyType>
+    <Vehicles>
+      <LocalPatrol>
+        <Vehicle probability="5">POLICE</Vehicle>
+        <Vehicle probability="5">POLICE2</Vehicle>
+        <Vehicle probability="5">POLICE3</Vehicle>
+      </LocalPatrol>
+      <Detectives>
+        <Vehicle probability="5">POLICE4</Vehicle>
+      </Detectives>
+    </Vehicles>
+  </Agency>
+  <Agency>
+    <Name>La Messa Police Department</Name>
+    <ScriptName>lmpd</ScriptName>
+    <AgencyType>CityPolice</AgencyType>
+    <Vehicles>
+      <LocalPatrol>
+        <Vehicle probability="5">POLICE</Vehicle>
+        <Vehicle probability="5">POLICE2</Vehicle>
+        <Vehicle probability="5">POLICE3</Vehicle>
+      </LocalPatrol>
+      <Detectives>
+        <Vehicle probability="5">POLICE4</Vehicle>
+      </Detectives>
+    </Vehicles>   
+  </Agency>
+  <Agency>
+    <Name>Rockford Hills Police Department</Name>
+    <ScriptName>rhpd</ScriptName>
+    <AgencyType>CityPolice</AgencyType>
+    <Vehicles>
+      <LocalPatrol>
+        <Vehicle probability="5">POLICE</Vehicle>
+        <Vehicle probability="5">POLICE2</Vehicle>
+        <Vehicle probability="5">POLICE3</Vehicle>
+      </LocalPatrol>
+      <Detectives>
+        <Vehicle probability="5">POLICE4</Vehicle>
+      </Detectives>
+    </Vehicles>
+  </Agency>
+  <Agency>
+    <Name>Port Authority Police (Los Santos)</Name>
+    <ScriptName>pap</ScriptName>
+    <AgencyType>CityPolice</AgencyType>
+    <Vehicles>
+      <LocalPatrol>
+        <Vehicle probability="5">POLICE</Vehicle>
+        <Vehicle probability="5">POLICE2</Vehicle>
+        <Vehicle probability="5">POLICE3</Vehicle>
+      </LocalPatrol>
+      <Detectives>
+        <Vehicle probability="5">POLICE4</Vehicle>
+      </Detectives>
+    </Vehicles>
+  </Agency>
+  <Agency>
+    <Name>Grape Seed Police Department</Name>
+    <ScriptName>gspd</ScriptName>
+    <AgencyType>CityPolice</AgencyType>
+    <Vehicles>
+      <LocalPatrol>
+        <Vehicle probability="5">SHERIFF</Vehicle>
+        <Vehicle probability="5">SHERIFF2</Vehicle>
+      </LocalPatrol>
+      <Detectives>
+        <Vehicle probability="5">POLICE4</Vehicle>
+      </Detectives>
+    </Vehicles>
+  </Agency>
+  <Agency>
+    <Name>Sandy Shore Police Department</Name>
+    <ScriptName>sspd</ScriptName>
+    <AgencyType>CityPolice</AgencyType>
+    <Vehicles>
+      <LocalPatrol>
+        <Vehicle probability="5">SHERIFF</Vehicle>
+        <Vehicle probability="5">SHERIFF2</Vehicle>
+      </LocalPatrol>
+      <Detectives>
+        <Vehicle probability="5">POLICE4</Vehicle>
+      </Detectives>
+    </Vehicles>
+  </Agency>
+  <Agency>
+    <Name>Paleto Bay Police Department</Name>
+    <ScriptName>pbpd</ScriptName>
+    <AgencyType>CityPolice</AgencyType>
+    <Vehicles>
+      <LocalPatrol>
+        <Vehicle probability="5">SHERIFF</Vehicle>
+        <Vehicle probability="5">SHERIFF2</Vehicle>
+      </LocalPatrol>
+      <Detectives>
+        <Vehicle probability="5">POLICE4</Vehicle>
+      </Detectives>
+    </Vehicles>
+  </Agency>
+
+  <!-- Sheriff Departments -->
+  <Agency>
+    <Name>Los Santos Sheriff Department</Name>
+    <ScriptName>lssd</ScriptName>
+    <AgencyType>CountySheriff</AgencyType>
+    <Vehicles>
+      <LocalPatrol>
+        <Vehicle probability="5">SHERIFF</Vehicle>
+        <Vehicle probability="5">SHERIFF2</Vehicle>
+      </LocalPatrol>
+      <Detectives>
+        <Vehicle probability="5">POLICE4</Vehicle>
+      </Detectives>
+    </Vehicles>
+  </Agency>
+  <Agency>
+    <Name>Blaine County Sheriff Office</Name>
+    <ScriptName>bcso</ScriptName>
+    <AgencyType>CountySheriff</AgencyType>
+    <Vehicles>
+      <LocalPatrol>
+        <Vehicle probability="5">SHERIFF</Vehicle>
+        <Vehicle probability="5">SHERIFF2</Vehicle>
+      </LocalPatrol>
+      <Detectives>
+        <Vehicle probability="5">POLICE4</Vehicle>
+      </Detectives>
+    </Vehicles>
+  </Agency>
+  
+  <!-- State Troopers -->
+  <Agency>
+    <Name>San Andreas Highway Partol</Name>
+    <ScriptName>sahp</ScriptName>
+    <AgencyType>HighwayPatrol</AgencyType>
+    <Vehicles>
+      <LocalPatrol>
+        <Vehicle probability="5">policeb</Vehicle>
+      </LocalPatrol>
+    </Vehicles>
+  </Agency>
+  <Agency>
+    <Name>North Yankton State Patrol</Name>
+    <ScriptName>nysp</ScriptName>
+    <AgencyType>HighwayPatrol</AgencyType>
+    <Vehicles>
+      <LocalPatrol>
+        <Vehicle probability="5">policeold1</Vehicle>
+        <Vehicle probability="5">policeold2</Vehicle>
+      </LocalPatrol>
+    </Vehicles>
+  </Agency>
+
+  <!-- Special Agents -->
+  <Agency>
+    <Name>Federal Investigation Bureau</Name>
+    <ScriptName>fib</ScriptName>
+    <AgencyType>SpecialAgent</AgencyType>
+    <Vehicles>
+      <LocalPatrol>
+        <Vehicle probability="5">FBI</Vehicle>
+        <Vehicle probability="5">FBI2</Vehicle>
+      </LocalPatrol>
+    </Vehicles>
+  </Agency>
+  <Agency>
+    <Name>National Office of Security Enforcement</Name>
+    <ScriptName>noose</ScriptName>
+    <AgencyType>SpecialAgent</AgencyType>
+    <Vehicles>
+      <LocalPatrol>
+        <Vehicle probability="5">FBI</Vehicle>
+        <Vehicle probability="5">FBI2</Vehicle>
+      </LocalPatrol>
+    </Vehicles>
+  </Agency>
+
+  <!-- Parks -->
+  <Agency>
+    <Name>San Andreas Park Rangers</Name>
+    <ScriptName>sapr</ScriptName>
+    <AgencyType>ParkRanger</AgencyType>
+    <Vehicles>
+      <LocalPatrol>
+        <Vehicle probability="5">FBI</Vehicle>
+        <Vehicle probability="5">FBI2</Vehicle>
+      </LocalPatrol>
+    </Vehicles>
+  </Agency>
+</Agencies>

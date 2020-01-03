@@ -60,6 +60,7 @@ namespace AgencyCalloutsPlus.RageUIMenus
             // Create menu pool
             AllMenus = new MenuPool();
             AllMenus.Add(MainUIMenu);
+            AllMenus.RefreshIndex();
 
             // internals
             Peds = new Dictionary<Ped, bool>();

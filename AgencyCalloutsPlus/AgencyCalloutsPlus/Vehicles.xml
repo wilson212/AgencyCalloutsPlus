@@ -44,7 +44,7 @@
     <Vehicle probability="5" seats="2" manufacturer="Cheval" name="Picador">PICADOR</Vehicle>
     <Vehicle probability="5" seats="2" manufacturer="Imponte" name="Ruiner">RUINER</Vehicle>
     <Vehicle probability="5" seats="2" manufacturer="Declasse" name="Sabre Turbo">SABREGT</Vehicle>
-    <Vehicle probability="5" seats="2" manufacturer="Declasse" name="Stallion">STALLION</Vehicle>
+    <Vehicle probability="5" seats="2" manufacturer="Declasse" name="Stallion">STALION</Vehicle>
     <Vehicle probability="5" seats="2" manufacturer="Declasse" name="Vigero">­VIGERO</Vehicle>
     <Vehicle probability="5" seats="2" manufacturer="Declasse" name="Voodoo">VOODOO</Vehicle>
   </Muscle>
@@ -63,7 +63,7 @@
     <Vehicle probability="5" seats="4" manufacturer="Declasse" name="Premier">PREMIER</Vehicle>
     <Vehicle probability="5" seats="4" manufacturer="Albany" name="Primo">PRIMO</Vehicle>
     <Vehicle probability="5" seats="4" manufacturer="Dundreary" name="Regina">REGINA</Vehicle>
-    <Vehicle probability="5" seats="4" manufacturer="Benefactor" name="Schafter">SCHAFTER</Vehicle>
+    <Vehicle probability="5" seats="4" manufacturer="Benefactor" name="Schafter">SCHAFTER2</Vehicle>
     <Vehicle probability="5" seats="4" manufacturer="Vapid" name="Stanier">STANIER</Vehicle>
     <Vehicle probability="5" seats="4" manufacturer="Zirconium" name="Stratum">STRATUM</Vehicle>
     <Vehicle probability="5" seats="4" manufacturer="Cheval" name="Surge">SURGE</Vehicle>
@@ -107,8 +107,8 @@
     <Vehicle probability="2" seats="4" manufacturer="Gallivanter" name="Baller">BALLER</Vehicle>
     <Vehicle probability="3" seats="4" manufacturer="Gallivanter" name="Baller">BALLER2</Vehicle>
     <Vehicle probability="5" seats="4" manufacturer="Karin" name="BeeJay XL">BJXL</Vehicle>
-    <Vehicle probability="2" seats="4" manufacturer="Albany" name="Cavalcade">CAVCADE</Vehicle>
-    <Vehicle probability="3" seats="4" manufacturer="Albany" name="Cavalcade">CAVCADE2</Vehicle>
+    <Vehicle probability="2" seats="4" manufacturer="Albany" name="Cavalcade">­CAVALCADE</Vehicle>
+    <Vehicle probability="3" seats="4" manufacturer="Albany" name="Cavalcade">­CAVALCADE2</Vehicle>
     <Vehicle probability="2" seats="4" manufacturer="Benefactor" name="Dubsta">DUBSTA</Vehicle>
     <Vehicle probability="3" seats="4" manufacturer="Benefactor" name="Dubsta">DUBSTA2</Vehicle>
     <Vehicle probability="5" seats="4" manufacturer="Fathom" name="FQ 2">FQ2</Vehicle>

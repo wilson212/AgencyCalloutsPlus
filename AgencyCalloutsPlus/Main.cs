@@ -31,12 +31,12 @@ namespace AgencyCalloutsPlus
         public static string GTARootPath { get; internal set; }
 
         /// <summary>
-        /// Gets the root path to this DLL
+        /// Gets the root path to the LSPDFR plugin folder
         /// </summary>
         public static string LSPDFRPluginPath { get; internal set; }
 
         /// <summary>
-        /// Gets the root path to this DLL
+        /// Gets the root path to the AgencyCalloutsPlus plugin folder
         /// </summary>
         public static string PluginFolderPath { get; internal set; }
 
@@ -73,7 +73,7 @@ namespace AgencyCalloutsPlus
                 if (!File.Exists(path))
                 {
                     Game.DisplayNotification(
-                        $"~r~Failed to locate {dependency.FilePath}, please make sure you have the dependency installed correctly."
+                        $"~r~Failed to locate ~b~{dependency.FilePath}~r~, please make sure you have the dependency installed correctly."
                     );
 
                     throw new Exception($"Failed to locate missing dependency: {dependency.FilePath}");
@@ -84,7 +84,7 @@ namespace AgencyCalloutsPlus
                 if (version < dependency.MinimumVersion)
                 {
                     Game.DisplayNotification(
-                        $"Detected that {dependency.FilePath} isn't up to date, please download the required version (~y~{dependency.MinimumVersion}~r~)."
+                        $"~o~Detected that ~b~{dependency.FilePath}~o~ isn't up to date, please download the required version (~y~{dependency.MinimumVersion}~o~)."
                     );
 
                     throw new Exception($"Located a dependency that isn't up to date: {dependency.FilePath}");
@@ -122,7 +122,7 @@ namespace AgencyCalloutsPlus
             GameFiber.StartNew(delegate
             {
                 // Wait!
-                GameFiber.Wait(1000);
+                GameFiber.Wait(200);
 
                 // Load our agencies and such (this will only initialize once per game session)
                 Agency.Initialize();

@@ -1,7 +1,9 @@
-﻿using LSPD_First_Response.Mod.API;
+﻿using AgencyCalloutsPlus.Extensions;
+using LSPD_First_Response.Mod.API;
 using Rage;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Xml;
@@ -11,12 +13,19 @@ namespace AgencyCalloutsPlus.API
     /// <summary>
     /// Represents the Current Player Police Agency
     /// </summary>
-    public static class Agency
+    public class Agency
     {
+        #region Static Properties
+
         /// <summary>
         /// Indicates whether the the Agency data has been loaded into memory
         /// </summary>
         private static bool IsInitialized { get; set; } = false;
+
+        /// <summary>
+        /// A dictionary of agencies
+        /// </summary>
+        private static Dictionary<string, Agency> Agencies { get; set; }
 
         /// <summary>
         /// Containts a list of zones of jurisdiction by each agency
@@ -30,37 +39,35 @@ namespace AgencyCalloutsPlus.API
         /// A dictionary of agencies and thier <see cref="AgencyType"/>. This will be used
         /// to determine which callouts are registered for the player in game
         /// </summary>
-        private static IReadOnlyDictionary<string, AgencyType> AgencyTypes { get; set; } = new Dictionary<string, AgencyType>()
-        {
-            { "fib", AgencyType.SpecialAgent },
-            { "noose", AgencyType.SpecialAgent },
+        private static Dictionary<string, AgencyType> AgencyTypes { get; set; }
 
-            { "sahp", AgencyType.HighwayPatrol }, // San Andreas Highway Partol
-            { "sast", AgencyType.HighwayPatrol }, // San Andreas State Trooper
-            { "nysp", AgencyType.HighwayPatrol }, // North Yankton State Patrol
+        #endregion
 
-            { "lspd", AgencyType.CityPolice }, // Los Santos Police Department
-            { "dppd", AgencyType.CityPolice }, // Del Parro Police Department
-            { "vppd", AgencyType.CityPolice }, // Vespucci Police Department
-            { "vwpd", AgencyType.CityPolice }, // Vinewood Police Department
-            { "lmpd", AgencyType.CityPolice }, // La Messa Police Department
-            { "rhpd", AgencyType.CityPolice }, // Rockford Hills Police Department
-            { "pap", AgencyType.CityPolice }, // Port Authority Police (Los Santos)
-            { "gspd", AgencyType.CityPolice }, // Grape Seed Police Department
-            { "sspd", AgencyType.CityPolice }, // Sandy Shore Police Department
-            { "pbpd", AgencyType.CityPolice }, // Paleto Bay Police Department
+        #region Instance Properties
 
-            { "lssd", AgencyType.CountySheriff }, // Los Santos Sheriff Department
-            { "bcso", AgencyType.CountySheriff }, // Blaine County Sheriff Office
-            { "bcsd", AgencyType.CountySheriff }, // Blaine County Sheriff Department
+        /// <summary>
+        /// Gets the full string name of this agency
+        /// </summary>
+        public string Name { get; private set; }
 
-            { "lspd_swat", AgencyType.SWAT }, // Los Santos Police Department Swat Team
-            { "lssd_swat", AgencyType.SWAT }, // Los Santos Sheriff Department Swat Team
+        /// <summary>
+        /// Gets the full script name of this agency
+        /// </summary>
+        public string ScriptName { get; private set; }
 
-            { "doa", AgencyType.DrugUnit },
+        /// <summary>
+        /// Gets the <see cref="API.AgencyType"/> for this <see cref="Agency"/>
+        /// </summary>
+        public AgencyType AgencyType => AgencyTypes[ScriptName];
 
-            { "sapr", AgencyType.ParkRanger }, // San Andreas Park Rangers
-        };
+        /// <summary>
+        /// Containts a <see cref="SpawnGenerator{T}"/> list of vehicles for this agency
+        /// </summary>
+        private Dictionary<PatrolType, SpawnGenerator<PoliceVehicleInfo>> Vehicles { get; set; }
+
+        #endregion
+
+        #region Static Methods 
 
         /// <summary>
         /// Loads the XML data that defines all police agencies, and thier jurisdiction
@@ -73,6 +80,8 @@ namespace AgencyCalloutsPlus.API
             IsInitialized = true;
 
             // Create collections
+            Agencies = new Dictionary<string, Agency>(5);
+            AgencyTypes = new Dictionary<string, AgencyType>(25);
             AgencyZones = new Dictionary<string, List<string>>();
             var mapping = new Dictionary<string, string>();
 
@@ -143,7 +152,108 @@ namespace AgencyCalloutsPlus.API
             // Load each custom agency XML to get police car names!
             GameFiber.Yield();
 
+            // Load Agencies.xml for agency types
+            path = Path.Combine(Main.PluginFolderPath, "Agencies.xml");
+            document = new XmlDocument();
+            using (var file = new FileStream(path, FileMode.Open))
+            {
+                document.Load(file);
+            }
+
+            // Get names
+            string[] enumNames = Enum.GetNames(typeof(PatrolType));
+
+            // cycle though agencies
+            foreach (XmlNode n in document.DocumentElement.ChildNodes)
+            {
+                // Skip comments
+                if (n.NodeType == XmlNodeType.Comment)
+                    continue;
+
+                // extract data
+                string name = n.SelectSingleNode("Name")?.InnerText;
+                string sname = n.SelectSingleNode("ScriptName")?.InnerText;
+                string atype = n.SelectSingleNode("AgencyType")?.InnerText;
+                XmlNode vehicleNode = n.SelectSingleNode("Vehicles");
+
+                // Check name
+                if (String.IsNullOrWhiteSpace(sname))
+                {
+                    Game.LogTrivial($"[WARN] AgencyCalloutsPlus: Unable to extract ScriptName value for agency in Agencies.xml");
+                    continue;
+                }
+
+                // Try and parse agency type
+                if (String.IsNullOrWhiteSpace(atype) || !Enum.TryParse(atype, out AgencyType type))
+                {
+                    Game.LogTrivial($"[WARN] AgencyCalloutsPlus: Unable to extract AgencyType value for '{sname}' in Agencies.xml");
+                    continue;
+                }
+
+                // Load vehicles
+                Agency agency = new Agency() { ScriptName = sname, Name = name };
+                foreach (string ename in enumNames)
+                {
+                    // Try and extract patrol vehicle type
+                    XmlNode cn = vehicleNode.SelectSingleNode(ename);
+                    if (cn == null)
+                        continue;
+
+                    // Load each vehicle
+                    foreach (XmlNode vn in cn.ChildNodes)
+                    {
+                        // Ensure we have attributes
+                        if (vn.Attributes == null)
+                        {
+                            Game.LogTrivial($"[WARN] AgencyCalloutsPlus: Vehicle item for '{sname}' has no attributes in Agencies.xml");
+                            continue;
+                        }
+
+                        // Try and extract probability value
+                        if (vn.Attributes["probability"]?.Value == null || !int.TryParse(vn.Attributes["probability"].Value, out int probability))
+                        {
+                            Game.LogTrivial($"[WARN] AgencyCalloutsPlus: Unable to extract vehicle probability value for '{sname}' in Agencies.xml");
+                            continue;
+                        }
+
+                        // Create vehicle info
+                        var info = new PoliceVehicleInfo()
+                        {
+                            ModelName = vn.InnerText,
+                            Probability = probability
+                        };
+
+                        // Try and extract livery value
+                        if (vn.Attributes["livery"]?.Value != null && int.TryParse(vn.Attributes["livery"].Value, out int livery))
+                        {
+                            info.Livery = livery;
+                        }
+
+                        // Extract extras
+                        if (!String.IsNullOrWhiteSpace(vn.Attributes["extras"]?.Value))
+                        {
+                            string extras = vn.Attributes["extras"].Value;
+                            info.Extras = extras.ToIntList().ToArray();
+                        }
+
+                        // Extract spawn color
+                        if (!String.IsNullOrWhiteSpace(vn.Attributes["color"]?.Value))
+                        {
+                            string color = vn.Attributes["color"].Value;
+                            info.SpawnColor = (Color)Enum.Parse(typeof(Color), color);
+                        }
+
+                        // Add vehicle to agency
+                        agency.AddVehicle((PatrolType)Enum.Parse(typeof(PatrolType), ename), info);
+                    }
+                }
+
+                Agencies.Add(sname, agency);
+                AgencyTypes.Add(sname, type);
+            }
+
             // Clean up!
+            GameFiber.Yield();
             document = null;
         }
 
@@ -256,5 +366,118 @@ namespace AgencyCalloutsPlus.API
             return AgencyType.NotSupported;
         }
 
+        /// <summary>
+        /// Gets the players current police agency
+        /// </summary>
+        /// <returns></returns>
+        public static Agency GetCurrentPlayerAgency()
+        {
+            string name = Functions.GetCurrentAgencyScriptName().ToLowerInvariant();
+            return (Agencies.ContainsKey(name)) ? Agencies[name] : null;
+        }
+
+        /// <summary>
+        /// Gets the Agency data for the specied Agency
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        public static Agency GetAgencyByName(string name)
+        {
+            name = name.ToLowerInvariant();
+            return (Agencies.ContainsKey(name)) ? Agencies[name] : null;
+        }
+
+        #endregion Static Methods
+
+        #region Instance Methods
+
+        internal Agency()
+        {
+            Vehicles = new Dictionary<PatrolType, SpawnGenerator<PoliceVehicleInfo>>();
+        }
+
+        /// <summary>
+        /// Adds a vehicle to the list of vehicles that can be spawned from this agency
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name="info"></param>
+        internal void AddVehicle(PatrolType type, PoliceVehicleInfo info)
+        {
+            if (!Vehicles.ContainsKey(type))
+            {
+                Vehicles.Add(type, new SpawnGenerator<PoliceVehicleInfo>());
+            }
+
+            Vehicles[type].Add(info);
+        }
+
+        /// <summary>
+        /// Spawns a random police vehicle for this agency at the specified location. The vehicle
+        /// will not contain a police ped inside.
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name="spawnPoint"></param>
+        /// <returns></returns>
+        public Vehicle SpawnPoliceVehicleOfType(PatrolType type, SpawnPoint spawnPoint)
+        {
+            // Does this agency contain a patrol car of this type?
+            if (!Vehicles.ContainsKey(type))
+            {
+                return null;
+            }
+
+            // Try and spawn a police vehicle
+            if (!Vehicles[type].TrySpawn(out PoliceVehicleInfo info))
+            {
+                Game.LogTrivial($"[TRACE] AgencyCalloutsPlus: Agency.SpawnPoliceVehicleOfType() unable to find vehicle for class {type}");
+                return null;
+            }
+
+            // Spawn vehicle
+            var vehicle = new Vehicle(info.ModelName, spawnPoint.Position, spawnPoint.Heading);
+
+            // Add any extras
+            if (info.Extras != null && info.Extras.Length > 0)
+            {
+                foreach (int extraId in info.Extras)
+                {
+                    // Ensure this vehicle has this livery index
+                    if (!vehicle.DoesExtraExist(extraId))
+                        continue;
+
+                    // Enable
+                    vehicle.SetExtraEnabled(extraId, true);
+                }
+            }
+
+            // IS a spawn Color set?
+            if (info.SpawnColor != default(Color))
+            {
+                vehicle.PrimaryColor = info.SpawnColor;
+            }
+
+            // Livery?
+            if (info.Livery >= 0)
+            {
+                vehicle.SetLivery(info.Livery);
+            }
+
+            return vehicle;
+        }
+
+        #endregion
+
+        internal class PoliceVehicleInfo : ISpawnable
+        {
+            public int Probability { get; set; }
+
+            public string ModelName { get; set; }
+
+            public int Livery { get; set; } = -1;
+
+            public Color SpawnColor { get; set; }
+
+            public int[] Extras { get; set; }
+        }
     }
 }

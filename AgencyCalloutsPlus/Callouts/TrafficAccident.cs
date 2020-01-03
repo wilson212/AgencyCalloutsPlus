@@ -87,6 +87,8 @@ namespace AgencyCalloutsPlus.Callouts
             {
                 var details = ScenarioNode.SelectSingleNode("CalloutDetails").ChildNodes;
                 var rando = new CryptoRandom();
+                var callDetails = details[rando.Next(0, details.Count - 1)].InnerText
+                    .Replace("{{location}}", World.GetStreetName(SpawnPoint.Position));
 
                 // Create callout
                 CalloutID = ComputerPlusAPI.CreateCallout(
@@ -94,7 +96,7 @@ namespace AgencyCalloutsPlus.Callouts
                     "Vehicle Accident",
                     CalloutPosition,
                     (ScenarioInfo.RespondCode3) ? 1 : 0,
-                    details[rando.Next(0, details.Count - 1)].InnerText,
+                    callDetails,
                     1, null, null);
             }
 
@@ -119,17 +121,13 @@ namespace AgencyCalloutsPlus.Callouts
 
         public override bool OnCalloutAccepted()
         {
-            /* Example notification
-            Game.DisplayNotification(
-                "3dtextures", 
-                "mpgroundlogo_cops", 
-                "~o~ANPR Hit: ~r~Owner Wanted", 
-                "Dispatch to ~b~ |||", 
-                "The ~o~ANPR Hit ~s~is for ~r~ ||| . ~b~Use appropriate caution."
-            );*/
-
             // Setup active scene
             Scenario.Setup();
+
+            /*
+            Agency agency = Agency.GetCurrentPlayerAgency();
+            SpawnPoint info = new SpawnPoint(Game.LocalPlayer.Character.Position.Around(15), Game.LocalPlayer.Character.Heading);
+            var copcar = agency.SpawnPoliceVehicleOfType(PatrolType.LocalPatrol, info);*/
 
             // Return base
             return base.OnCalloutAccepted();
