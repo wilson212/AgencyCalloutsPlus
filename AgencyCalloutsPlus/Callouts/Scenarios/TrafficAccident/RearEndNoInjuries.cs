@@ -19,6 +19,11 @@ namespace AgencyCalloutsPlus.Callouts.Scenarios.TrafficAccident
         /// </summary>
         private Callouts.TrafficAccident Callout { get; set; }
 
+        /// <summary>
+        /// Gets the SpawnPoint location of this <see cref="CalloutScenario"/>
+        /// </summary>
+        public LocationInfo SpawnPoint { get; protected set; }
+
         private Ped Victim;
         private VehicleClass VictimVehicleType;
         private Vehicle VictimVehicle;
@@ -67,9 +72,6 @@ namespace AgencyCalloutsPlus.Callouts.Scenarios.TrafficAccident
             VictimVehicle.IsPersistent = true;
             VictimVehicle.EngineHealth = 0;
             VictimVehicle.DeformRear(200, 200);
-
-            var dime = VictimVehicle.Model.Dimensions;
-            Game.LogTrivial($"Victim1 dimensions: X={dime.X}; Y={dime.Y}; Z={dime.Z}");
 
             // Create Victim
             Victim = VictimVehicle.CreateRandomDriver();

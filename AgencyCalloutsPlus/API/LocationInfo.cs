@@ -100,7 +100,7 @@ namespace AgencyCalloutsPlus.API
                     }
 
                     // Itterate through items
-                    foreach (XmlNode n in locationTypeNode.SelectNodes("Location"))
+                    foreach (XmlNode n in locationTypeNode.SelectNodes("SpawnPoint"))
                     {
                         // Ensure we have attributes
                         if (n.Attributes == null)
@@ -134,7 +134,7 @@ namespace AgencyCalloutsPlus.API
                         }
 
                         // Try and extract heading value
-                        if (n.Attributes["Heading"]?.Value != null && !float.TryParse(n.Attributes["Heading"].Value, out heading))
+                        if (n.Attributes["heading"]?.Value != null && !float.TryParse(n.Attributes["heading"].Value, out heading))
                         {
                             Game.LogTrivial($"[WARN] AgencyCalloutsPlus: Unable to extract location heading value for '{zone}->{name}->Location'");
                             continue;

@@ -11,11 +11,6 @@ namespace AgencyCalloutsPlus.Callouts
     internal abstract class CalloutScenario
     {
         /// <summary>
-        /// Gets the SpawnPoint location of this <see cref="CalloutScenario"/>
-        /// </summary>
-        public LocationInfo SpawnPoint { get; protected set; }
-
-        /// <summary>
         /// Sets up the current CalloutScene vehicles and peds. This method must be called
         /// in the <see cref="LSPD_First_Response.Mod.Callouts.Callout.OnCalloutAccepted()"/> method
         /// </summary>
