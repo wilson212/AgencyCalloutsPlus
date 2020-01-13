@@ -12,8 +12,10 @@ namespace AgencyCalloutsPlus
     internal class SpawnGenerator<T> where T : ISpawnable
     {
         private CryptoRandom Randomizer = new CryptoRandom();
-        private ICollection<SpawnableWrapper> SpawnableEntities;
+        private List<SpawnableWrapper> SpawnableEntities;
         private bool TypeIsCloneable = false;
+
+        public int ItemCount => SpawnableEntities.Count;
 
         /// <summary>
         /// The Cumulative Probability of all the spawnable objects
@@ -22,13 +24,13 @@ namespace AgencyCalloutsPlus
 
         public SpawnGenerator()
         {
-            TypeIsCloneable = typeof(ICloneable).IsAssignableFrom(typeof(T));
+            //TypeIsCloneable = typeof(ICloneable).IsAssignableFrom(typeof(T));
             SpawnableEntities = new List<SpawnableWrapper>();
         }
 
         public SpawnGenerator(IEnumerable<T> objects)
         {
-            TypeIsCloneable = typeof(ICloneable).IsAssignableFrom(typeof(T));
+            //TypeIsCloneable = typeof(ICloneable).IsAssignableFrom(typeof(T));
             SpawnableEntities = new List<SpawnableWrapper>();
 
             AddRange(objects);
@@ -61,6 +63,14 @@ namespace AgencyCalloutsPlus
         }
 
         /// <summary>
+        /// Clears all items in this <see cref="SpawnGenerator{T}"/>
+        /// </summary>
+        public void Clear()
+        {
+            SpawnableEntities.Clear();
+        }
+
+        /// <summary>
         /// Returns an instance of <typeparamref name="T"/> based off of the 
         /// RNG probability of that instance.
         /// </summary>
@@ -70,6 +80,10 @@ namespace AgencyCalloutsPlus
             // Ensure we have at least 1 object to spawn
             if (SpawnableEntities.Count == 0)
                 throw new Exception("There are no spawnable entities");
+
+            // If we have just 1 item, return that
+            if (SpawnableEntities.Count == 1)
+                return SpawnableEntities.First().Spawnable;
 
             // Generate the next random number
             var i = Randomizer.Next(0, CumulativeProbability);
@@ -94,7 +108,15 @@ namespace AgencyCalloutsPlus
 
             // Ensure we have at least 1 object to spawn
             if (SpawnableEntities.Count == 0)
+            {
                 return false;
+            }
+            else if (SpawnableEntities.Count == 1)
+            {
+                // If we have just 1 item, return that
+                retVal = SpawnableEntities.First().Spawnable;
+                return true;
+            }
 
             // Generate the next random number
             try

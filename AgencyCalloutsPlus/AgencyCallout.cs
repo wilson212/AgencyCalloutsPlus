@@ -1,10 +1,12 @@
-﻿using AgencyCalloutsPlus.Integration;
+﻿using AgencyCalloutsPlus.API;
+using AgencyCalloutsPlus.Integration;
 using LSPD_First_Response.Mod.API;
 using LSPD_First_Response.Mod.Callouts;
 using Rage;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Xml;
 
 namespace AgencyCalloutsPlus
@@ -42,7 +44,7 @@ namespace AgencyCalloutsPlus
         /// </summary>
         /// <param name="paths"></param>
         /// <returns></returns>
-        public XmlDocument LoadScenarioFile(params string[] paths)
+        protected XmlDocument LoadScenarioFile(params string[] paths)
         {
             // Create file path
             string path = Main.LSPDFRPluginPath;
@@ -71,23 +73,64 @@ namespace AgencyCalloutsPlus
         /// </summary>
         /// <param name="calloutName">The name of the callout in the <see cref="CalloutInfoAttribute"/></param>
         /// <returns>returns a <see cref="CalloutScenarioInfo"/> on success, or null otherwise</returns>
-        internal CalloutScenarioInfo LoadRandomScenario(string calloutName)
+        internal static CalloutScenarioInfo LoadRandomScenario(string calloutName)
         {
             // Try and fetch the SpawnGenerator
             if (Scenarios.TryGetValue(calloutName, out SpawnGenerator<CalloutScenarioInfo> spawner))
             {
                 // Can we spawn a scenario?
-                if (!spawner.TrySpawn(out CalloutScenarioInfo scene))
+                if (!spawner.TrySpawn(out CalloutScenarioInfo scenario))
                 {
                     Game.LogTrivial($"[ERROR] AgencyCalloutsPlus: Callout '{calloutName}' does not have any Scenarios registered");
                     return null;
                 }
 
-                return scene;
+                return scenario;
             }
 
             return null;
         }
+
+        /*
+        /// <summary>
+        /// Calculates a range based on zone factors such as population density,
+        /// and jurisdiction type of the players agency
+        /// </summary>
+        /// <param name="IsPriority">Is this a priority call</param>
+        protected virtual Range<float> CalculateBestTravelDisatnceForCallout(bool IsPriority)
+        {
+            // Get player agency
+            var agency = Agency.GetCurrentPlayerAgency();
+            if (agency == null)
+            {
+                // Default of 1 mile
+                return new Range<float>(200, 1610);
+            }
+
+            // Define our long distance types, with broad jurisdictions
+            AgencyType[] longDistanceTypes = { AgencyType.HighwayPatrol, AgencyType.SpecialAgent };
+            AgencyType[] midDistanceTypes = { AgencyType.CountySheriff, AgencyType.ParkRanger };
+
+            // Create modifiers
+            float modifier = (IsPriority) ? 800 : 0;
+            if (longDistanceTypes.Contains(agency.AgencyType))
+                modifier += 800;
+            else if (midDistanceTypes.Contains(agency.AgencyType))
+                modifier += 400;
+
+            // Return calculated distance
+            switch (agency.StaffingLevel)
+            {
+                // Poor funding - 1.5 mile base
+                case FundingLevel.Poor: return new Range<float>(200, 2400 + modifier);
+
+                // Fair funding - 1 mile base
+                case FundingLevel.Fair: return new Range<float>(200, 1600 + modifier);
+
+                // Good funding - 0.5 mile base
+                default: return new Range<float>(200, 800 + modifier);
+            }
+        }*/
 
         public override bool OnBeforeCalloutDisplayed()
         {
@@ -114,61 +157,6 @@ namespace AgencyCalloutsPlus
             {
                 Functions.PlayScannerAudio("OTHER_UNIT_TAKING_CALL");
                 ComputerPlusAPI.AssignCallToAIUnit(CalloutID);
-            }
-        }
-
-        /// <summary>
-        /// Registers and caches all the scenarios for a callout using the CalloutMeta.xml
-        /// </summary>
-        /// <param name="calloutName"></param>
-        /// <param name="doc"></param>
-        internal static void CacheScenarios(string calloutName, XmlDocument doc)
-        {
-            // Ensure dictionary is created
-            if (Scenarios == null)
-                Scenarios = new Dictionary<string, SpawnGenerator<CalloutScenarioInfo>>();
-
-            // Ensure callout is registed in dictionary
-            if (!Scenarios.ContainsKey(calloutName))
-                Scenarios.Add(calloutName, new SpawnGenerator<CalloutScenarioInfo>());
-
-            // Process the XML scenarios
-            foreach (XmlNode n in doc.DocumentElement.SelectSingleNode("Scenarios").ChildNodes)
-            {
-                // Ensure we have attributes
-                if (n.Attributes == null)
-                {
-                    Game.LogTrivial($"[WARN] AgencyCalloutsPlus: Scenario item has no attributes in '{calloutName}->Scenarios->{n.Name}'");
-                    continue;
-                }
-
-                // Try and extract probability value
-                if (n.Attributes["probability"]?.Value == null || !int.TryParse(n.Attributes["probability"].Value, out int probability))
-                {
-                    Game.LogTrivial(
-                        $"[WARN] AgencyCalloutsPlus: Unable to extract scenario probability value for '{calloutName}->Scenarios->{n.Name}'"
-                    );
-                    continue;
-                }
-
-                // Try and extract Code value
-                if (n.Attributes["respond"]?.Value == null)
-                {
-                    Game.LogTrivial(
-                        $"[WARN] AgencyCalloutsPlus: Unable to extract scenario respond value for '{calloutName}->Scenarios->{n.Name}'"
-                    );
-                    continue;
-                }
-
-
-                // Create scenario node
-                var scene = new CalloutScenarioInfo()
-                {
-                    Name = n.Name,
-                    Probability = probability,
-                    RespondCode3 = (n.Attributes["respond"].Value.Contains("3"))
-                };
-                Scenarios[calloutName].Add(scene);
             }
         }
     }

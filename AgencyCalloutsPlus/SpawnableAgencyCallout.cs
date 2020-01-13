@@ -1,15 +1,18 @@
 ﻿using AgencyCalloutsPlus.Extensions;
 using LSPD_First_Response.Mod.Callouts;
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-namespace AgencyCalloutsPlus
+namespace AgencyCalloutsPlus.API
 {
-    /// <summary>
-    /// Represents a spawnable entity, containing Callout information
-    /// </summary>
-    internal class SpawnableCallout : ISpawnable
+    internal class SpawnableAgencyCallout : ISpawnable
     {
         public string Name { get; set; }
+
+        public CalloutType CrimeType { get; set; }
 
         /// <summary>
         /// The <see cref="LSPD_First_Response.Mod.Callouts.Callout"/> object
@@ -21,10 +24,10 @@ namespace AgencyCalloutsPlus
         /// </summary>
         public int Probability { get; set; }
 
-        public SpawnableCallout(Type calloutType, int probability)
+        public SpawnableAgencyCallout(Type classType, CalloutType calloutType, int probability)
         {
-            Name = calloutType.GetAttributeValue((CalloutInfoAttribute attr) => attr.Name);
-            CalloutSystemType = calloutType;
+            Name = classType.GetAttributeValue((CalloutInfoAttribute attr) => attr.Name);
+            CalloutSystemType = classType;
             Probability = probability;
         }
     }

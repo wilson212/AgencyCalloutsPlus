@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 
 namespace AgencyCalloutsPlus.API
 {
-    public enum LocationType
+    public class HomeLocation
     {
-        SideOfRoad,
-        Homes,
-        Stores
+        public string Address { get; protected set; }
+
+        private Dictionary<HomeSpawnType, SpawnPoint> SpawnPoints { get; set; }
     }
 }

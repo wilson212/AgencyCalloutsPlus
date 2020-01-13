@@ -22,7 +22,7 @@ namespace AgencyCalloutsPlus.Callouts.Scenarios.TrafficAccident
         /// <summary>
         /// Gets the SpawnPoint location of this <see cref="CalloutScenario"/>
         /// </summary>
-        public LocationInfo SpawnPoint { get; protected set; }
+        public SpawnPoint SpawnPoint { get; protected set; }
 
         private Ped Victim;
         private VehicleClass VictimVehicleType;
@@ -67,8 +67,7 @@ namespace AgencyCalloutsPlus.Callouts.Scenarios.TrafficAccident
 
             // Create victim car
             var victimV = VehicleInfo.GetRandomVehicleByType(VictimVehicleType);
-            var sideLocation = (SideOfRoadLocation)SpawnPoint;
-            VictimVehicle = new Vehicle(victimV.ModelName, SpawnPoint.Position, sideLocation.Heading);
+            VictimVehicle = new Vehicle(victimV.ModelName, SpawnPoint.Position, SpawnPoint.Heading);
             VictimVehicle.IsPersistent = true;
             VictimVehicle.EngineHealth = 0;
             VictimVehicle.DeformRear(200, 200);
@@ -82,7 +81,7 @@ namespace AgencyCalloutsPlus.Callouts.Scenarios.TrafficAccident
             var vector = VictimVehicle.GetOffsetPositionFront(-(VictimVehicle.Length + 1f));
             var suspectV = VehicleInfo.GetRandomVehicleByType(SuspectVehicleType);
 
-            SuspectVehicle = new Vehicle(suspectV.ModelName, vector, sideLocation.Heading);
+            SuspectVehicle = new Vehicle(suspectV.ModelName, vector, SpawnPoint.Heading);
             SuspectVehicle.IsPersistent = true;
             SuspectVehicle.EngineHealth = 0;
             SuspectVehicle.DeformFront(200, 200);

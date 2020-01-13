@@ -5,7 +5,8 @@
   
   Important notes:
 
-    # These are supported agency types:
+    # The "AgencyType" entry determines which callouts are available, and how often they occur while
+    # on duty. These are supported values (case sensitive):
       - CityPolice
       - CountySheriff
       - DrugUnit
@@ -17,11 +18,33 @@
       - SpecialAgent
       - SWAT
       
+    # The "StaffLevel" entry determines the number of officers the department has, relative to the Optimum amount
+    # of officers it should have to police thier jurisdiction. The lower the staffing level, the more callouts
+    # the player will be given within a span of time, as well as longer drive times. 
+    # These are the support values (case sensitive):
+      - "VeryLow"   : [60%] Severely Understaffed. Do not use this option on smaller departments. Player will have no down time,
+                      and will always have a stack of 1-4 calls to attend to. Drives will extend within the entire bounds of the agency's
+                      jurisdiction. No traffic patrols (service calls only). Backup units are never available unless code 99.
+                      
+      - "Low"       : [75%] Understaffed. Player will have little down time, and may have 1 or 2 calls stacked. Department too busy for 
+                      traffic patrols (service calls only). Drives may extend up to the entire bounds of the agency's jurisdiction.
+                      Backup units are busy, but will respond if code 99, and may have very long drive times.
+                      
+      - "Fair"      : [90%] Slightly understaffed. Player will have some down time between calls (rarely stacked). Department has very 
+                      few traffic patrols. Drive times vary, but should not be too long (depending on number of active calls). 
+                      Backup units are available, but may have a Fair drive (unless code 99).
+      
+      - "High"      : [100%] Appropriately staffed. Backup is always close by and available. Traffic patrols are active. Drive times
+                      are short to Fair (Fair if code 3 only). Player will have down some time between callouts (never stacked).
+      
+      - "VeryHigh"  : [110%] Overstaffed, very few callouts dispatched to the player (only if close range). Player will have notable
+                      downtime between calls. 
+      
     # The "Vehicle" entry has the following attributes:
       - "probability" is the random probability for the vehicle model to be chosen relative to other vehicles probability
       - "livery" the livery number on vehicle model (the first livery index is "1")
       - "color" the color of the vehicle. It might be a "integer number" or "color name" (from https://docs.microsoft.com/en-us/dotnet/api/system.drawing.color?view=netframework-4.6.1 )
-      - "extras" specifies which extra's to enable when spawned
+      - "extras" specifies which extra's to enable when spawned.
 -->
 <Agencies>
   <!-- Police Departments -->
@@ -29,6 +52,7 @@
     <Name>Los Santos Police Department</Name>
     <ScriptName>lspd</ScriptName>
     <AgencyType>CityPolice</AgencyType>
+    <StaffLevel>Fair</StaffLevel>
     <Vehicles>
       <LocalPatrol>
         <Vehicle probability="5">POLICE</Vehicle>
@@ -44,6 +68,7 @@
     <Name>Del Parro Police Department</Name>
     <ScriptName>dppd</ScriptName>
     <AgencyType>CityPolice</AgencyType>
+    <StaffLevel>Fair</StaffLevel>
     <Vehicles>
       <LocalPatrol>
         <Vehicle probability="5">POLICE</Vehicle>
@@ -59,6 +84,7 @@
     <Name>Vespucci Police Department</Name>
     <ScriptName>vppd</ScriptName>
     <AgencyType>CityPolice</AgencyType>
+    <StaffLevel>High</StaffLevel>
     <Vehicles>
       <LocalPatrol>
         <Vehicle probability="5">POLICE</Vehicle>
@@ -74,6 +100,7 @@
     <Name>Vinewood Police Department</Name>
     <ScriptName>vwpd</ScriptName>
     <AgencyType>CityPolice</AgencyType>
+    <StaffLevel>High</StaffLevel>
     <Vehicles>
       <LocalPatrol>
         <Vehicle probability="5">POLICE</Vehicle>
@@ -89,6 +116,7 @@
     <Name>La Messa Police Department</Name>
     <ScriptName>lmpd</ScriptName>
     <AgencyType>CityPolice</AgencyType>
+    <StaffLevel>Fair</StaffLevel>
     <Vehicles>
       <LocalPatrol>
         <Vehicle probability="5">POLICE</Vehicle>
@@ -104,6 +132,7 @@
     <Name>Rockford Hills Police Department</Name>
     <ScriptName>rhpd</ScriptName>
     <AgencyType>CityPolice</AgencyType>
+    <StaffLevel>High</StaffLevel>
     <Vehicles>
       <LocalPatrol>
         <Vehicle probability="5">POLICE</Vehicle>
@@ -119,6 +148,7 @@
     <Name>Port Authority Police (Los Santos)</Name>
     <ScriptName>pap</ScriptName>
     <AgencyType>CityPolice</AgencyType>
+    <StaffLevel>Fair</StaffLevel>
     <Vehicles>
       <LocalPatrol>
         <Vehicle probability="5">POLICE</Vehicle>
@@ -134,6 +164,7 @@
     <Name>Grape Seed Police Department</Name>
     <ScriptName>gspd</ScriptName>
     <AgencyType>CityPolice</AgencyType>
+    <StaffLevel>Low</StaffLevel>
     <Vehicles>
       <LocalPatrol>
         <Vehicle probability="5">SHERIFF</Vehicle>
@@ -148,6 +179,7 @@
     <Name>Sandy Shore Police Department</Name>
     <ScriptName>sspd</ScriptName>
     <AgencyType>CityPolice</AgencyType>
+    <StaffLevel>Low</StaffLevel>
     <Vehicles>
       <LocalPatrol>
         <Vehicle probability="5">SHERIFF</Vehicle>
@@ -162,6 +194,7 @@
     <Name>Paleto Bay Police Department</Name>
     <ScriptName>pbpd</ScriptName>
     <AgencyType>CityPolice</AgencyType>
+    <StaffLevel>Fair</StaffLevel>
     <Vehicles>
       <LocalPatrol>
         <Vehicle probability="5">SHERIFF</Vehicle>
@@ -178,6 +211,7 @@
     <Name>Los Santos Sheriff Department</Name>
     <ScriptName>lssd</ScriptName>
     <AgencyType>CountySheriff</AgencyType>
+    <StaffLevel>Fair</StaffLevel>
     <Vehicles>
       <LocalPatrol>
         <Vehicle probability="5">SHERIFF</Vehicle>
@@ -192,6 +226,7 @@
     <Name>Blaine County Sheriff Office</Name>
     <ScriptName>bcso</ScriptName>
     <AgencyType>CountySheriff</AgencyType>
+    <StaffLevel>Low</StaffLevel>
     <Vehicles>
       <LocalPatrol>
         <Vehicle probability="5">SHERIFF</Vehicle>
@@ -208,6 +243,7 @@
     <Name>San Andreas Highway Partol</Name>
     <ScriptName>sahp</ScriptName>
     <AgencyType>HighwayPatrol</AgencyType>
+    <StaffLevel>Fair</StaffLevel>
     <Vehicles>
       <LocalPatrol>
         <Vehicle probability="5">policeb</Vehicle>
@@ -218,6 +254,7 @@
     <Name>North Yankton State Patrol</Name>
     <ScriptName>nysp</ScriptName>
     <AgencyType>HighwayPatrol</AgencyType>
+    <StaffLevel>Fair</StaffLevel>
     <Vehicles>
       <LocalPatrol>
         <Vehicle probability="5">policeold1</Vehicle>
@@ -231,6 +268,7 @@
     <Name>Federal Investigation Bureau</Name>
     <ScriptName>fib</ScriptName>
     <AgencyType>SpecialAgent</AgencyType>
+    <StaffLevel>VeryHigh</StaffLevel>
     <Vehicles>
       <LocalPatrol>
         <Vehicle probability="5">FBI</Vehicle>
@@ -242,6 +280,7 @@
     <Name>National Office of Security Enforcement</Name>
     <ScriptName>noose</ScriptName>
     <AgencyType>SpecialAgent</AgencyType>
+    <StaffLevel>High</StaffLevel>
     <Vehicles>
       <LocalPatrol>
         <Vehicle probability="5">FBI</Vehicle>
@@ -255,6 +294,7 @@
     <Name>San Andreas Park Rangers</Name>
     <ScriptName>sapr</ScriptName>
     <AgencyType>ParkRanger</AgencyType>
+    <StaffLevel>Low</StaffLevel>
     <Vehicles>
       <LocalPatrol>
         <Vehicle probability="5">FBI</Vehicle>

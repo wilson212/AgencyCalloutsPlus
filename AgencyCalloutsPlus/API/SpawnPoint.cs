@@ -1,13 +1,8 @@
 ﻿using Rage;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace AgencyCalloutsPlus.API
 {
-    public class SpawnPoint
+    public class SpawnPoint : GameLocation
     {
         /// <summary>
         /// Gets the <see cref="Vector3"/> position of this location

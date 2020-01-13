@@ -129,16 +129,27 @@ namespace AgencyCalloutsPlus
 
                 // Load locations based on current agency jurisdiction.
                 // This method needs called everytime the player Agency is changed
-                LocationInfo.LoadZones(Agency.GetCurrentAgencyJurisdictionZones());
+                ZoneInfo.LoadZones(Agency.GetCurrentAgencyJurisdictionZones());
 
                 // Load vehicles (this will only initialize once per game session)
                 VehicleInfo.Initialize();
 
-                // Register callouts (this will only initialize once per game session)
-                AgencyCalloutDispatcher.Initialize();
-
                 // See what else is running
                 ComputerPlusAPI.Initialize();
+
+                // Finally, start dispatch call center
+                if (AgencyCalloutDispatcher.StartDuty())
+                {
+                    var agency = Agency.GetCurrentPlayerAgency();
+                    var lvl = AgencyCalloutDispatcher.OverallCrimeLevel;
+                    Game.DisplayNotification(
+                        "3dtextures",
+                        "mpgroundlogo_cops",
+                        "Agency Dispatch and Callouts+",
+                        "~g~Plugin is Now Active.",
+                        $"Now on duty serving ~g~{agency.ZoneCount}~s~ zone(s) with an overall crime level of ~b~{lvl}"
+                    );
+                }
             });
         }
 

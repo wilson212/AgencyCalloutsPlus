@@ -1,4 +1,4 @@
-﻿using System.Xml;
+﻿using AgencyCalloutsPlus.API;
 
 namespace AgencyCalloutsPlus
 {
@@ -8,6 +8,16 @@ namespace AgencyCalloutsPlus
 
         public string Name { get; set; }
 
+        public string CalloutName { get; set; }
+
         public bool RespondCode3 { get; set; }
+
+        public int Priority { get; set; }
+
+        public LocationType LocationType { get; set; }
+
+        public string ScannerText { get; set; }
+
+        public string[] Descriptions { get; set; }
     }
 }

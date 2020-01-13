@@ -11,7 +11,7 @@ using System.Xml;
 namespace AgencyCalloutsPlus.API
 {
     /// <summary>
-    /// Represents the Current Player Police Agency
+    /// Represents the Current Player Police/Sheriff Department
     /// </summary>
     public class Agency
     {
@@ -48,7 +48,7 @@ namespace AgencyCalloutsPlus.API
         /// <summary>
         /// Gets the full string name of this agency
         /// </summary>
-        public string Name { get; private set; }
+        public string FriendlyName { get; private set; }
 
         /// <summary>
         /// Gets the full script name of this agency
@@ -59,6 +59,42 @@ namespace AgencyCalloutsPlus.API
         /// Gets the <see cref="API.AgencyType"/> for this <see cref="Agency"/>
         /// </summary>
         public AgencyType AgencyType => AgencyTypes[ScriptName];
+
+        /// <summary>
+        /// Gets the funding level of this department. This will be used to determine
+        /// how frequent callouts will be handled by the other AI officers.
+        /// </summary>
+        public StaffLevel StaffLevel { get; protected set; }
+
+        /// <summary>
+        /// Gets the optimum number of patrols
+        /// </summary>
+        public double OptimumPatrols { get; private set; }
+
+        /// <summary>
+        /// Gets the number of patrol units for this agency
+        /// </summary>
+        public int ActualPatrols { get; protected set; }
+
+        /// <summary>
+        /// Gets the max crime level index of this agency
+        /// </summary>
+        public int MaxCrimeLevel { get; protected set; }
+
+        /// <summary>
+        /// Gets the overall crime level index of this agency
+        /// </summary>
+        public int OverallCrimeLevel { get; protected set; }
+
+        /// <summary>
+        /// Gets the number of zones in this jurisdiction
+        /// </summary>
+        public int ZoneCount { get; protected set; }
+
+        /// <summary>
+        /// Gets a list of zones in this jurisdiction
+        /// </summary>
+        private SpawnGenerator<ZoneInfo> ZoneGenerator { get; set; }
 
         /// <summary>
         /// Containts a <see cref="SpawnGenerator{T}"/> list of vehicles for this agency
@@ -147,7 +183,17 @@ namespace AgencyCalloutsPlus.API
                 // add
                 AgencyZones.Add(agency, zones);
             }
-            
+
+            // Add Highway to highway patrol
+            if (AgencyZones.ContainsKey("sahp"))
+            {
+                AgencyZones["sahp"].Add("HIGHWAY");
+            }
+            else
+            {
+                AgencyZones.Add("sahp", new List<string>() { "HIGHWAY" });
+            }
+
 
             // Load each custom agency XML to get police car names!
             GameFiber.Yield();
@@ -174,6 +220,7 @@ namespace AgencyCalloutsPlus.API
                 string name = n.SelectSingleNode("Name")?.InnerText;
                 string sname = n.SelectSingleNode("ScriptName")?.InnerText;
                 string atype = n.SelectSingleNode("AgencyType")?.InnerText;
+                string ftype = n.SelectSingleNode("StaffLevel")?.InnerText;
                 XmlNode vehicleNode = n.SelectSingleNode("Vehicles");
 
                 // Check name
@@ -190,8 +237,15 @@ namespace AgencyCalloutsPlus.API
                     continue;
                 }
 
+                // Try and parse funding level
+                if (String.IsNullOrWhiteSpace(ftype) || !Enum.TryParse(ftype, out StaffLevel staffing))
+                {
+                    Game.LogTrivial($"[WARN] AgencyCalloutsPlus: Unable to extract StaffLevel value for '{sname}' in Agencies.xml");
+                    continue;
+                }
+
                 // Load vehicles
-                Agency agency = new Agency() { ScriptName = sname, Name = name };
+                Agency agency = new Agency(sname, name, staffing);
                 foreach (string ename in enumNames)
                 {
                     // Try and extract patrol vehicle type
@@ -276,7 +330,7 @@ namespace AgencyCalloutsPlus.API
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>
-        public static string[] GetZonesByAgencyName(string name)
+        public static string[] GetZoneNamesByAgencyName(string name)
         {
             name = name.ToLowerInvariant();
             if (AgencyZones.ContainsKey(name))
@@ -288,19 +342,19 @@ namespace AgencyCalloutsPlus.API
         }
 
         /// <summary>
-        /// Gets a random <see cref="LocationInfo"/> within the Players current agency area of jurisdiction
+        /// Gets a random <see cref="SpawnPoint"/> on the side of a road within the Players 
+        /// current agency area of jurisdiction
         /// </summary>
         /// <remarks>
         /// This method is best NOT used by state troopers with full map jurisdiction
         /// </remarks>
-        /// <param name="type">The location type to get a random position for</param>
         /// <param name="range">
         /// if not null, sets the distance requirement for the position using 
         /// <see cref="Vector3.TravelDistanceTo(Vector3)"/>. If the player is outside this range from all
         /// positions in his jurisdiction, this method with return null.
         /// </param>
         /// <returns>returns a <see cref="LocationInfo"/> on success, or null on failure</returns>
-        public static LocationInfo GetRandomLocationInJurisdiction(LocationType type, Range<float> range = null)
+        public static SpawnPoint GetRandomSideOfRoadLocation(Range<float> range = null)
         {
             // Load randomizer
             var rando = new CryptoRandom();
@@ -317,9 +371,10 @@ namespace AgencyCalloutsPlus.API
             foreach (string zoneName in zones.OrderBy(x => rando.Next()))
             {
                 // Grab zone positions
-                LocationInfo[] locations = LocationInfo.GetZoneLocationsByName(zoneName, type);
+                ZoneInfo zone = ZoneInfo.GetZoneByName(zoneName);
+                var locations = zone?.SideOfRoadLocations;
 
-                // No positions?
+                // No spawn points?
                 if (locations == null || locations.Length == 0)
                     continue;
 
@@ -348,7 +403,7 @@ namespace AgencyCalloutsPlus.API
             }
 
             // If we are here, we failed to find a position in our juristiction
-            return default(LocationInfo);
+            return null;
         }
 
         /// <summary>
@@ -391,9 +446,41 @@ namespace AgencyCalloutsPlus.API
 
         #region Instance Methods
 
-        internal Agency()
+        internal Agency(string scriptName, string friendlyName, StaffLevel staffLevel)
         {
+            ScriptName = scriptName ?? throw new ArgumentNullException(nameof(scriptName));
+            FriendlyName = friendlyName ?? throw new ArgumentNullException(nameof(friendlyName));
+            StaffLevel = staffLevel;
+
+            // Initiate vars
             Vehicles = new Dictionary<PatrolType, SpawnGenerator<PoliceVehicleInfo>>();
+            ZoneGenerator = new SpawnGenerator<ZoneInfo>();
+        }
+
+        internal void InitializeData()
+        {
+            if (ZoneGenerator.ItemCount == 0)
+            {
+                var zones = GetZoneNamesByAgencyName(ScriptName).Select(x => ZoneInfo.GetZoneByName(x)).ToArray();
+                ZoneGenerator.AddRange(zones);
+                ZoneCount = zones.Length;
+
+                // Determine our overall crime level
+                foreach (var zone in zones)
+                {
+                    // Skip dead zones
+                    if (zone.CrimeLevel == ProbabilityLevel.None)
+                        continue;
+
+                    MaxCrimeLevel += (int)ProbabilityLevel.VeryHigh;
+                    OverallCrimeLevel += (int)zone.CrimeLevel;
+                    OptimumPatrols += zone.IdealPatrolCount;
+                }
+
+                // Deterime our patrol count
+                int staffLevel = (int)StaffLevel;
+                ActualPatrols = (int)(OptimumPatrols * (staffLevel / 100d));
+            }
         }
 
         /// <summary>
@@ -463,6 +550,16 @@ namespace AgencyCalloutsPlus.API
             }
 
             return vehicle;
+        }
+
+        public ZoneInfo GetNextRandomCrimeZone()
+        {
+            if (ZoneGenerator.TrySpawn(out ZoneInfo zone))
+            {
+                return zone;
+            }
+
+            return null;
         }
 
         #endregion

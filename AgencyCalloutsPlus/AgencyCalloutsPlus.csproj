@@ -76,11 +76,25 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AgencyCallout.cs" />
-    <Compile Include="API\AgencyType.cs" />
-    <Compile Include="API\PatrolType.cs" />
-    <Compile Include="API\SideOfRoadLocation.cs" />
+    <Compile Include="API\Enums\CallStatus.cs" />
+    <Compile Include="API\Enums\CalloutType.cs" />
+    <Compile Include="API\Enums\ProbabilityLevel.cs" />
+    <Compile Include="API\Enums\AgencyType.cs" />
+    <Compile Include="API\Enums\HomeSpawnType.cs" />
+    <Compile Include="API\Enums\PatrolType.cs" />
+    <Compile Include="API\Enums\ZoneType.cs" />
+    <Compile Include="API\GameLocation.cs" />
+    <Compile Include="API\HomeLocation.cs" />
+    <Compile Include="API\Enums\Population.cs" />
+    <Compile Include="API\PriorityCall.cs" />
+    <Compile Include="API\Enums\SocialClass.cs" />
+    <Compile Include="SpawnableAgencyCallout.cs" />
+    <Compile Include="API\SpawnableCalloutType.cs" />
     <Compile Include="API\SpawnPoint.cs" />
+    <Compile Include="API\StaffLevel.cs" />
+    <Compile Include="API\ZoneInfo.cs" />
     <Compile Include="API\VehicleInfo.cs" />
+    <Compile Include="API\Enums\ZoneSize.cs" />
     <Compile Include="CalloutScenarioInfo.cs" />
     <Compile Include="Callouts\CalloutScenario.cs" />
     <Compile Include="Callouts\Scenarios\TrafficAccident\RearEndNoInjuries.cs" />
@@ -94,8 +108,7 @@
     <Compile Include="API\AgencyCalloutDispatcher.cs" />
     <Compile Include="CryptoRandom.cs" />
     <Compile Include="API\Agency.cs" />
-    <Compile Include="API\LocationInfo.cs" />
-    <Compile Include="API\LocationType.cs" />
+    <Compile Include="API\Enums\LocationType.cs" />
     <Compile Include="ErrorHandler.cs" />
     <Compile Include="Extensions\AttributeExtensions.cs" />
     <Compile Include="GlobalFunctions.cs" />

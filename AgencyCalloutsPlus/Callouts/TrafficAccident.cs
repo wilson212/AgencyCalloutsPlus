@@ -18,9 +18,9 @@ namespace AgencyCalloutsPlus.Callouts
     public class TrafficAccident : AgencyCallout
     {
         /// <summary>
-        /// Stores the <see cref="LocationInfo"/> where the accident occured
+        /// Stores the <see cref="API.SpawnPoint"/> where the accident occured
         /// </summary>
-        public LocationInfo SpawnPoint { get; protected set; }
+        public SpawnPoint SpawnPoint { get; protected set; }
 
         /// <summary>
         /// Stores the current randomized scenario
@@ -51,8 +51,8 @@ namespace AgencyCalloutsPlus.Callouts
         /// <returns>false on failure, true otherwise</returns>
         public override bool OnBeforeCalloutDisplayed()
         {
-            // Load a random side of road location in our jurisdiction
-            SpawnPoint = Agency.GetRandomLocationInJurisdiction(LocationType.SideOfRoad, new Range<float>(100f, 9000f));
+            // Load a random side of road location in our jurisdiction, within 2 miles travel distance
+            SpawnPoint = Agency.GetRandomSideOfRoadLocation(new Range<float>(200f, 3220f));
             if (SpawnPoint == null)
             {
                 Game.LogTrivial($"[ERROR] AgencyCalloutsPlus: Unable to find a location for callout: Traffic.TrafficAccident");
@@ -101,7 +101,7 @@ namespace AgencyCalloutsPlus.Callouts
             }
 
             // Create scenario class handler
-            Scenario = CreateActiveSceneInstance();
+            Scenario = CreateScenarioInstance();
 
             // Show are blip and message
             ShowCalloutAreaBlipBeforeAccepting(SpawnPoint.Position, 40f);
@@ -151,7 +151,11 @@ namespace AgencyCalloutsPlus.Callouts
             base.End();
         }
 
-        private CalloutScenario CreateActiveSceneInstance()
+        /// <summary>
+        /// Creates a new instance of the chosen scenario by name
+        /// </summary>
+        /// <returns></returns>
+        private CalloutScenario CreateScenarioInstance()
         {
             switch (ScenarioInfo.Name)
             {
