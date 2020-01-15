@@ -225,8 +225,7 @@ namespace AgencyCalloutsPlus.API
             }
 
             // Get random location
-            var pos = SideOfRoadLocations[rando.Next(0, SideOfRoadLocations.Length - 1)];
-            return pos;
+            return SideOfRoadLocations[rando.Next(0, SideOfRoadLocations.Length - 1)];
         }
 
         private SpawnPoint[] ExtractSpawnPoints(LocationType type, XmlNode catagoryNode)

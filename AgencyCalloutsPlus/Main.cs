@@ -94,6 +94,9 @@ namespace AgencyCalloutsPlus
             // Load settings
             Settings.Initialize();
 
+            // Initialize log file
+            Log.Initialize(Path.Combine(PluginFolderPath, "Game.log"));
+
             // Register for On Duty state changes
             Functions.OnOnDutyStateChanged += OnOnDutyStateChangedHandler;
             Functions.PlayerWentOnDutyFinishedSelection += PlayerWentOnDutyFinishedSelection;
@@ -114,6 +117,10 @@ namespace AgencyCalloutsPlus
                     PlayerWentOnDutyFinishedSelection();
                 }
             }
+            else
+            {
+                AgencyCalloutDispatcher.StopDuty();
+            }
         }
 
         private void PlayerWentOnDutyFinishedSelection()
@@ -122,7 +129,7 @@ namespace AgencyCalloutsPlus
             GameFiber.StartNew(delegate
             {
                 // Wait!
-                GameFiber.Wait(200);
+                GameFiber.Wait(2000);
 
                 // Load our agencies and such (this will only initialize once per game session)
                 Agency.Initialize();

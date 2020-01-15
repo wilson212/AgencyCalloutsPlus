@@ -24,6 +24,8 @@ namespace AgencyCalloutsPlus
         /// </summary>
         internal static Keys OpenCalloutInteractionMenuModifierKey { get; set; } = Keys.None;
 
+        internal static bool EnableFullSimulation { get; set; } = false;
+
         internal static void Initialize()
         {
             /// === Load AgencyCalloutsPlus settings === ///
@@ -36,6 +38,7 @@ namespace AgencyCalloutsPlus
             // Read key bindings
             OpenCalloutInteractionMenuKey = ini.ReadEnum("KEYBINDINGS", "OpenCalloutInteractionMenuKey", Keys.I);
             OpenCalloutInteractionMenuModifierKey = ini.ReadEnum("KEYBINDINGS", "OpenCalloutInteractionMenuModifierKey", Keys.None);
+            EnableFullSimulation = ini.ReadBoolean("GENERAL", "EnableFullSimulation", false);
 
             /// === Load Traffic Policer settings === ///
             Game.LogTrivial("[TRACE] AgencyCalloutsPlus: Loading Traffic Policer config...");

@@ -88,6 +88,7 @@
     <Compile Include="API\Enums\Population.cs" />
     <Compile Include="API\PriorityCall.cs" />
     <Compile Include="API\Enums\SocialClass.cs" />
+    <Compile Include="Log.cs" />
     <Compile Include="SpawnableAgencyCallout.cs" />
     <Compile Include="API\SpawnableCalloutType.cs" />
     <Compile Include="API\SpawnPoint.cs" />

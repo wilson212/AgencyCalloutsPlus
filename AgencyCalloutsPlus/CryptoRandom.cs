@@ -42,7 +42,7 @@ namespace AgencyCalloutsPlus
         /// <returns></returns>
         public override int Next(int minValue, int maxValue)
         {
-            if (maxValue <= 0)
+            if (maxValue < 0)
                 throw new ArgumentOutOfRangeException("maxValue");
 
             if (minValue > maxValue)

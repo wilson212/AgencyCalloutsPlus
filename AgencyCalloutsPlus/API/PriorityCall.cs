@@ -21,7 +21,7 @@ namespace AgencyCalloutsPlus.API
 
         public GameLocation Location { get; set; }
 
-        public string ZoneShortName { get; set; }
+        public string ZoneScriptName { get; set; }
 
         public PriorityCall(int id, CalloutScenarioInfo scenarioInfo)
         {
