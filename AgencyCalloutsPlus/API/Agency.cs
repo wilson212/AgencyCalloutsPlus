@@ -469,10 +469,10 @@ namespace AgencyCalloutsPlus.API
                 foreach (var zone in zones)
                 {
                     // Skip dead zones
-                    if (zone.CrimeLevel == ProbabilityLevel.None)
+                    if (zone.CrimeLevel == CrimeLevel.None)
                         continue;
 
-                    MaxCrimeLevel += (int)ProbabilityLevel.VeryHigh;
+                    MaxCrimeLevel += (int)CrimeLevel.VeryHigh;
                     OverallCrimeLevel += (int)zone.CrimeLevel;
                     OptimumPatrols += zone.IdealPatrolCount;
                 }
@@ -544,7 +544,7 @@ namespace AgencyCalloutsPlus.API
             }
 
             // Livery?
-            if (info.Livery >= 0)
+            if (info.Livery > 0)
             {
                 vehicle.SetLivery(info.Livery);
             }
@@ -570,7 +570,7 @@ namespace AgencyCalloutsPlus.API
 
             public string ModelName { get; set; }
 
-            public int Livery { get; set; } = -1;
+            public int Livery { get; set; } = 0;
 
             public Color SpawnColor { get; set; }
 

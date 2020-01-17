@@ -1,20 +1,15 @@
-﻿using AgencyCalloutsPlus.API;
-using AgencyCalloutsPlus.Integration;
+﻿using AgencyCalloutsPlus.Integration;
 using LSPD_First_Response.Mod.API;
 using LSPD_First_Response.Mod.Callouts;
 using Rage;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Xml;
 
 namespace AgencyCalloutsPlus
 {
     public abstract class AgencyCallout : Callout
     {
-        private static Dictionary<string, SpawnGenerator<CalloutScenarioInfo>> Scenarios { get; set; }
-
         /// <summary>
         /// Callout GUID for ComputerPlus
         /// </summary>
@@ -44,7 +39,7 @@ namespace AgencyCalloutsPlus
         /// </summary>
         /// <param name="paths"></param>
         /// <returns></returns>
-        protected XmlDocument LoadScenarioFile(params string[] paths)
+        protected static XmlDocument LoadScenarioFile(params string[] paths)
         {
             // Create file path
             string path = Main.LSPDFRPluginPath;
@@ -66,71 +61,17 @@ namespace AgencyCalloutsPlus
 
             throw new Exception($"[ERROR] AgencyCalloutsPlus: Scenario file does not exist: '{path}'");
         }
-        
+
         /// <summary>
         /// Attempts to spawn a <see cref="CalloutScenarioInfo"/> based on probability. If no
         /// <see cref="CalloutScenarioInfo"/> can be spawned, the error is logged automatically.
         /// </summary>
-        /// <param name="calloutName">The name of the callout in the <see cref="CalloutInfoAttribute"/></param>
         /// <returns>returns a <see cref="CalloutScenarioInfo"/> on success, or null otherwise</returns>
-        internal static CalloutScenarioInfo LoadRandomScenario(string calloutName)
+        internal static XmlNode LoadScenarioNode(CalloutScenarioInfo info)
         {
-            // Try and fetch the SpawnGenerator
-            if (Scenarios.TryGetValue(calloutName, out SpawnGenerator<CalloutScenarioInfo> spawner))
-            {
-                // Can we spawn a scenario?
-                if (!spawner.TrySpawn(out CalloutScenarioInfo scenario))
-                {
-                    Game.LogTrivial($"[ERROR] AgencyCalloutsPlus: Callout '{calloutName}' does not have any Scenarios registered");
-                    return null;
-                }
-
-                return scenario;
-            }
-
-            return null;
+            var document = LoadScenarioFile("AgencyCalloutsPlus", "Callouts", info.CalloutName, "CalloutMeta.xml");
+            return document.DocumentElement.SelectSingleNode($"Scenarios/{info.Name}");
         }
-
-        /*
-        /// <summary>
-        /// Calculates a range based on zone factors such as population density,
-        /// and jurisdiction type of the players agency
-        /// </summary>
-        /// <param name="IsPriority">Is this a priority call</param>
-        protected virtual Range<float> CalculateBestTravelDisatnceForCallout(bool IsPriority)
-        {
-            // Get player agency
-            var agency = Agency.GetCurrentPlayerAgency();
-            if (agency == null)
-            {
-                // Default of 1 mile
-                return new Range<float>(200, 1610);
-            }
-
-            // Define our long distance types, with broad jurisdictions
-            AgencyType[] longDistanceTypes = { AgencyType.HighwayPatrol, AgencyType.SpecialAgent };
-            AgencyType[] midDistanceTypes = { AgencyType.CountySheriff, AgencyType.ParkRanger };
-
-            // Create modifiers
-            float modifier = (IsPriority) ? 800 : 0;
-            if (longDistanceTypes.Contains(agency.AgencyType))
-                modifier += 800;
-            else if (midDistanceTypes.Contains(agency.AgencyType))
-                modifier += 400;
-
-            // Return calculated distance
-            switch (agency.StaffingLevel)
-            {
-                // Poor funding - 1.5 mile base
-                case FundingLevel.Poor: return new Range<float>(200, 2400 + modifier);
-
-                // Fair funding - 1 mile base
-                case FundingLevel.Fair: return new Range<float>(200, 1600 + modifier);
-
-                // Good funding - 0.5 mile base
-                default: return new Range<float>(200, 800 + modifier);
-            }
-        }*/
 
         public override bool OnBeforeCalloutDisplayed()
         {

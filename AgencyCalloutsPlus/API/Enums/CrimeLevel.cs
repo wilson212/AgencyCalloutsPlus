@@ -1,6 +1,6 @@
 ﻿namespace AgencyCalloutsPlus.API
 {
-    public enum ProbabilityLevel
+    public enum CrimeLevel
     {
         None = 0,
 

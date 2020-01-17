@@ -33,11 +33,6 @@ namespace AgencyCalloutsPlus.Callouts
         private CalloutScenarioInfo ScenarioInfo;
 
         /// <summary>
-        /// Stores the CalloutMeta.xml document as an object
-        /// </summary>
-        private XmlDocument ScenarioDocument;
-
-        /// <summary>
         /// Stores the selected random scenario XmlNode
         /// </summary>
         private XmlNode ScenarioNode;
@@ -51,54 +46,16 @@ namespace AgencyCalloutsPlus.Callouts
         /// <returns>false on failure, true otherwise</returns>
         public override bool OnBeforeCalloutDisplayed()
         {
-            // Load a random side of road location in our jurisdiction, within 2 miles travel distance
-            SpawnPoint = Agency.GetRandomSideOfRoadLocation(new Range<float>(200f, 3220f));
-            if (SpawnPoint == null)
+            // Grab the priority call dispatched to player
+            PriorityCall call = Dispatch.RequestCallInfo(typeof(TrafficAccident));
+            if (call == null)
             {
-                Game.LogTrivial($"[ERROR] AgencyCalloutsPlus: Unable to find a location for callout: Traffic.TrafficAccident");
+                Log.Error("AgencyCallout.TrafficAccident: This is awkward... No PriorityCall of this type for player");
                 return false;
             }
 
-            // Select a random scenario based on probabilities
-            ScenarioInfo = LoadRandomScenario("AgencyCallout.TrafficAccident");
-            if (ScenarioInfo == null)
-            {
-                Game.LogTrivial($"[ERROR] AgencyCalloutsPlus: AgencyCallout.TrafficAccident has no scenarios!");
-                return false;
-            }
-
-            // Load ColloutMeta.xml document
-            ScenarioDocument = LoadScenarioFile(
-                "AgencyCalloutsPlus", "Callouts", "TrafficAccident", "CalloutMeta.xml"
-            );
-
-            // Select our scenario node
-            ScenarioNode = ScenarioDocument.DocumentElement.SelectSingleNode("Scenarios").SelectSingleNode(ScenarioInfo.Name);
-            if (ScenarioNode == null)
-            {
-                Game.LogTrivial(
-                    $"[ERROR] AgencyCalloutsPlus: AgencyCallout.TrafficAccident does not contain scenario named: '{ScenarioInfo.Name}'!"
-                );
-                return false;
-            }
-
-            // Register callout with Computer+ if installed
-            if (ComputerPlusRunning)
-            {
-                var details = ScenarioNode.SelectSingleNode("CalloutDetails").ChildNodes;
-                var rando = new CryptoRandom();
-                var callDetails = details[rando.Next(0, details.Count - 1)].InnerText
-                    .Replace("{{location}}", World.GetStreetName(SpawnPoint.Position));
-
-                // Create callout
-                CalloutID = ComputerPlusAPI.CreateCallout(
-                    "Vehicle Accident",
-                    "Vehicle Accident",
-                    CalloutPosition,
-                    (ScenarioInfo.RespondCode3) ? 1 : 0,
-                    callDetails,
-                    1, null, null);
-            }
+            SpawnPoint = call.Location as SpawnPoint;
+            ScenarioNode = LoadScenarioNode(call.ScenarioInfo);
 
             // Create scenario class handler
             Scenario = CreateScenarioInstance();
@@ -109,11 +66,10 @@ namespace AgencyCalloutsPlus.Callouts
             CalloutPosition = SpawnPoint.Position;
 
             // Play scanner audio
-            string scannerText = ScenarioNode.SelectSingleNode("Scanner").InnerText;
-            if (ScenarioInfo.RespondCode3)
-                PlayScannerAudioUsingPrefix(String.Concat(scannerText, " UNITS_RESPOND_CODE_03_02"));
+            if (call.ScenarioInfo.RespondCode3)
+                PlayScannerAudioUsingPrefix(String.Concat(call.ScenarioInfo.ScannerText, " UNITS_RESPOND_CODE_03_02"));
             else
-                PlayScannerAudioUsingPrefix(scannerText);
+                PlayScannerAudioUsingPrefix(call.ScenarioInfo.ScannerText);
 
             // Return base
             return base.OnBeforeCalloutDisplayed();

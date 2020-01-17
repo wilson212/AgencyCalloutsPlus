@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Text;
 
@@ -67,6 +68,50 @@ namespace AgencyCalloutsPlus
         public static void Debug(string message)
         {
             Write(message, LogLevel.DEBUG);
+        }
+
+        public static void Exception(Exception exception)
+        {
+            // Only allow 1 thread at a time do these operations
+            lock (_sync)
+            {
+                // Write the header data
+                LogStream.WriteLine("-------- AgencyCalloutsPlus Exception Trace Entry --------");
+                LogStream.WriteLine("Exception Date: " + DateTime.Now.ToString());
+                LogStream.WriteLine("Os Version: " + Environment.OSVersion.VersionString);
+                LogStream.WriteLine("Architecture: " + ((Environment.Is64BitOperatingSystem) ? "x64" : "x86"));
+                LogStream.WriteLine();
+                LogStream.WriteLine("-------- Exception --------");
+
+                // Log each exception
+                int i = 0;
+                while (true)
+                {
+                    // Create a stack trace
+                    StackTrace trace = new StackTrace(exception, true);
+                    StackFrame frame = trace.GetFrame(0);
+
+                    // Log the current exception
+                    LogStream.WriteLine("Type: " + exception.GetType().FullName);
+                    LogStream.WriteLine("Message: " + exception.Message.Replace("\n", "\n\t"));
+                    LogStream.WriteLine("Target Method: " + frame.GetMethod().Name);
+                    LogStream.WriteLine("File: " + frame.GetFileName());
+                    LogStream.WriteLine("Line: " + frame.GetFileLineNumber());
+                    LogStream.WriteLine("StackTrace:");
+                    LogStream.WriteLine(exception.StackTrace.TrimEnd());
+
+                    // If we have no more inner exceptions, end the logging
+                    if (exception.InnerException == null)
+                        break;
+
+                    // Prepare next inner exception data
+                    LogStream.WriteLine();
+                    LogStream.WriteLine("-------- Inner Exception ({0}) --------", i++);
+                    exception = exception.InnerException;
+                }
+
+                LogStream.Flush();
+            }
         }
 
 

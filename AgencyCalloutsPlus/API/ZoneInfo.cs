@@ -35,7 +35,7 @@ namespace AgencyCalloutsPlus.API
         /// <summary>
         /// Gets the overall crime level of the zone
         /// </summary>
-        public ProbabilityLevel CrimeLevel { get; protected set; }
+        public CrimeLevel CrimeLevel { get; protected set; }
 
         /// <summary>
         /// Gets the zone size
@@ -127,7 +127,7 @@ namespace AgencyCalloutsPlus.API
 
             // Extract crime level
             catagoryNode = node.SelectSingleNode("CrimeLevel");
-            if (String.IsNullOrWhiteSpace(catagoryNode?.InnerText) || !Enum.TryParse(catagoryNode.InnerText, out ProbabilityLevel crime))
+            if (String.IsNullOrWhiteSpace(catagoryNode?.InnerText) || !Enum.TryParse(catagoryNode.InnerText, out CrimeLevel crime))
             {
                 throw new ArgumentNullException("CrimeLevel");
             }
@@ -136,7 +136,7 @@ namespace AgencyCalloutsPlus.API
             // Load crime probabilites
             Crimes = new Dictionary<CalloutType, int>(6);
             CrimeGenerator = new SpawnGenerator<SpawnableCalloutType>();
-            if (crime != ProbabilityLevel.None)
+            if (crime != CrimeLevel.None)
             {
                 catagoryNode = node.SelectSingleNode("Crimes");
                 if (catagoryNode == null || !catagoryNode.HasChildNodes)
@@ -296,13 +296,13 @@ namespace AgencyCalloutsPlus.API
         /// <summary>
         /// Determines the optimal number of patrols this zone should have based
         /// on <see cref="ZoneSize"/>, <see cref="API.Population"/> and
-        /// <see cref="ProbabilityLevel"/> of crimes
+        /// <see cref="API.CrimeLevel"/> of crimes
         /// </summary>
         /// <param name="Size"></param>
         /// <param name="Population"></param>
         /// <param name="CrimeLevel"></param>
         /// <returns></returns>
-        private static double GetOptimumPatrolCount(ZoneSize Size, Population Population, ProbabilityLevel CrimeLevel)
+        private static double GetOptimumPatrolCount(ZoneSize Size, Population Population, CrimeLevel CrimeLevel)
         {
             double baseCount = 0;
             double modifier = 0;
@@ -337,10 +337,10 @@ namespace AgencyCalloutsPlus.API
                     // No adjustment
                     break;
                 case Population.Moderate:
-                    baseCount *= 1.8;
+                    baseCount *= 1.5;
                     break;
                 case Population.Dense:
-                    baseCount *= 2.6;
+                    baseCount *= 2;
                     break;
             }
 
@@ -349,19 +349,19 @@ namespace AgencyCalloutsPlus.API
                 default: // None
                     modifier = 0.25;
                     break;
-                case ProbabilityLevel.VeryLow:
+                case CrimeLevel.VeryLow:
                     modifier = 0.33;
                     break;
-                case ProbabilityLevel.Low:
+                case CrimeLevel.Low:
                     modifier = 0.66;
                     break;
-                case ProbabilityLevel.Moderate:
+                case CrimeLevel.Moderate:
                     modifier = 1;
                     break;
-                case ProbabilityLevel.High:
+                case CrimeLevel.High:
                     modifier = 1.33;
                     break;
-                case ProbabilityLevel.VeryHigh:
+                case CrimeLevel.VeryHigh:
                     modifier = 1.75;
                     break;
             }

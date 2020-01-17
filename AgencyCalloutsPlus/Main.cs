@@ -102,7 +102,7 @@ namespace AgencyCalloutsPlus
             Functions.PlayerWentOnDutyFinishedSelection += PlayerWentOnDutyFinishedSelection;
 
             // Log stuff
-            Game.LogTrivial("[TRACE] AgencyCalloutsPlus v" + PluginVersion + " has been initialised.");
+            Game.LogTrivial("[TRACE] Agency Dispatch and Callouts Plus v" + PluginVersion + " has been initialised.");
         }
 
         private void OnOnDutyStateChangedHandler(bool onDuty)
@@ -114,17 +114,26 @@ namespace AgencyCalloutsPlus
                 if (!Functions.IsPlayerInStationMenu())
                 {
                     Game.LogTrivial("[TRACE] AgencyCalloutsPlus: Detected that player spawned On Duty");
-                    PlayerWentOnDutyFinishedSelection();
+                    PlayerWentOnDutyFinishedSelection(true);
                 }
             }
             else
             {
-                AgencyCalloutDispatcher.StopDuty();
+                Dispatch.StopDuty();
             }
         }
 
         private void PlayerWentOnDutyFinishedSelection()
         {
+            PlayerWentOnDutyFinishedSelection(false);
+        }
+
+        private void PlayerWentOnDutyFinishedSelection(bool spawnedOnDuty)
+        {
+            // For testing
+            if (!spawnedOnDuty)
+                World.TeleportLocalPlayer(new Vector3(1854.31f, 3675.401f, 33.33306f), true);
+
             // Run this in a new thread, since this will block the main thread for awhile
             GameFiber.StartNew(delegate
             {
@@ -145,10 +154,10 @@ namespace AgencyCalloutsPlus
                 ComputerPlusAPI.Initialize();
 
                 // Finally, start dispatch call center
-                if (AgencyCalloutDispatcher.StartDuty())
+                if (Dispatch.StartDuty())
                 {
-                    var agency = Agency.GetCurrentPlayerAgency();
-                    var lvl = AgencyCalloutDispatcher.OverallCrimeLevel;
+                    var agency = Dispatch.PlayerAgency;
+                    var lvl = Dispatch.OverallCrimeLevel;
                     Game.DisplayNotification(
                         "3dtextures",
                         "mpgroundlogo_cops",
