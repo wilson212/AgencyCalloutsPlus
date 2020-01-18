@@ -30,7 +30,7 @@ namespace AgencyCalloutsPlus.Callouts
         /// <summary>
         /// Stores the current <see cref="CalloutScenarioInfo"/>
         /// </summary>
-        private CalloutScenarioInfo ScenarioInfo;
+        private PriorityCall ActiveCall;
 
         /// <summary>
         /// Stores the selected random scenario XmlNode
@@ -54,6 +54,8 @@ namespace AgencyCalloutsPlus.Callouts
                 return false;
             }
 
+            // Store data
+            ActiveCall = call;
             SpawnPoint = call.Location as SpawnPoint;
             ScenarioNode = LoadScenarioNode(call.ScenarioInfo);
 
@@ -77,6 +79,9 @@ namespace AgencyCalloutsPlus.Callouts
 
         public override bool OnCalloutAccepted()
         {
+            // Tell dispatch
+            Dispatch.CalloutAccepted(ActiveCall);
+
             // Setup active scene
             Scenario.Setup();
 
@@ -113,12 +118,12 @@ namespace AgencyCalloutsPlus.Callouts
         /// <returns></returns>
         private CalloutScenario CreateScenarioInstance()
         {
-            switch (ScenarioInfo.Name)
+            switch (ActiveCall.ScenarioInfo.Name)
             {
                 case "RearEndNoInjuries":
                     return new RearEndNoInjuries(this, ScenarioNode);
                 default:
-                    throw new Exception($"Unsupported TrafficAccident Scenario '{ScenarioInfo.Name}'");
+                    throw new Exception($"Unsupported TrafficAccident Scenario '{ActiveCall.ScenarioInfo.Name}'");
             }
         }
     }

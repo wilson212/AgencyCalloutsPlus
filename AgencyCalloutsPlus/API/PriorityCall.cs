@@ -1,5 +1,6 @@
 ﻿using Rage;
 using System;
+using System.Collections.Generic;
 
 namespace AgencyCalloutsPlus.API
 {
@@ -42,13 +43,18 @@ namespace AgencyCalloutsPlus.API
         /// <summary>
         /// Gets the primary <see cref="OfficerUnit"/> assigned to this call
         /// </summary>
-        public OfficerUnit OfficerUnit { get; internal set; }
+        public OfficerUnit PrimaryOfficer { get; private set; }
+
+        /// <summary>
+        /// Gets a list of backup officers or null
+        /// </summary>
+        public List<OfficerUnit> BackupOfficers { get; private set; }
 
         /// <summary>
         /// Gets the <see cref="ZoneInfo.ScriptName"/> this <see cref="PriorityCall"/>
         /// takes place in
         /// </summary>
-        public string ZoneScriptName { get; internal set; }
+        public ZoneInfo Zone { get; internal set; }
 
         /// <summary>
         /// Creates a new instance of <see cref="PriorityCall"/>
@@ -60,6 +66,27 @@ namespace AgencyCalloutsPlus.API
             CallId = id;
             CallCreated = World.DateTime;
             ScenarioInfo = scenarioInfo ?? throw new ArgumentNullException(nameof(scenarioInfo));
+        }
+
+        /// <summary>
+        /// Assigns the provided <see cref="OfficerUnit"/> as the primary officer of the 
+        /// call if there isnt one, or adds the officer to the <see cref="BackupOfficers"/>
+        /// list otherwise
+        /// </summary>
+        /// <param name="officer"></param>
+        internal void AssignOfficer(OfficerUnit officer)
+        {
+            if (PrimaryOfficer == null)
+            {
+                PrimaryOfficer = officer;
+            }
+            else
+            {
+                if (BackupOfficers == null)
+                    BackupOfficers = new List<OfficerUnit>(3);
+
+                BackupOfficers.Add(officer);
+            }
         }
 
         public bool Equals(PriorityCall other)

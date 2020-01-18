@@ -34,6 +34,11 @@ namespace AgencyCalloutsPlus.API
         private static Dictionary<CalloutType, SpawnGenerator<CalloutScenarioInfo>> ScenarioPool { get; set; }
 
         /// <summary>
+        /// Contains a list of scenario's by callout name
+        /// </summary>
+        private static Dictionary<string, SpawnGenerator<CalloutScenarioInfo>> Scenarios { get; set; }
+
+        /// <summary>
         /// Randomizer method used to randomize callouts and locations
         /// </summary>
         private static CryptoRandom Randomizer { get; set; }
@@ -74,6 +79,11 @@ namespace AgencyCalloutsPlus.API
         private static List<OfficerUnit> OfficerUnits { get; set; }
 
         /// <summary>
+        /// Gets the player's <see cref="OfficerUnit"/> instance
+        /// </summary>
+        private static OfficerUnit PlayerUnit { get; set; }
+
+        /// <summary>
         /// Our call Queue, seperated into 4 priority queues
         /// </summary>
         /// <remarks>
@@ -95,7 +105,8 @@ namespace AgencyCalloutsPlus.API
         static Dispatch()
         {
             // Initialize callout types
-            ScenarioPool = new Dictionary<CalloutType, SpawnGenerator<CalloutScenarioInfo>>();
+            Scenarios = new Dictionary<string, SpawnGenerator<CalloutScenarioInfo>>();
+            ScenarioPool = new Dictionary<CalloutType, SpawnGenerator<CalloutScenarioInfo>>(8);
             foreach (var type in Enum.GetValues(typeof(CalloutType)))
             {
                 ScenarioPool.Add((CalloutType)type, new SpawnGenerator<CalloutScenarioInfo>());
@@ -189,7 +200,7 @@ namespace AgencyCalloutsPlus.API
 
                 // Create call timer range
                 CallTimerRange = new Range<int>(
-                    (int)(milliseconds / 1.5d),
+                    (int)(milliseconds / 2d),
                     (int)(milliseconds * 1.5d)
                 );
 
@@ -205,19 +216,60 @@ namespace AgencyCalloutsPlus.API
             return false;
         }
 
+        /// <summary>
+        /// Requests a <see cref="PriorityCall"/> from dispatch using the specified
+        /// <see cref="AgencyCallout"/>.
+        /// </summary>
+        /// <param name="calloutType"></param>
+        /// <returns></returns>
         public static PriorityCall RequestCallInfo(Type calloutType)
         {
+            // Extract Callout Name
+            string calloutName = calloutType.GetAttributeValue((CalloutInfoAttribute attr) => attr.Name);
+
             // Have we sent a call to the player?
             if (DispatchedToPlayer != null)
             {
                 // Do our types match?
-                string calloutName = calloutType.GetAttributeValue((CalloutInfoAttribute attr) => attr.Name);
                 if (calloutName.Equals(DispatchedToPlayer.ScenarioInfo.CalloutName))
                 {
                     return DispatchedToPlayer;
                 }
+                else
+                {
+                    // Cancel
+                    DispatchedToPlayer.CallStatus = CallStatus.DeclinedByPlayer;
+                    DispatchedToPlayer = null;
+                    Log.Info($"Dispatch.RequestCallInfo: It appears that the player spawned a callout of type {calloutName}");
+                }
             }
 
+            // If we are here, maybe the player used a console command to start the callout.
+            // At this point, see if we have anything in the call Queue
+            if (Scenarios.ContainsKey(calloutName))
+            {
+                // Lets see if we have a call already created
+                for (int i = 0; i < 4; i++)
+                {
+                    var calls = (from x in CallQueue[i]
+                                  where x.ScenarioInfo.CalloutName.Equals(calloutName) &&
+                                    (x.CallStatus == CallStatus.Created || x.CallStatus == CallStatus.WaitingForPlayerAccept)
+                                  select x
+                                ).ToArray();
+
+                    // Do we have any active calls?
+                    if (calls.Length > 0)
+                    {
+                        DispatchedToPlayer = calls[0];
+                        return calls[0];
+                    }
+                }
+
+                // Still here? Maybe we can create a call?
+            }
+
+            // cant do anything at this point
+            Log.Warning($"Dispatch.RequestCallInfo: Unable to spawn a scenario for {calloutName}");
             return null;
         }
 
@@ -232,6 +284,13 @@ namespace AgencyCalloutsPlus.API
             {
                 CallQueue[priority].Remove(call);
             }
+
+            // Set player status
+            if (call.PrimaryOfficer == PlayerUnit)
+            {
+                PlayerUnit.CompleteCall(CallCloseFlag.Completed);
+                PlayerUnit.Status = OfficerStatus.Available;
+            }
         }
 
         /// <summary>
@@ -241,6 +300,17 @@ namespace AgencyCalloutsPlus.API
         public static void RegisterOnScene(PriorityCall call)
         {
             call.CallStatus = CallStatus.OnScene;
+            call.PrimaryOfficer.Status = OfficerStatus.OnScene;
+            call.PrimaryOfficer.LastStatusChange = World.DateTime;
+        }
+
+        /// <summary>
+        /// Tells dispatch that we are on scene
+        /// </summary>
+        /// <param name="call"></param>
+        public static void CalloutAccepted(PriorityCall call)
+        {
+            PlayerUnit.AssignToCall(call);
         }
 
         internal static void StopDuty()
@@ -291,28 +361,7 @@ namespace AgencyCalloutsPlus.API
                 }
             });
 
-            PoliceFiber = GameFiber.StartNew(delegate
-            {
-                // Wait
-                GameFiber.Wait(3000);
-
-                // While we are on duty accept calls
-                while (Main.OnDuty)
-                {
-                    try
-                    {
-                        DoPoliceChecks();
-                    }
-                    catch (Exception e)
-                    {
-                        Log.Exception(e);
-                    }
-
-                    // Wait
-                    GameFiber.Wait(2000);
-                }
-            });
-
+            // To be replaced later @todo
             GameFiber.StartNew(delegate
             {
                 for (int i = 0; i < PlayerAgency.ActualPatrols - 1; i++)
@@ -337,72 +386,244 @@ namespace AgencyCalloutsPlus.API
                     driver.IsPersistent = true;
                     driver.BlockPermanentEvents = true;
 
-                    car.Driver.Tasks.CruiseWithVehicle(18, VehicleDrivingFlags.Normal);
-
-                    var unit = new OfficerUnit(true, $"1-A-{i}", car)
-                    {
-                        VehicleBlip = blip
-                    };
-                    OfficerUnits.Add(unit);
-
+                    var unit = new OfficerUnit(driver, $"1-A-{i}", car) { VehicleBlip = blip };
                     unit.StartDuty();
+                    OfficerUnits.Add(unit);
 
                     // Yield
                     GameFiber.Yield();
                 }
 
-                OfficerUnits.Add(new OfficerUnit(false, "player", null) { Status = OfficerStatus.Busy });
+                PlayerUnit = new OfficerUnit(Game.LocalPlayer) { Status = OfficerStatus.Busy };
+                OfficerUnits.Add(PlayerUnit);
+            });
+
+            PoliceFiber = GameFiber.StartNew(delegate
+            {
+                // Wait
+                GameFiber.Wait(3000);
+
+                // While we are on duty accept calls
+                while (Main.OnDuty)
+                {
+                    try
+                    {
+                        DoPoliceChecks();
+                    }
+                    catch (Exception e)
+                    {
+                        Log.Exception(e);
+                    }
+
+                    // Wait
+                    GameFiber.Wait(2000);
+                }
             });
         }
 
+        /// <summary>
+        /// Main thread loop for Dispatch handling calls and player activity
+        /// </summary>
         private static void DoPoliceChecks()
         {
+            // Keep watch on the players status
+            if (Functions.GetCurrentPullover() != default(LHandle))
+            {
+                PlayerUnit.Status = OfficerStatus.OnTrafficStop;
+            }
+            else if (Functions.IsPlayerAvailableForCalls())
+            {
+                if (Functions.IsCalloutRunning())
+                {
+                    PlayerUnit.Status = OfficerStatus.Busy;
+                }
+                else if (PlayerUnit.Status != OfficerStatus.Break)
+                {
+                    PlayerUnit.Status = OfficerStatus.Available;
+                }
+            }
+            else if (PlayerUnit.Status == OfficerStatus.Available)
+            {
+                // Available but not available
+                PlayerUnit.Status = OfficerStatus.Busy;
+            }
+
             // If we have no  officers, then stop
             if (OfficerUnits.Count == 0)
                 return;
 
             // Check AI police officers for finished calls. Removed finished call
             // from the call Queue
-            var officers = (from x in OfficerUnits
-                            where x.Status == OfficerStatus.Available
-                            orderby x.LastStatusChange descending
-                            select x).ToList();
+            var availableOfficers = (
+                from x in OfficerUnits
+                where x.Status == OfficerStatus.Available
+                orderby x.LastStatusChange ascending // Oldest first
+                select x
+            ).ToList();
 
             // If we have officers available for calls
-            if (officers.Count > 0)
+            if (availableOfficers.Count == 0)
+                return;
+
+            // Stop calls from coming in for right now
+            lock (_lock)
             {
-                // Check priority 1 and 2 calls, and dispatch accordingly
-                var calls = (from x in CallQueue[3]
-                             where x.CallStatus == CallStatus.Created
-                             orderby x.CallCreated descending
-                             select x
-                            ).Take(officers.Count).ToList();
-
-                foreach (var call in calls)
+                // Itterate through each call priority Queue
+                int available = availableOfficers.Count;
+                for (int i = 0; i < 4; i++)
                 {
-                    var officer = (from x in officers
-                                   where x.Status == OfficerStatus.Available // This may have changed
-                                   orderby x.PoliceCar.Position.DistanceTo(call.Location.Position) descending
-                                   select x).FirstOrDefault();
+                    // Stop if we have no available officers or calls
+                    if (available == 0 || CallQueue[i].Count == 0)
+                        continue;
 
-                    // Do we have someone
-                    if (officer != null)
+                    // Grab open calls
+                    var calls = (
+                            from x in CallQueue[i]
+                            where x.CallStatus == CallStatus.Created
+                            orderby x.CallCreated ascending // Oldest first
+                            select x
+                        ).Take(available).ToList();
+
+                    // Check priority 1 and 2 calls, and dispatch accordingly
+                    if (i < 2)
                     {
-                        if (officer.IsAIUnit)
+                        foreach (var call in calls)
                         {
-                            officer.AssignToCall(call);
+                            // Select closest available officer
+                            int amount = (i == 0) ? 3 : 2;
+                            var officers = GetClosestAvailableOfficers(availableOfficers, call, amount);
+                            if (officers != null || officers.Length > 0)
+                            {
+                                // Is player in this list?
+                                var player = officers.Where(x => !x.IsAIUnit).FirstOrDefault();
+                                if (player != null)
+                                {
+                                    DispatchUnitToCall(player, call);
+                                    available--;
+                                }
+                                else
+                                {
+                                    DispatchUnitToCall(officers[0], call);
+                                    officers = officers.Skip(1).ToArray();
+                                    available--;
+                                }
+                                
+                                // Add other units to the call
+                                if (officers.Length > 0)
+                                {
+                                    foreach (var officer in officers)
+                                    {
+                                        DispatchUnitToCall(officer, call);
+                                        available--;
+                                    }
+                                }
+                            }
                         }
-                        else
+                    }
+                    else // Priority 3 and 4 calls
+                    {
+                        foreach (var call in calls)
                         {
-                            DispatchedToPlayer = call;
-                            Functions.StartCallout(call.ScenarioInfo.CalloutName);
+                            // Select closest available officer
+                            var officer = GetClosestAvailableOfficer(availableOfficers, call);
+                            if (officer != null)
+                            {
+                                DispatchUnitToCall(officer, call);
+                                available--;
+                            }
                         }
                     }
                 }
             }
-
+            
             // Any left over AI should be dispatched to priority 3 and 4 calls
             // after the call has sat for awhile
+        }
+
+        /// <summary>
+        /// Dispatches the provided <see cref="OfficerUnit"/> to the provided
+        /// <see cref="PriorityCall"/>. If the <paramref name="officer"/> is
+        /// the Player, then the callout is started
+        /// </summary>
+        /// <param name="officer"></param>
+        /// <param name="call"></param>
+        private static void DispatchUnitToCall(OfficerUnit officer, PriorityCall call)
+        {
+            if (officer.IsAIUnit)
+            {
+                officer.AssignToCall(call);
+            }
+            else
+            {
+                DispatchedToPlayer = call;
+                DispatchedToPlayer.CallStatus = CallStatus.WaitingForPlayerAccept;
+                Functions.StartCallout(call.ScenarioInfo.CalloutName);
+            }
+        }
+
+        /// <summary>
+        /// Gets the closest available officer to a call based on Call priority dispatching
+        /// requirements.
+        /// </summary>
+        /// <param name="availableOfficers"></param>
+        /// <param name="call"></param>
+        /// <returns></returns>
+        private static OfficerUnit GetClosestAvailableOfficer(List<OfficerUnit> availableOfficers, PriorityCall call)
+        {
+            // Stop if we have no available officers
+            if (availableOfficers.Count == 0)
+                return null;
+
+            // As call priority changes, so does the dispatching requirements of the call
+            var officers = FilterOfficers(availableOfficers, call);
+            if (officers == null)
+                return null;
+
+            // Order officers by distance to the call
+            var ordered = officers.OrderBy(x => x.Officer.Position.DistanceTo(call.Location.Position));
+            return ordered.FirstOrDefault();
+        }
+
+        /// <summary>
+        /// Gets the closest available officer to a call based on Call priority dispatching
+        /// requirements.
+        /// </summary>
+        /// <param name="availableOfficers"></param>
+        /// <param name="call"></param>
+        /// <returns></returns>
+        private static OfficerUnit[] GetClosestAvailableOfficers(List<OfficerUnit> availableOfficers, PriorityCall call, int count)
+        {
+            // Stop if we have no available officers
+            if (availableOfficers.Count == 0)
+                return null;
+
+            // As call priority changes, so does the dispatching requirements of the call
+            var officers = FilterOfficers(availableOfficers, call);
+            if (officers == null)
+                return null;
+
+            // Order officers by distance to the call
+            var ordered = officers.OrderBy(x => x.Officer.Position.DistanceTo(call.Location.Position));
+            return ordered.Take(count).ToArray();
+        }
+
+        /// <summary>
+        /// Filters available officers depending on the call priority
+        /// </summary>
+        /// <param name="availableOfficers"></param>
+        /// <param name="call"></param>
+        /// <returns></returns>
+        private static IEnumerable<OfficerUnit> FilterOfficers(List<OfficerUnit> availableOfficers, PriorityCall call)
+        {
+            switch (call.Priority)
+            {
+                case 0:
+                    return availableOfficers.Where(x => x.CurrentCall == null || x.CurrentCall.Priority > 1);
+                case 1:
+                    return availableOfficers.Where(x => x.CurrentCall == null || x.CurrentCall.Priority > 1);
+                default: // 2 and 3
+                    return availableOfficers.Where(x => x.Status == OfficerStatus.Available);
+            }
         }
 
         /// <summary>
@@ -452,7 +673,7 @@ namespace AgencyCalloutsPlus.API
                     {
                         Location = location,
                         CallStatus = CallStatus.Created,
-                        ZoneScriptName = zone.ScriptName
+                        Zone = zone
                     };
 
                     // Add call to priority Queue
@@ -489,6 +710,7 @@ namespace AgencyCalloutsPlus.API
             }
 
             // Clear old scenarios
+            Scenarios.Clear();
             foreach (var item in ScenarioPool.Values)
             {
                 item.Clear();
@@ -589,6 +811,9 @@ namespace AgencyCalloutsPlus.API
 
                         // Cache scenarios
                         calloutName = calloutType.GetAttributeValue((CalloutInfoAttribute attr) => attr.Name);
+
+                        // Create entry
+                        Scenarios.Add(calloutName, new SpawnGenerator<CalloutScenarioInfo>());
 
                         // Process the XML scenarios
                         foreach (XmlNode n in document.DocumentElement.SelectSingleNode("Scenarios").ChildNodes)
@@ -702,6 +927,7 @@ namespace AgencyCalloutsPlus.API
                             }
 
                             // Add scenario to the pool
+                            Scenarios[calloutName].Add(scene);
                             ScenarioPool[crimeType].Add(scene);
                             itemsAdded++;
                         }

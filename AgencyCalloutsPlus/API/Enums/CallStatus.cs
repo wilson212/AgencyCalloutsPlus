@@ -4,6 +4,10 @@
     {
         Created,
 
+        WaitingForPlayerAccept,
+
+        DeclinedByPlayer,
+
         Dispatched,
 
         OnScene,

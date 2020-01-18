@@ -76,6 +76,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AgencyCallout.cs" />
+    <Compile Include="API\Enums\CallCloseFlag.cs" />
     <Compile Include="API\Enums\CallStatus.cs" />
     <Compile Include="API\Enums\CalloutType.cs" />
     <Compile Include="API\Enums\CrimeLevel.cs" />

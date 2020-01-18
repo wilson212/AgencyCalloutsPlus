@@ -43,7 +43,7 @@ namespace AgencyCalloutsPlus.API
         /// <summary>
         /// Gets the last <see cref="World.DateTime"/> this officer was tasked with something
         /// </summary>
-        public DateTime LastStatusChange { get; protected set; }
+        public DateTime LastStatusChange { get; internal set; }
 
         /// <summary>
         /// Gets the current <see cref="PriorityCall"/> if any this unit is assigned to
@@ -86,12 +86,22 @@ namespace AgencyCalloutsPlus.API
         /// <param name="isAiUnit"></param>
         /// <param name="unitString"></param>
         /// <param name="vehicle"></param>
-        internal OfficerUnit(bool isAiUnit, string unitString, Vehicle vehicle)
+        internal OfficerUnit(Ped officer, string unitString, Vehicle vehicle)
         {
-            IsAIUnit = isAiUnit;
+            IsAIUnit = true;
             UnitString = unitString;
             PoliceCar = vehicle;
-            Officer = vehicle?.Driver;
+            Officer = officer ?? throw new ArgumentNullException("officer");
+            LastStatusChange = World.DateTime;
+            Status = OfficerStatus.Available;
+            NextTask = TaskSignal.Cruise;
+        }
+
+        internal OfficerUnit(Player player)
+        {
+            IsAIUnit = false;
+            UnitString = "1-l-18"; // todo change this
+            Officer = player.Character;
             LastStatusChange = World.DateTime;
             Status = OfficerStatus.Available;
         }
@@ -108,6 +118,9 @@ namespace AgencyCalloutsPlus.API
                     switch (NextTask)
                     {
                         case TaskSignal.None:
+                            break;
+                        case TaskSignal.TakeABreak:
+                            TakeBreak();
                             break;
                         case TaskSignal.Cruise:
                             Cruise();
@@ -182,24 +195,17 @@ namespace AgencyCalloutsPlus.API
             // Debug
             Log.Debug($"OfficerUnit {UnitString} arrived on scene");
 
-            // Sit here
+            // Telll dispatch we are on scene
+            Dispatch.RegisterOnScene(CurrentCall);
             PoliceCar.IsSirenSilent = true;
             SetBlipColor(Color.Green);
-            LastStatusChange = World.DateTime;
-            Status = OfficerStatus.OnScene;
-            GameFiber.Sleep(5000);
 
-            // Tell dispatch we are done here
-            CurrentCall.CallStatus = CallStatus.Completed;
-            Dispatch.RegisterCallComplete(CurrentCall);
-            CurrentCall = null;
-            PoliceCar.IsSirenOn = false;
-            LastStatusChange = World.DateTime;
-            NextTask = TaskSignal.Cruise;
-            Status = OfficerStatus.Available;
+            // Use Wait here for 1 in game hour, so when game is paused, so is timer
+            // This will be replaced with Scenario processing code eventually
+            GameFiber.Wait(120000);
 
-            Log.Debug($"OfficerUnit {UnitString} completed call");
-            SetBlipColor(Color.White);
+            // Complete call
+            CompleteCall(CallCloseFlag.Completed);
         }
 
         /// <summary>
@@ -210,7 +216,25 @@ namespace AgencyCalloutsPlus.API
         private void Cruise()
         {
             NextTask = TaskSignal.None;
-            Officer.Tasks.CruiseWithVehicle(PoliceCar, 18, VehicleDrivingFlags.Normal);
+            Officer.Tasks.CruiseWithVehicle(PoliceCar, 10, VehicleDrivingFlags.Normal);
+        }
+
+        /// <summary>
+        /// Drives the <see cref="Officer"/> around aimlessly. 
+        /// Must be used in a <see cref="GameFiber"/> as this method is a
+        /// blocking method
+        /// </summary>
+        private void TakeBreak()
+        {
+            NextTask = TaskSignal.None;
+            Officer.Tasks.CruiseWithVehicle(PoliceCar, 10, VehicleDrivingFlags.Normal);
+
+            // 30 in game minutes
+            GameFiber.Wait(15000);
+
+            // Make available again
+            SetBlipColor(Color.White);
+            Status = OfficerStatus.Available;
         }
 
         /// <summary>
@@ -236,16 +260,67 @@ namespace AgencyCalloutsPlus.API
         /// <param name="call"></param>
         internal void AssignToCall(PriorityCall call)
         {
-            call.OfficerUnit = this;
+            // Did we get called on for a more important assignment?
+            if (IsAIUnit && CurrentCall != null)
+            {
+                var flag = (call.Priority < 2) ? CallCloseFlag.Emergency : CallCloseFlag.Forced;
+                CompleteCall(flag);
+            }
+
+            // Set flags
+            call.AssignOfficer(this);
             call.CallStatus = CallStatus.Dispatched;
 
             CurrentCall = call;
             Status = OfficerStatus.Dispatched;
             LastStatusChange = World.DateTime;
-            SetBlipColor(Color.Red);
 
-            // Signal our thread to do something
-            NextTask = TaskSignal.DriveToCall;
+            // Set blip color and task the AI
+            if (IsAIUnit)
+            {
+                SetBlipColor(Color.Red);
+
+                // Signal our thread to do something
+                NextTask = TaskSignal.DriveToCall;
+            }
+        }
+
+        /// <summary>
+        /// Clears the current call, DOES NOT SIGNAL DISPATCH
+        /// </summary>
+        /// <remarks>
+        /// This method is called by <see cref="Dispatch"/> for the Player ONLY.
+        /// AI units call it themselves
+        /// </remarks>
+        internal void CompleteCall(CallCloseFlag flag)
+        {
+            // Additional stuff for AI
+            if (IsAIUnit)
+            {
+                if (flag == CallCloseFlag.Completed)
+                {
+                    Status = OfficerStatus.Break;
+                    NextTask = TaskSignal.TakeABreak;
+                    SetBlipColor(Color.Aqua);
+                }
+                else
+                {
+                    Status = OfficerStatus.Available;
+                    NextTask = TaskSignal.Cruise;
+                    SetBlipColor(Color.White);
+                }
+
+                // Tell dispatch we are done here
+                Dispatch.RegisterCallComplete(CurrentCall);
+                Log.Debug($"OfficerUnit {UnitString} completed call with flag: {flag}");
+            }
+
+            // Ensure siren is off
+            PoliceCar.IsSirenOn = false;
+
+            // Clear last call
+            CurrentCall = null;
+            LastStatusChange = World.DateTime;
         }
 
         /// <summary>
@@ -265,9 +340,15 @@ namespace AgencyCalloutsPlus.API
             }
         }
 
+        /// <summary>
+        /// A Task enumeration used to Signal the AI's thread into the
+        /// next task.
+        /// </summary>
         private enum TaskSignal
         {
             None,
+
+            TakeABreak,
 
             Cruise,
 
