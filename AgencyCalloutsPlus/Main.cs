@@ -130,10 +130,6 @@ namespace AgencyCalloutsPlus
 
         private void PlayerWentOnDutyFinishedSelection(bool spawnedOnDuty)
         {
-            // For testing
-            if (!spawnedOnDuty)
-                World.TeleportLocalPlayer(new Vector3(1854.31f, 3675.401f, 33.33306f), true);
-
             // Run this in a new thread, since this will block the main thread for awhile
             GameFiber.StartNew(delegate
             {

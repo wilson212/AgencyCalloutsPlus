@@ -23,11 +23,6 @@ namespace AgencyCalloutsPlus.API
         private static System.Object _lock = new System.Object();
 
         /// <summary>
-        /// Timescale is 30:1 (30 seconds in game equals 1 second in real life)
-        /// </summary>
-        public static readonly int TimeScale = 30;
-
-        /// <summary>
         /// Contains a list Scenarios seperated by CalloutType that will be used
         /// to populate the calls board
         /// </summary>
@@ -192,7 +187,7 @@ namespace AgencyCalloutsPlus.API
                 // 5s real life time equals 2.5m in game
                 // Timescale is 30:1 (30 seconds in game equals 1 second in real life)
                 // Every hour in game is 2 minutes in real life
-                var hourGameTimeToSecondsRealTime = (60d / TimeScale) * 60;
+                var hourGameTimeToSecondsRealTime = (60d / TimeScale.GameTimeScale) * 60;
                 var callsPerSecondRT = (callsPerHour / hourGameTimeToSecondsRealTime);
                 var realSecondsPerCall = (1d / callsPerSecondRT);
                 var milliseconds = (int)(realSecondsPerCall * 1000);

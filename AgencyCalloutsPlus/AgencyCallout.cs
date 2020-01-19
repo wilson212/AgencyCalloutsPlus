@@ -69,7 +69,13 @@ namespace AgencyCalloutsPlus
         /// <returns>returns a <see cref="CalloutScenarioInfo"/> on success, or null otherwise</returns>
         internal static XmlNode LoadScenarioNode(CalloutScenarioInfo info)
         {
-            var document = LoadScenarioFile("AgencyCalloutsPlus", "Callouts", info.CalloutName, "CalloutMeta.xml");
+            // Remove name prefix
+            var folderName = info.CalloutName.Replace("AgencyCallout.", "");
+
+            // Load the CalloutMeta
+            var document = LoadScenarioFile("AgencyCalloutsPlus", "Callouts", folderName, "CalloutMeta.xml");
+
+            // Return the Scenario node
             return document.DocumentElement.SelectSingleNode($"Scenarios/{info.Name}");
         }
 

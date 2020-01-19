@@ -123,6 +123,7 @@
     <Compile Include="Settings.cs" />
     <Compile Include="SpawnableCallout.cs" />
     <Compile Include="SpawnGenerator.cs" />
+    <Compile Include="TimeScale.cs" />
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>

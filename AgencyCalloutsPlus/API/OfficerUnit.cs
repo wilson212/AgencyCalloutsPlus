@@ -100,8 +100,8 @@ namespace AgencyCalloutsPlus.API
         internal OfficerUnit(Player player)
         {
             IsAIUnit = false;
-            UnitString = "1-l-18"; // todo change this
-            Officer = player.Character;
+            UnitString = "1-L-18"; // todo change this
+            Officer = player.Character ?? throw new ArgumentNullException("player");
             LastStatusChange = World.DateTime;
             Status = OfficerStatus.Available;
         }
@@ -164,32 +164,55 @@ namespace AgencyCalloutsPlus.API
         /// </summary>
         private void DriveToCall()
         {
-            // Debug
+            // Close this task
+            NextTask = TaskSignal.None;
             Log.Debug($"OfficerUnit {UnitString} driving to call");
 
             // Ensure officer is in police cruiser
             EnsureInPoliceCar();
 
-            // Repond code 3?
+            // Assign vars
             var task = PoliceCar.Driver.Tasks;
-            if (!CurrentCall.ScenarioInfo.RespondCode3)
+            Task drivingTask = default(Task);
+            var sp = CurrentCall.Location as SpawnPoint;
+            bool parkingNicely = (sp != null);
+            bool isParking = false;
+
+            // Repond code 3?
+            if (CurrentCall.ScenarioInfo.RespondCode3)
             {
                 PoliceCar.IsSirenOn = true;
                 PoliceCar.IsSirenSilent = false;
+                parkingNicely = false;
                 var loc = World.GetNextPositionOnStreet(CurrentCall.Location.Position.Around(15));
-                task.DriveToPosition(loc, Code3TravelSpeed, VehicleDrivingFlags.Emergency).WaitForCompletion();
+                drivingTask = task.DriveToPosition(loc, Code3TravelSpeed, VehicleDrivingFlags.Emergency);
             }
             else
             {
                 var loc = World.GetNextPositionOnStreet(CurrentCall.Location.Position.Around(15));
-                task.DriveToPosition(loc, Code2TravelSpeed, VehicleDrivingFlags.Normal).WaitForCompletion();
-                /*
-                var sp = CurrentCall.Location as SpawnPoint;
-                if (sp == null)
-                    task.ParkVehicle(CurrentCall.Location.Position, Vehicle.Heading).WaitForCompletion();
-                else
-                    task.ParkVehicle(CurrentCall.Location.Position, sp.Heading).WaitForCompletion();
-                */
+                drivingTask = task.DriveToPosition(loc, Code2TravelSpeed, VehicleDrivingFlags.Normal);
+            }
+
+            // Run checks while officer is enroute
+            while (drivingTask.IsActive)
+            {
+                // Check for assignment changes
+                if (NextTask != TaskSignal.None)
+                    return; // Return
+
+                // Distance check
+                if (parkingNicely && !isParking)
+                {
+                    if (Officer.Position.TravelDistanceTo(CurrentCall.Location.Position) < 75)
+                    {
+                        task.Clear();
+                        isParking = true;
+                        drivingTask = task.ParkVehicle(CurrentCall.Location.Position, sp.Heading);
+                    }
+                }
+
+                // Allow other threads to do something
+                GameFiber.Yield();
             }
 
             // Debug
@@ -200,9 +223,14 @@ namespace AgencyCalloutsPlus.API
             PoliceCar.IsSirenSilent = true;
             SetBlipColor(Color.Green);
 
+            // Tell officer to get out of patrol car
+            task.LeaveVehicle(LeaveVehicleFlags.LeaveDoorOpen);
+
             // Use Wait here for 1 in game hour, so when game is paused, so is timer
             // This will be replaced with Scenario processing code eventually
-            GameFiber.Wait(120000);
+            var gameSpan = TimeSpan.FromHours(1);
+            var realSeconds = (int)TimeScale.ToRealTime(gameSpan).TotalSeconds;
+            GameFiber.Wait(1000 * realSeconds);
 
             // Complete call
             CompleteCall(CallCloseFlag.Completed);
@@ -230,7 +258,8 @@ namespace AgencyCalloutsPlus.API
             Officer.Tasks.CruiseWithVehicle(PoliceCar, 10, VehicleDrivingFlags.Normal);
 
             // 30 in game minutes
-            GameFiber.Wait(15000);
+            var time = (int)TimeScale.RealSecondsFromGameSeconds(30 * 60);
+            GameFiber.Wait(1000 * time);
 
             // Make available again
             SetBlipColor(Color.White);

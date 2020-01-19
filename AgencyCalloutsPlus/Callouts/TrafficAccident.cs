@@ -1,8 +1,6 @@
 ﻿using AgencyCalloutsPlus.API;
 using AgencyCalloutsPlus.Callouts.Scenarios.TrafficAccident;
-using AgencyCalloutsPlus.Integration;
 using LSPD_First_Response.Mod.Callouts;
-using Rage;
 using System;
 using System.Xml;
 
