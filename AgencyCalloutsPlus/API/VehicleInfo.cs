@@ -20,6 +20,9 @@ namespace AgencyCalloutsPlus.API
         /// </summary>
         private static Dictionary<VehicleClass, SpawnGenerator<VehicleInfo>> Vehicles { get; set; }
 
+        /// <summary>
+        /// Loads the vehicle data from the Vehicles.xml
+        /// </summary>
         public static void Initialize()
         {
             // Set internal flag to initialize just once
@@ -53,7 +56,7 @@ namespace AgencyCalloutsPlus.API
                 // Skip and log errors
                 if (categoryNode == null)
                 {
-                    Game.LogTrivial($"[WARN] AgencyCalloutsPlus: Unable to load vehicle data for vehicle type '{category}'");
+                    Log.Debug($"VehicleInfo.Initialize(): Unable to load vehicle data for vehicle type '{category}'");
                     continue;
                 }
 
@@ -67,21 +70,21 @@ namespace AgencyCalloutsPlus.API
                     string modelName = n.InnerText;
                     if (String.IsNullOrWhiteSpace(modelName))
                     {
-                        Game.LogTrivial("[WARN] AgencyCalloutsPlus: Vehicle item has no model name in Vehicles.xml");
+                        Log.Warning("VehicleInfo.Initialize(): Vehicle item has no model name in Vehicles.xml");
                         continue;
                     }
 
                     // Ensure we have attributes
                     if (n.Attributes == null)
                     {
-                        Game.LogTrivial($"[WARN] AgencyCalloutsPlus: Vehicle item has no attributes '{modelName}'");
+                        Log.Warning($"VehicleInfo.Initialize(): Vehicle item has no attributes '{modelName}'");
                         continue;
                     }
 
                     // Try and extract probability value
                     if (n.Attributes["probability"]?.Value == null || !int.TryParse(n.Attributes["probability"].Value, out int probability))
                     {
-                        Game.LogTrivial($"[WARN] AgencyCalloutsPlus: Unable to extract vehicle probability value for '{modelName}'");
+                        Log.Warning($"VehicleInfo.Initialize(): Unable to extract vehicle probability value for '{modelName}'");
                         continue;
                     }
 
@@ -116,7 +119,7 @@ namespace AgencyCalloutsPlus.API
             document = null;
 
             // Log
-            Game.LogTrivial($"[TRACE] AgencyCalloutsPlus: Added {itemsAdded} vehicles into memory'");
+            Log.Info($"Loaded {itemsAdded} vehicles into memory'");
         }
 
         /// <summary>
@@ -129,12 +132,12 @@ namespace AgencyCalloutsPlus.API
             // Try and spawn a vehicle
             if (Vehicles[type].TrySpawn(out VehicleInfo vehicle))
             {
-                Game.LogTrivial($"[TRACE] AgencyCalloutsPlus: GetRandomVehicleByType returning {vehicle.ModelName}");
+                Log.Debug($"VehicleInfo.GetRandomVehicleByType(): returning {vehicle.ModelName}");
                 return vehicle;
             }
             else
             {
-                Game.LogTrivial($"[TRACE] AgencyCalloutsPlus: GetRandomVehicleByType unable to find vehicle for class {type}");
+                Log.Warning($"VehicleInfo.GetRandomVehicleByType(): unable to find vehicle for class {type}");
                 return null;
             }
         }

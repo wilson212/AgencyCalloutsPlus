@@ -71,17 +71,17 @@ namespace AgencyCalloutsPlus.API
         internal Blip VehicleBlip { get; set; }
 
         /// <summary>
-        /// 
+        /// The <see cref="GameFiber"/> that runs the logic for this AI unit
         /// </summary>
         private GameFiber UnitFiber { get; set; }
 
         /// <summary>
-        /// 
+        /// Gets the next task for this AI unit on <see cref="UnitFiber"/> ticks
         /// </summary>
         private TaskSignal NextTask { get; set; }
 
         /// <summary>
-        /// Creates a new instance of <see cref="OfficerUnit"/>
+        /// Creates a new instance of <see cref="OfficerUnit"/> for an AI unit
         /// </summary>
         /// <param name="isAiUnit"></param>
         /// <param name="unitString"></param>
@@ -97,6 +97,10 @@ namespace AgencyCalloutsPlus.API
             NextTask = TaskSignal.Cruise;
         }
 
+        /// <summary>
+        /// Creates a new instance of <see cref="OfficerUnit"/> for the player
+        /// </summary>
+        /// <param name="player"></param>
         internal OfficerUnit(Player player)
         {
             IsAIUnit = false;
@@ -146,11 +150,17 @@ namespace AgencyCalloutsPlus.API
             });
         }
 
+        /// <summary>
+        /// Destructor
+        /// </summary>
         ~OfficerUnit()
         {
             Dispose();
         }
 
+        /// <summary>
+        /// Our Dispose method
+        /// </summary>
         public void Dispose()
         {
             if (!IsDisposed)
@@ -237,14 +247,15 @@ namespace AgencyCalloutsPlus.API
 
             // TIME me
             var span = World.DateTime - LastStatusChange;
+            var mins = Math.Round(span.TotalMinutes, 2);
 
             // Debug
-            Log.Debug($"OfficerUnit {UnitString} arrived on scene after {span.TotalMinutes} minutes");
+            Log.Debug($"OfficerUnit {UnitString} arrived on scene after {mins} game minutes");
 
             // Telll dispatch we are on scene
             Dispatch.RegisterOnScene(CurrentCall);
             PoliceCar.IsSirenSilent = true;
-            SetBlipColor(Color.Green);
+            SetBlipColor(OfficerStatusColor.OnScene);
 
             // Tell officer to get out of patrol car
             task.LeaveVehicle(LeaveVehicleFlags.LeaveDoorOpen);
@@ -278,6 +289,8 @@ namespace AgencyCalloutsPlus.API
         private void TakeBreak()
         {
             NextTask = TaskSignal.None;
+            Status = OfficerStatus.Break;
+            SetBlipColor(OfficerStatusColor.OnBreak);
             Officer.Tasks.CruiseWithVehicle(PoliceCar, 10, VehicleDrivingFlags.Normal);
 
             // 30 in game minutes
@@ -285,7 +298,7 @@ namespace AgencyCalloutsPlus.API
             GameFiber.Wait(1000 * time);
 
             // Make available again
-            SetBlipColor(Color.White);
+            SetBlipColor(OfficerStatusColor.Available);
             Status = OfficerStatus.Available;
         }
 
@@ -339,7 +352,7 @@ namespace AgencyCalloutsPlus.API
             // Set blip color and task the AI
             if (IsAIUnit)
             {
-                SetBlipColor(Color.Red);
+                SetBlipColor(OfficerStatusColor.Dispatched);
 
                 // Signal our thread to do something
                 NextTask = TaskSignal.DriveToCall;
@@ -362,13 +375,12 @@ namespace AgencyCalloutsPlus.API
                 {
                     Status = OfficerStatus.Break;
                     NextTask = TaskSignal.TakeABreak;
-                    SetBlipColor(Color.Aqua);
                 }
                 else
                 {
                     Status = OfficerStatus.Available;
                     NextTask = TaskSignal.Cruise;
-                    SetBlipColor(Color.White);
+                    SetBlipColor(OfficerStatusColor.Available);
                 }
 
                 // Tell dispatch we are done here

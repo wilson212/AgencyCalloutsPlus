@@ -87,7 +87,8 @@
     <Compile Include="API\GameLocation.cs" />
     <Compile Include="API\HomeLocation.cs" />
     <Compile Include="API\Enums\Population.cs" />
-    <Compile Include="API\OfficerStatus.cs" />
+    <Compile Include="API\Enums\OfficerStatus.cs" />
+    <Compile Include="API\Enums\OfficerStatusColor.cs" />
     <Compile Include="API\OfficerUnit.cs" />
     <Compile Include="API\PriorityCall.cs" />
     <Compile Include="API\Enums\SocialClass.cs" />
@@ -95,7 +96,7 @@
     <Compile Include="Log.cs" />
     <Compile Include="API\SpawnableCalloutType.cs" />
     <Compile Include="API\SpawnPoint.cs" />
-    <Compile Include="API\StaffLevel.cs" />
+    <Compile Include="API\Enums\StaffLevel.cs" />
     <Compile Include="API\ZoneInfo.cs" />
     <Compile Include="API\VehicleInfo.cs" />
     <Compile Include="API\Enums\ZoneSize.cs" />
@@ -121,7 +122,6 @@
     <Compile Include="RageUIMenus\CalloutPedInteractionMenu.cs" />
     <Compile Include="Range.cs" />
     <Compile Include="Settings.cs" />
-    <Compile Include="SpawnableCallout.cs" />
     <Compile Include="SpawnGenerator.cs" />
     <Compile Include="TimeScale.cs" />
   </ItemGroup>

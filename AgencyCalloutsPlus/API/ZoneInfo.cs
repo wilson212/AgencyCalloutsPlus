@@ -150,14 +150,14 @@ namespace AgencyCalloutsPlus.API
                     // Try and parse the crime type from the node name
                     if (!Enum.TryParse(n.Name, out CalloutType calloutType))
                     {
-                        Game.LogTrivial($"[WARN] AgencyCalloutsPlus: Unable to parse CrimeType {n.Name} in zone '{ScriptName}'");
+                        Log.Warning($"ZoneInfo.ctor: Unable to parse CrimeType {n.Name} in zone '{ScriptName}'");
                         continue;
                     }
 
                     // Try and parse the probability level
                     if (!int.TryParse(n.InnerText, out int level))
                     {
-                        Game.LogTrivial($"[WARN] AgencyCalloutsPlus: Unable to parse CrimeType probability for {n.Name} in zone '{ScriptName}'");
+                        Log.Warning($"ZoneInfo.ctor: Unable to parse CrimeType probability for {n.Name} in zone '{ScriptName}'");
                         continue;
                     }
 
@@ -253,7 +253,7 @@ namespace AgencyCalloutsPlus.API
             // Ensure we have attributes
             if (n.Attributes == null)
             {
-                Game.LogTrivial($"[WARN] AgencyCalloutsPlus: Location item has no attributes in '{ScriptName}->{type}'");
+                Log.Warning($"ZoneInfo.ParseSpawnPoint(): Location item has no attributes in '{ScriptName}->{type}'");
                 return null;
             }
 
@@ -263,28 +263,28 @@ namespace AgencyCalloutsPlus.API
             // Try and extract X value
             if (n.Attributes["X"]?.Value == null || !float.TryParse(n.Attributes["X"].Value, out x))
             {
-                Game.LogTrivial($"[WARN] AgencyCalloutsPlus: Unable to extract location X value for '{ScriptName}->{type}->Location'");
+                Log.Warning($"ZoneInfo.ParseSpawnPoint(): Unable to extract location X value for '{ScriptName}->{type}->Location'");
                 return null;
             }
 
             // Try and extract Y value
             if (n.Attributes["Y"]?.Value == null || !float.TryParse(n.Attributes["Y"].Value, out y))
             {
-                Game.LogTrivial($"[WARN] AgencyCalloutsPlus: Unable to extract location Y value for '{ScriptName}->{type}->Location'");
+                Log.Warning($"ZoneInfo.ParseSpawnPoint(): Unable to extract location Y value for '{ScriptName}->{type}->Location'");
                 return null;
             }
 
             // Try and extract Z value
             if (n.Attributes["Z"]?.Value == null || !float.TryParse(n.Attributes["Z"].Value, out z))
             {
-                Game.LogTrivial($"[WARN] AgencyCalloutsPlus: Unable to extract location Z value for '{ScriptName}->{type}->Location'");
+                Log.Warning($"ZoneInfo.ParseSpawnPoint(): Unable to extract location Z value for '{ScriptName}->{type}->Location'");
                 return null;
             }
 
             // Try and extract heading value
             if (n.Attributes["heading"]?.Value != null && !float.TryParse(n.Attributes["heading"].Value, out heading))
             {
-                Game.LogTrivial($"[WARN] AgencyCalloutsPlus: Unable to extract location heading value for '{ScriptName}->{type}->Location'");
+                Log.Warning($"ZoneInfo.ParseSpawnPoint(): Unable to extract location heading value for '{ScriptName}->{type}->Location'");
                 return null;
             }
 
@@ -407,7 +407,7 @@ namespace AgencyCalloutsPlus.API
                 // Skip and log errors
                 if (zoneNameNode == null)
                 {
-                    Game.LogTrivial($"[ERROR] AgencyCalloutsPlus: Missing location data for zone '{zoneName}'");
+                    Log.Error($"ZoneInfo.ParseSpawnPoint(): Missing location data for zone '{zoneName}'");
                     continue;
                 }
 
@@ -426,7 +426,7 @@ namespace AgencyCalloutsPlus.API
                 }
                 catch (ArgumentNullException e)
                 {
-                    Game.LogTrivial($"[ERROR] AgencyCalloutsPlus: Unable to load location data for zone '{zoneName}'. Missing node '{e.ParamName}'");
+                    Log.Error($"ZoneInfo.ParseSpawnPoint(): Unable to load location data for zone '{zoneName}'. Missing node '{e.ParamName}'");
                     continue;
                 }
             }
@@ -435,7 +435,7 @@ namespace AgencyCalloutsPlus.API
             document = null;
 
             // Log and return
-            Game.LogTrivial($"[TRACE] AgencyCalloutsPlus: Added {zonesAdded} zones with {itemsAdded} locations into memory'");
+            Log.Info($"Loaded {zonesAdded} zones with {itemsAdded} locations into memory'");
             return itemsAdded;
         }
 

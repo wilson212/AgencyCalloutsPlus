@@ -226,21 +226,21 @@ namespace AgencyCalloutsPlus.API
                 // Check name
                 if (String.IsNullOrWhiteSpace(sname))
                 {
-                    Game.LogTrivial($"[WARN] AgencyCalloutsPlus: Unable to extract ScriptName value for agency in Agencies.xml");
+                    Log.Warning($"Agency.Initialize(): Unable to extract ScriptName value for agency in Agencies.xml");
                     continue;
                 }
 
                 // Try and parse agency type
                 if (String.IsNullOrWhiteSpace(atype) || !Enum.TryParse(atype, out AgencyType type))
                 {
-                    Game.LogTrivial($"[WARN] AgencyCalloutsPlus: Unable to extract AgencyType value for '{sname}' in Agencies.xml");
+                    Log.Warning($"Agency.Initialize(): Unable to extract AgencyType value for '{sname}' in Agencies.xml");
                     continue;
                 }
 
                 // Try and parse funding level
                 if (String.IsNullOrWhiteSpace(ftype) || !Enum.TryParse(ftype, out StaffLevel staffing))
                 {
-                    Game.LogTrivial($"[WARN] AgencyCalloutsPlus: Unable to extract StaffLevel value for '{sname}' in Agencies.xml");
+                    Log.Warning($"Agency.Initialize(): Unable to extract StaffLevel value for '{sname}' in Agencies.xml");
                     continue;
                 }
 
@@ -259,14 +259,14 @@ namespace AgencyCalloutsPlus.API
                         // Ensure we have attributes
                         if (vn.Attributes == null)
                         {
-                            Game.LogTrivial($"[WARN] AgencyCalloutsPlus: Vehicle item for '{sname}' has no attributes in Agencies.xml");
+                            Log.Warning($"Agency.Initialize(): Vehicle item for '{sname}' has no attributes in Agencies.xml");
                             continue;
                         }
 
                         // Try and extract probability value
                         if (vn.Attributes["probability"]?.Value == null || !int.TryParse(vn.Attributes["probability"].Value, out int probability))
                         {
-                            Game.LogTrivial($"[WARN] AgencyCalloutsPlus: Unable to extract vehicle probability value for '{sname}' in Agencies.xml");
+                            Log.Warning($"Agency.Initialize(): Unable to extract vehicle probability value for '{sname}' in Agencies.xml");
                             continue;
                         }
 
@@ -516,7 +516,7 @@ namespace AgencyCalloutsPlus.API
             // Try and spawn a police vehicle
             if (!Vehicles[type].TrySpawn(out PoliceVehicleInfo info))
             {
-                Game.LogTrivial($"[TRACE] AgencyCalloutsPlus: Agency.SpawnPoliceVehicleOfType() unable to find vehicle for class {type}");
+                Log.Warning($"Agency.SpawnPoliceVehicleOfType(): unable to find vehicle for class {type}");
                 return null;
             }
 

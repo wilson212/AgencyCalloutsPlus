@@ -338,8 +338,14 @@ namespace AgencyCalloutsPlus.API
 
                     PlayerAgency = agency;
 
+                    // Dispose of old officer AI units
                     if (OfficerUnits.Count != 0)
+                    {
+                        foreach (var officer in OfficerUnits)
+                            officer.Dispose();
+
                         OfficerUnits = new List<OfficerUnit>(PlayerAgency.ActualPatrols);
+                    }
                 }
 
                 // Debugging
@@ -361,7 +367,7 @@ namespace AgencyCalloutsPlus.API
                 // Fill Call Queue
                 // Overall crime level is number of calls per 4 hours ?
                 var callsPerHour = (int)(agency.OverallCrimeLevel / 4d);
-                Log.Debug($"\t\tCalls Per Hour: {callsPerHour}");
+                Log.Debug($"\t\tCalls Per Hour (Average): {callsPerHour}");
 
                 // 5s real life time equals 2.5m in game
                 // Timescale is 30:1 (30 seconds in game equals 1 second in real life)
@@ -370,7 +376,7 @@ namespace AgencyCalloutsPlus.API
                 var callsPerSecondRT = (callsPerHour / hourGameTimeToSecondsRealTime);
                 var realSecondsPerCall = (1d / callsPerSecondRT);
                 var milliseconds = (int)(realSecondsPerCall * 1000);
-                Log.Debug($"\t\tReal Seconds Per Call: {realSecondsPerCall}");
+                Log.Debug($"\t\tReal Seconds Per Call (Average): {realSecondsPerCall}");
 
                 // Create call timer range
                 CallTimerRange = new Range<int>(
@@ -785,7 +791,7 @@ namespace AgencyCalloutsPlus.API
             var directory = new DirectoryInfo(Path.Combine(Main.PluginFolderPath, "Callouts"));
             if (!directory.Exists)
             {
-                Game.LogTrivial($"[ERROR] AgencyCalloutsPlus: Callouts directory is missing");
+                Log.Error($"Dispatch.LoadScenarios(): Callouts directory is missing");
                 throw new Exception($"[ERROR] AgencyCalloutsPlus: Callouts directory is missing");
             }
 
@@ -816,7 +822,7 @@ namespace AgencyCalloutsPlus.API
                     Type calloutType = assembly.GetType($"AgencyCalloutsPlus.Callouts.{calloutName}");
                     if (calloutType == null)
                     {
-                        Game.LogTrivial($"[ERROR] AgencyCalloutsPlus: Unable to find CalloutType in Assembly: '{calloutName}'");
+                        Log.Error($"Dispatch.LoadScenarios(): Unable to find CalloutType in Assembly: '{calloutName}'");
                         continue;
                     }
 
@@ -833,7 +839,7 @@ namespace AgencyCalloutsPlus.API
                     // Skip and log errors
                     if (agenciesNode == null)
                     {
-                        Game.LogTrivial($"[ERROR] AgencyCalloutsPlus: Unable to load agency data in CalloutMeta for '{calloutDirectory.Name}'");
+                        Log.Error($"Dispatch.LoadScenarios(): Unable to load agency data in CalloutMeta for '{calloutDirectory.Name}'");
                         continue;
                     }
 
@@ -847,8 +853,8 @@ namespace AgencyCalloutsPlus.API
                         // Ensure we have attributes
                         if (n.Attributes == null)
                         {
-                            Game.LogTrivial(
-                                $"[WARN] AgencyCalloutsPlus: Agency item has no attributes in '{calloutName}/CalloutMeta.xml->Agencies'"
+                            Log.Warning(
+                                $"Dispatch.LoadScenarios(): Agency item has no attributes in '{calloutName}/CalloutMeta.xml->Agencies'"
                             );
                             continue;
                         }
@@ -856,8 +862,8 @@ namespace AgencyCalloutsPlus.API
                         // Try and extract type value
                         if (!Enum.TryParse(n.Attributes["type"].Value, out AgencyType agencyType))
                         {
-                            Game.LogTrivial(
-                                $"[WARN] AgencyCalloutsPlus: Unable to extract Agency type value for '{calloutName}/CalloutMeta.xml'"
+                            Log.Warning(
+                                $"Dispatch.LoadScenarios(): Unable to extract Agency type value for '{calloutName}/CalloutMeta.xml'"
                             );
                             continue;
                         }
@@ -865,8 +871,8 @@ namespace AgencyCalloutsPlus.API
                         // Try and extract probability value
                         if (!int.TryParse(n.Attributes["probability"].Value, out int probability))
                         {
-                            Game.LogTrivial(
-                                $"[WARN] AgencyCalloutsPlus: Unable to extract Agency probability value for '{calloutName}/CalloutMeta.xml'"
+                            Log.Warning(
+                                $"Dispatch.LoadScenarios(): Unable to extract Agency probability value for '{calloutName}/CalloutMeta.xml'"
                             );
                         }
 
@@ -877,8 +883,8 @@ namespace AgencyCalloutsPlus.API
                     XmlNode calloutNode = document.DocumentElement.SelectSingleNode("CalloutType");
                     if (!Enum.TryParse(calloutNode.InnerText, out CalloutType crimeType))
                     {
-                        Game.LogTrivial(
-                            $"[WARN] AgencyCalloutsPlus: Unable to extract CalloutType value for '{calloutName}/CalloutMeta.xml'"
+                        Log.Warning(
+                            $"Dispatch.LoadScenarios(): Unable to extract CalloutType value for '{calloutName}/CalloutMeta.xml'"
                         );
                         continue;
                     }
@@ -896,19 +902,19 @@ namespace AgencyCalloutsPlus.API
                         Scenarios.Add(calloutName, new SpawnGenerator<CalloutScenarioInfo>());
 
                         // Process the XML scenarios
-                        foreach (XmlNode n in document.DocumentElement.SelectSingleNode("Scenarios").ChildNodes)
+                        foreach (XmlNode n in document.DocumentElement.SelectSingleNode("Scenarios")?.ChildNodes)
                         {
                             // Ensure we have attributes
                             if (n.Attributes == null)
                             {
-                                Game.LogTrivial($"[WARN] AgencyCalloutsPlus: Scenario item has no attributes '{calloutName}->Scenarios->{n.Name}'");
+                                Log.Warning($"Dispatch.LoadScenarios(): Scenario item has no attributes '{calloutName}->Scenarios->{n.Name}'");
                                 continue;
                             }
 
                             // Try and extract probability value
                             if (n.Attributes["probability"]?.Value == null || !int.TryParse(n.Attributes["probability"].Value, out int prob))
                             {
-                                Game.LogTrivial($"[WARN] AgencyCalloutsPlus: Unable to extract scenario probability value for '{calloutName}->Scenarios->{n.Name}'");
+                                Log.Warning($"Dispatch.LoadScenarios(): Unable to extract scenario probability value for '{calloutName}->Scenarios->{n.Name}'");
                                 continue;
                             }
 
@@ -916,8 +922,8 @@ namespace AgencyCalloutsPlus.API
                             XmlNode dispatchNode = n.SelectSingleNode("Dispatch");
                             if (dispatchNode == null)
                             {
-                                Game.LogTrivial(
-                                    $"[WARN] AgencyCalloutsPlus: Unable to extract scenario Dispatch node for '{calloutName}->Scenarios->{n.Name}'"
+                                Log.Warning(
+                                    $"Dispatch.LoadScenarios(): Unable to extract scenario Dispatch node for '{calloutName}->Scenarios->{n.Name}'"
                                 );
                                 continue;
                             }
@@ -934,8 +940,8 @@ namespace AgencyCalloutsPlus.API
                             XmlNode childNode = dispatchNode.SelectSingleNode("Priority");
                             if (!int.TryParse(childNode.InnerText, out int priority))
                             {
-                                Game.LogTrivial(
-                                    $"[WARN] AgencyCalloutsPlus: Unable to extract scenario priority value for '{calloutName}->Scenarios->{n.Name}'"
+                                Log.Warning(
+                                    $"Dispatch.LoadScenarios(): Unable to extract scenario priority value for '{calloutName}->Scenarios->{n.Name}'"
                                 );
                                 continue;
                             }
@@ -948,8 +954,8 @@ namespace AgencyCalloutsPlus.API
                             childNode = dispatchNode.SelectSingleNode("Respond");
                             if (String.IsNullOrWhiteSpace(childNode.InnerText))
                             {
-                                Game.LogTrivial(
-                                    $"[WARN] AgencyCalloutsPlus: Unable to extract scenario respond value for '{calloutName}->Scenarios->{n.Name}'"
+                                Log.Warning(
+                                    $"Dispatch.LoadScenarios(): Unable to extract scenario respond value for '{calloutName}->Scenarios->{n.Name}'"
                                 );
                                 continue;
                             }
@@ -962,8 +968,8 @@ namespace AgencyCalloutsPlus.API
                             childNode = dispatchNode.SelectSingleNode("LocationType");
                             if (!Enum.TryParse(childNode.InnerText, out LocationType locationType))
                             {
-                                Game.LogTrivial(
-                                    $"[WARN] AgencyCalloutsPlus: Unable to extract LocationType value for '{calloutName}->Scenarios->{n.Name}'"
+                                Log.Warning(
+                                    $"Dispatch.LoadScenarios(): Unable to extract LocationType value for '{calloutName}->Scenarios->{n.Name}'"
                                 );
                                 continue;
                             }
@@ -976,8 +982,8 @@ namespace AgencyCalloutsPlus.API
                             childNode = dispatchNode.SelectSingleNode("Scanner");
                             if (String.IsNullOrWhiteSpace(childNode.InnerText))
                             {
-                                Game.LogTrivial(
-                                    $"[WARN] AgencyCalloutsPlus: Unable to extract Scanner value for '{calloutName}->Scenarios->{n.Name}'"
+                                Log.Warning(
+                                    $"Dispatch.LoadScenarios(): Unable to extract Scanner value for '{calloutName}->Scenarios->{n.Name}'"
                                 );
                                 continue;
                             }
@@ -990,8 +996,8 @@ namespace AgencyCalloutsPlus.API
                             childNode = dispatchNode.SelectSingleNode("Description");
                             if (childNode == null || !childNode.HasChildNodes)
                             {
-                                Game.LogTrivial(
-                                    $"[WARN] AgencyCalloutsPlus: Unable to extract scenario description values for '{calloutName}->Scenarios->{n.Name}'"
+                                Log.Warning(
+                                    $"Dispatch.LoadScenarios(): Unable to extract scenario description values for '{calloutName}->Scenarios->{n.Name}'"
                                 );
                                 continue;
                             }
@@ -1021,7 +1027,7 @@ namespace AgencyCalloutsPlus.API
             document = null;
 
             // Log and return
-            Game.LogTrivial($"[TRACE] AgencyCalloutsPlus: Registered {itemsAdded} callout scenarios into CalloutWrapper");
+            Log.Info($"Dispatch initialized with {itemsAdded} callout scenarios registered into Scenario Pool");
             return itemsAdded;
         }
     }

@@ -11,6 +11,8 @@ namespace AgencyCalloutsPlus.Callouts
     /// </summary>
     /// <remarks>
     /// All AgencyCallout type callouts must have a CalloutProbability of Never!
+    /// This is due to a reliance on the <see cref="Dispatch"/> class for location
+    /// and <see cref="CalloutScenarioInfo"/> information.
     /// </remarks>
     [CalloutInfo("AgencyCallout.TrafficAccident", CalloutProbability.Never)]
     public class TrafficAccident : AgencyCallout
@@ -75,18 +77,13 @@ namespace AgencyCalloutsPlus.Callouts
             // Setup active scene
             Scenario.Setup();
 
-            /*
-            Agency agency = Agency.GetCurrentPlayerAgency();
-            SpawnPoint info = new SpawnPoint(Game.LocalPlayer.Character.Position.Around(15), Game.LocalPlayer.Character.Heading);
-            var copcar = agency.SpawnPoliceVehicleOfType(PatrolType.LocalPatrol, info);*/
-
-            // Return base
+            // AgencyCallout base class will handle the Dispatch stuff
             return base.OnCalloutAccepted();
         }
 
         public override void OnCalloutNotAccepted()
         {
-            // AgencyCallout base class will handle the Computer+ stuff
+            // AgencyCallout base class will handle the Dispatch stuff
             base.OnCalloutNotAccepted();
         }
 
