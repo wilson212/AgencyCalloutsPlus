@@ -1,4 +1,5 @@
-﻿using AgencyCalloutsPlus.Integration;
+﻿using AgencyCalloutsPlus.API;
+using AgencyCalloutsPlus.Integration;
 using LSPD_First_Response.Mod.API;
 using LSPD_First_Response.Mod.Callouts;
 using Rage;
@@ -19,6 +20,11 @@ namespace AgencyCalloutsPlus
         /// Indicates whether Computer+ is running
         /// </summary>
         public bool ComputerPlusRunning => ComputerPlusAPI.IsRunning;
+
+        /// <summary>
+        /// Stores the current <see cref="CalloutScenarioInfo"/>
+        /// </summary>
+        protected PriorityCall ActiveCall { get; set; }
 
         /// <summary>
         /// Plays the Audio scanner with the Division Unit Beat prefix
@@ -86,12 +92,20 @@ namespace AgencyCalloutsPlus
 
         public override bool OnCalloutAccepted()
         {
+            // Did the callout do thier ONE AND ONLY TASK???
+            if (ActiveCall == null)
+                throw new ArgumentNullException(nameof(ActiveCall));
+
+            // Tell dispatch
+            Dispatch.CalloutAccepted(ActiveCall);
+
+            // Update computer plus
             if (ComputerPlusRunning)
             {
                 ComputerPlusAPI.SetCalloutStatusToUnitResponding(CalloutID);
                 Game.DisplayHelp("Further details about this call can be checked using ~b~Computer+.");
             }
-
+            
             return base.OnCalloutAccepted();
         }
 
@@ -99,12 +113,21 @@ namespace AgencyCalloutsPlus
         {
             base.OnCalloutNotAccepted();
 
+            // Did the callout do thier ONE AND ONLY TASK???
+            if (ActiveCall == null)
+                throw new ArgumentNullException(nameof(ActiveCall));
+
+            // Tell dispatch
+            Dispatch.CalloutNotAccepted(ActiveCall);
+
+            /*
             // Update computer plus!
             if (ComputerPlusRunning)
             {
                 Functions.PlayScannerAudio("OTHER_UNIT_TAKING_CALL");
                 ComputerPlusAPI.AssignCallToAIUnit(CalloutID);
             }
+            */
         }
     }
 }

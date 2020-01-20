@@ -26,11 +26,6 @@ namespace AgencyCalloutsPlus.Callouts
         private CalloutScenario Scenario;
 
         /// <summary>
-        /// Stores the current <see cref="CalloutScenarioInfo"/>
-        /// </summary>
-        private PriorityCall ActiveCall;
-
-        /// <summary>
         /// Stores the selected random scenario XmlNode
         /// </summary>
         private XmlNode ScenarioNode;
@@ -77,9 +72,6 @@ namespace AgencyCalloutsPlus.Callouts
 
         public override bool OnCalloutAccepted()
         {
-            // Tell dispatch
-            Dispatch.CalloutAccepted(ActiveCall);
-
             // Setup active scene
             Scenario.Setup();
 

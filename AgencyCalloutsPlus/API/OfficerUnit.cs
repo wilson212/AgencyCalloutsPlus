@@ -115,25 +115,35 @@ namespace AgencyCalloutsPlus.API
             {
                 while (!IsDisposed)
                 {
-                    switch (NextTask)
+                    // Check first if officer has died
+                    if (Officer.IsDead)
                     {
-                        case TaskSignal.None:
-                            break;
-                        case TaskSignal.TakeABreak:
-                            TakeBreak();
-                            break;
-                        case TaskSignal.Cruise:
-                            Cruise();
-                            break;
-                        case TaskSignal.DriveToCall:
-                            DriveToCall();
-                            break;
+                        Dispatch.RegisterDeadOfficer(this);
+                        break;
+                    }
+                    else
+                    {
+                        // Do we have a new task?
+                        switch (NextTask)
+                        {
+                            case TaskSignal.None:
+                                break;
+                            case TaskSignal.TakeABreak:
+                                TakeBreak();
+                                break;
+                            case TaskSignal.Cruise:
+                                Cruise();
+                                break;
+                            case TaskSignal.DriveToCall:
+                                DriveToCall();
+                                break;
+                        }
                     }
 
+                    // Allow other threads to do something
                     GameFiber.Yield();
                 }
             });
-
         }
 
         ~OfficerUnit()
@@ -200,7 +210,12 @@ namespace AgencyCalloutsPlus.API
                 if (NextTask != TaskSignal.None)
                     return; // Return
 
+                // Are we still alive?
+                if (Officer.IsDead)
+                    return;
+
                 // Distance check
+                /*
                 if (parkingNicely && !isParking)
                 {
                     if (Officer.Position.TravelDistanceTo(CurrentCall.Location.Position) < 75)
@@ -210,13 +225,21 @@ namespace AgencyCalloutsPlus.API
                         drivingTask = task.ParkVehicle(CurrentCall.Location.Position, sp.Heading);
                     }
                 }
+                */
 
                 // Allow other threads to do something
                 GameFiber.Yield();
             }
+            
+            // teleport
+            PoliceCar.Position = CurrentCall.Location.Position;
+            PoliceCar.Heading = sp.Heading;
+
+            // TIME me
+            var span = World.DateTime - LastStatusChange;
 
             // Debug
-            Log.Debug($"OfficerUnit {UnitString} arrived on scene");
+            Log.Debug($"OfficerUnit {UnitString} arrived on scene after {span.TotalMinutes} minutes");
 
             // Telll dispatch we are on scene
             Dispatch.RegisterOnScene(CurrentCall);
@@ -273,6 +296,15 @@ namespace AgencyCalloutsPlus.API
         /// </summary>
         private void EnsureInPoliceCar()
         {
+            // If police car doesnt exist anymore...
+            if (!PoliceCar.IsValid())
+            {
+                var location = World.GetNextPositionOnStreet(Officer.Position.Around(25));
+                var sp = new SpawnPoint(location);
+                PoliceCar = Dispatch.PlayerAgency.SpawnPoliceVehicleOfType(PatrolType.LocalPatrol, sp);
+                PoliceCar.IsPersistent = true;
+            }
+
             // If officer is out of car, get back in
             if (!Officer.IsInVehicle(PoliceCar, true))
             {
@@ -362,10 +394,14 @@ namespace AgencyCalloutsPlus.API
             {
                 VehicleBlip.Color = color;
             }
-            else
+            else if (PoliceCar.IsValid())
             {
                 VehicleBlip = PoliceCar.AttachBlip();
                 VehicleBlip.Color = color;
+            }
+            else
+            {
+                // Vehicle is not valid...
             }
         }
 
