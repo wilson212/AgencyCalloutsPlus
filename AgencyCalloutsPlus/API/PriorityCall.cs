@@ -1,4 +1,5 @@
-﻿using Rage;
+﻿using AgencyCalloutsPlus.Extensions;
+using Rage;
 using System;
 using System.Collections.Generic;
 
@@ -57,6 +58,21 @@ namespace AgencyCalloutsPlus.API
         public ZoneInfo Zone { get; internal set; }
 
         /// <summary>
+        /// Indicates wether the OfficerUnit should repsond code 3
+        /// </summary>
+        public bool RespondCode3 => ScenarioInfo.RespondCode3;
+
+        /// <summary>
+        /// Gets the incident text
+        /// </summary>
+        public string IncidentText => ScenarioInfo.IncidentText;
+
+        /// <summary>
+        /// Gets the description of the call
+        /// </summary>
+        public string Description { get; internal set; } = String.Empty;
+
+        /// <summary>
         /// Creates a new instance of <see cref="PriorityCall"/>
         /// </summary>
         /// <param name="id"></param>
@@ -66,6 +82,7 @@ namespace AgencyCalloutsPlus.API
             CallId = id;
             CallCreated = World.DateTime;
             ScenarioInfo = scenarioInfo ?? throw new ArgumentNullException(nameof(scenarioInfo));
+            Description = scenarioInfo.Descriptions.GetRandom();
         }
 
         /// <summary>

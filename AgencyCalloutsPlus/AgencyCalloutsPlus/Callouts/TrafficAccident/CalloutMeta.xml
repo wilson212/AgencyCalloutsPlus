@@ -18,9 +18,10 @@
         <Scanner>WE_HAVE_01 CRIME_TRAFFIC_ALERT IN_OR_ON_POSITION</Scanner>
         <!-- Callout Details are for ComputerPlus -->
         <Description>
-          <Meta>We have received multiple reports of a vehicle collision near {{location}}. No medical response was requested. Please respond code 2.</Meta>
-          <Meta>A concerned citizen has called police stating that he witnessed a vehicle collision near {{location}}. Caller indicated that there does not seem to be any injuries. Please respond code 2.</Meta>
+          <Meta source="Phone">We have received multiple reports of a vehicle collision near {{location}}. No medical response was requested. Please respond code 2.</Meta>
+          <Meta source="Phone">A concerned citizen has called police stating that he witnessed a vehicle collision near {{location}}. Caller indicated that there does not seem to be any injuries. Please respond code 2.</Meta>
         </Description>
+        <IncidentText>Motor Vehicle Accident</IncidentText>
         <Priority>4</Priority>
         <Respond>Code2</Respond>
         <LocationType>SideOfRoad</LocationType>

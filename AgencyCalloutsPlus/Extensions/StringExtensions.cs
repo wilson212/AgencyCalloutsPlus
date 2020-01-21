@@ -19,5 +19,14 @@ namespace AgencyCalloutsPlus.Extensions
                     yield return num;
             }
         }
+
+        public static string GetRandom(this string[] items)
+        {
+            if (items.Length == 0) return String.Empty;
+
+            int count = items.Length - 1;
+            int index = new CryptoRandom().Next(0, count);
+            return items[index];
+        }
     }
 }

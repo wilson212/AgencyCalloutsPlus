@@ -201,14 +201,20 @@ namespace AgencyCalloutsPlus.API
             // Repond code 3?
             if (CurrentCall.ScenarioInfo.RespondCode3)
             {
+                // Turn on sirens
+                SetBlipColor(OfficerStatusColor.DispatchedCode3);
                 PoliceCar.IsSirenOn = true;
                 PoliceCar.IsSirenSilent = false;
+
+                // Find close location
                 parkingNicely = false;
                 var loc = World.GetNextPositionOnStreet(CurrentCall.Location.Position.Around(15));
                 drivingTask = task.DriveToPosition(loc, Code3TravelSpeed, VehicleDrivingFlags.Emergency);
             }
             else
             {
+                // Find close location
+                SetBlipColor(OfficerStatusColor.DispatchedCode2);
                 var loc = World.GetNextPositionOnStreet(CurrentCall.Location.Position.Around(15));
                 drivingTask = task.DriveToPosition(loc, Code2TravelSpeed, VehicleDrivingFlags.Normal);
             }
@@ -352,8 +358,6 @@ namespace AgencyCalloutsPlus.API
             // Set blip color and task the AI
             if (IsAIUnit)
             {
-                SetBlipColor(OfficerStatusColor.Dispatched);
-
                 // Signal our thread to do something
                 NextTask = TaskSignal.DriveToCall;
             }

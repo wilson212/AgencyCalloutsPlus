@@ -95,6 +95,11 @@ namespace AgencyCalloutsPlus.API
         private static PriorityCall DispatchedToPlayer { get; set; }
 
         /// <summary>
+        /// Contains the priority call that needs to be dispatched to the player on next Tick
+        /// </summary>
+        private static PriorityCall InvokeForPlayer { get; set; }
+
+        /// <summary>
         /// Static method called the first time this class is referenced anywhere
         /// </summary>
         static Dispatch()
@@ -122,6 +127,38 @@ namespace AgencyCalloutsPlus.API
             NextCallId = Randomizer.Next(21234, 34567);
         }
 
+        /// <summary>
+        /// Gets all the calls by the specified priority
+        /// </summary>
+        /// <param name="priority"></param>
+        /// <returns></returns>
+        public static PriorityCall[] GetCallList(int priority)
+        {
+            if (priority > 4 || priority < 1) return null;
+
+            int index = priority - 1;
+            return CallQueue[index].ToArray();
+        }
+
+        /// <summary>
+        /// On the next call check, the specified call will be dispatched to the player.
+        /// If the player is already on a call that is in progress, this method does nothing
+        /// and returns false.
+        /// </summary>
+        /// <param name="call"></param>
+        /// <returns></returns>
+        public static bool InvokeCalloutForPlayer(PriorityCall call)
+        {
+            CallStatus[] acceptable = { CallStatus.Completed, CallStatus.Waiting, CallStatus.Declined };
+            if (DispatchedToPlayer == null || acceptable.Contains(DispatchedToPlayer.CallStatus))
+            {
+                InvokeForPlayer = call;
+                return true;
+            }
+
+            return false;
+        }
+
         #region Callout Methods
 
         /// <summary>
@@ -146,7 +183,7 @@ namespace AgencyCalloutsPlus.API
                 else
                 {
                     // Cancel
-                    DispatchedToPlayer.CallStatus = CallStatus.DeclinedByPlayer;
+                    DispatchedToPlayer.CallStatus = CallStatus.Declined;
                     DispatchedToPlayer = null;
                     Log.Info($"Dispatch.RequestCallInfo: It appears that the player spawned a callout of type {calloutName}");
                 }
@@ -156,7 +193,7 @@ namespace AgencyCalloutsPlus.API
             // At this point, see if we have anything in the call Queue
             if (Scenarios.ContainsKey(calloutName))
             {
-                CallStatus[] status = { CallStatus.Created, CallStatus.WaitingForPlayerAccept, CallStatus.DeclinedByPlayer };
+                CallStatus[] status = { CallStatus.Created, CallStatus.Waiting, CallStatus.Declined };
 
                 // Lets see if we have a call already created
                 for (int i = 0; i < 4; i++)
@@ -260,7 +297,7 @@ namespace AgencyCalloutsPlus.API
             if (DispatchedToPlayer != null && call == DispatchedToPlayer)
             {
                 // Remove dispatched call from player
-                DispatchedToPlayer.CallStatus = CallStatus.DeclinedByPlayer;
+                DispatchedToPlayer.CallStatus = CallStatus.Declined;
                 DispatchedToPlayer = null;
                 Log.Info($"Dispatch: Player declined callout scenario {call.ScenarioInfo.Name}");
 
@@ -292,7 +329,7 @@ namespace AgencyCalloutsPlus.API
             else
             {
                 DispatchedToPlayer = call;
-                DispatchedToPlayer.CallStatus = CallStatus.WaitingForPlayerAccept;
+                DispatchedToPlayer.CallStatus = CallStatus.Waiting;
                 Functions.StartCallout(call.ScenarioInfo.CalloutName);
             }
         }
@@ -473,7 +510,8 @@ namespace AgencyCalloutsPlus.API
                     driver.IsPersistent = true;
                     driver.BlockPermanentEvents = true;
 
-                    var unit = new OfficerUnit(driver, $"1-A-{i}", car) { VehicleBlip = blip };
+                    var num = i + 10;
+                    var unit = new OfficerUnit(driver, $"1-A-{num}", car) { VehicleBlip = blip };
                     unit.StartDuty();
                     OfficerUnits.Add(unit);
 
@@ -539,6 +577,13 @@ namespace AgencyCalloutsPlus.API
                 PlayerUnit.Status = OfficerStatus.Busy;
             }
 
+            // Are we invoking a call to the player?
+            if (InvokeForPlayer != null)
+            {
+                DispatchUnitToCall(PlayerUnit, InvokeForPlayer);
+                InvokeForPlayer = null;
+            }
+
             // If we have no  officers, then stop
             if (OfficerUnits.Count == 0)
                 return;
@@ -570,7 +615,7 @@ namespace AgencyCalloutsPlus.API
                     // Grab open calls
                     var calls = (
                             from x in CallQueue[priority]
-                            where x.CallStatus == CallStatus.Created || x.CallStatus == CallStatus.DeclinedByPlayer
+                            where x.CallStatus == CallStatus.Created || x.CallStatus == CallStatus.Declined
                             orderby x.Priority ascending, x.CallCreated ascending // Oldest first
                             select x
                         ).Take(available).ToList();
@@ -768,7 +813,7 @@ namespace AgencyCalloutsPlus.API
                 case 1: // Priority 2
                     return availableOfficers.Where(x => x.CurrentCall == null || x.CurrentCall.Priority > 2);
                 case 2: // Priority 3
-                    if (call.CallStatus == CallStatus.DeclinedByPlayer)
+                    if (call.CallStatus == CallStatus.Declined)
                         return availableOfficers.Where(x => x.Status == OfficerStatus.Available && x.IsAIUnit);
                     else
                         return availableOfficers.Where(x => x.Status == OfficerStatus.Available);
@@ -1010,6 +1055,20 @@ namespace AgencyCalloutsPlus.API
                                     desc.Add(descNode.InnerText);
                                 }
                                 scene.Descriptions = desc.ToArray();
+                            }
+
+                            // Grab the Incident
+                            childNode = dispatchNode.SelectSingleNode("IncidentText");
+                            if (String.IsNullOrWhiteSpace(childNode.InnerText))
+                            {
+                                Log.Warning(
+                                    $"Dispatch.LoadScenarios(): Unable to extract IncidentText value for '{calloutName}->Scenarios->{n.Name}'"
+                                );
+                                continue;
+                            }
+                            else
+                            {
+                                scene.IncidentText = childNode.InnerText;
                             }
 
                             // Add scenario to the pool

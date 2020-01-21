@@ -44,6 +44,11 @@ namespace AgencyCalloutsPlus
         public string ScannerText { get; set; }
 
         /// <summary>
+        /// Gets the incident text
+        /// </summary>
+        public string IncidentText { get; set; }
+
+        /// <summary>
         /// Gets an array of call descriptions
         /// </summary>
         public string[] Descriptions { get; set; }

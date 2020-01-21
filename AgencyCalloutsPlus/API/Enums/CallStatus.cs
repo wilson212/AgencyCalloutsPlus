@@ -4,9 +4,9 @@
     {
         Created,
 
-        WaitingForPlayerAccept,
+        Waiting,
 
-        DeclinedByPlayer,
+        Declined,
 
         Dispatched,
 
