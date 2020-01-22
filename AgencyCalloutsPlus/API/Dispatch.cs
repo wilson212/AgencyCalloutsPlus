@@ -316,19 +316,6 @@ namespace AgencyCalloutsPlus.API
                 DispatchedToPlayer = null;
                 Log.Info($"Dispatch: Player declined callout scenario {call.ScenarioInfo.Name}");
 
-                // Is this an important call?
-                if (call.Priority < 3 && call.BackupOfficers.Count > 0)
-                {
-                    // Dispatch one more AI unit to this call
-                    var primary = call.BackupOfficers[0];
-
-                    // remove as backup
-                    call.BackupOfficers.Remove(primary);
-
-                    // Assign new
-                    call.AssignOfficer(primary, true);
-                }
-
                 // Set a delay timer for next player call out?
                 // @todo
             }
@@ -639,27 +626,27 @@ namespace AgencyCalloutsPlus.API
             {
                 // Itterate through each call priority Queue
                 int available = availableOfficers.Count;
-                for (int priority = 0; priority < 4; priority++)
+                for (int priorityIndex = 0; priorityIndex < 4; priorityIndex++)
                 {
                     // Stop if we have no available officers or calls
-                    if (available == 0 || CallQueue[priority].Count == 0)
+                    if (available == 0 || CallQueue[priorityIndex].Count == 0)
                         continue;
 
                     // Grab open calls
                     var calls = (
-                            from call in CallQueue[priority]
-                            where call.CallStatus == CallStatus.Created || call.NeedsMoreBackupOfficers
+                            from call in CallQueue[priorityIndex]
+                            where call.NeedsMoreOfficers
                             orderby call.Priority ascending, call.CallCreated ascending // Oldest first
                             select call
                         ).Take(available).ToList();
 
                     // Check priority 1 and 2 calls, and dispatch accordingly
-                    if (priority < 2)
+                    if (priorityIndex < 2)
                     {
                         foreach (var call in calls)
                         {
                             // Select closest available officer
-                            int amount = (priority == 0) ? 3 : 2;
+                            int amount = (priorityIndex == 0) ? 3 : 2;
                             var officers = GetClosestAvailableOfficers(availableOfficers, call, amount);
                             if (officers != null || officers.Length > 0)
                             {
@@ -667,25 +654,19 @@ namespace AgencyCalloutsPlus.API
                                 var player = officers.Where(x => !x.IsAIUnit).FirstOrDefault();
                                 if (player != null)
                                 {
+                                    // Dispatch player
                                     DispatchUnitToCall(player, call);
                                     available--;
                                 }
                                 else
                                 {
+                                    // Dispatch primary AI officer
                                     DispatchUnitToCall(officers[0], call);
-                                    officers = officers.Skip(1).ToArray();
                                     available--;
-                                }
-                                
-                                // Add other units to the call
-                                if (officers.Length > 0)
-                                {
-                                    foreach (var officer in officers)
-                                    {
-                                        // Skip player
-                                        if (player != null && !officer.IsAIUnit)
-                                            continue;
 
+                                    // Add other units to the call
+                                    foreach (var officer in officers.Skip(1).ToArray())
+                                    {
                                         // Dispatch
                                         DispatchUnitToCall(officer, call);
                                         available--;

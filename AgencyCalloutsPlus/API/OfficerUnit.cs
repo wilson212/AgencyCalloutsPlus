@@ -343,29 +343,19 @@ namespace AgencyCalloutsPlus.API
             // Did we get called on for a more important assignment?
             if (CurrentCall != null)
             {
-                // Is this unit the primary?
-                if (CurrentCall.PrimaryOfficer == this)
+                // Is this unit the primary on a lesser important call?
+                if (CurrentCall.PrimaryOfficer == this && CurrentCall.Priority > 2)
                 {
                     if (CurrentCall.CallStatus == CallStatus.OnScene)
                     {
-                        var flag = (call.Priority < 3) ? CallCloseFlag.Emergency : CallCloseFlag.Forced;
+                        // @todo : If more than 50% complete, close call
+                        var flag = (call.Priority < CurrentCall.Priority) ? CallCloseFlag.Emergency : CallCloseFlag.Forced;
                         CompleteCall(flag);
                     }
-                    else if (CurrentCall.NeedsMoreBackupOfficers)
-                    {
+                }
 
-                    }
-                    else
-                    {
-                        // Open this up for aother to take
-                        call.CallStatus = CallStatus.Created;
-                    }
-                }
-                else
-                {
-                    // Remove this officer from the list
-                    CurrentCall.BackupOfficers.Remove(this);
-                }
+                // Back out of call
+                CurrentCall.RemoveOfficer(this);
             }
 
             // Set flags
@@ -408,13 +398,13 @@ namespace AgencyCalloutsPlus.API
                     SetBlipColor(OfficerStatusColor.Available);
                 }
 
+                // Ensure siren is off
+                PoliceCar.IsSirenOn = false;
+
                 // Tell dispatch we are done here
                 Dispatch.RegisterCallComplete(CurrentCall);
                 Log.Debug($"OfficerUnit {UnitString} completed call with flag: {flag}");
             }
-
-            // Ensure siren is off
-            PoliceCar.IsSirenOn = false;
 
             // Clear last call
             CurrentCall = null;

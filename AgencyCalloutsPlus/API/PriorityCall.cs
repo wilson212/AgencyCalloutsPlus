@@ -52,13 +52,14 @@ namespace AgencyCalloutsPlus.API
         public List<OfficerUnit> BackupOfficers { get; private set; }
 
         /// <summary>
-        /// Indicates whether this Call needs more backup Officers
+        /// Indicates whether this Call needs more <see cref="OfficerUnit"/>(s)
+        /// assigned to it.
         /// </summary>
-        public bool NeedsMoreBackupOfficers
+        public bool NeedsMoreOfficers
         {
             get
             {
-                if (Priority == 1 && BackupOfficers.Count < 2)
+                if (PrimaryOfficer == null || (Priority == 1 && BackupOfficers.Count < 2))
                 {
                     return true;
                 }
@@ -125,18 +126,45 @@ namespace AgencyCalloutsPlus.API
             }
             else if (asPrimary)
             {
-                if (BackupOfficers == null)
-                    BackupOfficers = new List<OfficerUnit>(3);
-
                 BackupOfficers.Add(PrimaryOfficer);
                 PrimaryOfficer = officer;
             }
             else
             {
-                if (BackupOfficers == null)
-                    BackupOfficers = new List<OfficerUnit>(3);
-
                 BackupOfficers.Add(officer);
+            }
+        }
+
+        /// <summary>
+        /// Removes the specified <see cref="OfficerUnit"/> from the call. If the 
+        /// <see cref="OfficerUnit"/> was the primary officer, and <see cref="BackupOfficers"/>
+        /// is populated, the topmost <see cref="OfficerUnit"/> will be the new
+        /// <see cref="PrimaryOfficer"/>
+        /// </summary>
+        /// <param name="officer"></param>
+        internal void RemoveOfficer(OfficerUnit officer)
+        {
+            if (officer == PrimaryOfficer)
+            {
+                if (BackupOfficers.Count > 0)
+                {
+                    // Dispatch one more AI unit to this call
+                    var primary = BackupOfficers[0];
+
+                    // remove as backup
+                    BackupOfficers.Remove(primary);
+
+                    // Assign new
+                    PrimaryOfficer = primary;
+                }
+                else
+                {
+                    PrimaryOfficer = null;
+                }
+            }
+            else
+            {
+                BackupOfficers.Remove(officer);
             }
         }
 
