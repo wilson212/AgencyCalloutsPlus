@@ -251,7 +251,7 @@ namespace AgencyCalloutsPlus.API
             PoliceCar.Position = CurrentCall.Location.Position;
             PoliceCar.Heading = sp.Heading;
 
-            // TIME me
+            // Travel time
             var span = World.DateTime - LastStatusChange;
             var mins = Math.Round(span.TotalMinutes, 2);
 
@@ -259,7 +259,7 @@ namespace AgencyCalloutsPlus.API
             Log.Debug($"OfficerUnit {UnitString} arrived on scene after {mins} game minutes");
 
             // Telll dispatch we are on scene
-            Dispatch.RegisterOnScene(CurrentCall);
+            Dispatch.RegisterOnScene(this, CurrentCall);
             PoliceCar.IsSirenSilent = true;
             SetBlipColor(OfficerStatusColor.OnScene);
 
@@ -338,17 +338,38 @@ namespace AgencyCalloutsPlus.API
         /// Assigns this officer to the specified call
         /// </summary>
         /// <param name="call"></param>
-        internal void AssignToCall(PriorityCall call)
+        internal void AssignToCall(PriorityCall call, bool forcePrimary = false)
         {
             // Did we get called on for a more important assignment?
-            if (IsAIUnit && CurrentCall != null)
+            if (CurrentCall != null)
             {
-                var flag = (call.Priority < 2) ? CallCloseFlag.Emergency : CallCloseFlag.Forced;
-                CompleteCall(flag);
+                // Is this unit the primary?
+                if (CurrentCall.PrimaryOfficer == this)
+                {
+                    if (CurrentCall.CallStatus == CallStatus.OnScene)
+                    {
+                        var flag = (call.Priority < 3) ? CallCloseFlag.Emergency : CallCloseFlag.Forced;
+                        CompleteCall(flag);
+                    }
+                    else if (CurrentCall.NeedsMoreBackupOfficers)
+                    {
+
+                    }
+                    else
+                    {
+                        // Open this up for aother to take
+                        call.CallStatus = CallStatus.Created;
+                    }
+                }
+                else
+                {
+                    // Remove this officer from the list
+                    CurrentCall.BackupOfficers.Remove(this);
+                }
             }
 
             // Set flags
-            call.AssignOfficer(this);
+            call.AssignOfficer(this, forcePrimary);
             call.CallStatus = CallStatus.Dispatched;
 
             CurrentCall = call;

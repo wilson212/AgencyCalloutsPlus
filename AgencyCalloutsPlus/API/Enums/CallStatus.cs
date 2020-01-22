@@ -6,8 +6,6 @@
 
         Waiting,
 
-        Declined,
-
         Dispatched,
 
         OnScene,

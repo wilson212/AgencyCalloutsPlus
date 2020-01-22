@@ -149,14 +149,24 @@ namespace AgencyCalloutsPlus.API
         /// <returns></returns>
         public static bool InvokeCalloutForPlayer(PriorityCall call)
         {
-            CallStatus[] acceptable = { CallStatus.Completed, CallStatus.Waiting, CallStatus.Declined };
-            if (DispatchedToPlayer == null || acceptable.Contains(DispatchedToPlayer.CallStatus))
+            if (CanInvokeCalloutForPlayer())
             {
                 InvokeForPlayer = call;
                 return true;
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// Indicates whether or not a <see cref="Callout"/> can be invoked for the Player
+        /// dependant on thier current call status.
+        /// </summary>
+        /// <returns></returns>
+        public static bool CanInvokeCalloutForPlayer()
+        {
+            CallStatus[] acceptable = { CallStatus.Completed, CallStatus.Dispatched, CallStatus.Waiting };
+            return (DispatchedToPlayer == null || acceptable.Contains(DispatchedToPlayer.CallStatus));
         }
 
         #region Callout Methods
@@ -183,7 +193,8 @@ namespace AgencyCalloutsPlus.API
                 else
                 {
                     // Cancel
-                    DispatchedToPlayer.CallStatus = CallStatus.Declined;
+                    DispatchedToPlayer.CallDeclinedByPlayer = true;
+                    DispatchedToPlayer.CallStatus = CallStatus.Created;
                     DispatchedToPlayer = null;
                     Log.Info($"Dispatch.RequestCallInfo: It appears that the player spawned a callout of type {calloutName}");
                 }
@@ -193,7 +204,7 @@ namespace AgencyCalloutsPlus.API
             // At this point, see if we have anything in the call Queue
             if (Scenarios.ContainsKey(calloutName))
             {
-                CallStatus[] status = { CallStatus.Created, CallStatus.Waiting, CallStatus.Declined };
+                CallStatus[] status = { CallStatus.Created, CallStatus.Waiting };
 
                 // Lets see if we have a call already created
                 for (int i = 0; i < 4; i++)
@@ -216,7 +227,7 @@ namespace AgencyCalloutsPlus.API
             }
 
             // cant do anything at this point
-            Log.Warning($"Dispatch.RequestCallInfo: Unable to spawn a scenario for {calloutName}");
+            Log.Warning($"Dispatch.RequestCallInfo(): Unable to spawn a scenario for {calloutName}");
             return null;
         }
 
@@ -244,11 +255,11 @@ namespace AgencyCalloutsPlus.API
         /// Tells dispatch that we are on scene
         /// </summary>
         /// <param name="call"></param>
-        public static void RegisterOnScene(PriorityCall call)
+        public static void RegisterOnScene(OfficerUnit unit, PriorityCall call)
         {
             call.CallStatus = CallStatus.OnScene;
-            call.PrimaryOfficer.Status = OfficerStatus.OnScene;
-            call.PrimaryOfficer.LastStatusChange = World.DateTime;
+            unit.Status = OfficerStatus.OnScene;
+            unit.LastStatusChange = World.DateTime;
         }
 
         /// <summary>
@@ -283,7 +294,8 @@ namespace AgencyCalloutsPlus.API
         /// <remarks>Used for Player only, not AI</remarks>
         public static void CalloutAccepted(PriorityCall call)
         {
-            PlayerUnit.AssignToCall(call);
+            // Player is always primary on a callout
+            PlayerUnit.AssignToCall(call, true);
         }
 
         /// <summary>
@@ -296,16 +308,25 @@ namespace AgencyCalloutsPlus.API
             // Cancel
             if (DispatchedToPlayer != null && call == DispatchedToPlayer)
             {
-                // Remove dispatched call from player
-                DispatchedToPlayer.CallStatus = CallStatus.Declined;
+                // Remove player from call
+                call.CallStatus = CallStatus.Created;
+                call.CallDeclinedByPlayer = true;
+
+                // Ensure this is null
                 DispatchedToPlayer = null;
                 Log.Info($"Dispatch: Player declined callout scenario {call.ScenarioInfo.Name}");
 
                 // Is this an important call?
-                if (call.Priority < 3)
+                if (call.Priority < 3 && call.BackupOfficers.Count > 0)
                 {
                     // Dispatch one more AI unit to this call
-                    // @todo
+                    var primary = call.BackupOfficers[0];
+
+                    // remove as backup
+                    call.BackupOfficers.Remove(primary);
+
+                    // Assign new
+                    call.AssignOfficer(primary, true);
                 }
 
                 // Set a delay timer for next player call out?
@@ -328,6 +349,18 @@ namespace AgencyCalloutsPlus.API
             }
             else
             {
+                // Is this call already dispatched?
+                if (call.PrimaryOfficer != null)
+                {
+                    // Is an AI on scene already?
+                    if (call.CallStatus == CallStatus.OnScene)
+                    {
+                        // Player is dispatched as seconary officer
+                        PlayerUnit.AssignToCall(call);
+                        return;
+                    }
+                }
+
                 DispatchedToPlayer = call;
                 DispatchedToPlayer.CallStatus = CallStatus.Waiting;
                 Functions.StartCallout(call.ScenarioInfo.CalloutName);
@@ -591,10 +624,10 @@ namespace AgencyCalloutsPlus.API
             // Check AI police officers for finished calls. Removed finished call
             // from the call Queue
             var availableOfficers = (
-                from x in OfficerUnits
-                where x.Status == OfficerStatus.Available
-                orderby x.LastStatusChange ascending // Oldest first
-                select x
+                from officer in OfficerUnits
+                where officer.Status == OfficerStatus.Available
+                orderby officer.LastStatusChange ascending // Oldest first
+                select officer
             ).ToList();
 
             // If we have officers available for calls
@@ -614,10 +647,10 @@ namespace AgencyCalloutsPlus.API
 
                     // Grab open calls
                     var calls = (
-                            from x in CallQueue[priority]
-                            where x.CallStatus == CallStatus.Created || x.CallStatus == CallStatus.Declined
-                            orderby x.Priority ascending, x.CallCreated ascending // Oldest first
-                            select x
+                            from call in CallQueue[priority]
+                            where call.CallStatus == CallStatus.Created || call.NeedsMoreBackupOfficers
+                            orderby call.Priority ascending, call.CallCreated ascending // Oldest first
+                            select call
                         ).Take(available).ToList();
 
                     // Check priority 1 and 2 calls, and dispatch accordingly
@@ -813,7 +846,7 @@ namespace AgencyCalloutsPlus.API
                 case 1: // Priority 2
                     return availableOfficers.Where(x => x.CurrentCall == null || x.CurrentCall.Priority > 2);
                 case 2: // Priority 3
-                    if (call.CallStatus == CallStatus.Declined)
+                    if (call.CallDeclinedByPlayer)
                         return availableOfficers.Where(x => x.Status == OfficerStatus.Available && x.IsAIUnit);
                     else
                         return availableOfficers.Where(x => x.Status == OfficerStatus.Available);

@@ -52,7 +52,32 @@ namespace AgencyCalloutsPlus.API
         public List<OfficerUnit> BackupOfficers { get; private set; }
 
         /// <summary>
-        /// Gets the <see cref="ZoneInfo.ScriptName"/> this <see cref="PriorityCall"/>
+        /// Indicates whether this Call needs more backup Officers
+        /// </summary>
+        public bool NeedsMoreBackupOfficers
+        {
+            get
+            {
+                if (Priority == 1 && BackupOfficers.Count < 2)
+                {
+                    return true;
+                }
+                else if (Priority == 2 && BackupOfficers.Count < 1)
+                {
+                    return true;
+                }
+
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Indicates whether this call was declined by the player
+        /// </summary>
+        public bool CallDeclinedByPlayer { get; internal set; }
+
+        /// <summary>
+        /// Gets the <see cref="ZoneInfo"/> this <see cref="PriorityCall"/>
         /// takes place in
         /// </summary>
         public ZoneInfo Zone { get; internal set; }
@@ -83,6 +108,7 @@ namespace AgencyCalloutsPlus.API
             CallCreated = World.DateTime;
             ScenarioInfo = scenarioInfo ?? throw new ArgumentNullException(nameof(scenarioInfo));
             Description = scenarioInfo.Descriptions.GetRandom();
+            BackupOfficers = new List<OfficerUnit>(3);
         }
 
         /// <summary>
@@ -91,10 +117,18 @@ namespace AgencyCalloutsPlus.API
         /// list otherwise
         /// </summary>
         /// <param name="officer"></param>
-        internal void AssignOfficer(OfficerUnit officer)
+        internal void AssignOfficer(OfficerUnit officer, bool asPrimary)
         {
             if (PrimaryOfficer == null)
             {
+                PrimaryOfficer = officer;
+            }
+            else if (asPrimary)
+            {
+                if (BackupOfficers == null)
+                    BackupOfficers = new List<OfficerUnit>(3);
+
+                BackupOfficers.Add(PrimaryOfficer);
                 PrimaryOfficer = officer;
             }
             else
