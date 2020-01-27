@@ -14,11 +14,18 @@ namespace AgencyCalloutsPlus.Integration
         /// <summary>
         /// Indicates whether Computer+ is running
         /// </summary>
-        public static bool IsRunning { get; private set; }
+        public static bool IsRunning { get; private set; } = false;
 
         public static void Initialize()
         {
-            IsRunning = GlobalFunctions.IsLSPDFRPluginRunning("ComputerPlus", new Version("1.4.1.1"));
+            if (!IsRunning)
+            {
+                IsRunning = GlobalFunctions.IsLSPDFRPluginRunning("ComputerPlus", new Version("1.4.1.1"));
+                if (IsRunning)
+                {
+                    Functions.RegisterInterface("Computer Aided Dispatch", "Brexin212", () => new CADMainGwenForm());
+                }
+            }
         }
 
         public static Guid CreateCallout(string CallName, string ShortName, Vector3 Location, int ResponseType, string Description = "", int CallStatus = 2, List<Ped> CallPeds = null, List<Vehicle> CallVehicles = null)

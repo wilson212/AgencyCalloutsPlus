@@ -69,6 +69,11 @@ namespace AgencyCalloutsPlus.API
         private static GameFiber PoliceFiber { get; set; }
 
         /// <summary>
+        /// The <see cref="GameFiber"/> that runs the logic for all the AI units
+        /// </summary>
+        private static GameFiber AILogicFiber { get; set; }
+
+        /// <summary>
         /// Temporary: Containts a list of police vehicles
         /// </summary>
         private static List<OfficerUnit> OfficerUnits { get; set; }
@@ -92,7 +97,7 @@ namespace AgencyCalloutsPlus.API
         /// <summary>
         /// Contains the priority call being dispatched to the player currently
         /// </summary>
-        private static PriorityCall DispatchedToPlayer { get; set; }
+        public static PriorityCall DispatchedToPlayer { get; private set; }
 
         /// <summary>
         /// Contains the priority call that needs to be dispatched to the player on next Tick
@@ -125,6 +130,53 @@ namespace AgencyCalloutsPlus.API
             // Create next random call ID
             Randomizer = new CryptoRandom();
             NextCallId = Randomizer.Next(21234, 34567);
+        }
+
+        /// <summary>
+        /// Sets the player's status
+        /// </summary>
+        /// <param name="status"></param>
+        public static void SetPlayerStatus(OfficerStatus status)
+        {
+            if (!Main.OnDuty) return;
+
+            PlayerUnit.Status = status;
+            if (status != OfficerStatus.Available)
+            {
+                Functions.SetPlayerAvailableForCalls(false);
+            }
+            else
+            {
+                Functions.SetPlayerAvailableForCalls(true);
+            }
+        }
+
+        /// <summary>
+        /// Gets the <see cref="PlayerOfficerUnit"/>s status
+        /// </summary>
+        /// <returns></returns>
+        public static OfficerStatus GetPlayerStatus()
+        {
+            if (!Main.OnDuty) return OfficerStatus.EndingDuty;
+            return PlayerUnit.Status;
+        }
+
+        /// <summary>
+        /// Gets the number of available units to respond to a call
+        /// </summary>
+        /// <param name="emergency"></param>
+        /// <returns></returns>
+        public static int GetAvailableUnits(bool emergency = false)
+        {
+            if (emergency)
+            {
+                OfficerStatus[] acceptable = { OfficerStatus.Available, OfficerStatus.Busy, OfficerStatus.MealBreak, OfficerStatus.Dispatched };
+                return OfficerUnits.Where(x => acceptable.Contains(x.Status)).Count();
+            }
+            else
+            {
+                return OfficerUnits.Where(x => x.Status == OfficerStatus.Available).Count();
+            }
         }
 
         /// <summary>
@@ -247,7 +299,7 @@ namespace AgencyCalloutsPlus.API
             if (call.PrimaryOfficer == PlayerUnit)
             {
                 PlayerUnit.CompleteCall(CallCloseFlag.Completed);
-                PlayerUnit.Status = OfficerStatus.Available;
+                SetPlayerStatus(OfficerStatus.Available);
             }
         }
 
@@ -257,6 +309,7 @@ namespace AgencyCalloutsPlus.API
         /// <param name="call"></param>
         public static void RegisterOnScene(OfficerUnit unit, PriorityCall call)
         {
+            SetPlayerStatus(OfficerStatus.OnScene);
             call.CallStatus = CallStatus.OnScene;
             unit.Status = OfficerStatus.OnScene;
             unit.LastStatusChange = World.DateTime;
@@ -296,6 +349,7 @@ namespace AgencyCalloutsPlus.API
         {
             // Player is always primary on a callout
             PlayerUnit.AssignToCall(call, true);
+            SetPlayerStatus(OfficerStatus.Dispatched);
         }
 
         /// <summary>
@@ -311,6 +365,7 @@ namespace AgencyCalloutsPlus.API
                 // Remove player from call
                 call.CallStatus = CallStatus.Created;
                 call.CallDeclinedByPlayer = true;
+                SetPlayerStatus(OfficerStatus.Available);
 
                 // Ensure this is null
                 DispatchedToPlayer = null;
@@ -506,12 +561,13 @@ namespace AgencyCalloutsPlus.API
             });
 
             // To be replaced later @todo
-            GameFiber.StartNew(delegate
+            if (Settings.EnableFullSimulation)
             {
+                Log.Debug("Full Simulation Enabled");
                 for (int i = 0; i < PlayerAgency.ActualPatrols - 1; i++)
                 {
+                    // Spawn random zone to spread the units out
                     ZoneInfo zone = PlayerAgency.GetNextRandomCrimeZone();
-
                     var sp = zone.GetRandomSideOfRoadLocation();
                     while (sp == null)
                     {
@@ -519,29 +575,76 @@ namespace AgencyCalloutsPlus.API
                         sp = zone.GetRandomSideOfRoadLocation();
                     }
 
+                    // Create AI vehicle
                     var car = PlayerAgency.SpawnPoliceVehicleOfType(PatrolType.LocalPatrol, sp);
+                    car.Model.LoadAndWait();
                     car.IsPersistent = true;
 
-                    var blip = car.AttachBlip();
-                    blip.Color = Color.White;
-                    blip.Sprite = BlipSprite.PolicePatrol;
-
+                    // Create AI officer
                     var driver = car.CreateRandomDriver();
                     driver.IsPersistent = true;
                     driver.BlockPermanentEvents = true;
 
+                    // Create instance
                     var num = i + 10;
-                    var unit = new OfficerUnit(driver, $"1-A-{num}", car) { VehicleBlip = blip };
-                    unit.StartDuty();
+                    var unit = new PersistentAIOfficerUnit(driver, car, $"1A-{num}");
                     OfficerUnits.Add(unit);
+
+                    // Start duty
+                    unit.StartDuty();
+
+                    // Yield
+                    GameFiber.Yield();
+                }
+            }
+            else
+            {
+                for (int i = 0; i < PlayerAgency.ActualPatrols - 1; i++)
+                {
+                    // Spawn random zone to spread the units out
+                    ZoneInfo zone = PlayerAgency.GetNextRandomCrimeZone();
+                    var sp = zone.GetRandomSideOfRoadLocation();
+                    while (sp == null)
+                    {
+                        zone = PlayerAgency.GetNextRandomCrimeZone();
+                        sp = zone.GetRandomSideOfRoadLocation();
+                    }
+
+                    // Create instance
+                    var num = i + 10;
+                    var unit = new VirtualAIOfficerUnit(sp.Position, $"1A-{num}");
+                    OfficerUnits.Add(unit);
+
+                    // Start Duty
+                    unit.StartDuty();
 
                     // Yield
                     GameFiber.Yield();
                 }
 
-                PlayerUnit = new OfficerUnit(Game.LocalPlayer) { Status = OfficerStatus.Busy };
-                OfficerUnits.Add(PlayerUnit);
-            });
+                // Run virtual AI in thier own thread
+                AILogicFiber = GameFiber.StartNew(delegate
+                {
+                    // While on duty main loop
+                    while (Main.OnDuty)
+                    {
+                        var date = World.DateTime;
+
+                        // Start duty for each officer
+                        foreach (var officer in OfficerUnits)
+                        {
+                            officer.OnTick(date);
+                        }
+
+                        GameFiber.Wait(1000);
+                    }
+                });
+            }
+
+            // Add player unit
+            PlayerUnit = new PlayerOfficerUnit(Game.LocalPlayer, "1L-18");
+            PlayerUnit.StartDuty();
+            OfficerUnits.Add(PlayerUnit);
 
             PoliceFiber = GameFiber.StartNew(delegate
             {
@@ -586,7 +689,7 @@ namespace AgencyCalloutsPlus.API
                 {
                     PlayerUnit.Status = OfficerStatus.Busy;
                 }
-                else if (PlayerUnit.Status != OfficerStatus.Break)
+                else if (PlayerUnit.Status != OfficerStatus.MealBreak)
                 {
                     PlayerUnit.Status = OfficerStatus.Available;
                 }
@@ -677,6 +780,8 @@ namespace AgencyCalloutsPlus.API
                     }
                     else // Priority 3 and 4 calls
                     {
+                        // Any left over AI should be dispatched to priority 3 and 4 calls
+                        // after the call has sat for awhile
                         foreach (var call in calls)
                         {
                             // Select closest available officer
@@ -690,9 +795,6 @@ namespace AgencyCalloutsPlus.API
                     }
                 }
             }
-            
-            // Any left over AI should be dispatched to priority 3 and 4 calls
-            // after the call has sat for awhile
         }
 
         /// <summary>
@@ -785,7 +887,7 @@ namespace AgencyCalloutsPlus.API
                 return null;
 
             // Order officers by distance to the call
-            var ordered = officers.OrderBy(x => x.Officer.Position.DistanceTo(call.Location.Position));
+            var ordered = officers.OrderBy(x => x.GetPosition().DistanceTo(call.Location.Position));
             return ordered.FirstOrDefault();
         }
 
@@ -808,7 +910,7 @@ namespace AgencyCalloutsPlus.API
                 return null;
 
             // Order officers by distance to the call
-            var ordered = officers.OrderBy(x => x.Officer.Position.DistanceTo(call.Location.Position));
+            var ordered = officers.OrderBy(x => x.GetPosition().DistanceTo(call.Location.Position));
             return ordered.Take(count).ToArray();
         }
 
@@ -867,7 +969,7 @@ namespace AgencyCalloutsPlus.API
             XmlDocument document = new XmlDocument();
             var agencyProbabilites = new Dictionary<AgencyType, int>(10);
             Agency agency = Agency.GetCurrentPlayerAgency();
-            List<string> desc = new List<string>(5);
+            List<PriorityCallDescription> desc = new List<PriorityCallDescription>(5);
 
             // Load callout scripts
             foreach (var calloutDirectory in directory.GetDirectories())
@@ -1066,23 +1168,39 @@ namespace AgencyCalloutsPlus.API
                                 desc.Clear();
                                 foreach (XmlNode descNode in childNode.ChildNodes)
                                 {
-                                    desc.Add(descNode.InnerText);
+                                    // Ensure we have attributes
+                                    if (n.Attributes == null)
+                                    {
+                                        desc.Add(new PriorityCallDescription(descNode.InnerText, null));
+                                    }
+                                    else
+                                    {
+                                        desc.Add(new PriorityCallDescription(descNode.InnerText, childNode.Attributes["source"]?.Value));
+                                    }
                                 }
                                 scene.Descriptions = desc.ToArray();
                             }
 
                             // Grab the Incident
-                            childNode = dispatchNode.SelectSingleNode("IncidentText");
+                            childNode = dispatchNode.SelectSingleNode("IncidentType");
                             if (String.IsNullOrWhiteSpace(childNode.InnerText))
                             {
                                 Log.Warning(
-                                    $"Dispatch.LoadScenarios(): Unable to extract IncidentText value for '{calloutName}->Scenarios->{n.Name}'"
+                                    $"Dispatch.LoadScenarios(): Unable to extract IncidentType value for '{calloutName}->Scenarios->{n.Name}'"
+                                );
+                                continue;
+                            }
+                            else if (childNode.Attributes == null || childNode.Attributes["abbreviation"]?.Value == null)
+                            {
+                                Log.Warning(
+                                    $"Dispatch.LoadScenarios(): Unable to extract Incident abbreviation attribute for '{calloutName}->Scenarios->{n.Name}'"
                                 );
                                 continue;
                             }
                             else
                             {
                                 scene.IncidentText = childNode.InnerText;
+                                scene.IncidentAbbreviation = childNode.Attributes["abbreviation"].Value;
                             }
 
                             // Add scenario to the pool

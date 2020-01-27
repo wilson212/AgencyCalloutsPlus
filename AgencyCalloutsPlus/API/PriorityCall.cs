@@ -94,9 +94,14 @@ namespace AgencyCalloutsPlus.API
         public string IncidentText => ScenarioInfo.IncidentText;
 
         /// <summary>
+        /// Gets the incident abbreviation text
+        /// </summary>
+        public string IncidentAbbreviation => ScenarioInfo.IncidentAbbreviation;
+
+        /// <summary>
         /// Gets the description of the call
         /// </summary>
-        public string Description { get; internal set; } = String.Empty;
+        public PriorityCallDescription Description { get; internal set; }
 
         /// <summary>
         /// Creates a new instance of <see cref="PriorityCall"/>
@@ -108,7 +113,7 @@ namespace AgencyCalloutsPlus.API
             CallId = id;
             CallCreated = World.DateTime;
             ScenarioInfo = scenarioInfo ?? throw new ArgumentNullException(nameof(scenarioInfo));
-            Description = scenarioInfo.Descriptions.GetRandom();
+            Description = scenarioInfo.GetRandomDescription();
             BackupOfficers = new List<OfficerUnit>(3);
         }
 

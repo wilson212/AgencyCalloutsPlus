@@ -1,0 +1,89 @@
+﻿- TrafficAccident
+	- RearEndNoInjuries
+	- RearEndInjuries
+	- RearEndDeath
+	- MultiCarCollision
+	- HitAndRun
+	- RanRedLightTBoned
+- TrafficReport
+	- RecklessDriver
+	- ExcessiveSpeeding
+	- StreetRacing
+- StolenVehicleSpotted
+	- ByCop: Begins Pursuit
+	- ALPR Hit
+- DomesticViolence
+	- DomesticArguingOnly
+	- DomesticDenial
+	- DomesticWithAssault
+	- DomesticKidsInside
+	- DomesticHoldUp
+	- ChildAbuse
+	- AnimalAbuse
+	- AnimalNeglect
+- Disturbance
+	- NoiseComplaintParty
+	- NoiseComplaintEngineReving
+	- NoiseComplaintLoudMusicAfterDark
+	- ShoutingProfanityInPublic
+- GangActivity
+	- GangHasseling
+	- GangStolenCar
+	- GangShootout
+	- GangDriveBy
+- DrugActivity
+	- TipOffDrugDealer
+	- Trafficking
+	- PublicDrugUse
+- Robbery
+	- HoldUpAtStore
+	- CarTheft
+	- ATMHoldUp
+	- BankHiestPursuit
+- Burglary
+	- ResidentBreakIn
+	- StoreBreakIn
+	- ShopLifting
+- Statutory
+	- PublicIntoxication
+	- DrivingUnderInfluence
+	- DrivingWithOpenContainers
+	- MinorPossessionAlcohol
+	- SellingAndSupplyingAlcoholToMinors
+	- FakeID
+- TrafficStopBackup
+	- Generic
+	- SmellsDrugsOrAlchohol
+	- RefusingFieldSobrietyTest
+	- FelonyStop
+	- HotPursuit
+	- PrisonerTransportRequired
+- AssaultAndBattery
+	- BarFight
+	- PublicPhysicalAltercationFriends
+	- PhyisicalAltercationCheating
+- SexualAssault
+	- Rape
+	- StatutoryRape
+	- Groping
+- Homocide
+	- DeadBodyFound
+	- DriveByShooting
+	- GangShootout
+- SuspiciousActivity
+	- Tresspassing
+	- Loitering
+	- Prowler
+	- Prositution
+	- ArmedPedestrian
+	- SuspiciousVehicleEmpty
+	- SuspiciousVehicleIndicentExposure
+	- SuspiciousVehicleSpying
+- Vandalism
+	- VandalisedVehicle
+	- VandalisedHome
+- MISC
+	- DemensiaPatientMissing
+	- MissingPersonReport
+	- ChildRunawayReport
+	- Kidnapping

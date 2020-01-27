@@ -1,0 +1,9 @@
+﻿ - Agency Computer Aided Dispatch (A-CAD)
+  - Add Status Buttons (10-8 avail, 10-5 busy etc etc)
+
+- Homocide Callout
+	- Home Location SpawnPoints
+		- Victim
+		- Suspect
+		- Witness
+		- Hiding Spot

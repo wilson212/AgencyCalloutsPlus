@@ -1,4 +1,5 @@
-﻿using AgencyCalloutsPlus.API;
+﻿using System;
+using AgencyCalloutsPlus.API;
 
 namespace AgencyCalloutsPlus
 {
@@ -49,8 +50,22 @@ namespace AgencyCalloutsPlus
         public string IncidentText { get; set; }
 
         /// <summary>
+        /// Gets the incident abbreviation text
+        /// </summary>
+        public string IncidentAbbreviation { get; set; }
+
+        /// <summary>
         /// Gets an array of call descriptions
         /// </summary>
-        public string[] Descriptions { get; set; }
+        public PriorityCallDescription[] Descriptions { get; set; }
+
+        internal PriorityCallDescription GetRandomDescription()
+        {
+            if (Descriptions.Length == 0) return null;
+
+            int count = Descriptions.Length - 1;
+            int index = new CryptoRandom().Next(0, count);
+            return Descriptions[index];
+        }
     }
 }

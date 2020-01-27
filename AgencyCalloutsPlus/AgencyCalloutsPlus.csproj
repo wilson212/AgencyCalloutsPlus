@@ -52,10 +52,15 @@
     <Reference Include="ComputerPlus">
       <HintPath>..\..\__Dependencies\v1868\ComputerPlus.dll</HintPath>
     </Reference>
+    <Reference Include="Gwen">
+      <HintPath>..\..\ComputerPlus\ComputerPlus\Dependencies\Gwen.dll</HintPath>
+    </Reference>
     <Reference Include="LSPD First Response, Version=0.4.7204.1487, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\__Dependencies\v1868\LSPD First Response.dll</HintPath>
     </Reference>
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
     <Reference Include="RAGENativeUI">
       <HintPath>..\..\__Dependencies\v1868\RAGENativeUI.dll</HintPath>
     </Reference>
@@ -76,6 +81,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AgencyCallout.cs" />
+    <Compile Include="API\PriorityCallDescription.cs" />
     <Compile Include="API\Enums\CallCloseFlag.cs" />
     <Compile Include="API\Enums\CallStatus.cs" />
     <Compile Include="API\Enums\CalloutType.cs" />
@@ -90,9 +96,27 @@
     <Compile Include="API\Enums\OfficerStatus.cs" />
     <Compile Include="API\Enums\OfficerStatusColor.cs" />
     <Compile Include="API\OfficerUnit.cs" />
+    <Compile Include="API\Simulation\PlayerOfficerUnit.cs" />
+    <Compile Include="API\Simulation\PersistentAIOfficerUnit.cs" />
     <Compile Include="API\PriorityCall.cs" />
     <Compile Include="API\Enums\SocialClass.cs" />
     <Compile Include="API\Enums\CallPriority.cs" />
+    <Compile Include="API\Simulation\VirtualAIOfficerUnit.cs" />
+    <Compile Include="Extensions\GwenFormExtension.cs" />
+    <Compile Include="Integration\C+Interfaces\CallDetailsGwenFormTemplate.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Integration\C+Interfaces\CallDetailsGwenFormTemplate.Designer.cs">
+      <DependentUpon>CallDetailsGwenFormTemplate.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Integration\C+Interfaces\CallDetailsGwenForm.cs" />
+    <Compile Include="Integration\C+Interfaces\CADMainGwenForm.cs" />
+    <Compile Include="Integration\C+Interfaces\CADMainGwenFormTemplate.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Integration\C+Interfaces\CADMainGwenFormTemplate.Designer.cs">
+      <DependentUpon>CADMainGwenFormTemplate.cs</DependentUpon>
+    </Compile>
     <Compile Include="Log.cs" />
     <Compile Include="API\SpawnableCalloutType.cs" />
     <Compile Include="API\SpawnPoint.cs" />
@@ -125,7 +149,14 @@
     <Compile Include="SpawnGenerator.cs" />
     <Compile Include="TimeScale.cs" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <EmbeddedResource Include="Integration\C+Interfaces\CallDetailsGwenFormTemplate.resx">
+      <DependentUpon>CallDetailsGwenFormTemplate.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Integration\C+Interfaces\CADMainGwenFormTemplate.resx">
+      <DependentUpon>CADMainGwenFormTemplate.cs</DependentUpon>
+    </EmbeddedResource>
+  </ItemGroup>
   <ItemGroup>
     <Content Include="AgencyCalloutsPlus\Agencies.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -143,6 +174,8 @@
     <Content Include="AgencyCalloutsPlus\Locations.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="Callouts\Scenarios.txt" />
+    <Content Include="Todo.txt" />
   </ItemGroup>
   <ItemGroup>
     <None Include="AgencyCalloutsPlus.ini">

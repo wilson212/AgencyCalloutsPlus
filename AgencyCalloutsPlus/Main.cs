@@ -6,7 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-
+using System.Reflection;
 
 namespace AgencyCalloutsPlus
 {
@@ -98,11 +98,24 @@ namespace AgencyCalloutsPlus
             Log.Initialize(Path.Combine(PluginFolderPath, "Game.log"));
 
             // Register for On Duty state changes
+            AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(LSPDFRResolveEventHandler);
             Functions.OnOnDutyStateChanged += OnOnDutyStateChangedHandler;
             Functions.PlayerWentOnDutyFinishedSelection += PlayerWentOnDutyFinishedSelection;
 
             // Log stuff
             Game.LogTrivial("[TRACE] Agency Dispatch and Callouts Plus v" + PluginVersion + " has been initialised.");
+        }
+
+        private Assembly LSPDFRResolveEventHandler(object sender, ResolveEventArgs args)
+        {
+            foreach (Assembly assembly in Functions.GetAllUserPlugins())
+            {
+                if (args.Name.ToLower().Contains(assembly.GetName().Name.ToLower()))
+                {
+                    return assembly;
+                }
+            }
+            return null;
         }
 
         private void OnOnDutyStateChangedHandler(bool onDuty)

@@ -2,16 +2,26 @@
 {
     public enum OfficerStatus
     {
-        Available,
+        MealBreak = 5,
 
-        Dispatched,
+        Busy = 6,
 
-        OnScene,
+        OutOfService = 7,
 
-        OnTrafficStop,
+        Available = 8,
 
-        Busy,
+        OnTrafficStop = 11,
 
-        Break
+        ReturningToStationWithSuspect = 15,
+
+        ReturningToStation = 19,
+
+        OnScene = 23,
+
+        EndingDuty = 43,
+
+        Dispatched = 97,
+
+        Panic = 99
     }
 }
