@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- https://gta.fandom.com/wiki/Hawick -->
+<HAWICK>
+  <Name>Hawick</Name>
+  <Size>Small</Size>
+  <Type>Mixed</Type>
+  <Class>LowerMiddle</Class>
+  <Population>Dense</Population>
+  <CrimeLevel>Low</CrimeLevel>
+  <Crimes>
+    <Robbery>0</Robbery>
+    <Property>0</Property>
+    <DrugActivity>0</DrugActivity>
+    <Disturbance>0</Disturbance>
+    <Statutory>0</Statutory>
+    <Traffic>100</Traffic>
+    <Violent>0</Violent>
+  </Crimes>
+  <Locations>
+    <Homes>
+    </Homes>
+    <Stores>
+    </Stores>
+    <SideOfRoad>
+      <SpawnPoint X="17.82868" Y="-82.90137" Z="59.32726" heading="339.1658" />
+      <SpawnPoint X="181.0704" Y="-94.09791" Z="66.96805" heading="160.5451" />
+      <SpawnPoint X="323.3336" Y="-112.0085" Z="67.93071" heading="252.1688" />
+      <SpawnPoint X="369.6567" Y="-187.075" Z="59.50886" heading="162.7569" />
+    </SideOfRoad>
+  </Locations>
+</HAWICK>

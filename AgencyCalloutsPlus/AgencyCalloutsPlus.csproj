@@ -38,6 +38,7 @@
     <PlatformTarget>x64</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
     <OutputPath>bin\x64\Release\</OutputPath>
@@ -81,16 +82,19 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AgencyCallout.cs" />
+    <Compile Include="API\Enums\HomeFlags.cs" />
+    <Compile Include="API\Enums\HomeType.cs" />
+    <Compile Include="API\PedInfo.cs" />
     <Compile Include="API\PriorityCallDescription.cs" />
     <Compile Include="API\Enums\CallCloseFlag.cs" />
     <Compile Include="API\Enums\CallStatus.cs" />
     <Compile Include="API\Enums\CalloutType.cs" />
     <Compile Include="API\Enums\CrimeLevel.cs" />
     <Compile Include="API\Enums\AgencyType.cs" />
-    <Compile Include="API\Enums\HomeSpawnType.cs" />
+    <Compile Include="API\Enums\HomeSpawn.cs" />
     <Compile Include="API\Enums\PatrolType.cs" />
     <Compile Include="API\Enums\ZoneType.cs" />
-    <Compile Include="API\GameLocation.cs" />
+    <Compile Include="API\WorldLocation.cs" />
     <Compile Include="API\HomeLocation.cs" />
     <Compile Include="API\Enums\Population.cs" />
     <Compile Include="API\Enums\OfficerStatus.cs" />
@@ -102,7 +106,15 @@
     <Compile Include="API\Enums\SocialClass.cs" />
     <Compile Include="API\Enums\CallPriority.cs" />
     <Compile Include="API\Simulation\VirtualAIOfficerUnit.cs" />
+    <Compile Include="Callouts\DomesticViolence.cs" />
+    <Compile Include="Callouts\Scenarios\DomesticViolence\DomesticArguingOnly.cs" />
+    <Compile Include="Dispatching\CallGenerator.cs" />
+    <Compile Include="Extensions\EntityExtensions.cs" />
+    <Compile Include="Extensions\Enums\ENeonLights.cs" />
+    <Compile Include="Extensions\Enums\EPaint.cs" />
     <Compile Include="Extensions\GwenFormExtension.cs" />
+    <Compile Include="Extensions\Vector3Extensions.cs" />
+    <Compile Include="Extensions\VehicleColor.cs" />
     <Compile Include="Integration\C+Interfaces\CallDetailsGwenFormTemplate.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -133,7 +145,6 @@
     <Compile Include="Extensions\StringExtensions.cs" />
     <Compile Include="Extensions\VehicleExtensions.cs" />
     <Compile Include="Integration\ComputerPlusAPI.cs" />
-    <Compile Include="Callouts\StolenVehicleSpotted.cs" />
     <Compile Include="API\Dispatch.cs" />
     <Compile Include="CryptoRandom.cs" />
     <Compile Include="API\Agency.cs" />
@@ -143,6 +154,7 @@
     <Compile Include="ISpawnable.cs" />
     <Compile Include="Main.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RageUIMenus\ADACMainMenu.cs" />
     <Compile Include="RageUIMenus\CalloutPedInteractionMenu.cs" />
     <Compile Include="Range.cs" />
     <Compile Include="Settings.cs" />
@@ -161,19 +173,285 @@
     <Content Include="AgencyCalloutsPlus\Agencies.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="AgencyCalloutsPlus\Callouts\DomesticViolence\CalloutMeta.xml" />
     <Content Include="AgencyCalloutsPlus\Callouts\TrafficAccident\CalloutMeta.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="AgencyCalloutsPlus\Callouts\TrafficAccident\FlowSequence\RearEndNoInjuries\Victim1.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="AgencyCalloutsPlus\Locations\AIRP.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AgencyCalloutsPlus\Locations\ALAMO.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AgencyCalloutsPlus\Locations\ALTA.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AgencyCalloutsPlus\Locations\ARMYB.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AgencyCalloutsPlus\Locations\BANHAMC.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AgencyCalloutsPlus\Locations\BANHAMCA.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AgencyCalloutsPlus\Locations\BANNING.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AgencyCalloutsPlus\Locations\BEACH.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AgencyCalloutsPlus\Locations\BRADP.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AgencyCalloutsPlus\Locations\BURTON.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AgencyCalloutsPlus\Locations\CALAFB.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AgencyCalloutsPlus\Locations\CANNY.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AgencyCalloutsPlus\Locations\CCREAK.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AgencyCalloutsPlus\Locations\CHAMH.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AgencyCalloutsPlus\Locations\CHIL.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AgencyCalloutsPlus\Locations\CHU.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AgencyCalloutsPlus\Locations\CMSW.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AgencyCalloutsPlus\Locations\CYPRE.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AgencyCalloutsPlus\Locations\DAVIS.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AgencyCalloutsPlus\Locations\DELBE.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AgencyCalloutsPlus\Locations\DELPE.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AgencyCalloutsPlus\Locations\DELSOL.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AgencyCalloutsPlus\Locations\DESRT.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AgencyCalloutsPlus\Locations\DOWNT.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AgencyCalloutsPlus\Locations\DTVINE.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AgencyCalloutsPlus\Locations\EAST_V.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AgencyCalloutsPlus\Locations\EBURO.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AgencyCalloutsPlus\Locations\ELGORL.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AgencyCalloutsPlus\Locations\ELYSIAN.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AgencyCalloutsPlus\Locations\GALFISH.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AgencyCalloutsPlus\Locations\GOLF.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AgencyCalloutsPlus\Locations\GRAPES.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AgencyCalloutsPlus\Locations\GREATC.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AgencyCalloutsPlus\Locations\HARMO.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AgencyCalloutsPlus\Locations\HAWICK.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AgencyCalloutsPlus\Locations\HIGHWAY.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AgencyCalloutsPlus\Locations\HORS.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AgencyCalloutsPlus\Locations\HUMLAB.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AgencyCalloutsPlus\Locations\JAIL.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AgencyCalloutsPlus\Locations\KOREAT.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AgencyCalloutsPlus\Locations\LACT.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AgencyCalloutsPlus\Locations\LAGO.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AgencyCalloutsPlus\Locations\LDAM.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AgencyCalloutsPlus\Locations\LEGSQU.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AgencyCalloutsPlus\Locations\LMESA.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AgencyCalloutsPlus\Locations\LOSPUER.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AgencyCalloutsPlus\Locations\MIRR.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AgencyCalloutsPlus\Locations\MORN.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AgencyCalloutsPlus\Locations\MOVIE.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AgencyCalloutsPlus\Locations\MTCHIL.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AgencyCalloutsPlus\Locations\MTGORDO.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AgencyCalloutsPlus\Locations\MTJOSE.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AgencyCalloutsPlus\Locations\MURRI.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AgencyCalloutsPlus\Locations\NCHU.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AgencyCalloutsPlus\Locations\NOOSE.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AgencyCalloutsPlus\Locations\OCEANA.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AgencyCalloutsPlus\Locations\PALCOV.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AgencyCalloutsPlus\Locations\PALETO.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AgencyCalloutsPlus\Locations\PALFOR.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AgencyCalloutsPlus\Locations\PALHIGH.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AgencyCalloutsPlus\Locations\PALMPOW.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AgencyCalloutsPlus\Locations\PBLUFF.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AgencyCalloutsPlus\Locations\PBOX.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AgencyCalloutsPlus\Locations\PROCOB.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AgencyCalloutsPlus\Locations\RANCHO.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AgencyCalloutsPlus\Locations\RGLEN.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AgencyCalloutsPlus\Locations\RICHM.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AgencyCalloutsPlus\Locations\ROCKF.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AgencyCalloutsPlus\Locations\RTRAK.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AgencyCalloutsPlus\Locations\SanAnd.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AgencyCalloutsPlus\Locations\SANCHIA.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AgencyCalloutsPlus\Locations\SANDY.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AgencyCalloutsPlus\Locations\SKID.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AgencyCalloutsPlus\Locations\SLAB.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AgencyCalloutsPlus\Locations\STAD.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AgencyCalloutsPlus\Locations\STRAW.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AgencyCalloutsPlus\Locations\TATAMO.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AgencyCalloutsPlus\Locations\TERMINA.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AgencyCalloutsPlus\Locations\TEXTI.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AgencyCalloutsPlus\Locations\TONGVAH.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AgencyCalloutsPlus\Locations\TONGVAV.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AgencyCalloutsPlus\Locations\VCANA.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AgencyCalloutsPlus\Locations\VESP.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AgencyCalloutsPlus\Locations\VINE.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AgencyCalloutsPlus\Locations\WINDF.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AgencyCalloutsPlus\Locations\WVINE.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AgencyCalloutsPlus\Locations\ZANCUDO.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AgencyCalloutsPlus\Locations\ZP_ORT.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AgencyCalloutsPlus\Locations\ZQ_UAR.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="AgencyCalloutsPlus\Peds.xml" />
     <Content Include="AgencyCalloutsPlus\Vehicles.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="AgencyCalloutsPlus\Locations.xml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    <Content Include="AgencyCalloutsPlus\Locations.xml" />
     <Content Include="Callouts\Scenarios.txt" />
     <Content Include="Todo.txt" />
   </ItemGroup>
@@ -185,5 +463,6 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

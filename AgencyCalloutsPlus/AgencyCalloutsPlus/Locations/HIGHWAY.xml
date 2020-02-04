@@ -1,0 +1,110 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Highway Patrol SideOfRoad locations -->
+<HIGHWAY>
+  <Name>Highway</Name>
+  <Size>Massive</Size>
+  <Type>Highway</Type>
+  <Class>Working</Class>
+  <Population>Moderate</Population>
+  <CrimeLevel>Moderate</CrimeLevel>
+  <Crimes>
+    <Robbery>0</Robbery>
+    <Property>0</Property>
+    <DrugActivity>0</DrugActivity>
+    <Disturbance>0</Disturbance>
+    <Statutory>0</Statutory>
+    <Traffic>100</Traffic>
+    <Violent>0</Violent>
+  </Crimes>
+  <Locations>
+    <SideOfRoad>
+      <SpawnPoint X="1374.229" Y="682.4608" Z="79.23694" heading="138.1848" />
+      <SpawnPoint X="1341.927" Y="611.697" Z="80.06128" heading="310.6091" />
+      <SpawnPoint X="1543.265" Y="853.7671" Z="77.20865" heading="334.3522" />
+      <SpawnPoint X="1653.714" Y="1174.292" Z="84.0813" heading="344.168" />
+      <SpawnPoint X="1710.493" Y="1439.671" Z="85.1928" heading="347.8249" />
+      <SpawnPoint X="1889.301" Y="1627.032" Z="80.87594" heading="256.4026" />
+      <SpawnPoint X="2161.595" Y="1269.753" Z="75.61858" heading="209.0838" />
+      <SpawnPoint X="2668.935" Y="3129.403" Z="50.35906" heading="322.6464" />
+      <SpawnPoint X="2929.859" Y="3737.787" Z="52.38493" heading="348.9002" />
+      <SpawnPoint X="2743.588" Y="4691.754" Z="44.06121" heading="12.73393" />
+      <SpawnPoint X="2516.152" Y="5553.152" Z="44.50331" heading="21.36839" />
+      <SpawnPoint X="2177.697" Y="6065.309" Z="51.7413" heading="66.28397" />
+      <SpawnPoint X="1661.087" Y="6412.976" Z="29.40466" heading="70.84875" />
+      <SpawnPoint X="1235.415" Y="6501.709" Z="20.5242" heading="89.03062" />
+      <SpawnPoint X="762.86" Y="6515.305" Z="25.46921" heading="78.15271" />
+      <SpawnPoint X="184.4049" Y="6574.211" Z="31.60049" heading="110.5664" />
+      <SpawnPoint X="-578.1945" Y="5698.128" Z="37.44772" heading="153.7781" />
+      <SpawnPoint X="-732.8299" Y="5531.087" Z="36.27608" heading="120.7709" />
+      <SpawnPoint X="-769.0044" Y="5650.879" Z="23.81657" heading="340.9604" />
+      <SpawnPoint X="-926.8969" Y="5429.035" Z="37.20631" heading="106.7766" />
+      <SpawnPoint X="-1389.062" Y="5107.08" Z="60.91629" heading="121.7064" />
+      <SpawnPoint X="-1642.61" Y="4871.636" Z="60.56958" heading="132.1071" />
+      <SpawnPoint X="-2175.74" Y="4444.229" Z="61.81794" heading="141.5286" />
+      <SpawnPoint X="-2361.031" Y="4046.449" Z="30.04111" heading="165.7798" />
+      <SpawnPoint X="-2629.063" Y="2912.742" Z="16.4502" heading="171.0384" />
+      <SpawnPoint X="-2692.788" Y="2475.685" Z="16.44287" heading="171.4319" />
+      <SpawnPoint X="-2856.818" Y="2195.172" Z="33.0401" heading="118.6719" />
+      <SpawnPoint X="-3013.057" Y="1961.991" Z="29.35463" heading="155.826" />
+      <SpawnPoint X="-3037.866" Y="1674.911" Z="34.87879" heading="199.8088" />
+      <SpawnPoint X="-3169.63" Y="1244.344" Z="10.57515" heading="353.6517" />
+      <SpawnPoint X="-3135.381" Y="824.7528" Z="16.52175" heading="207.5225" />
+      <SpawnPoint X="-3008.429" Y="365.8237" Z="14.47989" heading="169.5816" />
+      <SpawnPoint X="-2858.971" Y="47.31013" Z="14.10655" heading="251.2645" />
+      <SpawnPoint X="-2659.946" Y="-95.2246" Z="17.78703" heading="223.3282" />
+      <SpawnPoint X="-2007.747" Y="-458.8983" Z="11.24626" heading="228.6517" />
+      <SpawnPoint X="-1775.332" Y="-664.7091" Z="10.14362" heading="228.8256" />
+      <SpawnPoint X="-825.9415" Y="-1715.502" Z="32.80603" heading="124.0214" />
+      <SpawnPoint X="-852.8828" Y="-2034.954" Z="27.47351" heading="238.9382" />
+      <SpawnPoint X="148.0289" Y="-2667.433" Z="18.56385" heading="261.9445" />
+      <SpawnPoint X="1139.533" Y="-2579.503" Z="32.42434" heading="285.4314" />
+      <SpawnPoint X="1340.195" Y="-2394.286" Z="51.09689" heading="352.4467" />
+      <SpawnPoint X="1288.286" Y="-2130.829" Z="46.86113" heading="19.57299" />
+      <SpawnPoint X="1208.23" Y="-1892.381" Z="36.31029" heading="19.5339" />
+      <SpawnPoint X="645.8651" Y="-609.1694" Z="35.53476" heading="242.2607" />
+      <SpawnPoint X="-1144.102" Y="-680.9578" Z="10.64537" heading="302.1374" />
+      <SpawnPoint X="-709.9083" Y="-554.6688" Z="32.29703" heading="258.8638" />
+      <SpawnPoint X="-357.3976" Y="-540.2585" Z="24.86592" heading="269.5281" />
+      <SpawnPoint X="-68.39794" Y="-538.2088" Z="31.47291" heading="270.6259" />
+      <SpawnPoint X="277.4375" Y="-536.2589" Z="33.65064" heading="269.4603" />
+      <SpawnPoint X="807.1597" Y="-690.247" Z="41.29946" heading="237.8936" />
+      <SpawnPoint X="984.5032" Y="-918.6431" Z="30.39319" heading="195.9548" />
+      <SpawnPoint X="1041.713" Y="-1201.157" Z="25.11361" heading="183.2175" />
+      <SpawnPoint X="1047.303" Y="-1664.17" Z="30.81324" heading="184.9299" />
+      <SpawnPoint X="1088.707" Y="-1815.479" Z="36.39512" heading="202.1394" />
+      <SpawnPoint X="-807.7476" Y="-1771.474" Z="33.35702" heading="281.3814" />
+      <SpawnPoint X="-378.4935" Y="-1503.803" Z="34.07191" heading="338.5719" />
+      <SpawnPoint X="1091.753" Y="-1485.87" Z="28.15709" heading="356.6168" />
+      <SpawnPoint X="1073.377" Y="-1288.431" Z="25.79537" heading="2.673968" />
+      <SpawnPoint X="1033.989" Y="-887.0514" Z="30.39781" heading="25.05584" />
+      <SpawnPoint X="839.4229" Y="-648.5521" Z="41.98281" heading="56.4212" />
+      <SpawnPoint X="428.0759" Y="-485.5653" Z="35.53823" heading="90.20618" />
+      <SpawnPoint X="264.1585" Y="-483.6436" Z="33.6374" heading="91.39541" />
+      <SpawnPoint X="2.469834" Y="-484.8999" Z="33.39306" heading="89.7682" />
+      <SpawnPoint X="-245.8612" Y="-474.4495" Z="25.60968" heading="82.18053" />
+      <SpawnPoint X="-419.8016" Y="-672.0051" Z="36.83847" heading="178.3092" />
+      <SpawnPoint X="-433.0539" Y="-803.7357" Z="37.43818" heading="175.7356" />
+      <SpawnPoint X="-431.9308" Y="-1048.455" Z="37.61358" heading="168.3263" />
+      <SpawnPoint X="-421.3389" Y="-1212.955" Z="54.56474" heading="228.2229" />
+      <SpawnPoint X="-236.3324" Y="-1234.64" Z="36.87751" heading="268.3107" />
+      <SpawnPoint X="-41.34225" Y="-1260.209" Z="35.55466" heading="264.6257" />
+      <SpawnPoint X="1477.523" Y="-1060.637" Z="55.39516" heading="303.6907" />
+      <SpawnPoint X="1601.981" Y="-983.0315" Z="60.75611" heading="301.6481" />
+      <SpawnPoint X="1736.998" Y="-898.2914" Z="69.21184" heading="304.3146" />
+      <SpawnPoint X="1961.882" Y="-730.3" Z="88.62013" heading="311.5137" />
+      <SpawnPoint X="2457.415" Y="-176.6767" Z="87.96686" heading="334.0139" />
+      <SpawnPoint X="2543.481" Y="14.70534" Z="93.62328" heading="341.9867" />
+      <SpawnPoint X="2554.915" Y="297.3891" Z="108.2162" heading="179.7884" />
+      <SpawnPoint X="2532.448" Y="858.9391" Z="87.09566" heading="28.36542" />
+      <SpawnPoint X="2366.561" Y="1081.046" Z="80.8815" heading="42.48524" />
+      <SpawnPoint X="2206.058" Y="1267.12" Z="75.76015" heading="40.16818" />
+      <SpawnPoint X="2040.415" Y="1539.554" Z="75.10687" heading="24.18772" />
+      <SpawnPoint X="1945.668" Y="2437.175" Z="54.29123" heading="330.6206" />
+      <SpawnPoint X="2106.867" Y="2628.424" Z="51.49403" heading="314.3209" />
+      <SpawnPoint X="2031.792" Y="2632.85" Z="53.04" heading="129.9463" />
+      <SpawnPoint X="1886.8" Y="2450.026" Z="54.30777" heading="147.2444" />
+      <SpawnPoint X="1968.46" Y="2524.649" Z="54.33545" heading="323.6715" />
+      <SpawnPoint X="2359.246" Y="2816.87" Z="42.84689" heading="293.3645" />
+    </SideOfRoad>
+  </Locations>
+</HIGHWAY>

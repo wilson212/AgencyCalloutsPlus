@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- https://gta.fandom.com/wiki/Humane_Labs_and_Research -->
+<HUMLAB>
+  <Name>Humane Labs and Research</Name>
+  <Size>VerySmall</Size>
+  <Type>Government</Type>
+  <Class>LowerMiddle</Class>
+  <Population>None</Population>
+  <CrimeLevel>None</CrimeLevel>
+  <Crimes>
+    <Robbery>0</Robbery>
+    <Property>0</Property>
+    <DrugActivity>0</DrugActivity>
+    <Disturbance>0</Disturbance>
+    <Statutory>0</Statutory>
+    <Traffic>0</Traffic>
+    <Violent>0</Violent>
+  </Crimes>
+  <Locations>
+    <Homes>
+    </Homes>
+    <Stores>
+    </Stores>
+    <SideOfRoad>
+    </SideOfRoad>
+  </Locations>
+</HUMLAB>

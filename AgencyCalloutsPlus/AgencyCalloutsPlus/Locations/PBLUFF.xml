@@ -1,0 +1,30 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- https://gta.fandom.com/wiki/Pacific_Bluffs -->
+<PBLUFF>
+  <Name>Pacific Bluffs</Name>
+  <Size>Large</Size>
+  <Type>Residential</Type>
+  <Class>Upper</Class>
+  <Population>None</Population>
+  <CrimeLevel>None</CrimeLevel>
+  <Crimes>
+    <Robbery>0</Robbery>
+    <Property>0</Property>
+    <DrugActivity>0</DrugActivity>
+    <Disturbance>0</Disturbance>
+    <Statutory>0</Statutory>
+    <Traffic>0</Traffic>
+    <Violent>0</Violent>
+  </Crimes>
+  <Locations>
+    <Homes>
+    </Homes>
+    <Stores>
+    </Stores>
+    <SideOfRoad>
+      <SpawnPoint X="-2858.971" Y="47.31013" Z="14.10655" heading="251.2645" />
+      <SpawnPoint X="-2659.946" Y="-95.2246" Z="17.78703" heading="223.3282" />
+      <SpawnPoint X="-2007.747" Y="-458.8983" Z="11.24626" heading="228.6517" />
+    </SideOfRoad>
+  </Locations>
+</PBLUFF>

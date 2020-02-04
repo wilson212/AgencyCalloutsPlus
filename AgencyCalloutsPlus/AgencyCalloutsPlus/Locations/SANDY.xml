@@ -1,0 +1,168 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- https://gta.fandom.com/wiki/Sandy_Shores -->
+<SANDY>
+  <Name>Sandy Shores</Name>
+  <Size>Large</Size>
+  <Type>Mixed</Type>
+  <Class>Lower</Class>
+  <Population>Moderate</Population>
+  <CrimeLevel>VeryHigh</CrimeLevel>
+  <Crimes>
+    <Robbery>0</Robbery>
+    <Property>0</Property>
+    <DrugActivity>0</DrugActivity>
+    <Disturbance>0</Disturbance>
+    <Statutory>0</Statutory>
+    <Traffic>100</Traffic>
+    <Violent>0</Violent>
+  </Crimes>
+  <Locations>
+    <Homes>
+      <Home position="1764.497, 3731.593, 34.03936; 298.4579">
+        <Address>Mountain View Dr</Address>
+        <Postal>832</Postal>
+        <Type>House</Type>
+        <Class>Lower</Class>
+        <Flags />
+        <Points>
+          <SpawnPoint id="FrontDoorPed" X="1777.486" Y="3738.097" Z="34.65507" heading="110.513084" />
+          <SpawnPoint id="PolicePed2" X="1776.05957" Y="3735.84253" Z="34.6619034" heading="324.503845" />
+          <SpawnPoint id="PolicePed1" X="1774.9657" Y="3737.91138" Z="34.6563034" heading="260.5123" />
+          <SpawnPoint id="FrontYardPed" X="1779.59375" Y="3727.204" Z="34.1352577" heading="46.36276" />
+          <SpawnPoint id="BackDoorPed" X="1782.02087" Y="3748.02954" Z="34.6566277" heading="164.5115" />
+          <SpawnPoint id="BackYardPed" X="1793.88159" Y="3742.23462" Z="33.994194" heading="108.014526" />
+          <SpawnPoint id="SideYardPed" X="1770.208" Y="3754.55176" Z="33.8230743" heading="34.91988" />
+          <SpawnPoint id="SidewalkPed" X="1763.50964" Y="3744.58618" Z="33.8180923" heading="137.700577" />
+          <SpawnPoint id="HidingSpot1" X="1795.47107" Y="3752.01929" Z="33.66748" heading="172.27092" />
+          <SpawnPoint id="HidingSpot2" X="1828.21045" Y="3747.32642" Z="33.2860222" heading="11.6932459" />
+          <SpawnPoint id="PolicePed3" X="1783.49536" Y="3744.79175" Z="34.6566658" heading="39.64757" />
+          <SpawnPoint id="PoliceParking1" X="1764.03967" Y="3737.29565" Z="33.56935" heading="28.2810917" />
+          <SpawnPoint id="PoliceParking2" X="1768.12842" Y="3729.68872" Z="33.7013779" heading="27.3149452" />
+          <SpawnPoint id="PoliceParking3" X="1771.63086" Y="3722.90186" Z="33.8148232" heading="26.10855" />
+          <SpawnPoint id="ResidentParking1" X="1786.47021" Y="3754.67627" Z="33.3475761" heading="215.494064" />
+          <SpawnPoint id="ResidentParking2" X="1781.204" Y="3762.955" Z="33.4025574" heading="215.401245" />
+        </Points>
+      </Home>
+      <Home position="1835.024, 3720.556, 33.2329; 32.08348">
+        <Address>Zancudo Ave</Address>
+        <Postal>832</Postal>
+        <Type>House</Type>
+        <Class>Working</Class>
+        <Flags />
+        <Points>
+          <SpawnPoint heading="300.826477" id="FrontDoorPed" X="1827.26831" Y="3729.49536" Z="33.96194" />
+          <SpawnPoint heading="111.856155" id="PolicePed1" X="1829.263" Y="3730.61133" Z="33.1280327" />
+          <SpawnPoint heading="76.34269" id="PolicePed2" X="1830.03625" Y="3729.442" Z="33.1166229" />
+          <SpawnPoint heading="210.574631" id="FrontYardPed" X="1829.28" Y="3725.2207" Z="33.28524" />
+          <SpawnPoint heading="295.462219" id="BackDoorPed" X="1830.95007" Y="3737.92627" Z="33.96191" />
+          <SpawnPoint heading="225.5156" id="BackYardPed" X="1814.0376" Y="3740.80371" Z="33.50729" />
+          <SpawnPoint heading="285.961823" id="SideYardPed" X="1808.46216" Y="3732.23926" Z="33.6900749" />
+          <SpawnPoint heading="226.348892" id="SidewalkPed" X="1826.8175" Y="3718.62915" Z="33.39201" />
+          <SpawnPoint heading="16.8023567" id="PolicePed3" X="1827.94189" Y="3717.03174" Z="33.4736176" />
+          <SpawnPoint heading="112.675957" id="HidingSpot1" X="1812.21252" Y="3749.16846" Z="33.54537" />
+          <SpawnPoint heading="347.4279" id="HidingSpot2" X="1818.93848" Y="3745.25317" Z="33.3155861" />
+          <SpawnPoint heading="29.1636772" id="ResidentParking1" X="1814.05542" Y="3722.06738" Z="33.39599" />
+          <SpawnPoint heading="30.30538" id="ResidentParking2" X="1810.64" Y="3719.46558" Z="33.50266" />
+          <SpawnPoint heading="122.0915" id="PoliceParking1" X="1832.482" Y="3720.51953" Z="32.9435043" />
+          <SpawnPoint heading="117.8963" id="PoliceParking2" X="1840.37891" Y="3725.32715" Z="32.75489" />
+          <SpawnPoint heading="208.741562" id="PoliceParking3" X="1838.41858" Y="3742.97852" Z="32.772686" />
+        </Points>
+      </Home>
+      <Home position="1836.26, 3772.66, 33.39877; 304.1296">
+        <Address>Armadillo Ave</Address>
+        <Postal>828</Postal>
+        <Type>House</Type>
+        <Class>Working</Class>
+        <Flags />
+        <Points>
+          <SpawnPoint heading="119.483276" id="FrontDoorPed" X="1842.99438" Y="3777.66284" Z="33.1530266" />
+          <SpawnPoint heading="293.790466" id="PolicePed1" X="1841.65015" Y="3776.84082" Z="33.15806" />
+          <SpawnPoint heading="346.5283" id="PolicePed2" X="1842.67554" Y="3775.77344" Z="33.15692" />
+          <SpawnPoint heading="197.7613" id="FrontYardPed" X="1837.71338" Y="3782.89648" Z="33.22842" />
+          <SpawnPoint heading="296.504364" id="BackDoorPed" X="1848.41553" Y="3786.55884" Z="33.31596" />
+          <SpawnPoint heading="89.73281" id="BackYardPed" X="1858.06763" Y="3780.8313" Z="32.9907455" />
+          <SpawnPoint heading="45.12844" id="SideYardPed" X="1844.1958" Y="3791.46973" Z="33.3396" />
+          <SpawnPoint heading="111.058266" id="SidewalkPed" X="1837.80713" Y="3777.29614" Z="33.4361038" />
+          <SpawnPoint heading="317.516357" id="PolicePed3" X="1836.4325" Y="3775.96265" Z="33.44537" />
+          <SpawnPoint heading="3.977526" id="HidingSpot1" X="1862.28308" Y="3794.2832" Z="32.8806" />
+          <SpawnPoint heading="329.81192" id="HidingSpot2" X="1883.18262" Y="3783.525" Z="32.77809" />
+          <SpawnPoint heading="27.322052" id="PoliceParking1" X="1831.35718" Y="3781.60449" Z="33.21363" />
+          <SpawnPoint heading="26.48211" id="PoliceParking2" X="1837.51917" Y="3769.677" Z="33.07963" />
+          <SpawnPoint heading="208.26355" id="PoliceParking3" X="1825.26575" Y="3767.755" Z="33.11637" />
+          <SpawnPoint heading="209.2605" id="ResidentParking1" X="1855.66479" Y="3798.62183" Z="32.60764" />
+          <SpawnPoint heading="210.060959" id="ResidentParking2" X="1850.9469" Y="3797.29663" Z="32.65647" />
+        </Points>
+      </Home>
+      <Home position="1895.969, 3815.848, 32.37145; 115.257">
+        <Address>Niland Ave</Address>
+        <Postal>828</Postal>
+        <Type>House</Type>
+        <Class>Working</Class>
+        <Flags />
+        <Points>
+          <SpawnPoint heading="292.925568" id="FrontDoorPed" X="1880.5011" Y="3810.7124" Z="32.7788239" />
+          <SpawnPoint heading="104.484093" id="PolicePed1" X="1882.658" Y="3812.08081" Z="32.7788239" />
+          <SpawnPoint heading="62.285408" id="PolicePed2" X="1882.6377" Y="3810.05859" Z="32.7788277" />
+          <SpawnPoint heading="336.436981" id="FrontYardPed" X="1885.782" Y="3805.54272" Z="32.74266" />
+          <SpawnPoint heading="225.16066" id="BackDoorPed" X="1884.14563" Y="3797.35522" Z="32.77882" />
+          <SpawnPoint heading="19.9140949" id="BackYardPed" X="1876.65845" Y="3795.07983" Z="32.9229431" />
+          <SpawnPoint heading="225.22377" id="SideYardPed" X="1869.18457" Y="3808.49951" Z="32.7139053" />
+          <SpawnPoint heading="287.9719" id="SidewalkPed" X="1889.25342" Y="3812.16064" Z="32.7788277" />
+          <SpawnPoint heading="132.967819" id="PolicePed3" X="1891.20349" Y="3813.185" Z="32.50855" />
+          <SpawnPoint heading="126.825432" id="HidingSpot1" X="1879.106" Y="3799.40137" Z="32.7787781" />
+          <SpawnPoint heading="290.4002" id="HidingSpot2" X="1870.08142" Y="3777.3252" Z="32.876297" />
+          <SpawnPoint heading="205.760559" id="ResidentParking1" X="1893.14856" Y="3814.85547" Z="32.0011864" />
+          <SpawnPoint heading="206.455566" id="ResidentParking2" X="1897.89661" Y="3805.35376" Z="31.9888" />
+          <SpawnPoint heading="210.926666" id="PoliceParking1" X="1889.30029" Y="3821.2583" Z="32.0021629" />
+          <SpawnPoint heading="27.7034378" id="PoliceParking2" X="1904.71179" Y="3822.256" Z="32.0249939" />
+          <SpawnPoint heading="299.7852" id="PoliceParking3" X="1877.51062" Y="3820.76587" Z="32.01184" />
+        </Points>
+      </Home>
+      <Home position="1911.341, 3789.189, 32.28646; 117.9253">
+        <Address>Zancudo Ave</Address>
+        <Postal>828</Postal>
+        <Type>House</Type>
+        <Class>Lower</Class>
+        <Flags />
+        <Points>
+          <SpawnPoint heading="289.575562" id="FrontDoorPed" X="1899.0813" Y="3781.805" Z="32.8769" />
+          <SpawnPoint heading="110.794395" id="PolicePed1" X="1901.194" Y="3782.83765" Z="32.8013954" />
+          <SpawnPoint heading="156.378159" id="PolicePed2" X="1899.91882" Y="3784.10962" Z="32.7820969" />
+          <SpawnPoint heading="352.5911" id="FrontYardPed" X="1903.44592" Y="3779.87" Z="32.80822" />
+          <SpawnPoint heading="284.0022" id="BackDoorPed" X="1900.74011" Y="3772.931" Z="32.8797531" />
+          <SpawnPoint heading="303.530029" id="BackYardPed" X="1887.94641" Y="3787.02075" Z="32.77883" />
+          <SpawnPoint heading="230.653244" id="SideYardPed" X="1892.36462" Y="3791.84253" Z="32.77883" />
+          <SpawnPoint heading="314.893219" id="SidewalkPed" X="1908.61755" Y="3786.71387" Z="32.247818" />
+          <SpawnPoint heading="114.403679" id="PolicePed3" X="1909.99341" Y="3788.105" Z="32.2445526" />
+          <SpawnPoint heading="101.273216" id="HidingSpot1" X="1875.34241" Y="3781.26245" Z="32.80569" />
+          <SpawnPoint heading="215.130981" id="HidingSpot2" X="1861.1604" Y="3768.82227" Z="33.0276642" />
+          <SpawnPoint heading="209.087616" id="PoliceParking1" X="1905.50781" Y="3794.52661" Z="31.9416618" />
+          <SpawnPoint heading="207.484558" id="PoliceParking2" X="1912.82874" Y="3781.52637" Z="31.9328232" />
+          <SpawnPoint heading="117.137589" id="PoliceParking3" X="1906.273" Y="3766.52368" Z="32.13288" />
+          <SpawnPoint heading="30.44929" id="ResidentParking1" X="1887.80054" Y="3770.588" Z="32.50079" />
+          <SpawnPoint heading="29.2328434" id="ResidentParking2" X="1884.98865" Y="3766.87036" Z="32.52763" />
+        </Points>
+      </Home>
+    </Homes>
+    <Stores>
+    </Stores>
+    <SideOfRoad>
+      <SpawnPoint X="1758.661" Y="3538.26" Z="35.78361" heading="299.7389" />
+      <SpawnPoint X="1659.529" Y="3585.022" Z="35.24927" heading="28.27908" />
+      <SpawnPoint X="1682.301" Y="3620.803" Z="35.17736" heading="300.1324" />
+      <SpawnPoint X="1699.293" Y="3683.165" Z="34.47552" heading="28.74282" />
+      <SpawnPoint X="1722.224" Y="3733.64" Z="33.55905" heading="300.1952" />
+      <SpawnPoint X="1760.485" Y="3720.321" Z="33.87332" heading="210.4125" />
+      <SpawnPoint X="1831.231" Y="3707.381" Z="33.27387" heading="299.6535" />
+      <SpawnPoint X="1909.011" Y="3810.531" Z="32.07688" heading="28.60104" />
+      <SpawnPoint X="1944.645" Y="3861.011" Z="32.02096" heading="296.6556" />
+      <SpawnPoint X="1877.381" Y="3954.861" Z="32.72955" heading="93.55849" />
+      <SpawnPoint X="1855.537" Y="3930.493" Z="32.76587" heading="195.1366" />
+      <SpawnPoint X="1833.641" Y="3890.632" Z="33.27746" heading="109.5615" />
+      <SpawnPoint X="1755.292" Y="3851.148" Z="34.21868" heading="119.3669" />
+      <SpawnPoint X="1624.4" Y="3826.876" Z="34.66964" heading="128.7986" />
+      <SpawnPoint X="1512.538" Y="3740.263" Z="34.21819" heading="118.2286" />
+      <SpawnPoint X="1367.141" Y="3679.198" Z="33.23569" heading="109.7738" />
+    </SideOfRoad>
+  </Locations>
+</SANDY>

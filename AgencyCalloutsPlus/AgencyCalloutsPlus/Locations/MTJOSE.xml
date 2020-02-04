@@ -1,0 +1,28 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- https://gta.fandom.com/wiki/Mount_Josiah -->
+<MTJOSE>
+  <Name>Mount Josiah</Name>
+  <Size>Large</Size>
+  <Type>Forest</Type>
+  <Class>Working</Class>
+  <Population>None</Population>
+  <CrimeLevel>None</CrimeLevel>
+  <Crimes>
+    <Robbery>0</Robbery>
+    <Property>0</Property>
+    <DrugActivity>0</DrugActivity>
+    <Disturbance>0</Disturbance>
+    <Statutory>0</Statutory>
+    <Traffic>
+    </Traffic>
+    <Violent>0</Violent>
+  </Crimes>
+  <Locations>
+    <Homes>
+    </Homes>
+    <Stores>
+    </Stores>
+    <SideOfRoad>
+    </SideOfRoad>
+  </Locations>
+</MTJOSE>

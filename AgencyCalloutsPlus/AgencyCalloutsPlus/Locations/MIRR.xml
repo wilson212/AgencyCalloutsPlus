@@ -1,0 +1,30 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- https://gta.fandom.com/wiki/Mirror_Park -->
+<MIRR>
+  <Name>Mirror Park</Name>
+  <Size>Medium</Size>
+  <Type>Residential</Type>
+  <Class>LowerMiddle</Class>
+  <Population>Dense</Population>
+  <CrimeLevel>Low</CrimeLevel>
+  <Crimes>
+    <Robbery>0</Robbery>
+    <Property>0</Property>
+    <DrugActivity>0</DrugActivity>
+    <Disturbance>0</Disturbance>
+    <Statutory>0</Statutory>
+    <Traffic>100</Traffic>
+    <Violent>0</Violent>
+  </Crimes>
+  <Locations>
+    <Homes>
+    </Homes>
+    <Stores>
+    </Stores>
+    <SideOfRoad>
+      <SpawnPoint X="1284.939" Y="-622.3033" Z="68.6316" heading="34.44439" />
+      <SpawnPoint X="1199.625" Y="-461.6662" Z="66.07552" heading="345.359" />
+      <SpawnPoint X="1184.6" Y="-432.9426" Z="66.73499" heading="166.7311" />
+    </SideOfRoad>
+  </Locations>
+</MIRR>

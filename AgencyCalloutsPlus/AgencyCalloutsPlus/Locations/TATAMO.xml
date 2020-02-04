@@ -1,0 +1,28 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- https://gta.fandom.com/wiki/Tataviam_Mountains -->
+<TATAMO>
+  <Name>Tataviam Mountains</Name>
+  <Size>VeryLarge</Size>
+  <Type>Rural</Type>
+  <Class>Working</Class>
+  <Population>Scarce</Population>
+  <CrimeLevel>None</CrimeLevel>
+  <Crimes>
+    <Robbery>0</Robbery>
+    <Property>0</Property>
+    <DrugActivity>0</DrugActivity>
+    <Disturbance>0</Disturbance>
+    <Statutory>0</Statutory>
+    <Traffic>0</Traffic>
+    <Violent>0</Violent>
+  </Crimes>
+  <Locations>
+    <Homes>
+    </Homes>
+    <Stores>
+    </Stores>
+    <SideOfRoad>
+      <SpawnPoint X="2597.98" Y="401.2059" Z="108.2211" heading="323.9391" />
+    </SideOfRoad>
+  </Locations>
+</TATAMO>

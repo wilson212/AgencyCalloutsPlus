@@ -1,0 +1,34 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- https://gta.fandom.com/wiki/El_Burro_Heights -->
+<EBURO>
+  <Name>El Burro Heights</Name>
+  <Size>Large</Size>
+  <Type>Residential</Type>
+  <Class>Lower</Class>
+  <Population>Moderate</Population>
+  <CrimeLevel>High</CrimeLevel>
+  <Crimes>
+    <Robbery>0</Robbery>
+    <Property>0</Property>
+    <DrugActivity>0</DrugActivity>
+    <Disturbance>0</Disturbance>
+    <Statutory>0</Statutory>
+    <Traffic>100</Traffic>
+    <Violent>0</Violent>
+  </Crimes>
+  <Locations>
+    <Homes>
+    </Homes>
+    <Stores>
+    </Stores>
+    <SideOfRoad>
+      <SpawnPoint X="1201.121" Y="-1707.004" Z="35.54856" heading="298.7406" />
+      <SpawnPoint X="1288.305" Y="-1495.734" Z="39.33773" heading="16.79383" />
+      <SpawnPoint X="1142.972" Y="-1856.371" Z="36.95048" heading="288.8381" />
+      <SpawnPoint X="1207.815" Y="-1892.534" Z="36.3627" heading="19.71675" />
+      <SpawnPoint X="1215.449" Y="-1829.899" Z="37.88774" heading="288.4553" />
+      <SpawnPoint X="1158.736" Y="-2089.312" Z="41.72495" heading="275.7196" />
+      <SpawnPoint X="1301.158" Y="-2042.849" Z="44.55045" heading="292.2339" />
+    </SideOfRoad>
+  </Locations>
+</EBURO>

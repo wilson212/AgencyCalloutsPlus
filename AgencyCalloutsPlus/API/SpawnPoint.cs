@@ -2,7 +2,7 @@
 
 namespace AgencyCalloutsPlus.API
 {
-    public class SpawnPoint : GameLocation
+    public class SpawnPoint : WorldLocation
     {
         /// <summary>
         /// Gets the heading of an object entity at this location, if any

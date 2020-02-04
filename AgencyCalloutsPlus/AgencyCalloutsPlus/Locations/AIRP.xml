@@ -1,0 +1,37 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Airport -->
+<AIRP>
+  <Name>Airport</Name>
+  <Size>Large</Size>
+  <Type>Government</Type>
+  <Class>Working</Class>
+  <Population>Dense</Population>
+  <CrimeLevel>VeryLow</CrimeLevel>
+  <Crimes>
+    <Robbery>0</Robbery>
+    <Property>0</Property>
+    <DrugActivity>0</DrugActivity>
+    <Disturbance>0</Disturbance>
+    <Statutory>0</Statutory>
+    <Traffic>100</Traffic>
+    <Violent>0</Violent>
+  </Crimes>
+  <Locations>
+    <Homes>
+    </Homes>
+    <Stores>
+    </Stores>
+    <SideOfRoad>
+      <SpawnPoint X="-743.3373" Y="-2134.229" Z="13.47859" heading="143.4127" />
+      <SpawnPoint X="-880.1978" Y="-2262.259" Z="18.54692" heading="134.2592" />
+      <SpawnPoint X="-753.7152" Y="-2445.956" Z="14.12565" heading="329.5831" />
+      <SpawnPoint X="-738.1461" Y="-2448.973" Z="13.61676" heading="152.3309" />
+      <SpawnPoint X="-936.6982" Y="-2141.153" Z="8.623575" heading="314.5217" />
+      <SpawnPoint X="-1126.706" Y="-2002.121" Z="12.93081" heading="230.1958" />
+      <SpawnPoint X="-803.2914" Y="-2196.344" Z="16.51093" heading="130.1717" />
+      <SpawnPoint X="-702.6539" Y="-2150.335" Z="13.04433" heading="309.8559" />
+      <SpawnPoint X="-470.7635" Y="-2093.834" Z="27.09912" heading="265.1182" />
+      <SpawnPoint X="-359.3956" Y="-2112.903" Z="24.24925" heading="259.5192" />
+    </SideOfRoad>
+  </Locations>
+</AIRP>

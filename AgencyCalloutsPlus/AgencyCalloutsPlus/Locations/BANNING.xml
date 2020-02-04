@@ -1,0 +1,28 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- https://gta.fandom.com/wiki/Banning -->
+<BANNING>
+  <Name>Banning</Name>
+  <Size>Medium</Size>
+  <Type>Industrial</Type>
+  <Class>Working</Class>
+  <Population>Dense</Population>
+  <CrimeLevel>VeryLow</CrimeLevel>
+  <Crimes>
+    <Robbery>0</Robbery>
+    <Property>0</Property>
+    <DrugActivity>0</DrugActivity>
+    <Disturbance>0</Disturbance>
+    <Statutory>0</Statutory>
+    <Traffic>100</Traffic>
+    <Violent>0</Violent>
+  </Crimes>
+  <Locations>
+    <Homes>
+    </Homes>
+    <Stores>
+    </Stores>
+    <SideOfRoad>
+      <SpawnPoint X="-96.54359" Y="-2161.338" Z="9.963698" heading="291.8835" />
+    </SideOfRoad>
+  </Locations>
+</BANNING>

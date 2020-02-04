@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- https://gta.fandom.com/wiki/Paleto_Forest -->
+<PALFOR>
+  <Name>Paleto Forest</Name>
+  <Size>Medium</Size>
+  <Type>Rural</Type>
+  <Class>Working</Class>
+  <Population>Scarce</Population>
+  <CrimeLevel>None</CrimeLevel>
+  <Crimes>
+    <Robbery>0</Robbery>
+    <Property>0</Property>
+    <DrugActivity>0</DrugActivity>
+    <Disturbance>0</Disturbance>
+    <Statutory>0</Statutory>
+    <Traffic>0</Traffic>
+    <Violent>0</Violent>
+  </Crimes>
+  <Locations>
+    <Homes>
+    </Homes>
+    <Stores>
+    </Stores>
+    <SideOfRoad>
+      <SpawnPoint X="-578.1945" Y="5698.128" Z="37.44772" heading="153.7781" />
+      <SpawnPoint X="-732.8299" Y="5531.087" Z="36.27608" heading="120.7709" />
+      <SpawnPoint X="-769.0044" Y="5650.879" Z="23.81657" heading="340.9604" />
+      <SpawnPoint X="-926.8969" Y="5429.035" Z="37.20631" heading="106.7766" />
+    </SideOfRoad>
+  </Locations>
+</PALFOR>

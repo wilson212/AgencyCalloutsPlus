@@ -1,0 +1,28 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- https://gta.fandom.com/wiki/Murrieta_Heights -->
+<MURRI>
+  <Name>Murrieta Heights</Name>
+  <Size>Medium</Size>
+  <Type>Residential</Type>
+  <Class>Working</Class>
+  <Population>Dense</Population>
+  <CrimeLevel>High</CrimeLevel>
+  <Crimes>
+    <Robbery>0</Robbery>
+    <Property>0</Property>
+    <DrugActivity>0</DrugActivity>
+    <Disturbance>0</Disturbance>
+    <Statutory>0</Statutory>
+    <Traffic>100</Traffic>
+    <Violent>0</Violent>
+  </Crimes>
+  <Locations>
+    <Homes>
+    </Homes>
+    <Stores>
+    </Stores>
+    <SideOfRoad>
+      <SpawnPoint X="1064.724" Y="-851.7159" Z="49.05843" heading="271.04" />
+    </SideOfRoad>
+  </Locations>
+</MURRI>

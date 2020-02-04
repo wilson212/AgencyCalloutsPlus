@@ -1,5 +1,6 @@
 ﻿using AgencyCalloutsPlus.API;
 using AgencyCalloutsPlus.Integration;
+using AgencyCalloutsPlus.RageUIMenus;
 using LSPD_First_Response.Mod.API;
 using Rage;
 using System;
@@ -39,6 +40,8 @@ namespace AgencyCalloutsPlus
         /// Gets the root path to the AgencyCalloutsPlus plugin folder
         /// </summary>
         public static string PluginFolderPath { get; internal set; }
+
+        private static ADACMainMenu MainMenu { get; set; }
 
         /// <summary>
         /// Contains a list of dynamic link libraries this Plugin depends on
@@ -104,6 +107,10 @@ namespace AgencyCalloutsPlus
 
             // Log stuff
             Game.LogTrivial("[TRACE] Agency Dispatch and Callouts Plus v" + PluginVersion + " has been initialised.");
+
+            // Temporary!
+            MainMenu = new ADACMainMenu();
+            MainMenu.BeginListening();
         }
 
         private Assembly LSPDFRResolveEventHandler(object sender, ResolveEventArgs args)

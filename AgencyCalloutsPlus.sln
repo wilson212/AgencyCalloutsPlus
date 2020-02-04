@@ -5,8 +5,6 @@ VisualStudioVersion = 15.0.27428.2002
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AgencyCalloutsPlus", "AgencyCalloutsPlus\AgencyCalloutsPlus.csproj", "{1C0D06DD-99E6-4054-9A52-21A8EA49477F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ComputerPlus", "..\ComputerPlus\ComputerPlus\ComputerPlus.csproj", "{95D73AC3-854F-4C32-94E8-E9778EA0404C}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -23,14 +21,6 @@ Global
 		{1C0D06DD-99E6-4054-9A52-21A8EA49477F}.Release|Any CPU.Build.0 = Release|Any CPU
 		{1C0D06DD-99E6-4054-9A52-21A8EA49477F}.Release|x64.ActiveCfg = Release|x64
 		{1C0D06DD-99E6-4054-9A52-21A8EA49477F}.Release|x64.Build.0 = Release|x64
-		{95D73AC3-854F-4C32-94E8-E9778EA0404C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{95D73AC3-854F-4C32-94E8-E9778EA0404C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{95D73AC3-854F-4C32-94E8-E9778EA0404C}.Debug|x64.ActiveCfg = Debug|x64
-		{95D73AC3-854F-4C32-94E8-E9778EA0404C}.Debug|x64.Build.0 = Debug|x64
-		{95D73AC3-854F-4C32-94E8-E9778EA0404C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{95D73AC3-854F-4C32-94E8-E9778EA0404C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{95D73AC3-854F-4C32-94E8-E9778EA0404C}.Release|x64.ActiveCfg = Release|x64
-		{95D73AC3-854F-4C32-94E8-E9778EA0404C}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- https://gta.fandom.com/wiki/Textile_City -->
+<TEXTI>
+  <Name>Textile City</Name>
+  <Size>VerySmall</Size>
+  <Type>Commercial</Type>
+  <Class>Working</Class>
+  <Population>Dense</Population>
+  <CrimeLevel>Low</CrimeLevel>
+  <Crimes>
+    <Robbery>0</Robbery>
+    <Property>0</Property>
+    <DrugActivity>0</DrugActivity>
+    <Disturbance>0</Disturbance>
+    <Statutory>0</Statutory>
+    <Traffic>100</Traffic>
+    <Violent>0</Violent>
+  </Crimes>
+  <Locations>
+    <Homes>
+    </Homes>
+    <Stores>
+    </Stores>
+    <SideOfRoad>
+      <SpawnPoint X="400.9577" Y="-716.6835" Z="28.92295" heading="181.5957" />
+      <SpawnPoint X="438.1588" Y="-829.4177" Z="28.18832" heading="269.4521" />
+      <SpawnPoint X="455.6572" Y="-671.9939" Z="27.56686" heading="92.03419" />
+      <SpawnPoint X="385.7715" Y="-624.6555" Z="28.60361" heading="330.4307" />
+    </SideOfRoad>
+  </Locations>
+</TEXTI>

@@ -27,7 +27,7 @@ namespace AgencyCalloutsPlus.Extensions
             if (items.Length == 0) return String.Empty;
 
             int count = items.Length - 1;
-            int index = new CryptoRandom().Next(0, count);
+            int index = new Random().Next(0, count);
             return items[index];
         }
 

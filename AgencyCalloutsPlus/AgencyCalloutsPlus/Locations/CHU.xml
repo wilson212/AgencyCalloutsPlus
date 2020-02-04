@@ -1,0 +1,30 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- https://gta.fandom.com/wiki/Chumash -->
+<CHU>
+  <Name>Chumash</Name>
+  <Size>Small</Size>
+  <Type>Mixed</Type>
+  <Class>UpperMiddle</Class>
+  <Population>Dense</Population>
+  <CrimeLevel>Low</CrimeLevel>
+  <Crimes>
+    <Robbery>0</Robbery>
+    <Property>0</Property>
+    <DrugActivity>0</DrugActivity>
+    <Disturbance>0</Disturbance>
+    <Statutory>0</Statutory>
+    <Traffic>0</Traffic>
+    <Violent>0</Violent>
+  </Crimes>
+  <Locations>
+    <Homes>
+    </Homes>
+    <Stores>
+    </Stores>
+    <SideOfRoad>
+      <SpawnPoint X="-3169.63" Y="1244.344" Z="10.57515" heading="353.6517" />
+      <SpawnPoint X="-3135.381" Y="824.7528" Z="16.52175" heading="207.5225" />
+      <SpawnPoint X="-3008.429" Y="365.8237" Z="14.47989" heading="169.5816" />
+    </SideOfRoad>
+  </Locations>
+</CHU>

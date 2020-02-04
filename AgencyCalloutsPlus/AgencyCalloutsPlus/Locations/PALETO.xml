@@ -1,0 +1,38 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- https://gta.fandom.com/wiki/Paleto_Bay -->
+<PALETO>
+  <Name>Paleto Bay</Name>
+  <Size>Large</Size>
+  <Type>Mixed</Type>
+  <Class>Working</Class>
+  <Population>Dense</Population>
+  <CrimeLevel>Moderate</CrimeLevel>
+  <Crimes>
+    <Robbery>0</Robbery>
+    <Property>0</Property>
+    <DrugActivity>0</DrugActivity>
+    <Disturbance>0</Disturbance>
+    <Statutory>0</Statutory>
+    <Traffic>0</Traffic>
+    <Violent>0</Violent>
+  </Crimes>
+  <Locations>
+    <Homes>
+    </Homes>
+    <Stores>
+    </Stores>
+    <SideOfRoad>
+      <SpawnPoint X="184.4049" Y="6574.211" Z="31.60049" heading="110.5664" />
+      <SpawnPoint X="-22.2518" Y="6633.133" Z="30.45876" heading="123.2169" />
+      <SpawnPoint X="-324.5273" Y="6351.488" Z="30.07028" heading="134.4314" />
+      <SpawnPoint X="-413.6339" Y="6024.99" Z="31.12768" heading="196.1808" />
+      <SpawnPoint X="-272.4705" Y="6089.522" Z="30.97792" heading="315.1745" />
+      <SpawnPoint X="-256.8849" Y="6189.933" Z="31.09116" heading="42.20694" />
+      <SpawnPoint X="-255.5601" Y="6270.298" Z="31.02397" heading="315.8537" />
+      <SpawnPoint X="-159.6443" Y="6337.343" Z="31.21975" heading="226.7266" />
+      <SpawnPoint X="34.58875" Y="6395.486" Z="31.01769" heading="314.5241" />
+      <SpawnPoint X="92.41862" Y="6486.325" Z="31.112" heading="135.7521" />
+      <SpawnPoint X="-144.9072" Y="6247.682" Z="30.93605" heading="132.8918" />
+    </SideOfRoad>
+  </Locations>
+</PALETO>

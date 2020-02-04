@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- https://gta.fandom.com/wiki/San_Chianski_Mountain_Range -->
+<SANCHIA>
+  <Name>San Chianski Mountain Range</Name>
+  <Size>VeryLarge</Size>
+  <Type>Forest</Type>
+  <Class>Lower</Class>
+  <Population>None</Population>
+  <CrimeLevel>None</CrimeLevel>
+  <Crimes>
+    <Robbery>0</Robbery>
+    <Property>0</Property>
+    <DrugActivity>0</DrugActivity>
+    <Disturbance>0</Disturbance>
+    <Statutory>0</Statutory>
+    <Traffic>0</Traffic>
+    <Violent>0</Violent>
+  </Crimes>
+  <Locations>
+    <Homes>
+    </Homes>
+    <Stores>
+    </Stores>
+    <SideOfRoad>
+      <SpawnPoint X="2866.91" Y="4425.019" Z="48.54592" heading="289.1848" />
+      <SpawnPoint X="2743.588" Y="4691.754" Z="44.06121" heading="12.73393" />
+      <SpawnPoint X="2725.749" Y="5086.909" Z="42.65204" heading="188.7374" />
+      <SpawnPoint X="2722.724" Y="5123.943" Z="43.98761" heading="56.36723" />
+    </SideOfRoad>
+  </Locations>
+</SANCHIA>

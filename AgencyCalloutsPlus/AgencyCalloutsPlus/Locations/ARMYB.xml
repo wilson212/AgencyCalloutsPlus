@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Fort Zancudo -->
+<ARMYB>
+  <Name>Fort Zancudo</Name>
+  <Size>Large</Size>
+  <Type>Mixed</Type>
+  <Class>Working</Class>
+  <Population>Dense</Population>
+  <CrimeLevel>None</CrimeLevel>
+  <Crimes>
+    <Robbery>0</Robbery>
+    <Property>0</Property>
+    <DrugActivity>0</DrugActivity>
+    <Disturbance>0</Disturbance>
+    <Statutory>0</Statutory>
+    <Traffic>0</Traffic>
+    <Violent>0</Violent>
+  </Crimes>
+  <Locations>
+    <Homes>
+    </Homes>
+    <Stores>
+    </Stores>
+    <SideOfRoad>
+    </SideOfRoad>
+  </Locations>
+</ARMYB>

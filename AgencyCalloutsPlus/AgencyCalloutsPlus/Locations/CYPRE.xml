@@ -1,0 +1,34 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- https://gta.fandom.com/wiki/Cypress_Flats -->
+<CYPRE>
+  <Name>Cypress Flats</Name>
+  <Size>Large</Size>
+  <Type>Industrial</Type>
+  <Class>Lower</Class>
+  <Population>Moderate</Population>
+  <CrimeLevel>Low</CrimeLevel>
+  <Crimes>
+    <Robbery>0</Robbery>
+    <Property>0</Property>
+    <DrugActivity>0</DrugActivity>
+    <Disturbance>0</Disturbance>
+    <Statutory>0</Statutory>
+    <Traffic>100</Traffic>
+    <Violent>0</Violent>
+  </Crimes>
+  <Locations>
+    <Homes>
+    </Homes>
+    <Stores>
+    </Stores>
+    <SideOfRoad>
+      <SpawnPoint X="787.4227" Y="-1891.604" Z="28.93413" heading="165.1774" />
+      <SpawnPoint X="846.7437" Y="-2084.76" Z="29.71044" heading="265.2996" />
+      <SpawnPoint X="920.2981" Y="-2137.56" Z="30.11075" heading="174.9585" />
+      <SpawnPoint X="867.4886" Y="-2239.341" Z="30.13641" heading="85.82328" />
+      <SpawnPoint X="909.0033" Y="-2290.304" Z="30.29708" heading="173.8695" />
+      <SpawnPoint X="952.5059" Y="-2468.922" Z="28.19952" heading="266.8782" />
+      <SpawnPoint X="1045.13" Y="-2393.99" Z="29.80615" heading="353.3778" />
+    </SideOfRoad>
+  </Locations>
+</CYPRE>

@@ -1,6 +1,7 @@
 ﻿using Rage;
 using Rage.Native;
 using System;
+using System.Drawing;
 
 namespace AgencyCalloutsPlus.Extensions
 {
@@ -97,6 +98,75 @@ namespace AgencyCalloutsPlus.Extensions
         public static void SetLivery(this Vehicle vehicle, int liveryIndex)
         {
             NativeFunction.Natives.SET_VEHICLE_LIVERY(vehicle, liveryIndex);
+        }
+
+        /// <summary>
+        /// Sets the neon lights of the specified vehicle on/off.
+        /// </summary>
+        /// <param name="vehicle"></param>
+        /// <param name="neonLight">Neon index</param>
+        /// <param name="toggle">Toggle the neon</param>
+        /// <seealso cref="http://www.dev-c.com/nativedb/func/info/2aa720e4287bf269"/>
+        public static void ToggleNeonLight(this Vehicle vehicle, ENeonLights neonLight, bool toggle)
+        {
+            NativeFunction.Natives._SET_VEHICLE_NEON_LIGHT_ENABLED(vehicle, (int)neonLight, toggle);
+        }
+
+        /// <summary>
+        /// Sets the color of the neon lights of the specified vehicle.
+        /// </summary>
+        /// <param name="vehicle"></param>
+        /// <param name="color">Color to set</param>
+        public static void SetNeonLightsColor(this Vehicle vehicle, Color color)
+        {
+            NativeFunction.Natives._SET_VEHICLE_NEON_LIGHTS_COLOUR(vehicle, (int)color.R, (int)color.G, (int)color.B);
+        }
+
+        /// <summary>
+        /// Determines of neon lights are enabled for the specified index of the specified vehicle
+        /// </summary>
+        /// <param name="vehicle"></param>
+        /// <param name="neonLight">Neon index</param>
+        /// <returns>true if the neon light is enabled</returns>
+        public static bool IsNeonLightEnable(this Vehicle vehicle, ENeonLights neonLight)
+        {
+            return NativeFunction.Natives._IS_VEHICLE_NEON_LIGHT_ENABLED<bool>(vehicle, (int)neonLight);
+        }
+
+        /// <summary>
+        /// Sets the color to this <see cref="Rage.Vehicle"/> instance
+        /// </summary>
+        /// <param name="v"></param>
+        /// <param name="primaryColor">The primary color</param>
+        /// <param name="secondaryColor">The secondary color</param>
+        public static void SetColors(this Vehicle v, EPaint primaryColor, EPaint secondaryColor)
+        {
+            NativeFunction.Natives.SET_VEHICLE_COLOURS(v, (int)primaryColor, (int)secondaryColor);
+        }
+
+        /// <summary>
+        /// Sets the color to this <see cref="Rage.Vehicle"/> instance
+        /// </summary>
+        /// <param name="v"></param>
+        /// <param name="color">The color</param>
+        public static void SetColors(this Vehicle v, VehicleColor color)
+        {
+            NativeFunction.Natives.SET_VEHICLE_COLOURS(v, (int)color.PrimaryColor, (int)color.SecondaryColor);
+        }
+
+        /// <summary>
+        /// Gets the primary and secondary colors of this instance of <see cref="Rage.Vehicle"/> instance
+        /// </summary>
+        /// <param name="v"></param>
+        /// <returns></returns>
+        public static VehicleColor GetColors(this Vehicle v)
+        {
+            NativeFunction.Natives.GET_VEHICLE_COLOURS(v, out int colorPrimaryInt, out int colorSecondaryInt);
+            return new VehicleColor
+            {
+                PrimaryColor = (EPaint)colorPrimaryInt,
+                SecondaryColor = (EPaint)colorSecondaryInt
+            };
         }
     }
 }

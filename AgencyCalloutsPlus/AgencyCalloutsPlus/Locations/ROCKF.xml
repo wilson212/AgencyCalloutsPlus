@@ -1,0 +1,36 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- https://gta.fandom.com/wiki/Rockford_Hills -->
+<ROCKF>
+  <Name>Rockford Hills</Name>
+  <Size>Large</Size>
+  <Type>Mixed</Type>
+  <Class>Upper</Class>
+  <Population>Dense</Population>
+  <CrimeLevel>Moderate</CrimeLevel>
+  <Crimes>
+    <Robbery>0</Robbery>
+    <Property>0</Property>
+    <DrugActivity>0</DrugActivity>
+    <Disturbance>0</Disturbance>
+    <Statutory>0</Statutory>
+    <Traffic>100</Traffic>
+    <Violent>0</Violent>
+  </Crimes>
+  <Locations>
+    <Homes>
+    </Homes>
+    <Stores>
+    </Stores>
+    <SideOfRoad>
+      <SpawnPoint X="-879.0662" Y="239.9437" Z="72.22186" heading="64.38356" />
+      <SpawnPoint X="-834.8604" Y="204.1598" Z="73.7544" heading="265.1725" />
+      <SpawnPoint X="-755.9545" Y="155.7549" Z="64.3354" heading="187.7457" />
+      <SpawnPoint X="-827.7767" Y="-9.064098" Z="40.30524" heading="212.4566" />
+      <SpawnPoint X="-831.7559" Y="-76.78371" Z="37.33385" heading="117.9508" />
+      <SpawnPoint X="-918.3644" Y="-33.06431" Z="40.35612" heading="39.54237" />
+      <SpawnPoint X="-1043.305" Y="162.4217" Z="57.30809" heading="31.22434" />
+      <SpawnPoint X="-1036.512" Y="250.366" Z="64.46606" heading="270.4566" />
+      <SpawnPoint X="-860.7089" Y="357.527" Z="86.6208" heading="185.4379" />
+    </SideOfRoad>
+  </Locations>
+</ROCKF>

@@ -1,0 +1,46 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- https://gta.fandom.com/wiki/Grand_Senora_Desert -->
+<DESRT>
+  <Name>Grand Senora Desert</Name>
+  <Size>Massive</Size>
+  <Type>Rural</Type>
+  <Class>Lower</Class>
+  <Population>Scarse</Population>
+  <CrimeLevel>VeryLow</CrimeLevel>
+  <Crimes>
+    <Robbery>0</Robbery>
+    <Property>0</Property>
+    <DrugActivity>0</DrugActivity>
+    <Disturbance>0</Disturbance>
+    <Statutory>0</Statutory>
+    <Traffic>0</Traffic>
+    <Violent>0</Violent>
+  </Crimes>
+  <Locations>
+    <Homes>
+    </Homes>
+    <Stores>
+    </Stores>
+    <SideOfRoad>
+      <SpawnPoint X="374.1024" Y="1732.583" Z="239.4723" heading="131.1164" />
+      <SpawnPoint X="2333.6" Y="2986.892" Z="47.71206" heading="62.20285" />
+      <SpawnPoint X="2291.464" Y="3112.235" Z="47.31563" heading="21.11316" />
+      <SpawnPoint X="2145.75" Y="3268.606" Z="45.92772" heading="68.50956" />
+      <SpawnPoint X="1943.069" Y="3318.281" Z="45.04067" heading="78.45831" />
+      <SpawnPoint X="1811.395" Y="3317.912" Z="41.93379" heading="30.2607" />
+      <SpawnPoint X="1243.861" Y="3639.192" Z="33.1542" heading="102.6745" />
+      <SpawnPoint X="981.7724" Y="3638.001" Z="32.06542" heading="88.33912" />
+      <SpawnPoint X="922.3293" Y="3594.718" Z="32.8696" heading="177.7257" />
+      <SpawnPoint X="705.4941" Y="3529.692" Z="33.9128" heading="95.63829" />
+      <SpawnPoint X="416.562" Y="3536.746" Z="33.7551" heading="5.294222" />
+      <SpawnPoint X="220.026" Y="3292.726" Z="40.60985" heading="165.0859" />
+      <SpawnPoint X="215.0842" Y="3059.348" Z="41.98627" heading="185.2638" />
+      <SpawnPoint X="232.5487" Y="2896.307" Z="43.0338" heading="188.5282" />
+      <SpawnPoint X="429.3513" Y="2443.905" Z="45.9148" heading="234.3605" />
+      <SpawnPoint X="518.3473" Y="2377.183" Z="47.84334" heading="235.3693" />
+      <SpawnPoint X="1106.481" Y="1927.708" Z="60.92078" heading="197.4005" />
+      <SpawnPoint X="1143.306" Y="1828.5" Z="71.85985" heading="212.9314" />
+      <SpawnPoint X="1194.863" Y="1768.858" Z="76.9744" heading="226.4211" />
+    </SideOfRoad>
+  </Locations>
+</DESRT>

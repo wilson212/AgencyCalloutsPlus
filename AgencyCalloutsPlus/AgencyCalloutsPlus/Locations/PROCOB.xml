@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- https://gta.fandom.com/wiki/Procopio_Beach -->
+<PROCOB>
+  <Name>Procopio Beach</Name>
+  <Size>Small</Size>
+  <Type>Recreation</Type>
+  <Class>Working</Class>
+  <Population>Scarce</Population>
+  <CrimeLevel>None</CrimeLevel>
+  <Crimes>
+    <Robbery>0</Robbery>
+    <Property>0</Property>
+    <DrugActivity>0</DrugActivity>
+    <Disturbance>0</Disturbance>
+    <Statutory>0</Statutory>
+    <Traffic>0</Traffic>
+    <Violent>0</Violent>
+  </Crimes>
+  <Locations>
+    <Homes>
+    </Homes>
+    <Stores>
+    </Stores>
+    <SideOfRoad>
+      <SpawnPoint X="1235.415" Y="6501.709" Z="20.5242" heading="89.03062" />
+      <SpawnPoint X="762.86" Y="6515.305" Z="25.46921" heading="78.15271" />
+    </SideOfRoad>
+  </Locations>
+</PROCOB>

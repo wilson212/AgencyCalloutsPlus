@@ -1,0 +1,30 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- https://gta.fandom.com/wiki/Little_Seoul -->
+<KOREAT>
+  <Name>Little Seoul</Name>
+  <Size>Large</Size>
+  <Type>Mixed</Type>
+  <Class>Working</Class>
+  <Population>Dense</Population>
+  <CrimeLevel>Moderate</CrimeLevel>
+  <Crimes>
+    <Robbery>0</Robbery>
+    <Property>0</Property>
+    <DrugActivity>0</DrugActivity>
+    <Disturbance>0</Disturbance>
+    <Statutory>0</Statutory>
+    <Traffic>100</Traffic>
+    <Violent>0</Violent>
+  </Crimes>
+  <Locations>
+    <Homes>
+    </Homes>
+    <Stores>
+    </Stores>
+    <SideOfRoad>
+      <SpawnPoint X="-653.1411" Y="-600.572" Z="33.35202" heading="174.2366" />
+      <SpawnPoint X="-497.999" Y="-1247.719" Z="24.07518" heading="158.8137" />
+      <SpawnPoint X="-461.8662" Y="-1455.756" Z="29.27944" heading="183.4107" />
+    </SideOfRoad>
+  </Locations>
+</KOREAT>

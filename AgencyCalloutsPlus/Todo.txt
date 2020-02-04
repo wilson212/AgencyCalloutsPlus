@@ -1,9 +1,9 @@
-﻿ - Agency Computer Aided Dispatch (A-CAD)
-  - Add Status Buttons (10-8 avail, 10-5 busy etc etc)
-
-- Homocide Callout
-	- Home Location SpawnPoints
-		- Victim
-		- Suspect
-		- Witness
-		- Hiding Spot
+﻿ADAC+ Menu [Main Menu]
+ - Callout Menu [Callout Name]
+	- Speak to Suspect
+ - Dispatch Menu
+	- [info] Available Calls -> 1/2/3/4
+	- Set Status -> option array
+	- Request Call
+ - Select Emote -> option array
+ - Close

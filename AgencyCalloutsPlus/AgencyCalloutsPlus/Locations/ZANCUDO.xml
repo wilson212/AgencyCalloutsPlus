@@ -1,0 +1,28 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- https://gta.fandom.com/wiki/Zancudo_River -->
+<ZANCUDO>
+  <Name>Zancudo River</Name>
+  <Size>Medium</Size>
+  <Type>Forest</Type>
+  <Class>Working</Class>
+  <Population>None</Population>
+  <CrimeLevel>None</CrimeLevel>
+  <Crimes>
+    <Robbery>0</Robbery>
+    <Property>0</Property>
+    <DrugActivity>0</DrugActivity>
+    <Disturbance>0</Disturbance>
+    <Statutory>0</Statutory>
+    <Traffic>0</Traffic>
+    <Violent>0</Violent>
+  </Crimes>
+  <Locations>
+    <Homes>
+    </Homes>
+    <Stores>
+    </Stores>
+    <SideOfRoad>
+      <SpawnPoint X="157.8936" Y="3192.95" Z="41.91386" heading="148.1332" />
+    </SideOfRoad>
+  </Locations>
+</ZANCUDO>

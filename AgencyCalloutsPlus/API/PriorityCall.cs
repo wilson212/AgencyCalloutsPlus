@@ -1,7 +1,7 @@
-﻿using AgencyCalloutsPlus.Extensions;
-using Rage;
+﻿using Rage;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace AgencyCalloutsPlus.API
 {
@@ -37,9 +37,9 @@ namespace AgencyCalloutsPlus.API
         public CallStatus CallStatus { get; internal set; }
 
         /// <summary>
-        /// The general <see cref="GameLocation"/> that this callout takes place at
+        /// The general <see cref="WorldLocation"/> that this callout takes place at
         /// </summary>
-        public GameLocation Location { get; internal set; }
+        public WorldLocation Location { get; internal set; }
 
         /// <summary>
         /// Gets the primary <see cref="OfficerUnit"/> assigned to this call
@@ -47,9 +47,9 @@ namespace AgencyCalloutsPlus.API
         public OfficerUnit PrimaryOfficer { get; private set; }
 
         /// <summary>
-        /// Gets a list of backup officers or null
+        /// Gets a list of officers attached to this <see cref="PriorityCall"/>
         /// </summary>
-        public List<OfficerUnit> BackupOfficers { get; private set; }
+        public List<OfficerUnit> AttachedOfficers { get; private set; }
 
         /// <summary>
         /// Indicates whether this Call needs more <see cref="OfficerUnit"/>(s)
@@ -59,16 +59,12 @@ namespace AgencyCalloutsPlus.API
         {
             get
             {
-                if (PrimaryOfficer == null || (Priority == 1 && BackupOfficers.Count < 2))
+                switch (Priority)
                 {
-                    return true;
+                    case 1: return AttachedOfficers.Count < 3;
+                    case 2: return AttachedOfficers.Count < 2;
+                    default: return AttachedOfficers.Count == 0;
                 }
-                else if (Priority == 2 && BackupOfficers.Count < 1)
-                {
-                    return true;
-                }
-
-                return false;
             }
         }
 
@@ -114,63 +110,54 @@ namespace AgencyCalloutsPlus.API
             CallCreated = World.DateTime;
             ScenarioInfo = scenarioInfo ?? throw new ArgumentNullException(nameof(scenarioInfo));
             Description = scenarioInfo.GetRandomDescription();
-            BackupOfficers = new List<OfficerUnit>(3);
+            AttachedOfficers = new List<OfficerUnit>(4);
         }
 
         /// <summary>
         /// Assigns the provided <see cref="OfficerUnit"/> as the primary officer of the 
-        /// call if there isnt one, or adds the officer to the <see cref="BackupOfficers"/>
+        /// call if there isnt one, or adds the officer to the <see cref="AttachedOfficers"/>
         /// list otherwise
         /// </summary>
         /// <param name="officer"></param>
-        internal void AssignOfficer(OfficerUnit officer, bool asPrimary)
+        internal void AssignOfficer(OfficerUnit officer, bool forcePrimary)
         {
-            if (PrimaryOfficer == null)
+            // Do we have a primary? Or are we forcing one?
+            if (PrimaryOfficer == null || forcePrimary)
             {
                 PrimaryOfficer = officer;
             }
-            else if (asPrimary)
-            {
-                BackupOfficers.Add(PrimaryOfficer);
-                PrimaryOfficer = officer;
-            }
-            else
-            {
-                BackupOfficers.Add(officer);
-            }
+
+            // Attach officer
+            AttachedOfficers.Add(officer);
         }
 
         /// <summary>
         /// Removes the specified <see cref="OfficerUnit"/> from the call. If the 
-        /// <see cref="OfficerUnit"/> was the primary officer, and <see cref="BackupOfficers"/>
+        /// <see cref="OfficerUnit"/> was the primary officer, and <see cref="AttachedOfficers"/>
         /// is populated, the topmost <see cref="OfficerUnit"/> will be the new
         /// <see cref="PrimaryOfficer"/>
         /// </summary>
         /// <param name="officer"></param>
         internal void RemoveOfficer(OfficerUnit officer)
         {
+            // Do we need to assign a new primary officer?
             if (officer == PrimaryOfficer)
             {
-                if (BackupOfficers.Count > 0)
+                if (AttachedOfficers.Count > 1)
                 {
                     // Dispatch one more AI unit to this call
-                    var primary = BackupOfficers[0];
-
-                    // remove as backup
-                    BackupOfficers.Remove(primary);
-
-                    // Assign new
-                    PrimaryOfficer = primary;
+                    var primary = AttachedOfficers.Where(x => x != PrimaryOfficer).FirstOrDefault();
+                    if (primary != null)
+                        PrimaryOfficer = primary;
                 }
                 else
                 {
                     PrimaryOfficer = null;
                 }
             }
-            else
-            {
-                BackupOfficers.Remove(officer);
-            }
+
+            // Finally, remove
+            AttachedOfficers.Remove(officer);
         }
 
         public bool Equals(PriorityCall other)

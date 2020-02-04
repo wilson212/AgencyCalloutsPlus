@@ -1,0 +1,30 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- https://gta.fandom.com/wiki/Burton -->
+<BURTON>
+  <Name>Burton</Name>
+  <Size>Large</Size>
+  <Type>Commercial</Type>
+  <Class>Upper</Class>
+  <Population>Dense</Population>
+  <CrimeLevel>VeryLow</CrimeLevel>
+  <Crimes>
+    <Robbery>0</Robbery>
+    <Property>0</Property>
+    <DrugActivity>0</DrugActivity>
+    <Disturbance>0</Disturbance>
+    <Statutory>0</Statutory>
+    <Traffic>100</Traffic>
+    <Violent>0</Violent>
+  </Crimes>
+  <Locations>
+    <Homes>
+    </Homes>
+    <Stores>
+    </Stores>
+    <SideOfRoad>
+      <SpawnPoint X="-460.5954" Y="18.7797" Z="45.31112" heading="86.07594" />
+      <SpawnPoint X="-287.3965" Y="-114.2308" Z="45.5137" heading="164.3491" />
+      <SpawnPoint X="-148.7309" Y="-98.68957" Z="54.63776" heading="251.9253" />
+    </SideOfRoad>
+  </Locations>
+</BURTON>

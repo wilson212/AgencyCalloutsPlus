@@ -1,0 +1,32 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- https://gta.fandom.com/wiki/Del_Perro -->
+<DELPE>
+  <Name>Del Perro</Name>
+  <Size>Medium</Size>
+  <Type>Residential</Type>
+  <Class>UpperMiddle</Class>
+  <Population>Dense</Population>
+  <CrimeLevel>Low</CrimeLevel>
+  <Crimes>
+    <Robbery>0</Robbery>
+    <Property>0</Property>
+    <DrugActivity>0</DrugActivity>
+    <Disturbance>0</Disturbance>
+    <Statutory>0</Statutory>
+    <Traffic>0</Traffic>
+    <Violent>0</Violent>
+  </Crimes>
+  <Locations>
+    <Homes>
+    </Homes>
+    <Stores>
+    </Stores>
+    <SideOfRoad>
+      <SpawnPoint X="-1775.332" Y="-664.7091" Z="10.14362" heading="228.8256" />
+      <SpawnPoint X="-1369.16" Y="-867.0697" Z="14.94891" heading="136.6597" />
+      <SpawnPoint X="-1278.625" Y="-991.2997" Z="9.592031" heading="195.9247" />
+      <SpawnPoint X="-1618.639" Y="-753.9629" Z="11.2078" heading="236.0776" />
+      <SpawnPoint X="-1401.568" Y="-779.1171" Z="10.68114" heading="278.5008" />
+    </SideOfRoad>
+  </Locations>
+</DELPE>

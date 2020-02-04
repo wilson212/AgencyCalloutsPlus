@@ -1,0 +1,30 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- https://gta.fandom.com/wiki/East_Vinewood -->
+<EAST_V>
+  <Name>East Vinewood</Name>
+  <Size>Medium</Size>
+  <Type>Mixed</Type>
+  <Class>LowerMiddle</Class>
+  <Population>Moderate</Population>
+  <CrimeLevel>Moderate</CrimeLevel>
+  <Crimes>
+    <Robbery>0</Robbery>
+    <Property>0</Property>
+    <DrugActivity>0</DrugActivity>
+    <Disturbance>0</Disturbance>
+    <Statutory>0</Statutory>
+    <Traffic>100</Traffic>
+    <Violent>0</Violent>
+  </Crimes>
+  <Locations>
+    <Homes>
+    </Homes>
+    <Stores>
+    </Stores>
+    <SideOfRoad>
+      <SpawnPoint X="1161.999" Y="-245.3021" Z="68.75951" heading="64.83382" />
+      <SpawnPoint X="924.5276" Y="-126.709" Z="75.74687" heading="59.52725" />
+      <SpawnPoint X="759.4383" Y="-16.03819" Z="81.56871" heading="60.3346" />
+    </SideOfRoad>
+  </Locations>
+</EAST_V>

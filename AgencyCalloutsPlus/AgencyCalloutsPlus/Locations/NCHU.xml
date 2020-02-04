@@ -1,0 +1,30 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- https://gta.fandom.com/wiki/North_Chumash -->
+<NCHU>
+  <Name>North Chumash</Name>
+  <Size>Large</Size>
+  <Type>Rural</Type>
+  <Class>Working</Class>
+  <Population>None</Population>
+  <CrimeLevel>None</CrimeLevel>
+  <Crimes>
+    <Robbery>0</Robbery>
+    <Property>0</Property>
+    <DrugActivity>0</DrugActivity>
+    <Disturbance>0</Disturbance>
+    <Statutory>0</Statutory>
+    <Traffic>0</Traffic>
+    <Violent>0</Violent>
+  </Crimes>
+  <Locations>
+    <Homes>
+    </Homes>
+    <Stores>
+    </Stores>
+    <SideOfRoad>
+      <SpawnPoint X="-2175.74" Y="4444.229" Z="61.81794" heading="141.5286" />
+      <SpawnPoint X="-2361.031" Y="4046.449" Z="30.04111" heading="165.7798" />
+      <SpawnPoint X="-2526.426" Y="3528.103" Z="14.17548" heading="156.6137" />
+    </SideOfRoad>
+  </Locations>
+</NCHU>

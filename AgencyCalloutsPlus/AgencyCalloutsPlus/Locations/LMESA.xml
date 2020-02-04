@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- https://gta.fandom.com/wiki/La_Mesa -->
+<LMESA>
+  <Name>La Mesa</Name>
+  <Size>Large</Size>
+  <Type>Industrial</Type>
+  <Class>Working</Class>
+  <Population>Dense</Population>
+  <CrimeLevel>Low</CrimeLevel>
+  <Crimes>
+    <Robbery>0</Robbery>
+    <Property>0</Property>
+    <DrugActivity>0</DrugActivity>
+    <Disturbance>0</Disturbance>
+    <Statutory>0</Statutory>
+    <Traffic>100</Traffic>
+    <Violent>0</Violent>
+  </Crimes>
+  <Locations>
+    <Homes>
+    </Homes>
+    <Stores>
+    </Stores>
+    <SideOfRoad>
+      <SpawnPoint X="638.9248" Y="-1446.777" Z="30.11053" heading="271.3428" />
+      <SpawnPoint X="803.6606" Y="-1502.201" Z="27.88048" heading="205.5436" />
+      <SpawnPoint X="822.6063" Y="-1660.162" Z="28.96169" heading="174.2205" />
+      <SpawnPoint X="543.4438" Y="-861.5493" Z="40.32827" heading="270.097" />
+    </SideOfRoad>
+  </Locations>
+</LMESA>

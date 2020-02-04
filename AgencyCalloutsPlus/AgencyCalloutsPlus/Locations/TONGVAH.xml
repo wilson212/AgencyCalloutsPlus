@@ -1,0 +1,30 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- https://gta.fandom.com/wiki/Tongva_Hills -->
+<TONGVAH>
+  <Name>Tongva Hills</Name>
+  <Size>Large</Size>
+  <Type>Rural</Type>
+  <Class>Working</Class>
+  <Population>Scarce</Population>
+  <CrimeLevel>None</CrimeLevel>
+  <Crimes>
+    <Robbery>0</Robbery>
+    <Property>0</Property>
+    <DrugActivity>0</DrugActivity>
+    <Disturbance>0</Disturbance>
+    <Statutory>0</Statutory>
+    <Traffic>0</Traffic>
+    <Violent>0</Violent>
+  </Crimes>
+  <Locations>
+    <Homes>
+    </Homes>
+    <Stores>
+    </Stores>
+    <SideOfRoad>
+      <SpawnPoint X="-2856.818" Y="2195.172" Z="33.0401" heading="118.6719" />
+      <SpawnPoint X="-3013.057" Y="1961.991" Z="29.35463" heading="155.826" />
+      <SpawnPoint X="-3037.866" Y="1674.911" Z="34.87879" heading="199.8088" />
+    </SideOfRoad>
+  </Locations>
+</TONGVAH>

@@ -1,0 +1,28 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- https://gta.fandom.com/wiki/Downtown_Los_Santos_(HD_Universe) -->
+<DOWNT>
+  <Name>Downtown Los Santos</Name>
+  <Size>VerySmall</Size>
+  <Type>Office</Type>
+  <Class>Working</Class>
+  <Population>Dense</Population>
+  <CrimeLevel>Low</CrimeLevel>
+  <Crimes>
+    <Robbery>0</Robbery>
+    <Property>0</Property>
+    <DrugActivity>0</DrugActivity>
+    <Disturbance>0</Disturbance>
+    <Statutory>0</Statutory>
+    <Traffic>100</Traffic>
+    <Violent>0</Violent>
+  </Crimes>
+  <Locations>
+    <Homes>
+    </Homes>
+    <Stores>
+    </Stores>
+    <SideOfRoad>
+      <SpawnPoint X="253.3059" Y="-568.2327" Z="42.9293" heading="160.041" />
+    </SideOfRoad>
+  </Locations>
+</DOWNT>

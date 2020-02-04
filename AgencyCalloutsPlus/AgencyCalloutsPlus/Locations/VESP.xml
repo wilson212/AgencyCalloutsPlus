@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- https://gta.fandom.com/wiki/Vespucci -->
+<VESP>
+  <Name>Vespucci</Name>
+  <Size>Small</Size>
+  <Type>Mixed</Type>
+  <Class>UpperMiddle</Class>
+  <Population>Dense</Population>
+  <CrimeLevel>Low</CrimeLevel>
+  <Crimes>
+    <Robbery>0</Robbery>
+    <Property>0</Property>
+    <DrugActivity>0</DrugActivity>
+    <Disturbance>0</Disturbance>
+    <Statutory>0</Statutory>
+    <Traffic>100</Traffic>
+    <Violent>0</Violent>
+  </Crimes>
+  <Locations>
+    <Homes>
+    </Homes>
+    <Stores>
+    </Stores>
+    <SideOfRoad>
+      <SpawnPoint X="-1187.188" Y="-1344.395" Z="4.593719" heading="118.2216" />
+      <SpawnPoint X="-1076.621" Y="-1604.209" Z="4.032756" heading="218.6957" />
+      <SpawnPoint X="-1074.099" Y="-1381.39" Z="4.731258" heading="346.9388" />
+      <SpawnPoint X="-760.4246" Y="-1158.496" Z="10.27134" heading="216.7104" />
+    </SideOfRoad>
+  </Locations>
+</VESP>

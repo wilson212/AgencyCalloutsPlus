@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- https://gta.fandom.com/wiki/Strawberry -->
+<STRAW>
+  <Name>Strawberry</Name>
+  <Size>Medium</Size>
+  <Type>Mixed</Type>
+  <Class>Working</Class>
+  <Population>Dense</Population>
+  <CrimeLevel>High</CrimeLevel>
+  <Crimes>
+    <Robbery>0</Robbery>
+    <Property>0</Property>
+    <DrugActivity>0</DrugActivity>
+    <Disturbance>0</Disturbance>
+    <Statutory>0</Statutory>
+    <Traffic>100</Traffic>
+    <Violent>0</Violent>
+  </Crimes>
+  <Locations>
+    <Homes>
+    </Homes>
+    <Stores>
+    </Stores>
+    <SideOfRoad>
+      <SpawnPoint X="417.3199" Y="-1378.427" Z="29.43106" heading="50.81552" />
+      <SpawnPoint X="40.07463" Y="-1357.178" Z="28.93604" heading="91.36675" />
+      <SpawnPoint X="-13.6328" Y="-1355.007" Z="28.9059" heading="89.38146" />
+      <SpawnPoint X="-91.42473" Y="-1291.281" Z="28.90424" heading="359.8954" />
+    </SideOfRoad>
+  </Locations>
+</STRAW>

@@ -1,0 +1,42 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- https://gta.fandom.com/wiki/La_Puerta -->
+<LOSPUER>
+  <Name>La Puerta</Name>
+  <Size>Medium</Size>
+  <Type>Industrial</Type>
+  <Class>Working</Class>
+  <Population>Moderate</Population>
+  <CrimeLevel>Low</CrimeLevel>
+  <Crimes>
+    <Robbery>0</Robbery>
+    <Property>0</Property>
+    <DrugActivity>0</DrugActivity>
+    <Disturbance>0</Disturbance>
+    <Statutory>0</Statutory>
+    <Traffic>100</Traffic>
+    <Violent>0</Violent>
+  </Crimes>
+  <Locations>
+    <Homes>
+    </Homes>
+    <Stores>
+    </Stores>
+    <SideOfRoad>
+      <SpawnPoint X="-657.8961" Y="-1383.699" Z="10.26912" heading="180.5578" />
+      <SpawnPoint X="-825.9415" Y="-1715.502" Z="32.80603" heading="124.0214" />
+      <SpawnPoint X="-852.8828" Y="-2034.954" Z="27.47351" heading="238.9382" />
+      <SpawnPoint X="-740.6782" Y="-1878.979" Z="26.86512" heading="196.6002" />
+      <SpawnPoint X="-945.4644" Y="-1816.567" Z="19.43041" heading="316.7983" />
+      <SpawnPoint X="-747.4651" Y="-1596.623" Z="14.10588" heading="315.626" />
+      <SpawnPoint X="-637.4694" Y="-1387.105" Z="10.21354" heading="357.1029" />
+      <SpawnPoint X="-338.9534" Y="-1471.684" Z="30.34176" heading="180.0779" />
+      <SpawnPoint X="-356.2729" Y="-1620.107" Z="19.33241" heading="159.5053" />
+      <SpawnPoint X="-439.0206" Y="-1767.217" Z="20.17466" heading="111.1644" />
+      <SpawnPoint X="-321.2016" Y="-1841.528" Z="23.86377" heading="257.8238" />
+      <SpawnPoint X="-473.5977" Y="-1863.576" Z="17.57071" heading="104.8539" />
+      <SpawnPoint X="-618.1592" Y="-1885.992" Z="29.26057" heading="86.39082" />
+      <SpawnPoint X="-509.1594" Y="-1950.435" Z="16.92199" heading="319.748" />
+      <SpawnPoint X="-535.1617" Y="-1930.524" Z="16.94603" heading="136.6033" />
+    </SideOfRoad>
+  </Locations>
+</LOSPUER>

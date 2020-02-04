@@ -2016,7 +2016,36 @@
       <Violent>0</Violent>
     </Crimes>
     <Locations>
-      <Homes></Homes>
+      <Homes>
+        <Home position="1524.96753, 3737.92163, 34.5160866; 207.196609">
+          <Address>3569 Marina Dr</Address>
+          <Postal>852</Postal>
+          <Type>House</Type>
+          <Class>Working</Class>
+          <Flags />
+          <Points>
+            <SpawnPoint heading="261.698944" id="FrontDoor" X="-7.87492132" Y="409.1129" Z="120.12693" />
+            <SpawnPoint heading="28.8175945" id="BackDoor" X="10.2334747" Y="395.504028" Z="120.12677" />
+            <SpawnPoint heading="315.7809" id="BackYard" X="20.77435" Y="398.077057" Z="119.4989" />
+            <SpawnPoint heading="350.594482" id="FrontYard" X="-17.06941" Y="417.3557" Z="123.187141" />
+            <SpawnPoint heading="77.903" id="Victim1" X="-7.732721" Y="408.550964" Z="120.127014" />
+            <SpawnPoint heading="124.11602" id="Victim2" X="-8.22527" Y="410.230377" Z="120.127014" />
+            <SpawnPoint heading="283.200562" id="Police1" X="-10.0104036" Y="408.559479" Z="120.127014" />
+            <SpawnPoint heading="318.646881" id="Police2" X="-9.649359" Y="407.081177" Z="120.127" />
+            <SpawnPoint heading="187.980118" id="Suspect1" X="-10.2765121" Y="416.532928" Z="120.127" />
+            <SpawnPoint heading="332.6753" id="Police3" X="-10.4751835" Y="414.650635" Z="120.127" />
+            <SpawnPoint heading="51.7959824" id="Suspect2" X="-8.175178" Y="415.2397" Z="120.127" />
+            <SpawnPoint heading="100.383385" id="Hiding1" X="-2.686531" Y="417.030823" Z="120.127" />
+            <SpawnPoint heading="205.234131" id="Hiding2" X="20.7041168" Y="411.8739" Z="119.498863" />
+            <SpawnPoint heading="189.956192" id="SafeDistance" X="9.592363" Y="379.6775" Z="112.279007" />
+            <SpawnPoint heading="6.035604" id="ResidentCar2" X="17.85869" Y="374.598" Z="111.937" />
+            <SpawnPoint heading="5.243374" id="ResidentCar1" X="13.4041319" Y="376.674164" Z="111.806923" />
+            <SpawnPoint heading="63.7046242" id="SideOfStreet1" X="6.113579" Y="377.672363" Z="111.685585" />
+            <SpawnPoint heading="63.0549164" id="SideOfStreet2" X="-1.28833258" Y="381.421631" Z="111.781631" />
+            <SpawnPoint heading="62.6360054" id="SideOfStreet3" X="-8.664586" Y="385.20932" Z="111.921135" />
+          </Points>
+        </Home>
+      </Homes>
       <Stores></Stores>
       <SideOfRoad>
         <SpawnPoint X="1758.661" Y="3538.26" Z="35.78361" heading="299.7389" />

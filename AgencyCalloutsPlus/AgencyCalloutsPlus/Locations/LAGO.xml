@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- https://gta.fandom.com/wiki/Lago_Zancudo -->
+<LAGO>
+  <Name>Lago Zancudo</Name>
+  <Size>Medium</Size>
+  <Type>Rural</Type>
+  <Class>Working</Class>
+  <Population>None</Population>
+  <CrimeLevel>VeryLow</CrimeLevel>
+  <Crimes>
+    <Robbery>0</Robbery>
+    <Property>0</Property>
+    <DrugActivity>0</DrugActivity>
+    <Disturbance>0</Disturbance>
+    <Statutory>0</Statutory>
+    <Traffic>0</Traffic>
+    <Violent>0</Violent>
+  </Crimes>
+  <Locations>
+    <Homes>
+    </Homes>
+    <Stores>
+    </Stores>
+    <SideOfRoad>
+      <SpawnPoint X="-2629.063" Y="2912.742" Z="16.4502" heading="171.0384" />
+      <SpawnPoint X="-2692.788" Y="2475.685" Z="16.44287" heading="171.4319" />
+    </SideOfRoad>
+  </Locations>
+</LAGO>

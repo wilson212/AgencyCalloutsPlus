@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- https://gta.fandom.com/wiki/RON_Alternates_Wind_Farm -->
+<WINDF>
+  <Name>RON Alternates Wind Farm</Name>
+  <Size>Large</Size>
+  <Type>Rural</Type>
+  <Class>Working</Class>
+  <Population>None</Population>
+  <CrimeLevel>None</CrimeLevel>
+  <Crimes>
+    <Robbery>0</Robbery>
+    <Property>0</Property>
+    <DrugActivity>0</DrugActivity>
+    <Disturbance>0</Disturbance>
+    <Statutory>0</Statutory>
+    <Traffic>0</Traffic>
+    <Violent>0</Violent>
+  </Crimes>
+  <Locations>
+    <Homes>
+    </Homes>
+    <Stores>
+    </Stores>
+    <SideOfRoad>
+      <SpawnPoint X="2476.985" Y="1296.132" Z="48.83939" heading="329.646" />
+      <SpawnPoint X="2582.865" Y="1646.836" Z="28.1445" heading="90.17572" />
+      <SpawnPoint X="2547.538" Y="2103.621" Z="19.32726" heading="355.7367" />
+      <SpawnPoint X="2579.974" Y="2623.6" Z="36.76326" heading="20.09404" />
+    </SideOfRoad>
+  </Locations>
+</WINDF>

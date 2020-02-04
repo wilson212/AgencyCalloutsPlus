@@ -1,0 +1,33 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- https://gta.fandom.com/wiki/Davis -->
+<DAVIS>
+  <Name>Davis</Name>
+  <Size>Small</Size>
+  <Type>Residential</Type>
+  <Class>Lower</Class>
+  <Population>Dense</Population>
+  <CrimeLevel>High</CrimeLevel>
+  <Crimes>
+    <Robbery>0</Robbery>
+    <Property>0</Property>
+    <DrugActivity>0</DrugActivity>
+    <Disturbance>0</Disturbance>
+    <Statutory>0</Statutory>
+    <Traffic>100</Traffic>
+    <Violent>0</Violent>
+  </Crimes>
+  <Locations>
+    <Homes>
+    </Homes>
+    <Stores>
+    </Stores>
+    <SideOfRoad>
+      <SpawnPoint X="106.024" Y="-1735.669" Z="28.6365" heading="230.662" />
+      <SpawnPoint X="145.314" Y="-1796.092" Z="28.25339" heading="139.3328" />
+      <SpawnPoint X="86.80068" Y="-1931.629" Z="20.39214" heading="219.2866" />
+      <SpawnPoint X="24.72922" Y="-1866.857" Z="22.87169" heading="50.63408" />
+      <SpawnPoint X="-18.04709" Y="-1805.859" Z="26.58916" heading="321.396" />
+      <SpawnPoint X="265.2673" Y="-1560.085" Z="28.80141" heading="301.6408" />
+    </SideOfRoad>
+  </Locations>
+</DAVIS>

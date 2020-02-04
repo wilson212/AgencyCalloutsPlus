@@ -64,7 +64,7 @@ namespace AgencyCalloutsPlus
             if (Descriptions.Length == 0) return null;
 
             int count = Descriptions.Length - 1;
-            int index = new CryptoRandom().Next(0, count);
+            int index = new Random().Next(0, count);
             return Descriptions[index];
         }
     }

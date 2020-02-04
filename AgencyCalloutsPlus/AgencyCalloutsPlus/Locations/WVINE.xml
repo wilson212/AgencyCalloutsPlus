@@ -1,0 +1,39 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- https://gta.fandom.com/wiki/West_Vinewood-->
+<WVINE>
+  <Name>West Vinewood</Name>
+  <Size>Medium</Size>
+  <Type>Mixed</Type>
+  <Class>UpperMiddle</Class>
+  <Population>Dense</Population>
+  <CrimeLevel>Low</CrimeLevel>
+  <Crimes>
+    <Robbery>0</Robbery>
+    <Property>0</Property>
+    <DrugActivity>0</DrugActivity>
+    <Disturbance>0</Disturbance>
+    <Statutory>0</Statutory>
+    <Traffic>100</Traffic>
+    <Violent>0</Violent>
+  </Crimes>
+  <Locations>
+    <Homes>
+    </Homes>
+    <Stores>
+    </Stores>
+    <SideOfRoad>
+      <SpawnPoint X="-755.9545" Y="155.7549" Z="64.3354" heading="187.7457" />
+      <SpawnPoint X="-721.737" Y="219.7614" Z="77.3844" heading="296.6205" />
+      <SpawnPoint X="-615.0937" Y="252.8152" Z="81.41608" heading="265.4273" />
+      <SpawnPoint X="-546.9728" Y="204.5353" Z="76.41225" heading="176.5449" />
+      <SpawnPoint X="-493.2509" Y="122.4216" Z="63.28051" heading="267.9423" />
+      <SpawnPoint X="-395.8216" Y="69.566" Z="57.91032" heading="180.9019" />
+      <SpawnPoint X="23.75743" Y="366.1557" Z="112.2589" heading="55.28677" />
+      <SpawnPoint X="-131.3214" Y="398.2202" Z="112.9052" heading="153.8072" />
+      <SpawnPoint X="-91.44661" Y="293.6624" Z="106.2019" heading="244.5741" />
+      <SpawnPoint X="-269.7622" Y="404.7214" Z="109.7564" heading="104.9358" />
+      <SpawnPoint X="-266.657" Y="431.6216" Z="107.8918" heading="66.77047" />
+      <SpawnPoint X="-433.4655" Y="347.8044" Z="105.6106" heading="278.5556" />
+    </SideOfRoad>
+  </Locations>
+</WVINE>

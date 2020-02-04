@@ -22,7 +22,7 @@ namespace AgencyCalloutsPlus
         public bool ComputerPlusRunning => ComputerPlusAPI.IsRunning;
 
         /// <summary>
-        /// Stores the current <see cref="CalloutScenarioInfo"/>
+        /// Stores the current <see cref="PriorityCall"/>
         /// </summary>
         protected PriorityCall ActiveCall { get; set; }
 

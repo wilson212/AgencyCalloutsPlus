@@ -58,10 +58,12 @@
 	- FelonyStop
 	- HotPursuit
 	- PrisonerTransportRequired
+	- OfficerUnderFire
 - AssaultAndBattery
 	- BarFight
 	- PublicPhysicalAltercationFriends
 	- PhyisicalAltercationCheating
+	- BeingHeldAtGunpoint
 - SexualAssault
 	- Rape
 	- StatutoryRape
@@ -87,3 +89,4 @@
 	- MissingPersonReport
 	- ChildRunawayReport
 	- Kidnapping
+	- AbandonedVehicle

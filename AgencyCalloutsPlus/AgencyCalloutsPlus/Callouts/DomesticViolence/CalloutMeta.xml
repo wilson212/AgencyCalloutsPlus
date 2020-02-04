@@ -1,0 +1,32 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<CalloutMeta>
+  <!-- 
+    A list of agency types that can take this type of callout, and the chances of 
+    that callout spawning. A higher probability, means a higher chance compared to
+    the other callouts against this AgencyType.
+    
+    Total Probability = (CalloutMeta.xml -> Agencies -> Agency[AgencyType][probability]) * (Locations.xml -> ZoneName -> Crimes[CrimeType].Value)
+  -->
+  <Agencies>
+    <Agency type="CityPolice" probability="10" />
+    <Agency type="CountySheriff" probability="10" />
+  </Agencies>
+  <CalloutType>Disturbance</CalloutType>
+  <Scenarios>
+    <DomesticArguingOnly probability="5">
+      <Dispatch>
+        <!-- Scanner Audio for call. Unit Division-UnitType-Beat will prefix this message -->
+        <Scanner>WE_HAVE_01 CRIME_TRAFFIC_ALERT IN_OR_ON_POSITION</Scanner>
+        <!-- Callout Details are for ComputerPlus -->
+        <Description>
+          <Meta source="Citizen">We have received multiple reports of a vehicle collision near {{location}}. No medical response was requested. Please respond code 2.</Meta>
+          <Meta source="Citizen">A concerned citizen has called police stating that he witnessed a vehicle collision near {{location}}. Caller indicated that there does not seem to be any injuries. Please respond code 2.</Meta>
+        </Description>
+        <IncidentType abbreviation="DIST">Disturbance</IncidentType>
+        <Priority>3</Priority>
+        <Respond>Code2</Respond>
+        <LocationType>SideOfRoad</LocationType>
+      </Dispatch>
+    </DomesticArguingOnly>
+  </Scenarios>
+</CalloutMeta>

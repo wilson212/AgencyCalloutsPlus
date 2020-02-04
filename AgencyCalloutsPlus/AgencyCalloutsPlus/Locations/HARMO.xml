@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- https://gta.fandom.com/wiki/Harmony -->
+<HARMO>
+  <Name>Harmony</Name>
+  <Size>Small</Size>
+  <Type>Mixed</Type>
+  <Class>Lower</Class>
+  <Population>Dense</Population>
+  <CrimeLevel>None</CrimeLevel>
+  <Crimes>
+    <Robbery>0</Robbery>
+    <Property>0</Property>
+    <DrugActivity>0</DrugActivity>
+    <Disturbance>0</Disturbance>
+    <Statutory>0</Statutory>
+    <Traffic>0</Traffic>
+    <Violent>0</Violent>
+  </Crimes>
+  <Locations>
+    <Homes>
+    </Homes>
+    <Stores>
+    </Stores>
+    <SideOfRoad>
+      <SpawnPoint X="257.7659" Y="2734.152" Z="43.67854" heading="193.9183" />
+      <SpawnPoint X="347.1451" Y="2523.22" Z="44.34873" heading="224.1584" />
+    </SideOfRoad>
+  </Locations>
+</HARMO>

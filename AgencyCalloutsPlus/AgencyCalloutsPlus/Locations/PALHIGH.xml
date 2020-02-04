@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- https://gta.fandom.com/wiki/Palomino_Highlands -->
+<PALHIGH>
+  <Name>Palomino Highlands</Name>
+  <Size>VeryLarge</Size>
+  <Type>Rural</Type>
+  <Class>Working</Class>
+  <Population>None</Population>
+  <CrimeLevel>None</CrimeLevel>
+  <Crimes>
+    <Robbery>0</Robbery>
+    <Property>0</Property>
+    <DrugActivity>0</DrugActivity>
+    <Disturbance>0</Disturbance>
+    <Statutory>0</Statutory>
+    <Traffic>0</Traffic>
+    <Violent>0</Violent>
+  </Crimes>
+  <Locations>
+    <Homes>
+    </Homes>
+    <Stores>
+    </Stores>
+    <SideOfRoad>
+      <SpawnPoint X="2497.778" Y="-541.6506" Z="67.8672" heading="223.7615" />
+      <SpawnPoint X="2371.445" Y="-680.8045" Z="63.09755" heading="91.69623" />
+    </SideOfRoad>
+  </Locations>
+</PALHIGH>

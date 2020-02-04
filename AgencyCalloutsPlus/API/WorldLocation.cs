@@ -1,11 +1,13 @@
 ﻿using Rage;
+using System.Collections.Generic;
+using System.Xml;
 
 namespace AgencyCalloutsPlus.API
 {
     /// <summary>
     /// Represents a <see cref="Vector3"/> position within the GTA V world
     /// </summary>
-    public class GameLocation
+    public abstract class WorldLocation
     {
         /// <summary>
         /// Gets the <see cref="Vector3"/> position of this location
@@ -15,13 +17,18 @@ namespace AgencyCalloutsPlus.API
         /// <summary>
         /// Gets the address to be used in Computer+
         /// </summary>
-        public string Address { get; set; }
+        public string Address { get; internal set; }
 
         /// <summary>
-        /// Creates a new instance of <see cref="GameLocation"/>
+        /// Gets the postal address if any
+        /// </summary>
+        public int Postal { get; internal set; }
+
+        /// <summary>
+        /// Creates a new instance of <see cref="WorldLocation"/>
         /// </summary>
         /// <param name="position"></param>
-        public GameLocation(Vector3 position)
+        internal WorldLocation(Vector3 position)
         {
             this.Position = position;
         }

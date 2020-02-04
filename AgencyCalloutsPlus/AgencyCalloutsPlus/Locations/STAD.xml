@@ -1,0 +1,30 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- https://gta.fandom.com/wiki/Maze_Bank_Arena -->
+<STAD>
+  <Name>Maze Bank Arena</Name>
+  <Size>VerySmall</Size>
+  <Type>Recreation</Type>
+  <Class>LowerMiddle</Class>
+  <Population>Dense</Population>
+  <CrimeLevel>Low</CrimeLevel>
+  <Crimes>
+    <Robbery>0</Robbery>
+    <Property>0</Property>
+    <DrugActivity>0</DrugActivity>
+    <Disturbance>0</Disturbance>
+    <Statutory>0</Statutory>
+    <Traffic>100</Traffic>
+    <Violent>0</Violent>
+  </Crimes>
+  <Locations>
+    <Homes>
+    </Homes>
+    <Stores>
+    </Stores>
+    <SideOfRoad>
+      <SpawnPoint X="-156.0119" Y="-2042.504" Z="22.51941" heading="344.4273" />
+      <SpawnPoint X="-118.8373" Y="-1944.846" Z="22.37359" heading="51.44443" />
+      <SpawnPoint X="-189.7102" Y="-1804.4" Z="29.52428" heading="299.6346" />
+    </SideOfRoad>
+  </Locations>
+</STAD>
