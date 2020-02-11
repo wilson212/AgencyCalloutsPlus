@@ -1,5 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<!-- https://gta.fandom.com/wiki/Sandy_Shores -->
+<!-- 
+  Reference: https://gta.fandom.com/wiki/Sandy_Shores 
+  
+  Sandy Shores does not have many house numbers
+-->
 <SANDY>
   <Name>Sandy Shores</Name>
   <Size>Large</Size>

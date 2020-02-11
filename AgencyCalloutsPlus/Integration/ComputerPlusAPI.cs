@@ -20,7 +20,7 @@ namespace AgencyCalloutsPlus.Integration
         {
             if (!IsRunning)
             {
-                IsRunning = GlobalFunctions.IsLSPDFRPluginRunning("ComputerPlus", new Version("1.4.1.1"));
+                IsRunning = Globals.IsLSPDFRPluginRunning("ComputerPlus", new Version("1.4.1.1"));
                 if (IsRunning)
                 {
                     Functions.RegisterInterface("Computer Aided Dispatch", "Brexin212", () => new CADMainGwenForm());

@@ -1,4 +1,5 @@
-﻿using AgencyCalloutsPlus.Extensions;
+﻿using AgencyCalloutsPlus.CrimeGenerator;
+using AgencyCalloutsPlus.Extensions;
 using LSPD_First_Response.Mod.API;
 using LSPD_First_Response.Mod.Callouts;
 using Rage;
@@ -38,39 +39,31 @@ namespace AgencyCalloutsPlus.API
         private static CryptoRandom Randomizer { get; set; }
 
         /// <summary>
-        /// Contains the last Call ID used
-        /// </summary>
-        private static int NextCallId { get; set; }
-
-        /// <summary>
         /// Gets the player's current selected <see cref="Agency"/>
         /// </summary>
         public static Agency PlayerAgency { get; private set; }
 
         /// <summary>
+        /// 
+        /// </summary>
+        internal static RegionCrimeGenerator CrimeGenerator { get; set; }
+
+        internal static int ZoneCount => CrimeGenerator.ZoneCount;
+
+        /// <summary>
         /// Gets the overall crime level definition for the current <see cref="Agency"/>
         /// </summary>
-        public static CrimeLevel OverallCrimeLevel { get; private set; }
-
-        /// <summary>
-        /// Containts a range of time between calls.
-        /// </summary>
-        private static Range<int> CallTimerRange { get; set; }
-
-        /// <summary>
-        /// GameFiber containing the CallCenter functions
-        /// </summary>
-        private static GameFiber CallFiber { get; set; }
+        public static CrimeLevel AverageCrimeLevel { get; private set; }
 
         /// <summary>
         /// GameFiber containing the AI Police and Dispatching functions
         /// </summary>
-        private static GameFiber PoliceFiber { get; set; }
+        private static GameFiber DispatchFiber { get; set; }
 
         /// <summary>
         /// The <see cref="GameFiber"/> that runs the logic for all the AI units
         /// </summary>
-        private static GameFiber AILogicFiber { get; set; }
+        private static GameFiber AISimulationFiber { get; set; }
 
         /// <summary>
         /// Temporary: Containts a list of police vehicles
@@ -128,7 +121,6 @@ namespace AgencyCalloutsPlus.API
 
             // Create next random call ID
             Randomizer = new CryptoRandom();
-            NextCallId = Randomizer.Next(21234, 34567);
         }
 
         #region Public API Methods
@@ -195,6 +187,44 @@ namespace AgencyCalloutsPlus.API
 
             int index = priority - 1;
             return CallQueue[index].ToArray();
+        }
+
+        /// <summary>
+        /// Invokes a random callout from the CallQueue to the player
+        /// </summary>
+        /// <returns></returns>
+        public static bool InvokeCalloutForPlayer()
+        {
+            if (CanInvokeCalloutForPlayer())
+            {
+                // Cache player location
+                var location = Game.LocalPlayer.Character.Position;
+
+                // Try and find a call for the player
+                for (int i = 0; i < 4; i++)
+                {
+                    // Get call list
+                    var calls = CallQueue[i];
+                    if (calls.Count == 0)
+                        continue;
+
+                    // Filter calls
+                    var list = calls.Where(x => x.NeedsMoreOfficers).ToArray();
+                    if (list.Length == 0)
+                        continue;
+
+                    // Order calls by distance from player
+                    var call = list.OrderBy(x => (x.CallDeclinedByPlayer) ? 1 : 0)
+                        .ThenBy(x => x.Location.Position.DistanceTo(location))
+                        .FirstOrDefault();
+
+                    // Invoke callout
+                    InvokeForPlayer = call;
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -366,6 +396,20 @@ namespace AgencyCalloutsPlus.API
             }
         }
 
+        /// <summary>
+        /// Adds the specified <see cref="PriorityCall"/> to the Dispatch Queue
+        /// </summary>
+        /// <param name="call"></param>
+        internal static void RegisterCall(PriorityCall call)
+        {
+            // Add call to priority Queue
+            lock (_lock)
+            {
+                CallQueue[call.Priority - 1].Add(call);
+                Log.Debug($"Dispatch: Added Call to Queue '{call.ScenarioInfo.Name}' in zone '{call.Zone.FriendlyName}'");
+            }
+        }
+
         #endregion Public API Callout Methods
 
         #region Internal Callout Methods
@@ -440,80 +484,64 @@ namespace AgencyCalloutsPlus.API
             try
             {
                 // Get players current agency
-                Agency agency = Agency.GetCurrentPlayerAgency();
-                if (agency == null)
+                Agency oldAgency = PlayerAgency;
+                PlayerAgency = Agency.GetCurrentPlayerAgency();
+                if (PlayerAgency == null)
                 {
-                    Log.Error("AgencyCalloutDispatcher.StartDuty(): Player Agency is null");
+                    PlayerAgency = oldAgency;
+                    Log.Error("Dispatch.StartDuty(): Player Agency is null");
                     return false;
                 }
 
-                // Initialize data
-                agency.InitializeData();
+                // End current crime generation if running
+                if (CrimeGenerator?.IsRunning ?? false)
+                    CrimeGenerator.End();
 
                 // Did we change agency type?
-                if (PlayerAgency == null || agency.AgencyType != PlayerAgency.AgencyType)
+                if (oldAgency == null || PlayerAgency.AgencyType != oldAgency.AgencyType)
                 {
+                    // Reload scenarios for updated probabilities
                     LoadScenarios();
-                    PlayerAgency = agency;
 
+                    // Clear AI units
+                    DisposeAIUnits();
                     OfficerUnits = new List<OfficerUnit>(PlayerAgency.ActualPatrols);
                 }
 
-                // Clear all calls in the queue if we changed agency
-                if (!agency.ScriptName.Equals(PlayerAgency.ScriptName))
+                // Did we change Agencies?
+                if (oldAgency == null || !PlayerAgency.ScriptName.Equals(oldAgency.ScriptName))
                 {
+                    // Clear calls
                     foreach (var callList in CallQueue)
-                    {
                         callList.Clear();
-                    }
 
-                    PlayerAgency = agency;
-
-                    // Dispose of old officer AI units
-                    if (OfficerUnits.Count != 0)
-                    {
-                        foreach (var officer in OfficerUnits)
-                            officer.Dispose();
-
-                        OfficerUnits = new List<OfficerUnit>(PlayerAgency.ActualPatrols);
-                    }
+                    // Clear old police units
+                    DisposeAIUnits();
+                    OfficerUnits = new List<OfficerUnit>(PlayerAgency.ActualPatrols);
                 }
 
+                // Here we allow the Agency itself to specify which crime 
+                // Generator we are to use
+                CrimeGenerator = PlayerAgency.CreateCrimeGenerator();
+
                 // Debugging
-                Log.Debug("Loaded with the following Agency data:");
-                Log.Debug($"\t\tAgency Name: {agency.FriendlyName}");
-                Log.Debug($"\t\tAgency Staff Level: {agency.StaffLevel}");
-                Log.Debug($"\t\tAgency Zone Count: {agency.ZoneCount}");
-                Log.Debug($"\t\tAgency Ideal Patrols: {agency.OptimumPatrols}");
-                Log.Debug($"\t\tAgency Actual Patrols: {agency.ActualPatrols}");
-                Log.Debug($"\t\tAgency Overall Crime Level: {agency.OverallCrimeLevel}");
-                Log.Debug($"\t\tAgency Max Crime Level: {agency.MaxCrimeLevel}");
+                Log.Debug("Starting duty with the following Agency data:");
+                Log.Debug($"\t\tAgency Name: {PlayerAgency.FriendlyName}");
+                Log.Debug($"\t\tAgency Staff Level: {PlayerAgency.StaffLevel}");
+                Log.Debug($"\t\tAgency Actual Patrols: {PlayerAgency.ActualPatrols}");
+                Log.Debug("Starting duty with the following Region data:");
+                Log.Debug($"\t\tRegion Zone Count: {CrimeGenerator.ZoneCount}");
+                Log.Debug($"\t\tRegion Average Crime Level: {CrimeGenerator.AverageCrimeIndex}");
+                Log.Debug($"\t\tRegion Max Crime Level: {CrimeGenerator.MaxCrimeIndex}");
+                Log.Debug($"\t\tRegion Ideal Patrols: {CrimeGenerator.OptimumPatrols}");
+                Log.Debug($"\t\tRegion Crime Definition: {CrimeGenerator.AverageCrimeLevel}");
+                Log.Debug($"\t\tRegion Crimes Per Hour (Average): {CrimeGenerator.AverageCallsPerHour}");
 
-                // Determine our overall crime level in this agencies jurisdiction
-                double percent = (agency.OverallCrimeLevel / (double)agency.MaxCrimeLevel);
-                int val = (int)Math.Ceiling(percent * (int)CrimeLevel.VeryHigh);
-                OverallCrimeLevel = (CrimeLevel)val;
-                Log.Debug($"\t\tAgency Crime Definition: {OverallCrimeLevel}");
-
-                // Fill Call Queue
-                // Overall crime level is number of calls per 4 hours ?
-                var callsPerHour = (int)(agency.OverallCrimeLevel / 4d);
-                Log.Debug($"\t\tCalls Per Hour (Average): {callsPerHour}");
-
-                // 5s real life time equals 2.5m in game
-                // Timescale is 30:1 (30 seconds in game equals 1 second in real life)
-                // Every hour in game is 2 minutes in real life
-                var hourGameTimeToSecondsRealTime = (60d / TimeScale.GameTimeScale) * 60;
-                var callsPerSecondRT = (callsPerHour / hourGameTimeToSecondsRealTime);
+                var hourGameTimeToSecondsRealTime = (60d / Settings.TimeScale) * 60;
+                var callsPerSecondRT = (CrimeGenerator.AverageCallsPerHour / hourGameTimeToSecondsRealTime);
                 var realSecondsPerCall = (1d / callsPerSecondRT);
                 var milliseconds = (int)(realSecondsPerCall * 1000);
                 Log.Debug($"\t\tReal Seconds Per Call (Average): {realSecondsPerCall}");
-
-                // Create call timer range
-                CallTimerRange = new Range<int>(
-                    (int)(milliseconds / 2d),
-                    (int)(milliseconds * 1.5d)
-                );
 
                 // Start timer
                 BeginCallTimer();
@@ -529,6 +557,8 @@ namespace AgencyCalloutsPlus.API
 
         internal static void StopDuty()
         {
+            // End crime generation
+            CrimeGenerator?.End();
             StopCallTimer();   
         }
 
@@ -542,14 +572,14 @@ namespace AgencyCalloutsPlus.API
         /// </summary>
         private static void StopCallTimer()
         {
-            if (CallFiber != null && (CallFiber.IsAlive || CallFiber.IsSleeping))
+            if (AISimulationFiber != null && (AISimulationFiber.IsAlive || AISimulationFiber.IsSleeping))
             {
-                CallFiber.Abort();
+                AISimulationFiber.Abort();
             }
 
-            if (PoliceFiber != null && (PoliceFiber.IsAlive || PoliceFiber.IsSleeping))
+            if (DispatchFiber != null && (DispatchFiber.IsAlive || DispatchFiber.IsSleeping))
             {
-                PoliceFiber.Abort();
+                DispatchFiber.Abort();
             }
         }
 
@@ -562,23 +592,6 @@ namespace AgencyCalloutsPlus.API
             // Always call Stop first!
             StopCallTimer();
 
-            // Start fresh
-            CallFiber = GameFiber.StartNew(delegate 
-            {
-                // While we are on duty accept calls
-                while (Main.OnDuty)
-                {
-                    GenerateCall();
-
-                    // Determine random time till next call
-                    var time = Randomizer.Next(CallTimerRange.Minimum, CallTimerRange.Maximum);
-                    Log.Debug($"Starting next call in {time}ms");
-
-                    // Wait
-                    GameFiber.Wait(time);
-                }
-            });
-
             // To be replaced later @todo
             if (Settings.EnableFullSimulation)
             {
@@ -586,16 +599,16 @@ namespace AgencyCalloutsPlus.API
                 for (int i = 0; i < PlayerAgency.ActualPatrols - 1; i++)
                 {
                     // Spawn random zone to spread the units out
-                    ZoneInfo zone = PlayerAgency.GetNextRandomCrimeZone();
+                    ZoneInfo zone = CrimeGenerator.GetNextRandomCrimeZone();
                     var sp = zone.GetRandomSideOfRoadLocation();
                     while (sp == null)
                     {
-                        zone = PlayerAgency.GetNextRandomCrimeZone();
+                        zone = CrimeGenerator.GetNextRandomCrimeZone();
                         sp = zone.GetRandomSideOfRoadLocation();
                     }
 
                     // Create AI vehicle
-                    var car = PlayerAgency.SpawnPoliceVehicleOfType(PatrolType.LocalPatrol, sp);
+                    var car = PlayerAgency.GetRandomPoliceVehicle(PatrolType.Marked, sp);
                     car.Model.LoadAndWait();
                     car.IsPersistent = true;
 
@@ -621,11 +634,11 @@ namespace AgencyCalloutsPlus.API
                 for (int i = 0; i < PlayerAgency.ActualPatrols - 1; i++)
                 {
                     // Spawn random zone to spread the units out
-                    ZoneInfo zone = PlayerAgency.GetNextRandomCrimeZone();
+                    ZoneInfo zone = CrimeGenerator.GetNextRandomCrimeZone();
                     var sp = zone.GetRandomSideOfRoadLocation();
                     while (sp == null)
                     {
-                        zone = PlayerAgency.GetNextRandomCrimeZone();
+                        zone = CrimeGenerator.GetNextRandomCrimeZone();
                         sp = zone.GetRandomSideOfRoadLocation();
                     }
 
@@ -640,24 +653,6 @@ namespace AgencyCalloutsPlus.API
                     // Yield
                     GameFiber.Yield();
                 }
-
-                // Run virtual AI in thier own thread
-                AILogicFiber = GameFiber.StartNew(delegate
-                {
-                    // While on duty main loop
-                    while (Main.OnDuty)
-                    {
-                        var date = World.DateTime;
-
-                        // Start duty for each officer
-                        foreach (var officer in OfficerUnits)
-                        {
-                            officer.OnTick(date);
-                        }
-
-                        GameFiber.Wait(1000);
-                    }
-                });
             }
 
             // Add player unit
@@ -665,32 +660,108 @@ namespace AgencyCalloutsPlus.API
             PlayerUnit.StartDuty();
             OfficerUnits.Add(PlayerUnit);
 
-            PoliceFiber = GameFiber.StartNew(delegate
-            {
-                // Wait
-                GameFiber.Wait(3000);
-
-                // While we are on duty accept calls
-                while (Main.OnDuty)
-                {
-                    try
-                    {
-                        DoPoliceChecks();
-                    }
-                    catch (Exception e)
-                    {
-                        Log.Exception(e);
-                    }
-
-                    // Wait
-                    GameFiber.Wait(2000);
-                }
-            });
+            // Start Dispatching logic fibers
+            CrimeGenerator.Begin();
+            AISimulationFiber = GameFiber.StartNew(ProcessAISimulationLogic);
+            DispatchFiber = GameFiber.StartNew(ProcessDispatchLogic);
         }
 
         #endregion Timer Methods
 
         #region GameFiber methods
+
+        private static void ProcessDispatchLogic()
+        {
+            // Wait
+            GameFiber.Wait(3000);
+
+            // While we are on duty accept calls
+            while (Main.OnDuty)
+            {
+                try
+                {
+                    DoPoliceChecks();
+                }
+                catch (Exception e)
+                {
+                    Log.Exception(e);
+                }
+
+                // Wait
+                GameFiber.Wait(2000);
+            }
+        }
+
+        /// <summary>
+        /// Processes the Logic for AI Simulation
+        /// </summary>
+        private static void ProcessAISimulationLogic()
+        {
+            // While on duty main loop
+            while (Main.OnDuty)
+            {
+                // If simulation mode is disabled, call OnTick for
+                // the VirtualAIUnit(s)
+                if (!Settings.EnableFullSimulation)
+                {
+                    var date = World.DateTime;
+
+                    // Start duty for each officer
+                    foreach (var officer in OfficerUnits)
+                    {
+                        officer.OnTick(date);
+                    }
+                }
+                else
+                {
+                    // Lock the call Queue and draw scenes the player
+                    // is close enough to see
+                    lock (_lock)
+                    {
+                        // Grab player location just once
+                        var location = Game.LocalPlayer.Character.Position;
+
+                        // Loop through each call
+                        foreach (var calls in CallQueue)
+                        {
+                            foreach (var call in calls)
+                            {
+                                // Is player primary? then skip...
+                                if (call.PrimaryOfficer == PlayerUnit)
+                                    continue;
+
+                                // Is AI on scene?
+                                if (call.CallStatus != CallStatus.OnScene)
+                                    continue;
+
+                                // Can the player even see this?
+                                bool isInRange = call.AISimulation.IsPlayerInRange(location);
+                                if (!isInRange && !call.AISimulation.IsPlaying)
+                                    continue;
+
+                                // If the simlation is not playing, but should be...
+                                if (!call.AISimulation.IsPlaying)
+                                {
+                                    // Begin playing!
+                                }
+                                // If player is out of range
+                                else if (!isInRange)
+                                {
+                                    // Stop playing
+                                }
+                                else
+                                {
+                                    // Call Process
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Stop this thread for one second
+                GameFiber.Wait(1000);
+            }
+        }
 
         /// <summary>
         /// Main thread loop for Dispatch handling calls and player activity
@@ -736,21 +807,14 @@ namespace AgencyCalloutsPlus.API
                 // Itterate through each call priority Queue
                 for (int priorityIndex = 0; priorityIndex < 4; priorityIndex++)
                 {
+                    // If we have no calls
+                    if (CallQueue[priorityIndex].Count == 0)
+                        continue;
+
                     // Get an updated list of units that can be pulled for calls
                     availableOfficers = GetAvailableUnitsByCallPriority(priorityIndex + 1);
-
-                    // Stop if we have no available officers or calls
-                    if (availableOfficers.Count == 0 || CallQueue[priorityIndex].Count == 0)
-                    {
-                        // Very noisy
-                        //Log.Debug($"Failed to dispacth {CallQueue[priorityIndex].Count} priority {priorityIndex + 1} calls: {availableOfficers.Count} officers available");
+                    if (availableOfficers.Count == 0)
                         continue;
-                    }
-                    else
-                    {
-                        // Very noisy
-                        //Log.Debug($"Attempting to dispatch {CallQueue[priorityIndex].Count} priority {priorityIndex + 1} calls: {availableOfficers.Count} officers available");
-                    }
 
                     // Grab open calls
                     var calls = (
@@ -761,46 +825,44 @@ namespace AgencyCalloutsPlus.API
                         ).Take(availableOfficers.Count).ToList();
 
                     // Check priority 1 and 2 calls first and dispatch accordingly
-                    if (priorityIndex < 2)
+                    foreach (var call in calls)
                     {
-                        foreach (var call in calls)
+                        // Check priority 1 and 2 calls first and dispatch accordingly
+                        if (priorityIndex < 2)
                         {
                             // Select closest available officer
                             int officersNeeded = (priorityIndex == 0) ? 3 : 2;
                             var officers = GetClosestAvailableOfficers(availableOfficers, call, officersNeeded);
-                            if (officers != null || officers.Length > 0)
-                            {
-                                // Is player in this list?
-                                var player = officers.Where(x => !x.IsAIUnit).FirstOrDefault();
-                                if (player != null)
-                                {
-                                    // Attempt to Dispatch player as primary to this call
-                                    DispatchUnitToCall(player, call);
-                                    availableOfficers.Remove(player);
-                                }
-                                else
-                                {
-                                    // Dispatch primary AI officer
-                                    DispatchUnitToCall(officers[0], call);
-                                    availableOfficers.Remove(officers[0]);
 
-                                    // Add other units to the call
-                                    for (int i = 1; i < officers.Length - 1; i++)
-                                    {
-                                        // Dispatch
-                                        var officer = officers[i];
-                                        availableOfficers.Remove(officer);
-                                        DispatchUnitToCall(officer, call);
-                                    }
+                            // If we have not officers, stop here
+                            if (officers == null || officers.Length == 0)
+                                break;
+
+                            // Is player in this list?
+                            var player = officers.Where(x => !x.IsAIUnit).FirstOrDefault();
+                            if (player != null)
+                            {
+                                // Attempt to Dispatch player as primary to this call
+                                DispatchUnitToCall(player, call);
+                                availableOfficers.Remove(player);
+                            }
+                            else
+                            {
+                                // Dispatch primary AI officer
+                                DispatchUnitToCall(officers[0], call);
+                                availableOfficers.Remove(officers[0]);
+
+                                // Add other units to the call
+                                for (int i = 1; i < officers.Length - 1; i++)
+                                {
+                                    // Dispatch
+                                    var officer = officers[i];
+                                    availableOfficers.Remove(officer);
+                                    DispatchUnitToCall(officer, call);
                                 }
                             }
                         }
-                    }
-                    else // Priority 3 and 4 calls
-                    {
-                        // Any left over AI should be dispatched to priority 3 and 4 calls
-                        // after the call has sat for awhile
-                        foreach (var call in calls)
+                        else
                         {
                             // Select closest available officer
                             var officer = GetClosestAvailableOfficer(availableOfficers, call);
@@ -811,73 +873,6 @@ namespace AgencyCalloutsPlus.API
                             }
                         }
                     }
-                }
-            }
-        }
-
-        /// <summary>
-        /// Generates a new call and adds it to the dispatch Queue
-        /// </summary>
-        private static void GenerateCall()
-        {
-            // Try to generate a call
-            for (int i = 0; i < Settings.MaxLocationAttempts; i++)
-            {
-                try
-                {
-                    // Spawn a zone in our jurisdiction
-                    ZoneInfo zone = PlayerAgency?.GetNextRandomCrimeZone();
-                    if (zone == null)
-                    {
-                        Log.Debug($"Dispatch: Attempted to pull a zone but zone is null");
-                        continue;
-                    }
-
-                    // Spawn crime type from our spawned zone
-                    CalloutType type = zone.GetNextRandomCrimeType();
-                    if (!ScenarioPool[type].TrySpawn(out CalloutScenarioInfo scenario))
-                    {
-                        Log.Debug($"Dispatch: Unable to pull CalloutType {type} from zone '{zone.FriendlyName}'");
-                        continue;
-                    }
-
-                    // Get a random location!
-                    WorldLocation location = null;
-                    switch (scenario.LocationType)
-                    {
-                        case LocationType.SideOfRoad:
-                            location = zone.GetRandomSideOfRoadLocation();
-                            break;
-                    }
-
-                    // no location?
-                    if (location == null)
-                    {
-                        Log.Debug($"Dispatch: Unable to pull Location type {scenario.LocationType} from zone '{zone.FriendlyName}'");
-                        continue;
-                    }
-
-                    // Create PriorityCall wrapper
-                    var call = new PriorityCall(NextCallId++, scenario)
-                    {
-                        Location = location,
-                        CallStatus = CallStatus.Created,
-                        Zone = zone
-                    };
-
-                    // Add call to priority Queue
-                    lock (_lock)
-                    {
-                        CallQueue[call.Priority - 1].Add(call);
-                        Log.Debug($"Dispatch: Added Call to Queue '{scenario.Name}' in zone '{zone.FriendlyName}'");
-                    }
-
-                    // Stop
-                    break;
-                }
-                catch (Exception ex)
-                {
-                    Log.Exception(ex);
                 }
             }
         }
@@ -995,6 +990,19 @@ namespace AgencyCalloutsPlus.API
         }
 
         #endregion Filter and Order methods
+
+        /// <summary>
+        /// Disposes and clears all AI units
+        /// </summary>
+        private static void DisposeAIUnits()
+        {
+            // Clear old police units
+            if (OfficerUnits != null && OfficerUnits.Count != 0)
+            {
+                foreach (var officer in OfficerUnits)
+                    officer.Dispose();
+            }
+        }
 
         /// <summary>
         /// Loads all of the AgencyCalloutsPlus callouts

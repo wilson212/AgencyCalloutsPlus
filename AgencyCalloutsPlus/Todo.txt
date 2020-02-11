@@ -1,9 +1,22 @@
-﻿ADAC+ Menu [Main Menu]
+﻿AD&C+ Menu [Main Menu]
  - Callout Menu [Callout Name]
 	- Speak to Suspect
  - Dispatch Menu
-	- [info] Available Calls -> 1/2/3/4
 	- Set Status -> option array
+	- Set Role -> option[] { All, Traffic, Crime, Gang, Drugs }
+	- [HighwayPatrol Only] Region -> option[] : Sets which region to patrol in
 	- Request Call
+	- Apply
  - Select Emote -> option array
  - Close
+
+ On Screen text
+ - Current Crime level
+ - In/Out Jurisdiction indicator
+ - Current Officer Status
+ - Number of available calls
+ - Number of available officers
+
+
+
+ AISceneSimulation

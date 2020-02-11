@@ -3,6 +3,7 @@ using Rage;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Xml;
 
 namespace AgencyCalloutsPlus.API
@@ -17,6 +18,11 @@ namespace AgencyCalloutsPlus.API
         /// </summary>
         /// <remarks>[ ZoneScriptName => ZoneInfo class ]</remarks>
         private static Dictionary<string, ZoneInfo> Zones { get; set; }
+
+        /// <summary>
+        /// Containts a hash table of regions, and thier zones
+        /// </summary>
+        private static Dictionary<string, List<string>> RegionZones { get; set; } = new Dictionary<string, List<string>>(16);
 
         /// <summary>
         /// Gets the Zone name
@@ -240,6 +246,11 @@ namespace AgencyCalloutsPlus.API
             return SideOfRoadLocations[rando.Next(0, SideOfRoadLocations.Length - 1)];
         }
 
+        /// <summary>
+        /// Extracts the home locations from the [zoneName].xml
+        /// </summary>
+        /// <param name="catagoryNode"></param>
+        /// <returns></returns>
         private HomeLocation[] ExtractHomes(XmlNode catagoryNode)
         {
             if (catagoryNode != null && catagoryNode.HasChildNodes)
@@ -352,6 +363,12 @@ namespace AgencyCalloutsPlus.API
             return new HomeLocation[0];
         }
 
+        /// <summary>
+        /// Extracts all SpawnPoint xml nodes from a parent node
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name="catagoryNode"></param>
+        /// <returns></returns>
         private SpawnPoint[] ExtractSpawnPoints(LocationType type, XmlNode catagoryNode)
         {
             if (catagoryNode != null && catagoryNode.HasChildNodes)
@@ -372,6 +389,9 @@ namespace AgencyCalloutsPlus.API
             return new SpawnPoint[0];
         }
 
+        /// <summary>
+        /// Parses SpawnPoint xml nodes into a <see cref="SpawnPoint"/>
+        /// </summary>
         private SpawnPoint ParseSpawnPoint(LocationType type, XmlNode n)
         {
             // Ensure we have attributes
@@ -574,6 +594,16 @@ namespace AgencyCalloutsPlus.API
             }
 
             return null;
+        }
+
+        internal static void AddRegion(string name, List<string> zones)
+        {
+            RegionZones.Add(name, zones);
+        }
+
+        public static string[] GetRegions()
+        {
+            return RegionZones.Keys.ToArray();
         }
     }
 }

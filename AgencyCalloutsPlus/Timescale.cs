@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Rage;
+using System;
 
 namespace AgencyCalloutsPlus
 {
@@ -8,18 +9,13 @@ namespace AgencyCalloutsPlus
     public static class TimeScale
     {
         /// <summary>
-        /// Timescale is 30:1 (30 seconds in game equals 1 second in real life)
-        /// </summary>
-        public static readonly double GameTimeScale = 30;
-
-        /// <summary>
         /// Converts seconds in real life to seconds in game
         /// </summary>
         /// <param name="realSeconds"></param>
         /// <returns></returns>
         public static double GameSecondsFromRealSeconds(int realSeconds)
         {
-            return realSeconds * GameTimeScale;
+            return realSeconds * Settings.TimeScale;
         }
 
         /// <summary>
@@ -30,7 +26,7 @@ namespace AgencyCalloutsPlus
         public static double RealSecondsFromGameSeconds(int gameSeconds)
         {
             if (gameSeconds == 0) return 0;
-            return Math.Round(gameSeconds / GameTimeScale, 5);
+            return Math.Round(gameSeconds / (double)Settings.TimeScale, 5);
         }
 
         /// <summary>
@@ -41,7 +37,7 @@ namespace AgencyCalloutsPlus
         /// <returns></returns>
         public static TimeSpan ToGameTime(TimeSpan realTime)
         {
-            var total = realTime.TotalSeconds * GameTimeScale;
+            var total = realTime.TotalSeconds * Settings.TimeScale;
             return TimeSpan.FromSeconds(total);
         }
 
@@ -53,7 +49,7 @@ namespace AgencyCalloutsPlus
         /// <returns></returns>
         public static TimeSpan ToRealTime(TimeSpan gameTime)
         {
-            var total = gameTime.TotalSeconds / GameTimeScale;
+            var total = gameTime.TotalSeconds / Settings.TimeScale;
             return TimeSpan.FromSeconds(total);
         }
     }

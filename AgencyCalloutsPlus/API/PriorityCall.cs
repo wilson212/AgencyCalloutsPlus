@@ -1,4 +1,5 @@
-﻿using Rage;
+﻿using AgencyCalloutsPlus.API.Simulation;
+using Rage;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -50,6 +51,8 @@ namespace AgencyCalloutsPlus.API
         /// Gets a list of officers attached to this <see cref="PriorityCall"/>
         /// </summary>
         public List<OfficerUnit> AttachedOfficers { get; private set; }
+
+        public AISceneSimulation AISimulation { get; set; }
 
         /// <summary>
         /// Indicates whether this Call needs more <see cref="OfficerUnit"/>(s)
@@ -111,6 +114,9 @@ namespace AgencyCalloutsPlus.API
             ScenarioInfo = scenarioInfo ?? throw new ArgumentNullException(nameof(scenarioInfo));
             Description = scenarioInfo.GetRandomDescription();
             AttachedOfficers = new List<OfficerUnit>(4);
+
+            // Temp
+            AISimulation = new AISceneSimulation(this);
         }
 
         /// <summary>
@@ -158,6 +164,11 @@ namespace AgencyCalloutsPlus.API
 
             // Finally, remove
             AttachedOfficers.Remove(officer);
+        }
+
+        internal void OnTick()
+        {
+
         }
 
         public bool Equals(PriorityCall other)

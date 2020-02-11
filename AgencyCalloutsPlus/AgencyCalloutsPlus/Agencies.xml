@@ -22,21 +22,21 @@
     # of officers it should have to police thier jurisdiction. The lower the staffing level, the more callouts
     # the player will be given within a span of time, as well as longer drive times. 
     # These are the support values (case sensitive):
-      - "VeryLow"   : [60%] Severely Understaffed. More calls come in than the department can handle
+      - "VeryLow"   : [60%] Severely Understaffed. More calls come in than the department can handle, requiring help from other departments
                       
-      - "Low"       : [75%] Understaffed. Never any available units
+      - "Low"       : [75%] Understaffed. Never any available units. No traffic patrols
                       
-      - "Fair"      : [90%] Slightly understaffed. Just enough patrols to cover the incoming calls
+      - "Fair"      : [90%] Slightly understaffed. Just enough patrols to cover the incoming calls. During peak times, no traffic patrols
       
-      - "High"      : [100%] Appropriately staffed. Some units available from time to time
+      - "High"      : [100%] Appropriately staffed. Some units available from time to time. Traffic patrols likely around the clock.
       
-      - "VeryHigh"  : [110%] Overstaffed. Always a few units available
+      - "VeryHigh"  : [110%] Overstaffed. Always units available. Traffic patrols always
       
     # The "Vehicle" entry has the following attributes:
       - "probability" is the random probability for the vehicle model to be chosen relative to other vehicles probability
       - "livery" the livery number on vehicle model (the first livery index is "1")
       - "color" the color of the vehicle. It might be a "integer number" or "color name" (from https://docs.microsoft.com/en-us/dotnet/api/system.drawing.color?view=netframework-4.6.1 )
-      - "extras" specifies which extra's to enable when spawned.
+      - "extras" specifies which extra's to enable/disable when spawned. Format: "extra1=true, extra2=false"
 -->
 <Agencies>
   <!-- Police Departments -->
@@ -46,14 +46,14 @@
     <AgencyType>CityPolice</AgencyType>
     <StaffLevel>Fair</StaffLevel>
     <Vehicles>
-      <LocalPatrol>
+      <Marked>
         <Vehicle probability="5">POLICE</Vehicle>
         <Vehicle probability="5">POLICE2</Vehicle>
         <Vehicle probability="5">POLICE3</Vehicle>
-      </LocalPatrol>
-      <Detectives>
+      </Marked>
+      <UnMarked>
         <Vehicle probability="5">POLICE4</Vehicle>
-      </Detectives>
+      </UnMarked>
     </Vehicles>  
   </Agency>
   <Agency>
@@ -62,14 +62,14 @@
     <AgencyType>CityPolice</AgencyType>
     <StaffLevel>Fair</StaffLevel>
     <Vehicles>
-      <LocalPatrol>
+      <Marked>
         <Vehicle probability="5">POLICE</Vehicle>
         <Vehicle probability="5">POLICE2</Vehicle>
         <Vehicle probability="5">POLICE3</Vehicle>
-      </LocalPatrol>
-      <Detectives>
+      </Marked>
+      <UnMarked>
         <Vehicle probability="5">POLICE4</Vehicle>
-      </Detectives>
+      </UnMarked>
     </Vehicles>
   </Agency>
   <Agency>
@@ -78,14 +78,14 @@
     <AgencyType>CityPolice</AgencyType>
     <StaffLevel>High</StaffLevel>
     <Vehicles>
-      <LocalPatrol>
+      <Marked>
         <Vehicle probability="5">POLICE</Vehicle>
         <Vehicle probability="5">POLICE2</Vehicle>
         <Vehicle probability="5">POLICE3</Vehicle>
-      </LocalPatrol>
-      <Detectives>
+      </Marked>
+      <UnMarked>
         <Vehicle probability="5">POLICE4</Vehicle>
-      </Detectives>
+      </UnMarked>
     </Vehicles>
   </Agency>
   <Agency>
@@ -94,14 +94,14 @@
     <AgencyType>CityPolice</AgencyType>
     <StaffLevel>High</StaffLevel>
     <Vehicles>
-      <LocalPatrol>
+      <Marked>
         <Vehicle probability="5">POLICE</Vehicle>
         <Vehicle probability="5">POLICE2</Vehicle>
         <Vehicle probability="5">POLICE3</Vehicle>
-      </LocalPatrol>
-      <Detectives>
+      </Marked>
+      <UnMarked>
         <Vehicle probability="5">POLICE4</Vehicle>
-      </Detectives>
+      </UnMarked>
     </Vehicles>
   </Agency>
   <Agency>
@@ -110,14 +110,14 @@
     <AgencyType>CityPolice</AgencyType>
     <StaffLevel>Fair</StaffLevel>
     <Vehicles>
-      <LocalPatrol>
+      <Marked>
         <Vehicle probability="5">POLICE</Vehicle>
         <Vehicle probability="5">POLICE2</Vehicle>
         <Vehicle probability="5">POLICE3</Vehicle>
-      </LocalPatrol>
-      <Detectives>
+      </Marked>
+      <UnMarked>
         <Vehicle probability="5">POLICE4</Vehicle>
-      </Detectives>
+      </UnMarked>
     </Vehicles>   
   </Agency>
   <Agency>
@@ -126,14 +126,14 @@
     <AgencyType>CityPolice</AgencyType>
     <StaffLevel>High</StaffLevel>
     <Vehicles>
-      <LocalPatrol>
+      <Marked>
         <Vehicle probability="5">POLICE</Vehicle>
         <Vehicle probability="5">POLICE2</Vehicle>
         <Vehicle probability="5">POLICE3</Vehicle>
-      </LocalPatrol>
-      <Detectives>
+      </Marked>
+      <UnMarked>
         <Vehicle probability="5">POLICE4</Vehicle>
-      </Detectives>
+      </UnMarked>
     </Vehicles>
   </Agency>
   <Agency>
@@ -142,14 +142,14 @@
     <AgencyType>CityPolice</AgencyType>
     <StaffLevel>Fair</StaffLevel>
     <Vehicles>
-      <LocalPatrol>
+      <Marked>
         <Vehicle probability="5">POLICE</Vehicle>
         <Vehicle probability="5">POLICE2</Vehicle>
         <Vehicle probability="5">POLICE3</Vehicle>
-      </LocalPatrol>
-      <Detectives>
+      </Marked>
+      <UnMarked>
         <Vehicle probability="5">POLICE4</Vehicle>
-      </Detectives>
+      </UnMarked>
     </Vehicles>
   </Agency>
   <Agency>
@@ -158,13 +158,13 @@
     <AgencyType>CityPolice</AgencyType>
     <StaffLevel>Low</StaffLevel>
     <Vehicles>
-      <LocalPatrol>
+      <Marked>
         <Vehicle probability="5">SHERIFF</Vehicle>
         <Vehicle probability="5">SHERIFF2</Vehicle>
-      </LocalPatrol>
-      <Detectives>
+      </Marked>
+      <UnMarked>
         <Vehicle probability="5">POLICE4</Vehicle>
-      </Detectives>
+      </UnMarked>
     </Vehicles>
   </Agency>
   <Agency>
@@ -173,13 +173,13 @@
     <AgencyType>CityPolice</AgencyType>
     <StaffLevel>Low</StaffLevel>
     <Vehicles>
-      <LocalPatrol>
+      <Marked>
         <Vehicle probability="5">SHERIFF</Vehicle>
         <Vehicle probability="5">SHERIFF2</Vehicle>
-      </LocalPatrol>
-      <Detectives>
+      </Marked>
+      <UnMarked>
         <Vehicle probability="5">POLICE4</Vehicle>
-      </Detectives>
+      </UnMarked>
     </Vehicles>
   </Agency>
   <Agency>
@@ -188,13 +188,13 @@
     <AgencyType>CityPolice</AgencyType>
     <StaffLevel>Fair</StaffLevel>
     <Vehicles>
-      <LocalPatrol>
+      <Marked>
         <Vehicle probability="5">SHERIFF</Vehicle>
         <Vehicle probability="5">SHERIFF2</Vehicle>
-      </LocalPatrol>
-      <Detectives>
+      </Marked>
+      <UnMarked>
         <Vehicle probability="5">POLICE4</Vehicle>
-      </Detectives>
+      </UnMarked>
     </Vehicles>
   </Agency>
 
@@ -205,13 +205,13 @@
     <AgencyType>CountySheriff</AgencyType>
     <StaffLevel>Fair</StaffLevel>
     <Vehicles>
-      <LocalPatrol>
+      <Marked>
         <Vehicle probability="5">SHERIFF</Vehicle>
         <Vehicle probability="5">SHERIFF2</Vehicle>
-      </LocalPatrol>
-      <Detectives>
+      </Marked>
+      <UnMarked>
         <Vehicle probability="5">POLICE4</Vehicle>
-      </Detectives>
+      </UnMarked>
     </Vehicles>
   </Agency>
   <Agency>
@@ -220,13 +220,13 @@
     <AgencyType>CountySheriff</AgencyType>
     <StaffLevel>Low</StaffLevel>
     <Vehicles>
-      <LocalPatrol>
+      <Marked>
         <Vehicle probability="5">SHERIFF</Vehicle>
         <Vehicle probability="5">SHERIFF2</Vehicle>
-      </LocalPatrol>
-      <Detectives>
+      </Marked>
+      <UnMarked>
         <Vehicle probability="5">POLICE4</Vehicle>
-      </Detectives>
+      </UnMarked>
     </Vehicles>
   </Agency>
   
@@ -237,9 +237,9 @@
     <AgencyType>HighwayPatrol</AgencyType>
     <StaffLevel>Fair</StaffLevel>
     <Vehicles>
-      <LocalPatrol>
+      <Marked>
         <Vehicle probability="5">policeb</Vehicle>
-      </LocalPatrol>
+      </Marked>
     </Vehicles>
   </Agency>
   <Agency>
@@ -248,10 +248,10 @@
     <AgencyType>HighwayPatrol</AgencyType>
     <StaffLevel>Fair</StaffLevel>
     <Vehicles>
-      <LocalPatrol>
+      <Marked>
         <Vehicle probability="5">policeold1</Vehicle>
         <Vehicle probability="5">policeold2</Vehicle>
-      </LocalPatrol>
+      </Marked>
     </Vehicles>
   </Agency>
 
@@ -262,10 +262,10 @@
     <AgencyType>SpecialAgent</AgencyType>
     <StaffLevel>VeryHigh</StaffLevel>
     <Vehicles>
-      <LocalPatrol>
+      <Marked>
         <Vehicle probability="5">FBI</Vehicle>
         <Vehicle probability="5">FBI2</Vehicle>
-      </LocalPatrol>
+      </Marked>
     </Vehicles>
   </Agency>
   <Agency>
@@ -274,10 +274,10 @@
     <AgencyType>SpecialAgent</AgencyType>
     <StaffLevel>High</StaffLevel>
     <Vehicles>
-      <LocalPatrol>
+      <Marked>
         <Vehicle probability="5">FBI</Vehicle>
         <Vehicle probability="5">FBI2</Vehicle>
-      </LocalPatrol>
+      </Marked>
     </Vehicles>
   </Agency>
 
@@ -288,10 +288,10 @@
     <AgencyType>ParkRanger</AgencyType>
     <StaffLevel>Low</StaffLevel>
     <Vehicles>
-      <LocalPatrol>
+      <Marked>
         <Vehicle probability="5">FBI</Vehicle>
         <Vehicle probability="5">FBI2</Vehicle>
-      </LocalPatrol>
+      </Marked>
     </Vehicles>
   </Agency>
 </Agencies>

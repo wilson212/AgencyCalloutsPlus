@@ -1,4 +1,18 @@
-﻿- TrafficAccident
+﻿Agency Dispatch and Callouts+ Scenario List
+
+Description:
+	Each callout will have multiple scenarios. Each scenario is essentially
+	a full callout all in itself. Each scenario will have multiple dialogs
+	that are chosen at random, so playing the same scenario multiple times
+	will still feel different each time (ex: different reasons for crime, 
+	different attitude and responses).
+
+File Format:
+ - Callout Name
+	- Scenario Name
+
+Callouts:
+- TrafficAccident
 	- RearEndNoInjuries
 	- RearEndInjuries
 	- RearEndDeath
@@ -9,9 +23,12 @@
 	- RecklessDriver
 	- ExcessiveSpeeding
 	- StreetRacing
+	- AbandonedVehicleOnHighway
+	- BikersHarrasingCar
 - StolenVehicleSpotted
 	- ByCop: Begins Pursuit
 	- ALPR Hit
+	- ByOwner
 - DomesticViolence
 	- DomesticArguingOnly
 	- DomesticDenial
@@ -26,6 +43,7 @@
 	- NoiseComplaintEngineReving
 	- NoiseComplaintLoudMusicAfterDark
 	- ShoutingProfanityInPublic
+	- RefusingToLeaveProperty
 - GangActivity
 	- GangHasseling
 	- GangStolenCar
@@ -36,21 +54,25 @@
 	- Trafficking
 	- PublicDrugUse
 - Robbery
+	- Mugging
 	- HoldUpAtStore
-	- CarTheft
+	- GrandTheftAuto
 	- ATMHoldUp
 	- BankHiestPursuit
 - Burglary
-	- ResidentBreakIn
-	- StoreBreakIn
+	- ResidentBreakInAftermath
+	- ResidentAlarmTriggered
+	- StoreBreakInAftermath
+	- StoreSilentAlarmTriggered
 	- ShopLifting
+	- VehicleStolen
 - Statutory
 	- PublicIntoxication
 	- DrivingUnderInfluence
 	- DrivingWithOpenContainers
 	- MinorPossessionAlcohol
 	- SellingAndSupplyingAlcoholToMinors
-	- FakeID
+	- BuyingAlcoholFakeID
 - TrafficStopBackup
 	- Generic
 	- SmellsDrugsOrAlchohol
@@ -66,8 +88,9 @@
 	- BeingHeldAtGunpoint
 - SexualAssault
 	- Rape
+	- AttemptedRape
 	- StatutoryRape
-	- Groping
+	- UnWelcomeGroping
 - Homocide
 	- DeadBodyFound
 	- DriveByShooting
@@ -84,9 +107,10 @@
 - Vandalism
 	- VandalisedVehicle
 	- VandalisedHome
-- MISC
+- MissingPerson
 	- DemensiaPatientMissing
 	- MissingPersonReport
 	- ChildRunawayReport
 	- Kidnapping
-	- AbandonedVehicle
+ - Warrant
+	- ServingWarrant

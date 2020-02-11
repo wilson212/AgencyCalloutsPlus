@@ -97,12 +97,12 @@ namespace AgencyCalloutsPlus.Callouts.Scenarios.TrafficAccident
             SuspectBlip = Suspect.AttachBlip();
 
             // Register menu
-            Menu = new CalloutPedInteractionMenu("Callout Interaction", "~b~Traffic Accident: ~y~Rear End Collision");
-            Menu.RegisterPed(Suspect);
-            Menu.RegisterPed(Victim);
+            //Menu = new CalloutPedInteractionMenu("Callout Interaction", "~b~Traffic Accident: ~y~Rear End Collision");
+            //Menu.RegisterPed(Suspect);
+            //Menu.RegisterPed(Victim);
 
             // Register for events
-            Menu.SpeakWithButton.Activated += SpeakWithButton_Activated;
+            //Menu.SpeakWithButton.Activated += SpeakWithButton_Activated;
         }
 
         /// <summary>
@@ -117,7 +117,7 @@ namespace AgencyCalloutsPlus.Callouts.Scenarios.TrafficAccident
 
         public override void Process()
         {
-            Menu.Process();
+            //Menu.Process();
             if (Game.IsKeyDown(System.Windows.Forms.Keys.Enter))
             {
                 World.TeleportLocalPlayer(SpawnPoint.Position.Around(15f), true);

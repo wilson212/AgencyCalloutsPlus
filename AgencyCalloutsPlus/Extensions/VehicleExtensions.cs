@@ -1,6 +1,5 @@
 ﻿using Rage;
 using Rage.Native;
-using System;
 using System.Drawing;
 
 namespace AgencyCalloutsPlus.Extensions

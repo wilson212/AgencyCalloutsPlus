@@ -345,19 +345,16 @@ namespace AgencyCalloutsPlus.Integration
         private void Row_DoubleClicked(Base sender, ClickedEventArgs arguments)
         {
             SelectedRow = (ListBoxRow)sender;
-            diag_callDetails = new GameFiber(OpenCallDetailsDialog);
-            diag_callDetails.Start();
-        }
-
-        private void OpenCallDetailsDialog()
-        {
-            PriorityCall call = (PriorityCall)SelectedRow.UserData;
-            GwenForm help = new CallDetailsGwenForm(call);
-            help.Show();
-            while (help.Window.IsVisible)
+            diag_callDetails = GameFiber.StartNew(delegate 
             {
-                GameFiber.Yield();
-            }
+                PriorityCall call = (PriorityCall)SelectedRow.UserData;
+                GwenForm help = new CallDetailsGwenForm(call);
+                help.Show();
+                while (help.Window.IsVisible)
+                {
+                    GameFiber.Yield();
+                }
+            });
         }
 
         #region Button Click Events

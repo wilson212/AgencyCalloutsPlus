@@ -12,44 +12,64 @@ namespace AgencyCalloutsPlus
 
         internal static string AudioUnitType { get; set; } = "LINCOLN";
 
+        internal static char AudioUnitTypeLetter => AudioUnitType[0];
+
         internal static int AudioBeat { get; set; } = 18;
+
+        internal static int TimeScale { get; set; } = 30;
+
+
+        internal static string GetUnitString => $"{AudioDivision}-{AudioUnitTypeLetter}-{AudioBeat}";
 
         /// <summary>
         /// The key to open the callout interaction menu
         /// </summary>
-        internal static Keys OpenCalloutInteractionMenuKey { get; set; } = Keys.I;
+        internal static Keys OpenMenuKey { get; set; } = Keys.F11;
 
         /// <summary>
         /// The modifier key to open the callout interaction menu
         /// </summary>
-        internal static Keys OpenCalloutInteractionMenuModifierKey { get; set; } = Keys.None;
+        internal static Keys OpenMenuModifierKey { get; set; } = Keys.None;
 
         internal static bool EnableFullSimulation { get; set; } = false;
 
         internal static void Initialize()
         {
-            /// === Load AgencyCalloutsPlus settings === ///
-            Game.LogTrivial("[TRACE] AgencyCalloutsPlus: Loading AgencyCalloutsPlus config...");
+            // Log
+            Log.Info("Loading AgencyCalloutsPlus config...");
 
+            // Ensure file exists
             string path = Path.Combine(Main.LSPDFRPluginPath, "AgencyCalloutsPlus.ini");
+            EnsureConfigExists(path);
+
+            // Open ini file
             var ini = new InitializationFile(path);
             ini.Create();
 
             // Read key bindings
-            OpenCalloutInteractionMenuKey = ini.ReadEnum("KEYBINDINGS", "OpenCalloutInteractionMenuKey", Keys.I);
-            OpenCalloutInteractionMenuModifierKey = ini.ReadEnum("KEYBINDINGS", "OpenCalloutInteractionMenuModifierKey", Keys.None);
-            EnableFullSimulation = ini.ReadBoolean("GENERAL", "EnableFullSimulation", false);
+            OpenMenuKey = ini.ReadEnum("KEYBINDINGS", "OpenMenuKey", Keys.F11);
+            OpenMenuModifierKey = ini.ReadEnum("KEYBINDINGS", "OpenMenuModifierKey", Keys.None);
+            EnableFullSimulation = ini.ReadBoolean("SIMULATION", "EnableFullSimulation", false);
+            AudioDivision = ini.ReadInt32("GENERAL", "Division", 1);
+            AudioUnitType = ini.ReadString("GENERAL", "UnitType", "LINCOLN").ToUpperInvariant();
+            AudioBeat = ini.ReadInt32("GENERAL", "Beat", 18);
+            TimeScale = ini.ReadInt32("GENERAL", "TimeScale", 30);
 
-            /// === Load Traffic Policer settings === ///
-            Game.LogTrivial("[TRACE] AgencyCalloutsPlus: Loading Traffic Policer config...");
+            // Log
+            Log.Info("Loaded AgencyCalloutsPlus successfully!");
+        }
 
-            path = Path.Combine(Main.LSPDFRPluginPath, "Traffic Policer.ini");
-            ini = new InitializationFile(path);
-            ini.Create();
-
-            AudioDivision = ini.ReadInt32("General", "Division", 1);
-            AudioUnitType = ini.ReadString("General", "UnitType", "LINCOLN").ToUpperInvariant();
-            AudioBeat = ini.ReadInt32("General", "Beat", 18);
+        private static void EnsureConfigExists(string path)
+        {
+            if (!File.Exists(path))
+            {
+                Log.Info("Creating new AgencyCalloutsPlus config file...");
+                Stream resource = typeof(Settings).Assembly.GetManifestResourceStream("IniConfig");
+                using (var file = new FileStream(path, FileMode.Create, FileAccess.Write))
+                {
+                    resource.CopyTo(file);
+                }
+            }
         }
     }
 }

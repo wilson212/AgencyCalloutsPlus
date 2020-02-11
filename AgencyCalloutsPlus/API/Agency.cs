@@ -1,4 +1,5 @@
-﻿using AgencyCalloutsPlus.Extensions;
+﻿using AgencyCalloutsPlus.CrimeGenerator;
+using AgencyCalloutsPlus.Extensions;
 using LSPD_First_Response.Mod.API;
 using Rage;
 using System;
@@ -13,7 +14,7 @@ namespace AgencyCalloutsPlus.API
     /// <summary>
     /// Represents the Current Player Police/Sheriff Department
     /// </summary>
-    public class Agency
+    public abstract class Agency
     {
         #region Static Properties
 
@@ -67,34 +68,9 @@ namespace AgencyCalloutsPlus.API
         public StaffLevel StaffLevel { get; protected set; }
 
         /// <summary>
-        /// Gets the optimum number of patrols
-        /// </summary>
-        public double OptimumPatrols { get; private set; }
-
-        /// <summary>
         /// Gets the number of patrol units for this agency
         /// </summary>
         public int ActualPatrols { get; protected set; }
-
-        /// <summary>
-        /// Gets the max crime level index of this agency
-        /// </summary>
-        public int MaxCrimeLevel { get; protected set; }
-
-        /// <summary>
-        /// Gets the overall crime level index of this agency
-        /// </summary>
-        public int OverallCrimeLevel { get; protected set; }
-
-        /// <summary>
-        /// Gets the number of zones in this jurisdiction
-        /// </summary>
-        public int ZoneCount { get; protected set; }
-
-        /// <summary>
-        /// Gets a list of zones in this jurisdiction
-        /// </summary>
-        private SpawnGenerator<ZoneInfo> ZoneGenerator { get; set; }
 
         /// <summary>
         /// Containts a <see cref="SpawnGenerator{T}"/> list of vehicles for this agency
@@ -182,6 +158,7 @@ namespace AgencyCalloutsPlus.API
 
                 // add
                 AgencyZones.Add(agency, zones);
+                ZoneInfo.AddRegion(name, zones);
             }
 
             // Add Highway to highway patrol
@@ -245,7 +222,7 @@ namespace AgencyCalloutsPlus.API
                 }
 
                 // Load vehicles
-                Agency agency = new Agency(sname, name, staffing);
+                Agency agency = CreateAgency(type, sname, name, staffing);
                 foreach (string ename in enumNames)
                 {
                     // Try and extract patrol vehicle type
@@ -287,7 +264,7 @@ namespace AgencyCalloutsPlus.API
                         if (!String.IsNullOrWhiteSpace(vn.Attributes["extras"]?.Value))
                         {
                             string extras = vn.Attributes["extras"].Value;
-                            info.Extras = extras.ToIntList().ToArray();
+                            info.Extras = ParseExtras(extras);
                         }
 
                         // Extract spawn color
@@ -309,6 +286,21 @@ namespace AgencyCalloutsPlus.API
             // Clean up!
             GameFiber.Yield();
             document = null;
+        }
+
+        private static Agency CreateAgency(AgencyType type, string sname, string name, StaffLevel staffing)
+        {
+            switch (type)
+            {
+                case AgencyType.CityPolice:
+                case AgencyType.CountySheriff:
+                    return new CityPoliceAgency(sname, name, staffing);
+                case AgencyType.HighwayPatrol:
+                    return new HighwayPatrolAgency(sname, name, staffing);
+                default:
+                    return new CityPoliceAgency(sname, name, staffing);
+                    //throw new NotImplementedException($"The AgencyType '{type}' is yet supported");
+            }
         }
 
         /// <summary>
@@ -338,71 +330,6 @@ namespace AgencyCalloutsPlus.API
                 return AgencyZones[name].ToArray();
             }
 
-            return null;
-        }
-
-        /// <summary>
-        /// Gets a random <see cref="SpawnPoint"/> on the side of a road within the Players 
-        /// current agency area of jurisdiction
-        /// </summary>
-        /// <remarks>
-        /// This method is best NOT used by state troopers with full map jurisdiction
-        /// </remarks>
-        /// <param name="range">
-        /// if not null, sets the distance requirement for the position using 
-        /// <see cref="Vector3.TravelDistanceTo(Vector3)"/>. If the player is outside this range from all
-        /// positions in his jurisdiction, this method with return null.
-        /// </param>
-        /// <returns>returns a <see cref="LocationInfo"/> on success, or null on failure</returns>
-        public static SpawnPoint GetRandomSideOfRoadLocation(Range<float> range = null)
-        {
-            // Load randomizer
-            var rando = new CryptoRandom();
-
-            // Get zones in this jurisdiction
-            string[] zones = GetCurrentAgencyJurisdictionZones();
-            if (zones == null)
-            {
-                throw new Exception($"Curernt player agency does not have any locations of jurisdiction.");
-            }
-
-            // Shuffle zones for randomness
-            // Try and find a street location in our jurisdiction
-            foreach (string zoneName in zones.OrderBy(x => rando.Next()))
-            {
-                // Grab zone positions
-                ZoneInfo zone = ZoneInfo.GetZoneByName(zoneName);
-                var locations = zone?.SideOfRoadLocations;
-
-                // No spawn points?
-                if (locations == null || locations.Length == 0)
-                    continue;
-
-                // Do we have distance requirements?
-                if (range != null)
-                {
-                    // Get player location and 
-                    var playerLocation = Game.LocalPlayer.Character.Position;
-
-                    // Calculate distance until we find a street within parameters
-                    foreach (var location in locations.OrderBy(x => rando.Next()))
-                    {
-                        // calculate distance
-                        var distance = playerLocation.TravelDistanceTo(location.Position);
-                        if (range.ContainsValue(distance))
-                        {
-                            return location;
-                        }
-                    }
-                }
-                else
-                {
-                    var pos = locations[rando.Next(0, locations.Length - 1)];
-                    return pos;
-                }
-            }
-
-            // If we are here, we failed to find a position in our juristiction
             return null;
         }
 
@@ -454,33 +381,6 @@ namespace AgencyCalloutsPlus.API
 
             // Initiate vars
             Vehicles = new Dictionary<PatrolType, SpawnGenerator<PoliceVehicleInfo>>();
-            ZoneGenerator = new SpawnGenerator<ZoneInfo>();
-        }
-
-        internal void InitializeData()
-        {
-            if (ZoneGenerator.ItemCount == 0)
-            {
-                var zones = GetZoneNamesByAgencyName(ScriptName).Select(x => ZoneInfo.GetZoneByName(x)).ToArray();
-                ZoneGenerator.AddRange(zones);
-                ZoneCount = zones.Length;
-
-                // Determine our overall crime level
-                foreach (var zone in zones)
-                {
-                    // Skip dead zones
-                    if (zone.CrimeLevel == CrimeLevel.None)
-                        continue;
-
-                    MaxCrimeLevel += (int)CrimeLevel.VeryHigh;
-                    OverallCrimeLevel += (int)zone.CrimeLevel;
-                    OptimumPatrols += zone.IdealPatrolCount;
-                }
-
-                // Deterime our patrol count
-                int staffLevel = (int)StaffLevel;
-                ActualPatrols = (int)(OptimumPatrols * (staffLevel / 100d));
-            }
         }
 
         /// <summary>
@@ -505,7 +405,7 @@ namespace AgencyCalloutsPlus.API
         /// <param name="type"></param>
         /// <param name="spawnPoint"></param>
         /// <returns></returns>
-        public Vehicle SpawnPoliceVehicleOfType(PatrolType type, SpawnPoint spawnPoint)
+        public Vehicle GetRandomPoliceVehicle(PatrolType type, SpawnPoint spawnPoint)
         {
             // Does this agency contain a patrol car of this type?
             if (!Vehicles.ContainsKey(type))
@@ -516,7 +416,7 @@ namespace AgencyCalloutsPlus.API
             // Try and spawn a police vehicle
             if (!Vehicles[type].TrySpawn(out PoliceVehicleInfo info))
             {
-                Log.Warning($"Agency.SpawnPoliceVehicleOfType(): unable to find vehicle for class {type}");
+                Log.Warning($"Agency.GetRandomPoliceVehicle(): unable to find vehicle for class {type}");
                 return null;
             }
 
@@ -524,16 +424,16 @@ namespace AgencyCalloutsPlus.API
             var vehicle = new Vehicle(info.ModelName, spawnPoint.Position, spawnPoint.Heading);
 
             // Add any extras
-            if (info.Extras != null && info.Extras.Length > 0)
+            if (info.Extras != null && info.Extras.Count > 0)
             {
-                foreach (int extraId in info.Extras)
+                foreach (var extra in info.Extras)
                 {
                     // Ensure this vehicle has this livery index
-                    if (!vehicle.DoesExtraExist(extraId))
+                    if (!vehicle.DoesExtraExist(extra.Key))
                         continue;
 
                     // Enable
-                    vehicle.SetExtraEnabled(extraId, true);
+                    vehicle.SetExtraEnabled(extra.Key, extra.Value);
                 }
             }
 
@@ -552,29 +452,69 @@ namespace AgencyCalloutsPlus.API
             return vehicle;
         }
 
-        public ZoneInfo GetNextRandomCrimeZone()
+        internal virtual RegionCrimeGenerator CreateCrimeGenerator()
         {
-            if (ZoneGenerator.TrySpawn(out ZoneInfo zone))
+            var zones = GetZoneNamesByAgencyName(ScriptName).Select(x => ZoneInfo.GetZoneByName(x)).ToArray();
+            var crimeGenerator = new RegionCrimeGenerator(this, zones);
+
+            // Deterime our patrol count
+            int staffLevel = (int)StaffLevel;
+            ActualPatrols = (int)(crimeGenerator.OptimumPatrols * (staffLevel / 100d));
+
+            return crimeGenerator;
+        }
+
+        /// <summary>
+        /// Parses the extras attribute into a hash table
+        /// </summary>
+        /// <param name="extras"></param>
+        /// <returns></returns>
+        private static Dictionary<int, bool> ParseExtras(string extras)
+        {
+            // No extras?
+            if (String.IsNullOrWhiteSpace(extras))
             {
-                return zone;
+                return new Dictionary<int, bool>();
             }
 
-            return null;
+            string toParse = extras.Replace("extra", "").Replace(" ", String.Empty);
+            string[] parts = toParse.Split(',', '=');
+
+            // Ensure we have an even number of things
+            if (parts.Length % 2 != 0)
+            {
+                return new Dictionary<int, bool>();
+            }
+
+            // Parse items
+            var dic = new Dictionary<int, bool>(parts.Length / 2);
+            for (int i = 0; i < parts.Length - 1; i += 2)
+            {
+                if (!int.TryParse(parts[i], out int id))
+                    continue;
+
+                if (!bool.TryParse(parts[i + 1], out bool value))
+                    continue;
+
+                dic.Add(id, value);
+            }
+
+            return dic;
         }
 
         #endregion
 
-        internal class PoliceVehicleInfo : ISpawnable
+        internal struct PoliceVehicleInfo : ISpawnable
         {
             public int Probability { get; set; }
 
             public string ModelName { get; set; }
 
-            public int Livery { get; set; } = 0;
+            public int Livery { get; set; }
 
             public Color SpawnColor { get; set; }
 
-            public int[] Extras { get; set; }
+            public Dictionary<int, bool> Extras { get; set; }
         }
     }
 }

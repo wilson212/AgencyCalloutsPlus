@@ -2,7 +2,10 @@
 {
     public enum PatrolType
     {
-        LocalPatrol,
-        Detective
+        Marked,
+
+        UnMarked,
+
+        Motorcycle
     }
 }

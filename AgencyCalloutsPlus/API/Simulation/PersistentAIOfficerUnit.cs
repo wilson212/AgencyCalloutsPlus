@@ -1,5 +1,4 @@
 ﻿using Rage;
-using Rage.Exceptions;
 using System;
 using System.Drawing;
 
@@ -264,7 +263,7 @@ namespace AgencyCalloutsPlus.API
                     var sp = new SpawnPoint(location);
 
                     // Create car
-                    PoliceCar = Dispatch.PlayerAgency.SpawnPoliceVehicleOfType(PatrolType.LocalPatrol, sp);
+                    PoliceCar = Dispatch.PlayerAgency.GetRandomPoliceVehicle(PatrolType.Marked, sp);
                     PoliceCar.Model.LoadAndWait();
                     PoliceCar.MakePersistent();
 

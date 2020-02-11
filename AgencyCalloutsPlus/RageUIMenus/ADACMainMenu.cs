@@ -1,11 +1,9 @@
-﻿using Rage;
+﻿using AgencyCalloutsPlus.API;
+using Rage;
 using RAGENativeUI;
 using RAGENativeUI.Elements;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace AgencyCalloutsPlus.RageUIMenus
@@ -19,9 +17,10 @@ namespace AgencyCalloutsPlus.RageUIMenus
         private UIMenu DispatchUIMenu;
 
         private MenuPool AllMenus;
-        private bool HasModifier;
 
         private GameFiber ListenFiber { get; set; }
+
+        #region Main Menu Buttons
 
         private UIMenuItem CalloutMenuButton {get;set;}
 
@@ -31,23 +30,29 @@ namespace AgencyCalloutsPlus.RageUIMenus
 
         private UIMenuItem CloseMenuButton { get; set; }
 
+        #endregion Main Menu Buttons
+
+        #region Dispatch Menu Buttons
+
+        private UIMenuItem RequestCallMenuButton { get; set; }
+
+        private UIMenuListItem SetRoleMenuButton { get; set; }
+
+        private UIMenuListItem PatrolAreaMenuButton { get; set; }
+
+        private UIMenuListItem ApplyMenuButton { get; set; }
+
+        #endregion Dispatch Menu Buttons
+
         public ADACMainMenu()
         {
             // Create main menu
-            MainUIMenu = new UIMenu("ADAC+ Menu", "Main Menu")
+            MainUIMenu = new UIMenu("AD&C+", "~b~Main Menu")
             {
                 MouseControlsEnabled = false,
                 AllowCameraMovement = true
             };
             MainUIMenu.SetMenuWidthOffset(12);
-
-            // Create dispatch menu
-            DispatchUIMenu = new UIMenu("ADAC+ Menu", "Dispatch Menu")
-            {
-                MouseControlsEnabled = false,
-                AllowCameraMovement = true
-            };
-            DispatchUIMenu.SetMenuWidthOffset(12);
 
             // Create menu buttons
             CalloutMenuButton = new UIMenuItem("Callout Menu", "Opens the current callout menu");
@@ -68,11 +73,43 @@ namespace AgencyCalloutsPlus.RageUIMenus
             MainUIMenu.AddItem(TeleportMenuButton);
             MainUIMenu.AddItem(CloseMenuButton);
 
+            // Register for events
+            CloseMenuButton.Activated += (s, e) => MainUIMenu.Visible = false;
+
+            // Create dispatch menu
+            DispatchUIMenu = new UIMenu("AD&C+", "~b~Dispatch Menu")
+            {
+                MouseControlsEnabled = false,
+                AllowCameraMovement = true
+            };
+            DispatchUIMenu.SetMenuWidthOffset(12);
+
             // Bind Menus
             MainUIMenu.BindMenuToItem(DispatchUIMenu, DispatchMenuButton);
 
-            // Register for events
-            CloseMenuButton.Activated += (s, e) => MainUIMenu.Visible = false;
+            // Create Dispatch Buttons
+            ApplyMenuButton = new UIMenuListItem("Apply", "Appies the changes in this menu");
+            RequestCallMenuButton = new UIMenuItem("Request Call", "Requests a nearby call from dispatch");
+            SetRoleMenuButton = new UIMenuListItem("Set Role", "Sets the current player role in the department");
+            foreach (var role in Enum.GetValues(typeof(OfficerRole)))
+            {
+                SetRoleMenuButton.Collection.Add(role, role.ToString());
+            }
+
+            PatrolAreaMenuButton = new UIMenuListItem("Patrol Area", "Sets the desired patrol area");
+            foreach (string value in ZoneInfo.GetRegions())
+            {
+                PatrolAreaMenuButton.Collection.Add(value, value);
+            }
+
+            // Create button events
+            RequestCallMenuButton.Activated += RequestCallMenuButton_Activated;
+
+            // Add dispatch menu buttons
+            DispatchUIMenu.AddItem(RequestCallMenuButton);
+            DispatchUIMenu.AddItem(SetRoleMenuButton);
+            DispatchUIMenu.AddItem(PatrolAreaMenuButton);
+            DispatchUIMenu.AddItem(ApplyMenuButton);
 
             // Create menu pool
             AllMenus = new MenuPool
@@ -83,9 +120,15 @@ namespace AgencyCalloutsPlus.RageUIMenus
 
             // Refresh indexes
             AllMenus.RefreshIndex();
+        }
 
-            // Internal variables
-            HasModifier = (Settings.OpenCalloutInteractionMenuModifierKey != Keys.None);
+        private void RequestCallMenuButton_Activated(UIMenu sender, UIMenuItem selectedItem)
+        {
+            RequestCallMenuButton.Enabled = false;
+            if (!Dispatch.InvokeCalloutForPlayer())
+            {
+                Game.DisplayNotification("~r~There are no calls available");
+            }
         }
 
         private void TeleportMenuButton_Activated(UIMenu sender, UIMenuItem selectedItem)
@@ -93,28 +136,28 @@ namespace AgencyCalloutsPlus.RageUIMenus
             switch (TeleportMenuButton.SelectedValue)
             {
                 case "Sandy":
-                    World.TeleportLocalPlayer(new Vector3(1848.73f, 3689.98f, 34.27f), true);
+                    World.TeleportLocalPlayer(new Vector3(1848.73f, 3689.98f, 34.27f), false);
                     break;
                 case "Paleto":
-                    World.TeleportLocalPlayer(new Vector3(-448.22f, 6008.23f, 31.72f), true);
+                    World.TeleportLocalPlayer(new Vector3(-448.22f, 6008.23f, 31.72f), false);
                     break;
                 case "Vespucci":
-                    World.TeleportLocalPlayer(new Vector3(-1108.18f, -845.18f, 19.32f), true);
+                    World.TeleportLocalPlayer(new Vector3(-1108.18f, -845.18f, 19.32f), false);
                     break;
                 case "Rockford":
-                    World.TeleportLocalPlayer(new Vector3(-561.65f, -131.65f, 38.21f), true);
+                    World.TeleportLocalPlayer(new Vector3(-561.65f, -131.65f, 38.21f), false);
                     break;
                 case "Downtown":
-                    World.TeleportLocalPlayer(new Vector3(50.0654f, -993.0596f, 30f), true);
+                    World.TeleportLocalPlayer(new Vector3(50.0654f, -993.0596f, 30f), false);
                     break;
                 case "La Mesa":
-                    World.TeleportLocalPlayer(new Vector3(826.8f, -1290f, 28.24f), true);
+                    World.TeleportLocalPlayer(new Vector3(826.8f, -1290f, 28.24f), false);
                     break;
                 case "Vinewood":
-                    World.TeleportLocalPlayer(new Vector3(638.5f, 1.75f, 82.8f), true);
+                    World.TeleportLocalPlayer(new Vector3(638.5f, 1.75f, 82.8f), false);
                     break;
                 case "Davis":
-                    World.TeleportLocalPlayer(new Vector3(360.97f, -1584.70f, 29.29f), true);
+                    World.TeleportLocalPlayer(new Vector3(360.97f, -1584.70f, 29.29f), false);
                     break;
             }
         }
@@ -131,23 +174,17 @@ namespace AgencyCalloutsPlus.RageUIMenus
                     // Process menus
                     AllMenus.ProcessMenus();
 
-                    // If player is close to and facing another ped, show press Y to open menu
-                    if (!MainUIMenu.Visible)
+                    // If player is closed, Wait for key press, then open menu
+                    if (!AllMenus.IsAnyMenuOpen() && Globals.IsKeyDownWithModifier(Settings.OpenMenuKey, Settings.OpenMenuModifierKey))
                     {
-                        // Is modifier key pressed
-                        if (HasModifier)
-                        {
-                            if (!Game.IsKeyDown(Settings.OpenCalloutInteractionMenuModifierKey))
-                            {
-                                return;
-                            }
-                        }
+                        MainUIMenu.Visible = true;
+                    }
 
-                        // Wait for key press, then open menu
-                        if (Game.IsKeyDown(Settings.OpenCalloutInteractionMenuKey))
-                        {
-                            MainUIMenu.Visible = true;
-                        }
+                    // Disable patrol area selection if not highway patrol
+                    if (DispatchUIMenu.Visible)
+                    {
+                        PatrolAreaMenuButton.Enabled = (Dispatch.PlayerAgency.AgencyType == AgencyType.HighwayPatrol);
+                        RequestCallMenuButton.Enabled = Dispatch.CanInvokeCalloutForPlayer();
                     }
                 }
             });

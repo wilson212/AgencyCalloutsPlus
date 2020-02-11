@@ -64,7 +64,7 @@ namespace AgencyCalloutsPlus.RageUIMenus
 
             // internals
             Peds = new Dictionary<Ped, bool>();
-            HasModifier = (Settings.OpenCalloutInteractionMenuModifierKey != Keys.None);
+            HasModifier = (Settings.OpenMenuModifierKey != Keys.None);
         }
 
         private void SpeakWithButton_Activated(UIMenu sender, UIMenuItem selectedItem)
@@ -105,8 +105,8 @@ namespace AgencyCalloutsPlus.RageUIMenus
                 if (Peds[ped] == false)
                 {
                     // Let player know they can open the menu
-                    var k1 = Settings.OpenCalloutInteractionMenuModifierKey.ToString("F");
-                    var k2 = Settings.OpenCalloutInteractionMenuKey.ToString("F");
+                    var k1 = Settings.OpenMenuModifierKey.ToString("F");
+                    var k2 = Settings.OpenMenuKey.ToString("F");
                     if (HasModifier)
                     {
                         Game.DisplayHelp($"Press the ~y~{k1}~s~ + ~y~{k2}~s~ keys to open the interaction menu.");
@@ -120,14 +120,14 @@ namespace AgencyCalloutsPlus.RageUIMenus
                 // Is modifier key pressed
                 if (HasModifier)
                 {
-                    if (!Game.IsKeyDown(Settings.OpenCalloutInteractionMenuModifierKey))
+                    if (!Game.IsKeyDown(Settings.OpenMenuModifierKey))
                     {
                         return;
                     }
                 }
 
                 // Wait for key press, then open menu
-                if (Game.IsKeyDown(Settings.OpenCalloutInteractionMenuKey))
+                if (Game.IsKeyDown(Settings.OpenMenuKey))
                 {
                     Game.HideHelp();
                     MainUIMenu.Visible = true;

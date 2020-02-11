@@ -6,6 +6,7 @@ using Rage;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
 using System.IO;
 using System.Reflection;
 
@@ -94,11 +95,11 @@ namespace AgencyCalloutsPlus
                 }
             }
 
-            // Load settings
-            Settings.Initialize();
-
             // Initialize log file
             Log.Initialize(Path.Combine(PluginFolderPath, "Game.log"));
+
+            // Load settings
+            Settings.Initialize();
 
             // Register for On Duty state changes
             AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(LSPDFRResolveEventHandler);
@@ -108,9 +109,14 @@ namespace AgencyCalloutsPlus
             // Log stuff
             Game.LogTrivial("[TRACE] Agency Dispatch and Callouts Plus v" + PluginVersion + " has been initialised.");
 
-            // Temporary!
-            MainMenu = new ADACMainMenu();
-            MainMenu.BeginListening();
+            ExampleTable.Open();
+            Game.RawFrameRender += RenderDisplay;
+        }
+
+        private void RenderDisplay(object sender, GraphicsEventArgs e)
+        {
+            if (Game.IsPaused || Game.IsLoading) return;
+            e.Graphics.DrawText("Status: Available", "Arial", 12.0f, new PointF(1f, 1f), Color.Aquamarine, f);
         }
 
         private Assembly LSPDFRResolveEventHandler(object sender, ResolveEventArgs args)
@@ -166,21 +172,24 @@ namespace AgencyCalloutsPlus
                 // Load vehicles (this will only initialize once per game session)
                 VehicleInfo.Initialize();
 
-                // See what else is running
-                ComputerPlusAPI.Initialize();
-
                 // Finally, start dispatch call center
                 if (Dispatch.StartDuty())
                 {
-                    var agency = Dispatch.PlayerAgency;
-                    var lvl = Dispatch.OverallCrimeLevel;
+                    var lvl = Dispatch.AverageCrimeLevel;
                     Game.DisplayNotification(
                         "3dtextures",
                         "mpgroundlogo_cops",
                         "Agency Dispatch and Callouts+",
                         "~g~Plugin is Now Active.",
-                        $"Now on duty serving ~g~{agency.ZoneCount}~s~ zone(s) with an overall crime level of ~b~{lvl}"
+                        $"Now on duty serving ~g~{Dispatch.ZoneCount}~s~ zone(s) with an overall crime level of ~b~{lvl}"
                     );
+
+                    // Begin listening on the menu
+                    MainMenu = new ADACMainMenu();
+                    MainMenu.BeginListening();
+
+                    // See what else is running
+                    ComputerPlusAPI.Initialize();
                 }
             });
         }
