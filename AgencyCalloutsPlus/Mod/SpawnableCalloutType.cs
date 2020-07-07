@@ -1,4 +1,6 @@
-﻿namespace AgencyCalloutsPlus.API
+﻿using AgencyCalloutsPlus.API;
+
+namespace AgencyCalloutsPlus.Mod
 {
     internal class SpawnableCalloutType : ISpawnable
     {

@@ -1,1 +1,161 @@
-﻿<?xml version="1.0" encoding="utf-8" ?> 
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<PedVariants>
+  <PedVariantGroup Name="GenericYoung">
+    <Ped>a_f_y_skater_01</Ped>
+    <Ped>a_m_m_skater_01</Ped>
+    <Ped>a_m_y_skater_01</Ped>
+    <Ped>a_m_y_skater_02</Ped>
+    <Ped>a_m_y_beachvesp_01</Ped>
+    <Ped>a_m_y_beachvesp_02</Ped>
+    <Ped>a_m_y_latino_01</Ped>
+    <Ped>a_m_y_polynesian_01</Ped>
+    <Ped>g_m_y_korean_01</Ped>
+    <Ped>g_m_y_korean_02</Ped>
+    <Ped>g_m_y_strpunk_02</Ped>
+    <Ped>a_f_y_eastsa_02</Ped>
+    <Ped>a_f_y_eastsa_03</Ped>
+    <Ped>a_m_y_stbla_01</Ped>
+    <Ped>a_m_y_stbla_02</Ped>
+    <Ped>a_m_y_vindouche_01</Ped>
+    <Ped>a_m_y_indian_01</Ped>
+    <Ped>a_f_y_genhot_01</Ped>
+    <Ped>a_m_y_gay_01</Ped>
+    <Ped>a_m_y_gay_02</Ped>
+    <Ped>a_m_y_sunbathe_01</Ped>
+    <Ped>a_f_y_beach_01</Ped>
+    <Ped>a_f_y_bevhills_01</Ped>
+    <Ped>a_f_y_bevhills_02</Ped>
+    <Ped>a_f_y_bevhills_03</Ped>
+    <Ped>a_f_y_bevhills_04</Ped>
+    <Ped>a_m_y_bevhills_01</Ped>
+    <Ped>a_m_y_bevhills_02</Ped>
+    <Ped>a_f_y_business_01</Ped>
+    <Ped>a_f_y_business_03</Ped>
+    <Ped>a_f_y_business_04</Ped>
+    <Ped>a_m_y_business_01</Ped>
+    <Ped>a_m_y_business_02</Ped>
+    <Ped>a_m_y_business_03</Ped>
+    <Ped>a_m_y_genstreet_01</Ped>
+    <Ped>a_m_y_genstreet_02</Ped>
+  </PedVariantGroup>
+  <PedVariantGroup Name="GenericMiddleAge">
+    <Ped>s_m_m_gaffer_01</Ped>
+    <Ped>s_m_m_lifeinvad_01</Ped>
+    <Ped>s_m_m_janitor</Ped>
+    <Ped>s_m_o_busker_01</Ped>
+    <Ped>a_m_m_stlat_02</Ped>
+    <Ped>a_m_m_polynesian_01</Ped>
+    <Ped>a_m_m_tennis_01</Ped>
+    <Ped>u_m_y_party_01</Ped>
+    <Ped>g_m_m_armboss_01</Ped>
+    <Ped>g_m_m_armlieut_01</Ped>
+    <Ped>s_m_m_autoshop_01</Ped>
+    <Ped>a_f_m_bevhills_01</Ped>
+    <Ped>a_f_m_bevhills_02</Ped>
+    <Ped>a_m_m_bevhills_01</Ped>
+    <Ped>a_m_m_bevhills_02</Ped>
+    <Ped>a_f_m_business_02</Ped>
+    <Ped>g_m_m_chigoon_01</Ped>
+    <Ped>g_m_m_chigoon_02</Ped>
+    <Ped>a_f_m_fatwhite_01</Ped>
+    <Ped>a_m_m_hillbilly_01</Ped>
+    <Ped>a_m_m_hillbilly_02</Ped>
+    <Ped>a_f_m_ktown_02</Ped>
+    <Ped>a_f_m_ktown_01</Ped>
+    <Ped>g_m_m_korboss_01</Ped>
+  </PedVariantGroup>
+  <PedVariantGroup Name="GenericOld">
+    <Ped>a_m_o_ktown_01</Ped>
+    <Ped>a_m_o_genstreet_01</Ped>
+    <Ped>a_m_o_soucent_01</Ped>
+    <Ped>a_m_o_soucent_02</Ped>
+    <Ped>a_m_o_soucent_03</Ped>
+    <Ped>a_f_o_genstreet_01</Ped>
+    <Ped>a_f_o_indian_01</Ped>
+    <Ped>a_f_o_ktown_01</Ped>
+    <Ped>a_f_o_soucent_01</Ped>
+    <Ped>a_f_o_soucent_02</Ped>
+    <Ped>a_m_o_salton_01</Ped>
+  </PedVariantGroup>
+  <PedVariantGroup Name="Hipster">
+    <Ped>a_m_y_hipster_01</Ped>
+    <Ped>a_m_y_hipster_02</Ped>
+    <Ped>a_m_y_hipster_03</Ped>
+    <Ped>a_f_y_hipster_01</Ped>
+    <Ped>a_f_y_hipster_02</Ped>
+    <Ped>a_f_y_hipster_03</Ped>
+    <Ped>a_f_y_hipster_04</Ped>
+  </PedVariantGroup>
+  <PedVariantGroup Name="Hippie">
+    <Ped>u_m_y_hippie_01</Ped>
+    <Ped>a_f_y_hippie_01</Ped>
+    <Ped>a_m_y_hippy_01</Ped>
+  </PedVariantGroup>
+  <PedVariantGroup Name="Homeless">
+    <Ped>u_m_y_militarybum</Ped>
+    <Ped>a_m_o_tramp_01</Ped>
+    <Ped>a_f_m_trampbeac_01</Ped>
+    <Ped>a_f_m_tramp_01</Ped>
+    <Ped>a_m_m_trampbeac_01</Ped>
+    <Ped>a_m_m_tramp_01</Ped>
+    <Ped>u_m_o_tramp_01</Ped>
+    <Ped>a_m_y_methhead_01</Ped>
+    <Ped>a_f_y_rurmeth_01</Ped>
+    <Ped>a_f_m_skidrow_01</Ped>
+    <Ped>a_m_m_skidrow_01</Ped>
+  </PedVariantGroup>
+  <PedVariantGroup Name="Sporty">
+    <Ped>a_m_y_runner_01</Ped>
+    <Ped>a_m_y_runner_02</Ped>
+    <Ped>a_f_y_fitness_01</Ped>
+    <Ped>a_f_y_fitness_02</Ped>
+    <Ped>a_f_y_runner_01</Ped>
+    <Ped>a_m_y_musclbeac_02</Ped>
+    <Ped>a_m_y_musclbeac_01</Ped>
+  </PedVariantGroup>
+  <PedVariantGroup Name="BallasAffiliated">
+    <Ped>g_m_y_ballaeast_01</Ped>
+    <Ped>g_m_y_ballaorig_01</Ped>
+    <Ped>g_m_y_ballasout_01</Ped>
+    <Ped>g_f_y_ballas_01</Ped>
+  </PedVariantGroup>
+  <PedVariantGroup Name="LostAffiliated">
+    <Ped>g_f_y_lost_01</Ped>
+    <Ped>g_m_y_lost_01</Ped>
+    <Ped>g_m_y_lost_02</Ped>
+    <Ped>g_m_y_lost_03</Ped>
+  </PedVariantGroup>
+  <PedVariantGroup Name="FamiliesAffiliated">
+    <Ped>g_m_y_famca_01</Ped>
+    <Ped>g_m_y_famdnf_01</Ped>
+    <Ped>g_m_y_famfor_01</Ped>
+    <Ped>g_f_y_families_01</Ped>
+  </PedVariantGroup>
+  <PedVariantGroup Name="VagosAffiliated">
+    <Ped>g_f_y_vagos_01</Ped>
+    <Ped>g_m_y_mexgang_01</Ped>
+    <Ped>g_m_y_mexgoon_01</Ped>
+    <Ped>g_m_y_mexgoon_02</Ped>
+    <Ped>g_m_y_mexgoon_03</Ped>
+  </PedVariantGroup>
+  <PedVariantGroup Name="Stripper">
+    <Ped>s_f_y_hooker_01</Ped>
+    <Ped>s_f_y_hooker_02</Ped>
+    <Ped>s_f_y_hooker_03</Ped>
+  </PedVariantGroup>
+  <PedVariantGroup Name="Goon">
+    <Ped>g_m_m_armgoon_01</Ped>
+    <Ped>g_m_y_armgoon_02</Ped>
+  </PedVariantGroup>
+  <PedVariantGroup Name="OrganizedCrimeBusiness">
+    <Ped>a_m_y_busicas_01</Ped>
+    <Ped>a_m_y_business_01</Ped>
+    <Ped>a_f_y_business_02</Ped>
+    <Ped>s_m_m_highsec_01</Ped>
+    <Ped>s_m_m_highsec_02</Ped>
+    <Ped>s_m_y_devinsec_01</Ped>
+    <Ped>u_m_m_jewelsec_01</Ped>
+    <Ped>s_m_m_movprem_01</Ped>
+    <Ped>u_f_m_promourn_01</Ped>
+  </PedVariantGroup>
+</PedVariants>

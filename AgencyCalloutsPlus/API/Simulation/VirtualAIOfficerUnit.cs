@@ -73,7 +73,7 @@ namespace AgencyCalloutsPlus.API
         {
             // Tell dispatch we are done here
             Dispatch.RegisterCallComplete(CurrentCall);
-            Log.Debug($"OfficerUnit {UnitString} completed call with flag: {flag}");
+            Log.Debug($"OfficerUnit {CallSign} completed call with flag: {flag}");
 
             // Call base
             base.CompleteCall(flag);
@@ -96,11 +96,11 @@ namespace AgencyCalloutsPlus.API
         private void DriveToCall()
         {
             // Close this task
-            Log.Debug($"OfficerUnit {UnitString} driving to call");
+            Log.Debug($"OfficerUnit {CallSign} driving to call");
             int mins = 30;
 
             // Repond code 3?
-            if (CurrentCall.ScenarioInfo.RespondCode3)
+            if (CurrentCall.ScenarioInfo.ResponseCode == 3)
             {
                 // Calculate drive times
             }
@@ -121,7 +121,7 @@ namespace AgencyCalloutsPlus.API
         private void OnScene()
         {
             // Debug
-            Log.Debug($"OfficerUnit {UnitString} arrived on scene");
+            Log.Debug($"OfficerUnit {CallSign} arrived on scene");
 
             // Telll dispatch we are on scene
             Dispatch.RegisterOnScene(this, CurrentCall);

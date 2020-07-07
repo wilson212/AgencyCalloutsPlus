@@ -12,8 +12,8 @@ namespace AgencyCalloutsPlus
     internal class SpawnGenerator<T> where T : ISpawnable
     {
         private CryptoRandom Randomizer = new CryptoRandom();
-        private List<SpawnableWrapper> SpawnableEntities;
-        private bool TypeIsCloneable = false;
+        private List<SpawnableWrapper<T>> SpawnableEntities;
+        //private bool TypeIsCloneable = false;
 
         public int ItemCount => SpawnableEntities.Count;
 
@@ -25,20 +25,20 @@ namespace AgencyCalloutsPlus
         public SpawnGenerator()
         {
             //TypeIsCloneable = typeof(ICloneable).IsAssignableFrom(typeof(T));
-            SpawnableEntities = new List<SpawnableWrapper>();
+            SpawnableEntities = new List<SpawnableWrapper<T>>();
         }
 
         public SpawnGenerator(IEnumerable<T> objects)
         {
             //TypeIsCloneable = typeof(ICloneable).IsAssignableFrom(typeof(T));
-            SpawnableEntities = new List<SpawnableWrapper>();
+            SpawnableEntities = new List<SpawnableWrapper<T>>();
 
             AddRange(objects);
         }
 
         public void Add(T obj)
         {
-            var spawnable = new SpawnableWrapper(obj, CumulativeProbability);
+            var spawnable = new SpawnableWrapper<T>(obj, CumulativeProbability);
             CumulativeProbability = spawnable.MaxThreshold;
             SpawnableEntities.Add(spawnable);
         }
@@ -47,7 +47,7 @@ namespace AgencyCalloutsPlus
         {
             foreach (var o in objects)
             {
-                var spawnable = new SpawnableWrapper(o, CumulativeProbability);
+                var spawnable = new SpawnableWrapper<T>(o, CumulativeProbability);
                 CumulativeProbability = spawnable.MaxThreshold;
                 SpawnableEntities.Add(spawnable);
             }
@@ -130,20 +130,6 @@ namespace AgencyCalloutsPlus
             catch (Exception)
             {
                 return false;
-            }
-        }
-
-        private class SpawnableWrapper
-        {
-            public T Spawnable { get; protected set; }
-            public int MinThreshold { get; protected set; }
-            public int MaxThreshold { get; protected set; }
-
-            public SpawnableWrapper(T spawnable, int minThreshold)
-            {
-                Spawnable = spawnable;
-                MinThreshold = minThreshold;
-                MaxThreshold = MinThreshold + spawnable.Probability;
             }
         }
     }

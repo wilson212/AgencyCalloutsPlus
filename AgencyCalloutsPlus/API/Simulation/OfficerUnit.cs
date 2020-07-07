@@ -22,7 +22,7 @@ namespace AgencyCalloutsPlus.API
         /// <summary>
         /// Gets the Division-UnitType-Beat for this unit
         /// </summary>
-        public string UnitString { get; protected set; }
+        public string CallSign { get; internal set; }
 
         /// <summary>
         /// Gets the officers current <see cref="OfficerStatus"/>
@@ -50,7 +50,7 @@ namespace AgencyCalloutsPlus.API
         /// <param name="unitString"></param>
         internal OfficerUnit(string unitString)
         {
-            UnitString = unitString;
+            CallSign = unitString;
         }
 
         /// <summary>

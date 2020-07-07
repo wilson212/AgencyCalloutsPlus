@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Xml;
 
 namespace AgencyCalloutsPlus.API
@@ -132,12 +133,35 @@ namespace AgencyCalloutsPlus.API
             // Try and spawn a vehicle
             if (Vehicles[type].TrySpawn(out VehicleInfo vehicle))
             {
-                Log.Debug($"VehicleInfo.GetRandomVehicleByType(): returning {vehicle.ModelName}");
-                return vehicle;
+                // Ensure vehicle model exists within Rage
+                if (Model.VehicleModels.Contains(vehicle.ModelName))
+                {
+                    //Log.Debug($"VehicleInfo.GetRandomVehicleByType(): returning {vehicle.ModelName}");
+                    return vehicle;
+                }
+
+                // Log this as an error
+                Log.Error($"VehicleInfo.GetRandomVehicleByType(): Vehicle model '{vehicle.ModelName}' does not exist in Rage.Model.VehicleModels");
+
+                // Attempt 10 times to find another vehicle
+                for (int i = 0; i < 10; i++)
+                {
+                    // Spawn another
+                    Vehicles[type].TrySpawn(out vehicle);
+                    if (Model.VehicleModels.Contains(vehicle.ModelName))
+                    {
+                        //Log.Debug($"VehicleInfo.GetRandomVehicleByType(): returning {vehicle.ModelName}");
+                        return vehicle;
+                    }
+                }
+
+                // 
+                Log.Error($"VehicleInfo.GetRandomVehicleByType(): Unable to find valid vehicle model for class {type} in Model.VehicleModels after 10 attempts");
+                return null;
             }
             else
             {
-                Log.Warning($"VehicleInfo.GetRandomVehicleByType(): unable to find vehicle for class {type}");
+                Log.Warning($"VehicleInfo.GetRandomVehicleByType(): Unable to find any vehicle model of class '{type}'");
                 return null;
             }
         }
@@ -155,7 +179,7 @@ namespace AgencyCalloutsPlus.API
             // Try and spawn a vehicle
             if (Vehicles[type].TrySpawn(out VehicleInfo vehicle))
             {
-                return vehicle;
+                return GetRandomVehicleByType(type);
             }
 
             return null;
@@ -168,7 +192,7 @@ namespace AgencyCalloutsPlus.API
         /// <summary>
         /// Gets the model name of the vehicle
         /// </summary>
-        public string ModelName { get; internal set; }
+        public string ModelName { get; private set; }
 
         /// <summary>
         /// Gets the <see cref="API.VehicleClass"/> of the vehicle
@@ -201,7 +225,7 @@ namespace AgencyCalloutsPlus.API
         /// <param name="modelName"></param>
         internal VehicleInfo(string modelName, VehicleClass type, int probability)
         {
-            this.ModelName = modelName;
+            this.ModelName = modelName.TrimStart('-');
             this.VehicleType = type;
             this.Probability = probability;
         }

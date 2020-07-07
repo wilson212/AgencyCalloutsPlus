@@ -97,7 +97,7 @@ namespace AgencyCalloutsPlus.API
                             break;
                     }
                 }
-            }, $"AgencyCallouts+ Unit {UnitString} AI Thread", () => !IsDisposed);
+            }, $"AgencyCallouts+ Unit {CallSign} AI Thread", () => !IsDisposed);
 
             // Set blip
             SetBlipColor(OfficerStatusColor.Available);
@@ -161,7 +161,7 @@ namespace AgencyCalloutsPlus.API
 
             // Tell dispatch we are done here
             Dispatch.RegisterCallComplete(CurrentCall);
-            Log.Debug($"OfficerUnit {UnitString} completed call with flag: {flag}");
+            Log.Debug($"OfficerUnit {CallSign} completed call with flag: {flag}");
 
             // Call base
             base.CompleteCall(flag);
@@ -223,7 +223,7 @@ namespace AgencyCalloutsPlus.API
             SanityCheck();
 
             // Current blip is good?
-            if (VehicleBlip != null && VehicleBlip.IsValid())
+            if (VehicleBlip.Exists())
             {
                 VehicleBlip.Color = color;
             }
@@ -245,9 +245,9 @@ namespace AgencyCalloutsPlus.API
             bool checkAgain = false;
 
             // Ensure Police vehicle is good
-            if (!PoliceCar.IsValid())
+            if (!PoliceCar.Exists())
             {
-                if (!Officer.IsValid())
+                if (!Officer.Exists())
                 {
                     checkAgain = true;
                     goto OfficerCheck;
@@ -255,7 +255,7 @@ namespace AgencyCalloutsPlus.API
                 else
                 {
                     // Log
-                    Log.Debug($"PoliceCar is invalid for unit {UnitString}... Creating a new one");
+                    Log.Debug($"PoliceCar is invalid for unit {CallSign}... Creating a new one");
 
                     // Determine spawn point
                     var oldCar = PoliceCar;
@@ -285,10 +285,10 @@ namespace AgencyCalloutsPlus.API
             OfficerCheck:
             {
                 // New officer
-                if (!Officer.IsValid())
+                if (!Officer.Exists())
                 {
                     // Log
-                    Log.Debug($"Officer is invalid for unit {UnitString}... Creating a new one");
+                    Log.Debug($"Officer is invalid for unit {CallSign}... Creating a new one");
 
                     // Tell the old Ped to piss off
                     Officer.Dismiss();
@@ -327,7 +327,7 @@ namespace AgencyCalloutsPlus.API
         {
             // Close this task
             NextTask = TaskSignal.None;
-            Log.Debug($"OfficerUnit {UnitString} driving to call");
+            Log.Debug($"OfficerUnit {CallSign} driving to call");
 
             // Ensure officer is in police cruiser
             EnsureInPoliceCar();
@@ -340,7 +340,7 @@ namespace AgencyCalloutsPlus.API
             bool isParking = false;
 
             // Repond code 3?
-            if (CurrentCall.ScenarioInfo.RespondCode3)
+            if (CurrentCall.ScenarioInfo.ResponseCode == 3)
             {
                 // Turn on sirens
                 SetBlipColor(OfficerStatusColor.DispatchedCode3);
@@ -396,7 +396,7 @@ namespace AgencyCalloutsPlus.API
             var mins = Math.Round(span.TotalMinutes, 0);
 
             // Debug
-            Log.Debug($"OfficerUnit {UnitString} arrived on scene after {mins} game minutes");
+            Log.Debug($"OfficerUnit {CallSign} arrived on scene after {mins} game minutes");
 
             // Telll dispatch we are on scene
             Dispatch.RegisterOnScene(this, CurrentCall);

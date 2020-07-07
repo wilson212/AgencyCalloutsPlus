@@ -1,0 +1,115 @@
+﻿Agency Dispatch and Callouts+ Scenario List
+
+Description:
+	Each callout will have multiple scenarios. Each scenario is essentially
+	a full callout all in itself. Each scenario will have multiple dialogs
+	that are chosen at random, so playing the same scenario multiple times
+	will still feel different each time (ex: different reasons for crime, 
+	different attitude and responses).
+
+File Format:
+ - Callout Name
+	- Scenario Name
+
+Callouts:
+- TrafficAccident 
+	- RearEndNoInjuries						[Traffic]
+	- RearEndInjuries						[Traffic]
+	- RearEndDeath							[Traffic]
+	- MultiCarCollision						[Traffic]
+	- HitAndRun								[Traffic]
+	- RanRedLightTBoned						[Traffic]
+- TrafficReport
+	- RecklessDriver						[Traffic]
+	- ExcessiveSpeeding						[Traffic]
+	- StreetRacing							[Traffic]
+	- AbandonedVehicleOnHighway				[Traffic]
+	- BikersHarrasingCar					[Traffic]
+	- UnRoadWorthyVehicle					[Traffic]
+- StolenVehicleSpotted
+	- ByCop: Begins Pursuit					[Traffic]
+	- ALPR Hit								[Traffic]
+	- ByOwner								[Traffic]
+- DomesticViolence
+	- DomesticArguingOnly					[Disturbance]
+	- DomesticDenial						[Disturbance]
+	- DomesticWithAssault					[Violent]
+	- DomesticHoldUp						[Violent]
+	- AnimalAbuse							[Disturbance]
+	- AnimalNeglect							[Disturbance]
+- Disturbance
+	- NoiseComplaintParty					[Disturbance]
+	- NoiseComplaintEngineReving			[Disturbance]
+	- NoiseComplaintLoudMusicAfterDark		[Disturbance]
+	- ShoutingProfanityInPublic				[Disturbance]
+	- RefusingToLeaveProperty				[Disturbance]
+- GangActivity
+	- GangHasseling							[Gang]
+	- GangStolenCar							[Gang]
+	- GangShootout							[Gang]
+	- GangDriveBy							[Gang]
+- DrugActivity 
+	- TipOffDrugDealer						[Drugs]
+	- Trafficking							[Drugs]
+	- PublicDrugUse							[Drugs]
+	- ConcernedParents						[Drugs]
+- Robbery
+	- Mugging								[Robbery]
+	- HoldUpAtStore							[Robbery]
+	- GrandTheftAuto						[Robbery]
+	- ATMHoldUp								[Robbery]
+	- BankHiestPursuit						[Robbery]
+- Burglary 
+	- ResidentBreakInAftermath				[Property]
+	- ResidentAlarmTriggered				[Property]
+	- StoreBreakInAftermath					[Property]
+	- StoreSilentAlarmTriggered				[Property]
+	- ShopLifting							[Property]
+	- VehicleStolen							[Property]
+- Vandalism 
+	- VandalisedVehicle						[Property]
+	- VandalisedHome						[Property]
+- Statutory 
+	- PublicIntoxication					[Statutory]
+	- DrivingUnderInfluence					[Statutory]
+	- DrivingWithOpenContainers				[Statutory]
+	- MinorPossessionAlcohol				[Statutory]
+	- SellingAndSupplyingAlcoholToMinors	[Statutory]
+	- BuyingAlcoholFakeID					[Statutory]
+- TrafficStopBackup
+	- Generic								[Traffic]
+	- SmellsDrugsOrAlchohol					[Traffic]
+	- RefusingFieldSobrietyTest				[Traffic]
+	- FelonyStop							[Traffic]
+	- HotPursuit							[Traffic]
+	- PrisonerTransportRequired				[Traffic]
+	- OfficerUnderFire						[Violent]
+- AssaultAndBattery 
+	- BarFight								[Violent]
+	- PublicPhysicalAltercationFriends		[Violent]
+	- PhyisicalAltercationCheating			[Violent]
+	- BeingHeldAtGunpoint					[Violent]
+- SexualAssault
+	- Rape									[Sexual]
+	- AttemptedRape							[Sexual]
+	- StatutoryRape							[Sexual]
+	- UnWelcomeGroping						[Sexual]
+- Homocide
+	- DeadBodyFound							[Violent]
+	- DriveByShooting						[Violent]
+- SuspiciousActivity
+	- Tresspassing							[Disturbance]
+	- Loitering								[Disturbance]
+	- Prowler								[Disturbance]
+	- Prositution							[Disturbance]
+	- ArmedPedestrian						[Disturbance]
+	- SuspiciousVehicleEmpty				[Disturbance]
+	- SuspiciousVehicleIndicentExposure		[Disturbance]
+	- SuspiciousVehicleSpying				[Disturbance]
+- MissingPerson
+	- DemensiaPatientMissing
+	- MissingPersonReport
+	- ChildRunawayReport
+	- Kidnapping
+ - Warrant
+	- ServingWarrant

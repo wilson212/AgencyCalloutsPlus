@@ -1,7 +1,9 @@
 ﻿using AgencyCalloutsPlus.Extensions;
+using AgencyCalloutsPlus.Mod;
 using Rage;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Xml;
@@ -17,7 +19,7 @@ namespace AgencyCalloutsPlus.API
         /// Contains a hash table of zones
         /// </summary>
         /// <remarks>[ ZoneScriptName => ZoneInfo class ]</remarks>
-        private static Dictionary<string, ZoneInfo> Zones { get; set; }
+        private static Dictionary<string, ZoneInfo> ZoneCache { get; set; }
 
         /// <summary>
         /// Containts a hash table of regions, and thier zones
@@ -32,7 +34,7 @@ namespace AgencyCalloutsPlus.API
         /// <summary>
         /// Gets the Zone name
         /// </summary>
-        public string FriendlyName { get; protected set; }
+        public string FullName { get; protected set; }
 
         /// <summary>
         /// Gets the population density of the zone
@@ -65,9 +67,14 @@ namespace AgencyCalloutsPlus.API
         public double IdealPatrolCount { get; protected set; }
 
         /// <summary>
-        /// Contains a dictionary of how often specific cimes happen in this zone
+        /// Contains a dictionary of how often specific crimes happen in this zone
         /// </summary>
-        public Dictionary<CalloutType, int> Crimes { get; protected set; }
+        public IReadOnlyDictionary<CalloutType, Dictionary<TimeOfDay, int>> CrimeTypeProbabilities { get; protected set; }
+
+        /// <summary>
+        /// Contains a dictionary of the average number of calls per time of day in this zone
+        /// </summary>
+        public IReadOnlyDictionary<TimeOfDay, int> AverageCalls { get; protected set; }
 
         /// <summary>
         /// Containts a list <see cref="HomeLocation"/>(s) in this zone
@@ -82,12 +89,12 @@ namespace AgencyCalloutsPlus.API
         /// <summary>
         /// Gets the crime level probability of this zone
         /// </summary>
-        public int Probability => (int)CrimeLevel;
+        public int Probability => AverageCalls[Dispatch.CurrentTimeOfDay];
 
         /// <summary>
-        /// Spawns a <see cref="CalloutType"/> based on the <see cref="Crimes"/> probabilites set
+        /// Spawns a <see cref="CalloutType"/> based on the <see cref="CrimeTypeProbabilities"/> probabilites set
         /// </summary>
-        private SpawnGenerator<SpawnableCalloutType> CrimeGenerator { get; set; }
+        private TimeOfDaySpawnGenerator<SpawnableCalloutType> CrimeGenerator { get; set; }
 
         /// <summary>
         /// Creates a new instance of <see cref="ZoneInfo"/>
@@ -97,7 +104,7 @@ namespace AgencyCalloutsPlus.API
         {
             // Load zone info
             XmlNode catagoryNode = node.SelectSingleNode("Name");
-            FriendlyName = catagoryNode?.InnerText ?? throw new ArgumentNullException("Name");
+            FullName = catagoryNode?.InnerText ?? throw new ArgumentNullException("Name");
             ScriptName = node.Name;
 
             // Extract size
@@ -133,22 +140,28 @@ namespace AgencyCalloutsPlus.API
             Population = pop;
 
             // Extract crime level
-            catagoryNode = node.SelectSingleNode("CrimeLevel");
-            if (String.IsNullOrWhiteSpace(catagoryNode?.InnerText) || !Enum.TryParse(catagoryNode.InnerText, out CrimeLevel crime))
+            catagoryNode = node.SelectSingleNode("Crime");
+            if (catagoryNode == null || !catagoryNode.HasChildNodes)
             {
-                throw new ArgumentNullException("CrimeLevel");
+                throw new ArgumentNullException("Crime");
             }
-            CrimeLevel = crime;
 
             // Load crime probabilites
-            Crimes = new Dictionary<CalloutType, int>(6);
-            CrimeGenerator = new SpawnGenerator<SpawnableCalloutType>();
-            if (crime != CrimeLevel.None)
+            var crimeTypeProbabilities = new Dictionary<CalloutType, Dictionary<TimeOfDay, int>>(10);
+            CrimeGenerator = new TimeOfDaySpawnGenerator<SpawnableCalloutType>();
+
+            // Get average calls by time of day
+            var subNode = catagoryNode.SelectSingleNode("AverageCalls");
+            AverageCalls = GetTimeOfDayProbabilities(subNode);
+            int maxCalls = AverageCalls.Values.Sum();
+
+            // Does this zone get any calls?
+            if (maxCalls > 0)
             {
-                catagoryNode = node.SelectSingleNode("Crimes");
+                catagoryNode = catagoryNode.SelectSingleNode("Probabilities");
                 if (catagoryNode == null || !catagoryNode.HasChildNodes)
                 {
-                    throw new ArgumentNullException("Crimes");
+                    throw new ArgumentNullException("Probabilities");
                 }
 
                 // Extract crime probabilites
@@ -161,16 +174,17 @@ namespace AgencyCalloutsPlus.API
                         continue;
                     }
 
-                    // Try and parse the probability level
-                    if (!int.TryParse(n.InnerText, out int level))
+                    // Try and parse the probability levels by Time of Day
+                    var items = GetTimeOfDayProbabilities(n);
+                    foreach (var item in items)
                     {
-                        Log.Warning($"ZoneInfo.ctor: Unable to parse CrimeType probability for {n.Name} in zone '{ScriptName}'");
-                        continue;
+                        if (item.Value == 0) continue;
+
+                        CrimeGenerator.Add(item.Key, new SpawnableCalloutType(item.Value, calloutType));
                     }
 
                     // Add
-                    Crimes.Add(calloutType, level);
-                    CrimeGenerator.Add(new SpawnableCalloutType(level, calloutType));
+                    crimeTypeProbabilities.Add(calloutType, items);
                 }
             }
 
@@ -190,8 +204,61 @@ namespace AgencyCalloutsPlus.API
             HomeLocations = ExtractHomes(catagoryNode);
 
             // Internal vars
+            CrimeTypeProbabilities = new ReadOnlyDictionary<CalloutType, Dictionary<TimeOfDay, int>>(crimeTypeProbabilities);
+
             IdealPatrolCount = GetOptimumPatrolCount(Size, Population, CrimeLevel);
-            CrimeGenerator = new SpawnGenerator<SpawnableCalloutType>();
+        }
+
+        private Dictionary<TimeOfDay, int> GetTimeOfDayProbabilities(XmlNode subNode)
+        {
+            // If attributes is null, we know... we know...
+            if (subNode?.Attributes == null)
+            {
+                throw new ArgumentNullException(subNode.Name);
+            }
+
+            // Create our dictionary
+            var item = new Dictionary<TimeOfDay, int>(4)
+            {
+                { TimeOfDay.Morning, 0 },
+                { TimeOfDay.Day, 0 },
+                { TimeOfDay.Evening, 0 },
+                { TimeOfDay.Night, 0 }
+            };
+
+            // Extract and parse morning value
+            if (!Int32.TryParse(subNode.Attributes["morning"]?.Value, out int m))
+            {
+                Log.Error($"ZoneInfo.ctor [{subNode.GetFullPath()}]: Unable to extract 'morning' attribute on XmlNode");
+                item[TimeOfDay.Morning] = 0;
+            }
+            item[TimeOfDay.Morning] = m;
+
+            // Extract and parse morning value
+            if (!Int32.TryParse(subNode.Attributes["day"]?.Value, out m))
+            {
+                Log.Error($"ZoneInfo.ctor [{subNode.GetFullPath()}]: Unable to extract 'day' attribute on XmlNode");
+                item[TimeOfDay.Day] = 0;
+            }
+            item[TimeOfDay.Day] = m;
+
+            // Extract and parse morning value
+            if (!Int32.TryParse(subNode.Attributes["evening"]?.Value, out m))
+            {
+                Log.Error($"ZoneInfo.ctor [{subNode.GetFullPath()}]: Unable to extract 'evening' attribute on XmlNode");
+                item[TimeOfDay.Evening] = 0;
+            }
+            item[TimeOfDay.Evening] = m;
+
+            // Extract and parse morning value
+            if (!Int32.TryParse(subNode.Attributes["night"]?.Value, out m))
+            {
+                Log.Error($"ZoneInfo.ctor [{subNode.GetFullPath()}]: Unable to extract 'night' attribute on XmlNode");
+                item[TimeOfDay.Night] = 0;
+            }
+            item[TimeOfDay.Night] = m;
+
+            return item;
         }
 
         /// <summary>
@@ -219,7 +286,7 @@ namespace AgencyCalloutsPlus.API
         /// </returns>
         public CalloutType GetNextRandomCrimeType()
         {
-            if (CrimeGenerator.TrySpawn(out SpawnableCalloutType type))
+            if (CrimeGenerator.TrySpawn(Dispatch.CurrentTimeOfDay, out SpawnableCalloutType type))
             {
                 return type.CalloutType;
             }
@@ -337,7 +404,7 @@ namespace AgencyCalloutsPlus.API
                             continue;
 
                         // Try and extract typ value
-                        if (sp.Attributes["id"]?.Value == null || !Enum.TryParse(sp.Attributes["id"].Value, out HomeSpawn s))
+                        if (sp.Attributes["id"]?.Value == null || !Enum.TryParse(sp.Attributes["id"].Value, out HomeSpawnId s))
                         {
                             Log.Warning($"ZoneInfo.ParseSpawnPoint(): Unable to extract SpawnPoint id value for '{ScriptName}->Homes->Home->Points'");
                             break;
@@ -522,9 +589,9 @@ namespace AgencyCalloutsPlus.API
         public static int LoadZones(string[] names)
         {
             // Create instance of not already!
-            if (Zones == null)
+            if (ZoneCache == null)
             {
-                Zones = new Dictionary<string, ZoneInfo>();
+                ZoneCache = new Dictionary<string, ZoneInfo>();
             }
 
             int itemsAdded = 0;
@@ -534,7 +601,7 @@ namespace AgencyCalloutsPlus.API
             foreach (string zoneName in names)
             {
                 // If we have loaded this zone already, skip it
-                if (Zones.ContainsKey(zoneName)) continue;
+                if (ZoneCache.ContainsKey(zoneName)) continue;
 
                 // Load XML document
                 string path = Path.Combine(Main.PluginFolderPath, "Locations", $"{zoneName}.xml");
@@ -561,7 +628,7 @@ namespace AgencyCalloutsPlus.API
                     var zone = new ZoneInfo(root);
 
                     // Save
-                    Zones.Add(zoneName, zone);
+                    ZoneCache.Add(zoneName, zone);
                     itemsAdded += zone.GetTotalNumberOfLocations();
                     zonesAdded++;
                 }
@@ -588,7 +655,7 @@ namespace AgencyCalloutsPlus.API
         public static ZoneInfo GetZoneByName(string name)
         {
             // Ensure zone exists
-            if (Zones.TryGetValue(name, out ZoneInfo locations))
+            if (ZoneCache.TryGetValue(name, out ZoneInfo locations))
             {
                 return locations;
             }
@@ -596,14 +663,38 @@ namespace AgencyCalloutsPlus.API
             return null;
         }
 
+        /// <summary>
+        /// Adds a region
+        /// </summary>
+        /// <param name="name">The name of the region</param>
+        /// <param name="zones">A list of zone names contained within this region</param>
         internal static void AddRegion(string name, List<string> zones)
         {
             RegionZones.Add(name, zones);
         }
 
+        /// <summary>
+        /// Gets a list of regions
+        /// </summary>
+        /// <returns>an array of region names found in the LSPDFR regions.xml file</returns>
         public static string[] GetRegions()
         {
             return RegionZones.Keys.ToArray();
+        }
+
+        /// <summary>
+        /// Gets a list of zone names by the region name
+        /// </summary>
+        /// <param name="region">Name of the region, located in the LSPDFR regions.xml file</param>
+        /// <returns>an array of zone names on success, otherwise null</returns>
+        public static string[] GetZoneNamesByRegion(string region)
+        {
+            if (!RegionZones.ContainsKey(region))
+            {
+                return null;
+            }
+
+            return RegionZones[region].ToArray();
         }
     }
 }

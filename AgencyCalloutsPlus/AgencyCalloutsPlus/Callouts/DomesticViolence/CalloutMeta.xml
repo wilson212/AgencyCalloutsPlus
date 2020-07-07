@@ -1,19 +1,18 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <CalloutMeta>
-  <!-- 
-    A list of agency types that can take this type of callout, and the chances of 
-    that callout spawning. A higher probability, means a higher chance compared to
-    the other callouts against this AgencyType.
-    
-    Total Probability = (CalloutMeta.xml -> Agencies -> Agency[AgencyType][probability]) * (Locations.xml -> ZoneName -> Crimes[CrimeType].Value)
-  -->
-  <Agencies>
-    <Agency type="CityPolice" probability="10" />
-    <Agency type="CountySheriff" probability="10" />
-  </Agencies>
-  <CalloutType>Disturbance</CalloutType>
   <Scenarios>
-    <DomesticArguingOnly probability="5">
+    
+    <DomesticArguingOnly>
+      <!-- Total Probability = (Agencies -> Agency[playerAgencyType][probability]) * TimeOfDay[currentTimeOfDay] -->
+      <Probability>
+        <Agencies>
+          <Agency type="CityPolice" probability="5" />
+          <Agency type="CountySheriff" probability="5" />
+          <Agency type="HighwayPatrol" probability="8" />
+        </Agencies>
+        <TimeOfDay morning="5" day="3" evening="5" night="2" />
+      </Probability>
+      <Catagory>Disturbance</Catagory>
       <Dispatch>
         <!-- Scanner Audio for call. Unit Division-UnitType-Beat will prefix this message -->
         <Scanner>WE_HAVE_01 CRIME_TRAFFIC_ALERT IN_OR_ON_POSITION</Scanner>
@@ -24,9 +23,10 @@
         </Description>
         <IncidentType abbreviation="DIST">Disturbance</IncidentType>
         <Priority>3</Priority>
-        <Respond>Code2</Respond>
+        <Response>Code2</Response>
         <LocationType>SideOfRoad</LocationType>
       </Dispatch>
     </DomesticArguingOnly>
+    
   </Scenarios>
 </CalloutMeta>

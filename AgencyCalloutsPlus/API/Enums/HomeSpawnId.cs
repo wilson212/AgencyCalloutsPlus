@@ -1,6 +1,6 @@
 ﻿namespace AgencyCalloutsPlus.API
 {
-    public enum HomeSpawn
+    public enum HomeSpawnId
     {
         /// <summary>
         /// A ped standing at the front door, facing away from the door,

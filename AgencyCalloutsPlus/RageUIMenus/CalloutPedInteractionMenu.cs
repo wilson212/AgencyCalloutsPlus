@@ -1,4 +1,6 @@
 ﻿using AgencyCalloutsPlus.Extensions;
+using AgencyCalloutsPlus.Mod.Conversation;
+using LSPD_First_Response.Mod.API;
 using Rage;
 using RAGENativeUI;
 using RAGENativeUI.Elements;
@@ -28,6 +30,12 @@ namespace AgencyCalloutsPlus.RageUIMenus
         private Dictionary<Ped, bool> Peds { get; set; }
 
         /// <summary>
+        /// Contains a list of <see cref="Ped"/> entities that this menu can be used with.
+        /// The bool value indicates wether the Ped has been spoken with yet.
+        /// </summary>
+        private Dictionary<Ped, FlowSequence> Conversations { get; set; }
+
+        /// <summary>
         /// Gets the Ped that was last within range and angle to have a conversation with
         /// </summary>
         private Ped CurrentPed { get; set; }
@@ -36,6 +44,11 @@ namespace AgencyCalloutsPlus.RageUIMenus
         /// Indicates whether this menu can be opened by the player
         /// </summary>
         public bool Enabled { get; protected set; } = false;
+
+        /// <summary>
+        /// Gets or sets the current open FlowSequence Meny
+        /// </summary>
+        protected FlowSequence CurrentSequence { get; set; }
 
         /// <summary>
         /// Creates a new instance of <see cref="CalloutPedInteractionMenu"/>
@@ -64,7 +77,8 @@ namespace AgencyCalloutsPlus.RageUIMenus
 
             // internals
             Peds = new Dictionary<Ped, bool>();
-            HasModifier = (Settings.OpenMenuModifierKey != Keys.None);
+            Conversations = new Dictionary<Ped, FlowSequence>();
+            HasModifier = (Settings.OpenCalloutMenuModifierKey != Keys.None);
         }
 
         private void SpeakWithButton_Activated(UIMenu sender, UIMenuItem selectedItem)
@@ -72,6 +86,19 @@ namespace AgencyCalloutsPlus.RageUIMenus
             // Distance and facing check
             if (CurrentPed == null) return;
             Peds[CurrentPed] = true;
+
+            // Check for an open FlowSequence menu!
+            if (CurrentSequence != null)
+            {
+                CurrentSequence.SetMenuVisible(false);
+            }
+
+            // Open flow sequence main menu
+            CurrentSequence = Conversations[CurrentPed];
+            CurrentSequence.SetMenuVisible(true);
+
+            // Close current menu
+            AllMenus.CloseAllMenus();
         }
 
         /// <summary>
@@ -91,6 +118,16 @@ namespace AgencyCalloutsPlus.RageUIMenus
                 // Only allow interaction menu to open on Foot
                 if (!player.IsOnFoot) return;
 
+                // If a FlowSequence is open, process that!
+                if (CurrentSequence != null)
+                {
+                    if (CurrentSequence.AllMenus.IsAnyMenuOpen())
+                    {
+                        CurrentSequence.Process(player);
+                        return;
+                    }
+                }
+
                 // Distance and facing check
                 if (!TryGetPedForConversation(player, out Ped ped))
                 {
@@ -105,8 +142,8 @@ namespace AgencyCalloutsPlus.RageUIMenus
                 if (Peds[ped] == false)
                 {
                     // Let player know they can open the menu
-                    var k1 = Settings.OpenMenuModifierKey.ToString("F");
-                    var k2 = Settings.OpenMenuKey.ToString("F");
+                    var k1 = Settings.OpenCalloutMenuModifierKey.ToString("F");
+                    var k2 = Settings.OpenCalloutMenuKey.ToString("F");
                     if (HasModifier)
                     {
                         Game.DisplayHelp($"Press the ~y~{k1}~s~ + ~y~{k2}~s~ keys to open the interaction menu.");
@@ -120,14 +157,13 @@ namespace AgencyCalloutsPlus.RageUIMenus
                 // Is modifier key pressed
                 if (HasModifier)
                 {
-                    if (!Game.IsKeyDown(Settings.OpenMenuModifierKey))
+                    if (Globals.IsKeyDownWithModifier(Settings.OpenCalloutMenuKey, Settings.OpenCalloutMenuModifierKey))
                     {
-                        return;
+                        Game.HideHelp();
+                        MainUIMenu.Visible = true;
                     }
                 }
-
-                // Wait for key press, then open menu
-                if (Game.IsKeyDown(Settings.OpenMenuKey))
+                else if (Game.IsKeyDown(Settings.OpenCalloutMenuKey))
                 {
                     Game.HideHelp();
                     MainUIMenu.Visible = true;
@@ -194,13 +230,27 @@ namespace AgencyCalloutsPlus.RageUIMenus
             this.Enabled = false;
         }
 
+        public void Dispose()
+        {
+            foreach (var kvp in Conversations)
+            {
+                kvp.Value.Dispose();
+            }
+
+            AllMenus.CloseAllMenus();
+            AllMenus.Clear();
+            AllMenus = null;
+        }
+
         /// <summary>
-        /// Registers a <see cref="Ped"/> that can be questioned by this Menu
+        /// Registers a <see cref="Ped"/> that can be questioned by this Menu given
+        /// the supplied <see cref="FlowSequence"/>
         /// </summary>
         /// <param name="ped"></param>
-        public void RegisterPed(Ped ped)
+        public void RegisterPedConversation(Ped ped, FlowSequence sequence)
         {
             Peds.Add(ped, false);
+            Conversations.Add(ped, sequence);
         }
     }
 }

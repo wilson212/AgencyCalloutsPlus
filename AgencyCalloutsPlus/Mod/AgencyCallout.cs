@@ -1,4 +1,5 @@
 ﻿using AgencyCalloutsPlus.API;
+using AgencyCalloutsPlus.Callouts;
 using AgencyCalloutsPlus.Integration;
 using LSPD_First_Response.Mod.API;
 using LSPD_First_Response.Mod.Callouts;
@@ -30,14 +31,22 @@ namespace AgencyCalloutsPlus
         /// Plays the Audio scanner with the Division Unit Beat prefix
         /// </summary>
         /// <param name="scanner"></param>
-        public void PlayScannerAudioUsingPrefix(string scanner)
+        public void PlayScannerAudioUsingCallsign(string scanner, bool usePosition = true)
         {
             // Pad zero
             var divString = Settings.AudioDivision.ToString("D2");
             var beatString = Settings.AudioBeat.ToString("D2");
-
             var prefix = $"DISP_ATTENTION_UNIT DIV_{divString} {Settings.AudioUnitType} BEAT_{beatString} ";
-            Functions.PlayScannerAudioUsingPosition(String.Concat(prefix, scanner), CalloutPosition);
+
+            // Play audio scanner
+            if (usePosition)
+            {
+                Functions.PlayScannerAudioUsingPosition(String.Concat(prefix, scanner), CalloutPosition);
+            }
+            else
+            {
+                Functions.PlayScannerAudio(String.Concat(prefix, scanner));
+            }
         }
 
         /// <summary>
@@ -97,7 +106,7 @@ namespace AgencyCalloutsPlus
                 throw new ArgumentNullException(nameof(ActiveCall));
 
             // Tell dispatch
-            Dispatch.CalloutAccepted(ActiveCall);
+            Dispatch.CalloutAccepted(ActiveCall, this);
 
             // Update computer plus
             if (ComputerPlusRunning)

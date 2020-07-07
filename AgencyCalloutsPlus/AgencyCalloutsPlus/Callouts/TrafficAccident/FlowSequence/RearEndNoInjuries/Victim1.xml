@@ -1,4 +1,37 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
-<Victim>
-  
-</Victim>
+<FlowSequence>
+  <Input>
+    <!-- Initial Questioning Menu -->
+    <Menu id="main">
+      <MenuItem id="ok" text="Do you need medical?">
+        <Line time="2000">Do you require any medical attention?</Line>
+      </MenuItem>
+      <MenuItem id="how" text="How did this happen?">
+        <Line time="2000">How did this happen?</Line>
+      </MenuItem>
+    </Menu>
+  </Input>
+  <Output>
+    
+    <!-- Default Outcome: Victim2 is at fault for texting and driving -->
+    <FlowOutcome id="distracted">
+      <Response to="ok" returnMenu="main">
+        <LineSet probability="100">
+          <Line time="3000">No, I seem to be ok...</Line>
+        </LineSet>
+      </Response>
+      <Response to="how" returnMenu="main">
+        <LineSet probability="100" if="Victim2.IsMale == true">
+          <Line time="4000">I was just sitting in my $CarType$ when this jackass rear-ended me.</Line>
+        </LineSet>
+        <LineSet probability="100" if="Victim2.IsFemale == true">
+          <Line time="4000">I was just sitting in my $CarType$ when this bitch rear-ended me.</Line>
+        </LineSet>
+        <LineSet probability="10">
+          <Line time="4000">I was just sitting in my $CarType$. All the sudden this person just crashed into the back of me!</Line>
+        </LineSet>
+      </Response>
+    </FlowOutcome>
+    
+  </Output>
+</FlowSequence>

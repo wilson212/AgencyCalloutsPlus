@@ -2,14 +2,10 @@
 {
     public enum OfficerRole
     {
-        All,
+        Patrol,
 
         Traffic,
 
-        Crime,
-
         Gang,
-
-        Drugs
     }
 }

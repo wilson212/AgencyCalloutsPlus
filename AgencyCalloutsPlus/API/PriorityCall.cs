@@ -1,4 +1,5 @@
 ﻿using AgencyCalloutsPlus.API.Simulation;
+using AgencyCalloutsPlus.Callouts;
 using Rage;
 using System;
 using System.Collections.Generic;
@@ -21,6 +22,11 @@ namespace AgencyCalloutsPlus.API
         /// The callout scenario for this call
         /// </summary>
         internal CalloutScenarioInfo ScenarioInfo { get; private set; }
+
+        /// <summary>
+        /// Gets the Callout handle
+        /// </summary>
+        internal AgencyCallout Callout { get; set; }
 
         /// <summary>
         /// The <see cref="CallPriority"/>
@@ -85,7 +91,7 @@ namespace AgencyCalloutsPlus.API
         /// <summary>
         /// Indicates wether the OfficerUnit should repsond code 3
         /// </summary>
-        public bool RespondCode3 => ScenarioInfo.RespondCode3;
+        public int ResponseCode => ScenarioInfo.ResponseCode;
 
         /// <summary>
         /// Gets the incident text

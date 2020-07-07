@@ -6,7 +6,7 @@
   <Type>Mixed</Type>
   <Class>Lower</Class>
   <Population>Scarce</Population>
-  <CrimeLevel>Low</CrimeLevel>
+  <CrimeLevel>VeryLow</CrimeLevel>
   <Crimes>
     <Robbery>0</Robbery>
     <Property>0</Property>

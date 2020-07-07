@@ -1,7 +1,7 @@
 ﻿using System;
 using AgencyCalloutsPlus.API;
 
-namespace AgencyCalloutsPlus
+namespace AgencyCalloutsPlus.Callouts
 {
     /// <summary>
     /// Contains Scenario info for an <see cref="AgencyCallout"/>
@@ -27,7 +27,7 @@ namespace AgencyCalloutsPlus
         /// <summary>
         /// Indicates whether the responding unit should respond Code 3
         /// </summary>
-        public bool RespondCode3 { get; set; }
+        public int ResponseCode { get; set; }
 
         /// <summary>
         /// Gets the priority level of the call

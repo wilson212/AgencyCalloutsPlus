@@ -71,6 +71,7 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Data.Entity" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml.Linq" />
@@ -81,12 +82,17 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AgencyCallout.cs" />
+    <Compile Include="Extensions\ColorExtensions.cs" />
+    <Compile Include="Extensions\RegexExtensions.cs" />
+    <Compile Include="Extensions\DynamicLinq.cs" />
+    <Compile Include="Extensions\IntExtensions.cs" />
+    <Compile Include="Extensions\XmlExtensions.cs" />
+    <Compile Include="Mod\AgencyCallout.cs" />
     <Compile Include="API\Agencies\CityPoliceAgency.cs" />
     <Compile Include="API\Enums\HomeFlags.cs" />
     <Compile Include="API\Enums\HomeType.cs" />
     <Compile Include="API\Enums\OfficerRole.cs" />
-    <Compile Include="API\HighwayPatrolAgency.cs" />
+    <Compile Include="API\Agencies\HighwayPatrolAgency.cs" />
     <Compile Include="API\PedInfo.cs" />
     <Compile Include="API\PriorityCallDescription.cs" />
     <Compile Include="API\Enums\CallCloseFlag.cs" />
@@ -94,16 +100,16 @@
     <Compile Include="API\Enums\CalloutType.cs" />
     <Compile Include="API\Enums\CrimeLevel.cs" />
     <Compile Include="API\Enums\AgencyType.cs" />
-    <Compile Include="API\Enums\HomeSpawn.cs" />
+    <Compile Include="API\Enums\HomeSpawnId.cs" />
     <Compile Include="API\Enums\PatrolType.cs" />
     <Compile Include="API\Enums\ZoneType.cs" />
     <Compile Include="API\Simulation\AISceneSimulation.cs" />
     <Compile Include="API\WorldLocation.cs" />
-    <Compile Include="API\HomeLocation.cs" />
+    <Compile Include="API\Locations\HomeLocation.cs" />
     <Compile Include="API\Enums\Population.cs" />
     <Compile Include="API\Enums\OfficerStatus.cs" />
     <Compile Include="API\Enums\OfficerStatusColor.cs" />
-    <Compile Include="API\OfficerUnit.cs" />
+    <Compile Include="API\Simulation\OfficerUnit.cs" />
     <Compile Include="API\Simulation\PlayerOfficerUnit.cs" />
     <Compile Include="API\Simulation\PersistentAIOfficerUnit.cs" />
     <Compile Include="API\PriorityCall.cs" />
@@ -112,7 +118,14 @@
     <Compile Include="API\Simulation\VirtualAIOfficerUnit.cs" />
     <Compile Include="Callouts\DomesticViolence.cs" />
     <Compile Include="Callouts\Scenarios\DomesticViolence\DomesticArguingOnly.cs" />
-    <Compile Include="CrimeGenerator\RegionCrimeGenerator.cs" />
+    <Compile Include="Mod\Enums\TimeOfDay.cs" />
+    <Compile Include="Mod\ExpressionParser.cs" />
+    <Compile Include="Mod\RegionCrimeInfo.cs" />
+    <Compile Include="SpawnableWrapper.cs" />
+    <Compile Include="SubtitleQueue.cs" />
+    <Compile Include="Mod\Conversation\Response.cs" />
+    <Compile Include="Mod\PedWrapper.cs" />
+    <Compile Include="Mod\RegionCrimeGenerator.cs" />
     <Compile Include="Extensions\EntityExtensions.cs" />
     <Compile Include="Extensions\Enums\ENeonLights.cs" />
     <Compile Include="Extensions\Enums\EPaint.cs" />
@@ -134,13 +147,13 @@
       <DependentUpon>CADMainGwenFormTemplate.cs</DependentUpon>
     </Compile>
     <Compile Include="Log.cs" />
-    <Compile Include="API\SpawnableCalloutType.cs" />
-    <Compile Include="API\SpawnPoint.cs" />
+    <Compile Include="Mod\SpawnableCalloutType.cs" />
+    <Compile Include="API\Locations\SpawnPoint.cs" />
     <Compile Include="API\Enums\StaffLevel.cs" />
     <Compile Include="API\ZoneInfo.cs" />
     <Compile Include="API\VehicleInfo.cs" />
     <Compile Include="API\Enums\ZoneSize.cs" />
-    <Compile Include="CalloutScenarioInfo.cs" />
+    <Compile Include="Callouts\CalloutScenarioInfo.cs" />
     <Compile Include="Callouts\CalloutScenario.cs" />
     <Compile Include="Callouts\Scenarios\TrafficAccident\RearEndNoInjuries.cs" />
     <Compile Include="Callouts\TrafficAccident.cs" />
@@ -154,9 +167,22 @@
     <Compile Include="API\Agency.cs" />
     <Compile Include="API\Enums\LocationType.cs" />
     <Compile Include="Extensions\AttributeExtensions.cs" />
-    <Compile Include="Globals.cs" />
+    <Compile Include="Mod\Globals.cs" />
     <Compile Include="ISpawnable.cs" />
     <Compile Include="Main.cs" />
+    <Compile Include="Mod\Conversation\ResponseSet.cs" />
+    <Compile Include="Mod\Conversation\FlowSequence.cs" />
+    <Compile Include="Mod\Conversation\LineItem.cs" />
+    <Compile Include="Mod\Conversation\LineSet.cs" />
+    <Compile Include="Mod\UI\Alignment.cs" />
+    <Compile Include="Mod\UI\ContainerElement.cs" />
+    <Compile Include="Mod\UI\Font.cs" />
+    <Compile Include="Mod\UI\IElement.cs" />
+    <Compile Include="Mod\UI\LoadingSpinner.cs" />
+    <Compile Include="Mod\UI\LoadingSpinnerType.cs" />
+    <Compile Include="Mod\UI\Screen.cs" />
+    <Compile Include="Mod\UI\StatusHUD.cs" />
+    <Compile Include="Mod\UI\TextElement.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -169,6 +195,8 @@
     <Compile Include="Range.cs" />
     <Compile Include="Settings.cs" />
     <Compile Include="SpawnGenerator.cs" />
+    <Compile Include="SpawnHelper.cs" />
+    <Compile Include="TimeOfDaySpawnGenerator.cs" />
     <Compile Include="TimeScale.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -192,6 +220,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="AgencyCalloutsPlus\Callouts\TrafficAccident\FlowSequence\RearEndNoInjuries\Victim1.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AgencyCalloutsPlus\Callouts\TrafficAccident\FlowSequence\RearEndNoInjuries\Victim2.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="AgencyCalloutsPlus\Locations\AIRP.xml">
@@ -221,6 +252,7 @@
     <Content Include="AgencyCalloutsPlus\Locations\BRADP.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="AgencyCalloutsPlus\Locations\BRADT.xml" />
     <Content Include="AgencyCalloutsPlus\Locations\BURTON.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -284,6 +316,7 @@
     <Content Include="AgencyCalloutsPlus\Locations\GALFISH.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="AgencyCalloutsPlus\Locations\GALLI.xml" />
     <Content Include="AgencyCalloutsPlus\Locations\GOLF.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -461,12 +494,16 @@
     <Content Include="AgencyCalloutsPlus\Locations\ZQ_UAR.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="AgencyCalloutsPlus\Peds.xml" />
+    <Content Include="AgencyCalloutsPlus\PedModelMeta.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AgencyCalloutsPlus\Peds.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="AgencyCalloutsPlus\Vehicles.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="AgencyCalloutsPlus\Locations.xml" />
-    <Content Include="Callouts\Scenarios.txt" />
+    <Content Include="Callouts\Scenarios\Scenarios.txt" />
     <Content Include="Todo.txt" />
   </ItemGroup>
   <ItemGroup>

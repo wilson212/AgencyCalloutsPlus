@@ -6,7 +6,9 @@
 
         Property,
 
-        DrugActivity,
+        Drugs,
+
+        Gang,
 
         Disturbance,
 
@@ -14,6 +16,8 @@
 
         Traffic,
 
-        Violent
+        Violent,
+
+        Other
     }
 }

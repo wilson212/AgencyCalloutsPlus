@@ -16,7 +16,7 @@
         private static TabTextItem textTab;
         private static TabSubmenuItem submenuTab;
 
-        public static void Open()
+        public static void Initialize()
         {
             Game.FrameRender += Process;
 

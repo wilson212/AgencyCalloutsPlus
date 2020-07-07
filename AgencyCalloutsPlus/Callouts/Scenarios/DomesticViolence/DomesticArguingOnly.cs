@@ -10,7 +10,7 @@ using System.Xml;
 namespace AgencyCalloutsPlus.Callouts.Scenarios.DomesticViolence
 {
     /// <summary>
-    /// One scenario of the <see cref="Callouts.TrafficAccident"/> callout
+    /// One scenario of the <see cref="Callouts.DomesticViolence"/> callout
     /// </summary>
     internal class DomesticArguingOnly : CalloutScenario
     {
@@ -95,14 +95,6 @@ namespace AgencyCalloutsPlus.Callouts.Scenarios.DomesticViolence
             VictimBlip = Victim.AttachBlip();
             VictimBlip.IsRouteEnabled = true;
             SuspectBlip = Suspect.AttachBlip();
-
-            // Register menu
-            Menu = new CalloutPedInteractionMenu("Callout Interaction", "~b~Traffic Accident: ~y~Rear End Collision");
-            Menu.RegisterPed(Suspect);
-            Menu.RegisterPed(Victim);
-
-            // Register for events
-            Menu.SpeakWithButton.Activated += SpeakWithButton_Activated;
         }
 
         /// <summary>
@@ -111,22 +103,17 @@ namespace AgencyCalloutsPlus.Callouts.Scenarios.DomesticViolence
         /// </summary>
         private void SpeakWithButton_Activated(UIMenu sender, UIMenuItem selectedItem)
         {
-            // Temporary
-            Game.DisplayNotification($"~o~Button pushed: ~b~{selectedItem.Text}");
+            
         }
 
         public override void Process()
         {
-            Menu.Process();
-            if (Game.IsKeyDown(System.Windows.Forms.Keys.Enter))
-            {
-                World.TeleportLocalPlayer(SpawnPoint.Position.Around(15f), true);
-            }
+            
         }
 
         public override void Cleanup()
         {
-            throw new NotImplementedException();
+            
         }
     }
 }

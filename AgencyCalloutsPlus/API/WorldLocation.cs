@@ -32,5 +32,14 @@ namespace AgencyCalloutsPlus.API
         {
             this.Position = position;
         }
+
+        /// <summary>
+        /// Enables casting to a <see cref="Vector3"/>
+        /// </summary>
+        /// <param name="s"></param>
+        public static implicit operator Vector3(WorldLocation w)
+        {
+            return w.Position;
+        }
     }
 }

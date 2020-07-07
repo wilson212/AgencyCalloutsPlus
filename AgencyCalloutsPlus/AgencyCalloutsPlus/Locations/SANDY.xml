@@ -2,7 +2,7 @@
 <!-- 
   Reference: https://gta.fandom.com/wiki/Sandy_Shores 
   
-  Sandy Shores does not have many house numbers
+  Sandy Shores does not have many house numbers, so many addresses are only street names!
 -->
 <SANDY>
   <Name>Sandy Shores</Name>
@@ -10,16 +10,20 @@
   <Type>Mixed</Type>
   <Class>Lower</Class>
   <Population>Moderate</Population>
-  <CrimeLevel>VeryHigh</CrimeLevel>
-  <Crimes>
-    <Robbery>0</Robbery>
-    <Property>0</Property>
-    <DrugActivity>0</DrugActivity>
-    <Disturbance>0</Disturbance>
-    <Statutory>0</Statutory>
-    <Traffic>100</Traffic>
-    <Violent>0</Violent>
-  </Crimes>
+  <Crime>
+    <AverageCalls morning="6" day="15" evening="21" night="6" />
+    <Probabilities>
+      <Robbery morning="5" day="3" evening="5" night="2" />
+      <Property morning="5" day="3" evening="5" night="2" />
+      <Drugs morning="5" day="3" evening="5" night="2" />
+      <Gang morning="0" day="0" evening="0" night="0" />
+      <Disturbance morning="5" day="3" evening="5" night="2" />
+      <Statutory morning="5" day="3" evening="5" night="2" />
+      <Traffic morning="5" day="3" evening="5" night="2" />
+      <Violent morning="5" day="3" evening="5" night="2" />
+      <Other morning="5" day="3" evening="5" night="2" />
+    </Probabilities>
+  </Crime>
   <Locations>
     <Homes>
       <Home position="1764.497, 3731.593, 34.03936; 298.4579">

@@ -6,16 +6,20 @@
   <Type>Forest</Type>
   <Class>Working</Class>
   <Population>Scarce</Population>
-  <CrimeLevel>None</CrimeLevel>
-  <Crimes>
-    <Robbery>0</Robbery>
-    <Property>0</Property>
-    <DrugActivity>0</DrugActivity>
-    <Disturbance>0</Disturbance>
-    <Statutory>0</Statutory>
-    <Traffic>0</Traffic>
-    <Violent>0</Violent>
-  </Crimes>
+  <Crime>
+    <AverageCalls morning="0" day="0" evening="0" night="0" />
+    <Probabilities>
+      <Robbery morning="0" day="0" evening="0" night="0" />
+      <Property morning="0" day="0" evening="0" night="0" />
+      <Drugs morning="0" day="0" evening="0" night="0" />
+      <Gang morning="0" day="0" evening="0" night="0" />
+      <Disturbance morning="0" day="0" evening="0" night="0" />
+      <Statutory morning="0" day="0" evening="0" night="0" />
+      <Traffic morning="5" day="3" evening="5" night="2" />
+      <Violent morning="0" day="0" evening="0" night="0" />
+      <Other morning="0" day="0" evening="0" night="0" />
+    </Probabilities>
+  </Crime>
   <Locations>
     <Homes>
     </Homes>

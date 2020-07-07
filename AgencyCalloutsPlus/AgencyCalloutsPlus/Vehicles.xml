@@ -116,7 +116,7 @@
     <Vehicle probability="5" seats="4" manufacturer="Bravado" name="Gresley">GRESLEY</Vehicle>
     <Vehicle probability="5" seats="4" manufacturer="Emperor" name="Habanero">HABANERO</Vehicle>
     <Vehicle probability="4" seats="4" manufacturer="Enus" name="Huntley S">HUNTLEY</Vehicle>
-    <Vehicle probability="5" seats="4" manufacturer="Dundreary" name="Landstalker">LANSTALKER</Vehicle>
+    <Vehicle probability="5" seats="4" manufacturer="Dundreary" name="Landstalker">LANDSTALKER</Vehicle>
     <Vehicle probability="5" seats="4" manufacturer="Canis" name="Mesa">MESA</Vehicle>
     <Vehicle probability="5" seats="4" manufacturer="Mammoth" name="Patriot">PATRIOT</Vehicle>
     <Vehicle probability="5" seats="4" manufacturer="Vapid" name="Radius">RADI</Vehicle>

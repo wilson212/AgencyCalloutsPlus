@@ -17,35 +17,6 @@ namespace AgencyCalloutsPlus.Extensions
         public static int[] BlackListedNodeTypes = new int[] { 0, 8, 9, 10, 12, 40, 42, 136 };
 
         /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="pos"></param>
-        /// <param name="safePedPoint"></param>
-        /// <returns></returns>
-        /// <seealso cref="http://www.dev-c.com/nativedb/func/info/b61c8e878a4199ca"/>
-        public static unsafe bool GetSafeVector3ForPed(this Vector3 pos, out Vector3 safePedPoint)
-        {
-            if (!NativeFunction.Natives.GET_SAFE_COORD_FOR_PED<bool>(pos.X, pos.Y, pos.Z, true, out Vector3 tempSpawn, 0))
-            {
-                tempSpawn = World.GetNextPositionOnStreet(pos);
-                Entity nearbyentity = World.GetClosestEntity(tempSpawn, 25f, GetEntitiesFlags.ConsiderHumanPeds);
-                if (nearbyentity.Exists())
-                {
-                    tempSpawn = nearbyentity.Position;
-                    safePedPoint = tempSpawn;
-                    return true;
-                }
-                else
-                {
-                    safePedPoint = tempSpawn;
-                    return false;
-                }
-            }
-            safePedPoint = tempSpawn;
-            return true;
-        }
-
-        /// <summary>
         /// Gets the closest in game vehicle node to this <see cref="Vector3"/> position
         /// </summary>
         /// <param name="pos"></param>

@@ -1,20 +1,18 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <CalloutMeta>
-  <!-- 
-    A list of agency types that can take this type of callout, and the chances of 
-    that callout spawning. A higher probability, means a higher chance compared to
-    the other callouts against this AgencyType.
-    
-    Total Probability = (CalloutMeta.xml -> Agencies -> Agency[AgencyType][probability]) * (Locations.xml -> ZoneName -> Crimes[CrimeType].Value)
-  -->
-  <Agencies>
-    <Agency type="CityPolice" probability="5" />
-    <Agency type="CountySheriff" probability="5" />
-    <Agency type="HighwayPatrol" probability="8" />
-  </Agencies>
-  <CalloutType>Traffic</CalloutType>
   <Scenarios>
-    <RearEndNoInjuries probability="5">
+    
+    <RearEndNoInjuries>
+      <!-- Total Probability = (Agencies -> Agency[playerAgencyType][probability]) * TimeOfDay[currentTimeOfDay] -->
+      <Probability>
+        <Agencies>
+          <Agency type="CityPolice" probability="5" />
+          <Agency type="CountySheriff" probability="5" />
+          <Agency type="HighwayPatrol" probability="8" />
+        </Agencies>
+        <TimeOfDay morning="5" day="3" evening="5" night="2" />
+      </Probability>
+      <Catagory>Traffic</Catagory>
       <Dispatch>
         <!-- Scanner Audio for call. Unit Division-UnitType-Beat will prefix this message -->
         <Scanner>WE_HAVE_01 CRIME_TRAFFIC_ALERT IN_OR_ON_POSITION</Scanner>
@@ -25,9 +23,22 @@
         </Description>
         <IncidentType abbreviation="MVA">Motor Vehicle Accident</IncidentType>
         <Priority>4</Priority>
-        <Respond>Code2</Respond>
+        <Response>2</Response>
         <LocationType>SideOfRoad</LocationType>
       </Dispatch>
+      <FlowSequence>
+        <FlowOutcome id="distracted" probability="10" />
+        <!--
+        <FlowOutcome id="eating" probability="3" />
+        <FlowOutcome id="tailgating" probability="5" />
+        <FlowOutcome id="drunkDriver" probability="2" set="Victim2.IsDrunk = true" />
+        <FlowOutcome id="impaired" probability="2" set="Victim2.IsHigh = true" />
+        <FlowOutcome id="speeding" probability="5" />
+        <FlowOutcome id="mechanicalFailure" probability="2" />
+        <FlowOutcome id="wetRoads" probability="7" if="Weather.RoadsAreWet"/>
+        <FlowOutcome id="snowing" probability="15" if="Weather.IsSnowing"/>
+        -->
+      </FlowSequence>
       <Victim1>
         <VehicleTypes>
           <Meta probability="5">Compact</Meta>
@@ -53,5 +64,6 @@
         </VehicleTypes>
       </Victim2>
     </RearEndNoInjuries>
+    
   </Scenarios>
 </CalloutMeta>

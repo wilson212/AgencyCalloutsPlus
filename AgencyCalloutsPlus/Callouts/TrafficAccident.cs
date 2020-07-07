@@ -42,7 +42,7 @@ namespace AgencyCalloutsPlus.Callouts
         public override bool OnBeforeCalloutDisplayed()
         {
             // Grab the priority call dispatched to player
-            PriorityCall call = Dispatch.RequestCallInfo(typeof(TrafficAccident));
+            PriorityCall call = Dispatch.RequestPlayerCallInfo(typeof(TrafficAccident));
             if (call == null)
             {
                 Log.Error("AgencyCallout.TrafficAccident: This is awkward... No PriorityCall of this type for player");
@@ -63,36 +63,66 @@ namespace AgencyCalloutsPlus.Callouts
             CalloutPosition = SpawnPoint.Position;
 
             // Play scanner audio
-            if (call.ScenarioInfo.RespondCode3)
-                PlayScannerAudioUsingPrefix(String.Concat(call.ScenarioInfo.ScannerText, " UNITS_RESPOND_CODE_03_02"));
+            if (call.ScenarioInfo.ResponseCode == 3)
+                PlayScannerAudioUsingCallsign(String.Concat(call.ScenarioInfo.ScannerText, " UNITS_RESPOND_CODE_03_02"));
             else
-                PlayScannerAudioUsingPrefix(call.ScenarioInfo.ScannerText);
+                PlayScannerAudioUsingCallsign(call.ScenarioInfo.ScannerText);
 
             // Return base
             return base.OnBeforeCalloutDisplayed();
         }
 
+        /// <summary>
+        /// Event called right after the Callout is accepted by the player
+        /// </summary>
+        /// <returns>false on failure, true otherwise</returns>
         public override bool OnCalloutAccepted()
         {
-            // Setup active scene
-            Scenario.Setup();
+            try
+            {
+                // Setup active scene
+                Scenario.Setup();
+            }
+            catch (Exception e)
+            {
+                // Log exception
+                Log.Exception(e);
+
+                // Clean up entities
+                Scenario.Cleanup();
+
+                // Clear call
+                base.OnCalloutNotAccepted();
+
+                // Tell LSPDFR we failed to setup the scenario
+                return false;
+            }
 
             // AgencyCallout base class will handle the Dispatch stuff
             return base.OnCalloutAccepted();
         }
 
+        /// <summary>
+        /// Event called right if the callout is not accepted by the player
+        /// </summary>
         public override void OnCalloutNotAccepted()
         {
             // AgencyCallout base class will handle the Dispatch stuff
             base.OnCalloutNotAccepted();
         }
 
+        /// <summary>
+        /// Method called every tick
+        /// </summary>
         public override void Process()
         {
             base.Process();
             Scenario.Process();
         }
 
+        /// <summary>
+        /// Method called when the callout has ended
+        /// </summary>
         public override void End()
         {
             Scenario.Cleanup();

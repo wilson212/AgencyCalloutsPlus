@@ -42,7 +42,7 @@ namespace AgencyCalloutsPlus.Callouts
         public override bool OnBeforeCalloutDisplayed()
         {
             // Grab the priority call dispatched to player
-            PriorityCall call = Dispatch.RequestCallInfo(typeof(DomesticViolence));
+            PriorityCall call = Dispatch.RequestPlayerCallInfo(typeof(DomesticViolence));
             if (call == null)
             {
                 Log.Error("AgencyCallout.DomesticViolence: This is awkward... No PriorityCall of this type for player");
@@ -63,10 +63,10 @@ namespace AgencyCalloutsPlus.Callouts
             CalloutPosition = SpawnPoint.Position;
 
             // Play scanner audio
-            if (call.ScenarioInfo.RespondCode3)
-                PlayScannerAudioUsingPrefix(String.Concat(call.ScenarioInfo.ScannerText, " UNITS_RESPOND_CODE_03_02"));
+            if (call.ScenarioInfo.ResponseCode == 3)
+                PlayScannerAudioUsingCallsign(String.Concat(call.ScenarioInfo.ScannerText, " UNITS_RESPOND_CODE_03_02"));
             else
-                PlayScannerAudioUsingPrefix(call.ScenarioInfo.ScannerText);
+                PlayScannerAudioUsingCallsign(call.ScenarioInfo.ScannerText);
 
             // Return base
             return base.OnBeforeCalloutDisplayed();

@@ -1,5 +1,5 @@
-﻿using AgencyCalloutsPlus.CrimeGenerator;
-using AgencyCalloutsPlus.Extensions;
+﻿using AgencyCalloutsPlus.Extensions;
+using AgencyCalloutsPlus.Mod;
 using LSPD_First_Response.Mod.API;
 using Rage;
 using System;
@@ -455,11 +455,13 @@ namespace AgencyCalloutsPlus.API
         internal virtual RegionCrimeGenerator CreateCrimeGenerator()
         {
             var zones = GetZoneNamesByAgencyName(ScriptName).Select(x => ZoneInfo.GetZoneByName(x)).ToArray();
-            var crimeGenerator = new RegionCrimeGenerator(this, zones);
+            var crimeGenerator = new RegionCrimeGenerator(this, zones ?? new ZoneInfo[0]);
+            var tod = Dispatch.GetCurrentWorldTimeOfDay();
 
             // Deterime our patrol count
+            var crimeInfo = crimeGenerator.RegionCrimeInfoByTimeOfDay[tod];
             int staffLevel = (int)StaffLevel;
-            ActualPatrols = (int)(crimeGenerator.OptimumPatrols * (staffLevel / 100d));
+            ActualPatrols = (int)(crimeInfo.OptimumPatrols * (staffLevel / 100d));
 
             return crimeGenerator;
         }

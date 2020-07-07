@@ -293,7 +293,7 @@ namespace AgencyCalloutsPlus.Integration
             out_vehs.KeyboardInputEnabled = false;
 
             // Active Call tab is hidden when no callout is active
-            if (Dispatch.DispatchedToPlayer != null)
+            if (Dispatch.PlayerActiveCall != null)
             {
                 tc_main.AddPage("Current Assignment", base_active);
             }
@@ -316,7 +316,7 @@ namespace AgencyCalloutsPlus.Integration
                             timeSpan.ToString().PadRight(20),
                             call.Priority.ToString().PadRight(16),
                             call.CallStatus.ToString().PadRight(20),
-                            call.PrimaryOfficer?.UnitString.PadRight(20) ?? " ".PadRight(25),
+                            call.PrimaryOfficer?.CallSign.PadRight(20) ?? " ".PadRight(25),
                             call.Zone.ScriptName
                         )
                     );

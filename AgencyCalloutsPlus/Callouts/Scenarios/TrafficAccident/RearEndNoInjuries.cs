@@ -1,10 +1,9 @@
 ﻿using AgencyCalloutsPlus.API;
 using AgencyCalloutsPlus.Extensions;
+using AgencyCalloutsPlus.Mod;
+using AgencyCalloutsPlus.Mod.Conversation;
 using AgencyCalloutsPlus.RageUIMenus;
 using Rage;
-using RAGENativeUI;
-using RAGENativeUI.Elements;
-using System;
 using System.Xml;
 
 namespace AgencyCalloutsPlus.Callouts.Scenarios.TrafficAccident
@@ -18,6 +17,8 @@ namespace AgencyCalloutsPlus.Callouts.Scenarios.TrafficAccident
         /// The callout that owns this instance
         /// </summary>
         private Callouts.TrafficAccident Callout { get; set; }
+
+        private string FlowOutcomeId { get; set; }
 
         /// <summary>
         /// Gets the SpawnPoint location of this <see cref="CalloutScenario"/>
@@ -36,6 +37,8 @@ namespace AgencyCalloutsPlus.Callouts.Scenarios.TrafficAccident
 
         private CalloutPedInteractionMenu Menu;
 
+        private ExpressionParser Parser { get; set; }
+
         public RearEndNoInjuries(Callouts.TrafficAccident callout, XmlNode scenarioNode)
         {
             // Store spawn point
@@ -48,6 +51,12 @@ namespace AgencyCalloutsPlus.Callouts.Scenarios.TrafficAccident
             // Get Victim 2 vehicle type using probability defined in the CalloutMeta.xml
             cars = scenarioNode.SelectSingleNode("Victim2/VehicleTypes").ChildNodes;
             SuspectVehicleType = GetRandomCarTypeFromScenarioNodeList(cars);
+
+            var nodes = scenarioNode.SelectSingleNode("FlowSequence").SelectNodes("FlowOutcome");
+            FlowOutcomeId = GetRandomFlowOutcomeIdFromScenarioNodeList(nodes);
+
+            // Create expression parser
+            Parser = new ExpressionParser();
         }
 
         /// <summary>
@@ -76,6 +85,7 @@ namespace AgencyCalloutsPlus.Callouts.Scenarios.TrafficAccident
             Victim = VictimVehicle.CreateRandomDriver();
             Victim.IsPersistent = true;
             Victim.BlockPermanentEvents = true;
+            Parser.SetParamater("Victim1", Victim);
 
             // Create suspect vehicle 1m behind victim vehicle
             var vector = VictimVehicle.GetOffsetPositionFront(-(VictimVehicle.Length + 1f));
@@ -90,34 +100,33 @@ namespace AgencyCalloutsPlus.Callouts.Scenarios.TrafficAccident
             Suspect = SuspectVehicle.CreateRandomDriver();
             Suspect.IsPersistent = true;
             Suspect.BlockPermanentEvents = true;
+            Parser.SetParamater("Victim2", Suspect);
 
             // Attach Blips
             VictimBlip = Victim.AttachBlip();
             VictimBlip.IsRouteEnabled = true;
             SuspectBlip = Suspect.AttachBlip();
 
+            // Load flow sequences
+            var document = LoadFlowSequenceFile("TrafficAccident", "FlowSequence", "RearEndNoInjuries", "Victim2.xml");
+            var suspectSeq = new FlowSequence(Suspect, FlowOutcomeId, document, Parser);
+
+            document = LoadFlowSequenceFile("TrafficAccident", "FlowSequence", "RearEndNoInjuries", "Victim1.xml");
+            var victimSeq = new FlowSequence(Victim, FlowOutcomeId, document, Parser);
+            victimSeq.SetVariable("CarType", GetCarDescription(VictimVehicleType));
+
             // Register menu
-            //Menu = new CalloutPedInteractionMenu("Callout Interaction", "~b~Traffic Accident: ~y~Rear End Collision");
-            //Menu.RegisterPed(Suspect);
-            //Menu.RegisterPed(Victim);
-
-            // Register for events
-            //Menu.SpeakWithButton.Activated += SpeakWithButton_Activated;
-        }
-
-        /// <summary>
-        /// Event fired when the "Speak with Subject" button is pushed on the Callout Interaction
-        /// Menu
-        /// </summary>
-        private void SpeakWithButton_Activated(UIMenu sender, UIMenuItem selectedItem)
-        {
-            // Temporary
-            Game.DisplayNotification($"~o~Button pushed: ~b~{selectedItem.Text}");
+            Menu = new CalloutPedInteractionMenu("Callout Interaction", "~b~Traffic Accident: ~y~Rear End Collision");
+            Menu.RegisterPedConversation(Suspect, suspectSeq);
+            Menu.RegisterPedConversation(Victim, victimSeq);
         }
 
         public override void Process()
         {
-            //Menu.Process();
+            // Process Menu
+            Menu.Process();
+
+            // Temporary
             if (Game.IsKeyDown(System.Windows.Forms.Keys.Enter))
             {
                 World.TeleportLocalPlayer(SpawnPoint.Position.Around(15f), true);
@@ -126,7 +135,42 @@ namespace AgencyCalloutsPlus.Callouts.Scenarios.TrafficAccident
 
         public override void Cleanup()
         {
-            throw new NotImplementedException();
+            // Clean up
+            Menu?.Dispose();
+            Menu = null;
+
+            Victim?.Cleanup();
+            Victim = null;
+
+            VictimVehicle?.Cleanup();
+            VictimVehicle = null;
+
+            Suspect?.Cleanup();
+            Suspect = null;
+
+            SuspectVehicle?.Cleanup();
+            SuspectVehicle = null;
+        }
+
+        private string GetCarDescription(VehicleClass vehicleType)
+        {
+            switch (vehicleType)
+            {
+                case VehicleClass.Compact:
+                case VehicleClass.Coupe:
+                case VehicleClass.Muscle:
+                case VehicleClass.Sedan:
+                case VehicleClass.Sport:
+                case VehicleClass.SportClassic:
+                    return "car";
+                case VehicleClass.Emergency:
+                    return "truck";
+                case VehicleClass.SUV:
+                case VehicleClass.Van:
+                    return "suv";
+                default:
+                    return "vehicle";
+            }
         }
     }
 }
