@@ -1,13 +1,16 @@
-﻿namespace AgencyCalloutsPlus.RageUIMenus
-{
-    using System;
-    using System.Collections.Generic;
-    using System.Windows.Forms;
-    using Rage;
-    using RAGENativeUI.Elements;
-    using RAGENativeUI.PauseMenu;
+﻿using AgencyCalloutsPlus.API;
+using LSPD_First_Response.Engine.Scripting.Entities;
+using LSPD_First_Response.Mod.API;
+using Rage;
+using RAGENativeUI.Elements;
+using RAGENativeUI.PauseMenu;
+using System;
+using System.Collections.Generic;
+using System.Windows.Forms;
 
-    public static class ExampleTable
+namespace AgencyCalloutsPlus.NativeUI
+{
+    public static class ComputerAidedDispatchMenu
     {
         private static TabView tabView;
 
@@ -16,31 +19,21 @@
         private static TabTextItem textTab;
         private static TabSubmenuItem submenuTab;
 
+        private static Persona PlayerPersona { get; set; }
+
         public static void Initialize()
         {
+            // Tell the game to call our method every tick
             Game.FrameRender += Process;
 
-            tabView = new TabView("A RAGENativeUI Pause Menu");
-            tabView.MoneySubtitle = "$10.000.000";
-            tabView.Name = "Here goes the Name! :D";
-
-            Dictionary<string, string> listDict = new Dictionary<string, string>()
-            {
-                { "First Item", "Text filler" },
-                { "Second Item", "Hey, here there's some text" },
-                { "Third Item", "Duh!" },
-            };
-            tabView.AddTab(simpleListTab = new TabItemSimpleList("A List", listDict));
-            simpleListTab.Activated += SimpleListTab_Activated;
-
-            List<MissionInformation> missionsInfo = new List<MissionInformation>()
-            {
-                new MissionInformation("Mission One", new Tuple<string, string>[] { new Tuple<string, string>("This the first info", "Random Info"), new Tuple<string, string>("This the second info", "Random Info #2") }) { Logo = new MissionLogo(Game.CreateTextureFromFile("DefaultSkin.png")) },
-                new MissionInformation("Mission Two", "I have description!", new Tuple<string, string>[] { new Tuple<string, string>("Objective", "Mission Two Objective") }),
-            };
-            tabView.AddTab(missionSelectTab = new TabMissionSelectItem("I'm a Mission Select Tab", missionsInfo));
-            missionSelectTab.OnItemSelect += MissionSelectTab_OnItemSelect;
-
+            // Grab player Persona
+            PlayerPersona = Functions.GetPersonaForPed(Game.LocalPlayer.Character);
+            
+            // Setup the tab view
+            tabView = new TabView("Computer Aided Dispatch System");
+            tabView.Name = PlayerPersona.FullName;
+            tabView.Money = Dispatch.PlayerAgency.FriendlyName;
+            tabView.MoneySubtitle = "Status: " + Enum.GetName(typeof(OfficerStatus), Dispatch.GetPlayerStatus());
 
             tabView.AddTab(textTab = new TabTextItem("TabTextItem", "Text Tab Item", "I'm a text tab item"));
             textTab.Activated += TextTab_Activated;
@@ -74,6 +67,25 @@
             tabView.RefreshIndex();
         }
 
+        public static void Process(object sender, GraphicsEventArgs e)
+        {
+            // Our menu on/off switch.
+            if (Game.IsKeyDown(Keys.F9))
+            {
+                tabView.Visible = !tabView.Visible;
+                Game.IsPaused = tabView.Visible;
+            }
+
+            // Update status
+            var status = Dispatch.GetPlayerStatus();
+            string statusName = Enum.GetName(typeof(OfficerStatus), status);
+            tabView.MoneySubtitle = String.Concat("Status: 10-", (int)status, " (", statusName, ")");
+
+            // Update tabview
+            tabView.Update();
+            tabView.DrawTextures(e.Graphics);
+        }
+
         private static void SubMenuItem_Activated(object sender, EventArgs e)
         {
             Game.DisplaySubtitle("Activated Submenu Item #" + submenuTab.Index, 5000);
@@ -99,15 +111,6 @@
         private static void SimpleListTab_Activated(object sender, EventArgs e)
         {
             Game.DisplaySubtitle("I'm in the simple list tab", 5000);
-        }
-
-        public static void Process(object sender, GraphicsEventArgs e)
-        {
-            if (Game.IsKeyDown(Keys.F9)) // Our menu on/off switch.
-                tabView.Visible = !tabView.Visible;
-
-            tabView.Update();
-            tabView.DrawTextures(e.Graphics);
         }
     }
 }

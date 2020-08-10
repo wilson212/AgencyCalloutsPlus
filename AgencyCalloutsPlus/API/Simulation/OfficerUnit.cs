@@ -45,6 +45,11 @@ namespace AgencyCalloutsPlus.API
         internal DateTime NextStatusChange { get; set; }
 
         /// <summary>
+        /// Contains the Shift hours for this unit
+        /// </summary>
+        internal TimeSpan ShiftHours { get; set; }
+
+        /// <summary>
         /// Creates a new instance of <see cref="OfficerUnit"/> for an AI unit
         /// </summary>
         /// <param name="unitString"></param>

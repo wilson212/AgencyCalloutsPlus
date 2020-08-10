@@ -2,6 +2,7 @@
 {
     public enum LocationType
     {
+        SpawnPoint,
         SideOfRoad,
         Homes,
         Stores

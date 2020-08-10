@@ -59,7 +59,7 @@ namespace AgencyCalloutsPlus.Mod.UI
         /// <value>
         /// The GTA Font use when drawing.
         /// </value>
-        public Font Font { get; set; } = Font.ChaletLondon;
+        public NativeUI.GameFont Font { get; set; } = NativeUI.GameFont.ChaletLondon;
 
         /// <summary>
         /// Gets or sets the text to draw in this <see cref="TextElement"/>.
@@ -185,7 +185,7 @@ namespace AgencyCalloutsPlus.Mod.UI
         /// <returns>
         /// 
         /// </returns>
-        public static SizeF GetStringSize(string text, Font font = Font.ChaletLondon, float scale = 1.0f, float size = 1.0f)
+        public static SizeF GetStringSize(string text, NativeUI.GameFont font = NativeUI.GameFont.ChaletLondon, float scale = 1.0f, float size = 1.0f)
         {
             Natives.BeginTextCommandWidth("STRING");
             Natives.AddTextComponentSubstringPlayerName(text);

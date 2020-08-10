@@ -14,6 +14,11 @@ namespace AgencyCalloutsPlus.API
         public float Heading { get; protected set; }
 
         /// <summary>
+        /// Gets the <see cref="AgencyCalloutsPlus.API.LocationType"/>
+        /// </summary>
+        public override LocationType LocationType => LocationType.SpawnPoint;
+
+        /// <summary>
         /// Creates a new instance of <see cref="SpawnPoint"/>
         /// </summary>
         /// <param name="location">The <see cref="Vector3"/> location</param>

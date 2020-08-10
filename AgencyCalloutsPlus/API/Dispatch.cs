@@ -27,12 +27,12 @@ namespace AgencyCalloutsPlus.API
         /// Contains a list Scenarios seperated by CalloutType that will be used
         /// to populate the calls board
         /// </summary>
-        internal static Dictionary<CalloutType, TimeOfDaySpawnGenerator<CalloutScenarioInfo>> ScenarioPool { get; set; }
+        internal static Dictionary<CalloutType, TimeOfDayProbabilityGenerator<CalloutScenarioInfo>> ScenarioPool { get; set; }
 
         /// <summary>
         /// Contains a list of scenario's by callout name
         /// </summary>
-        internal static Dictionary<string, TimeOfDaySpawnGenerator<CalloutScenarioInfo>> Scenarios { get; set; }
+        internal static Dictionary<string, TimeOfDayProbabilityGenerator<CalloutScenarioInfo>> Scenarios { get; set; }
 
         /// <summary>
         /// Randomizer method used to randomize callouts and locations
@@ -44,10 +44,15 @@ namespace AgencyCalloutsPlus.API
         /// </summary>
         public static Agency PlayerAgency { get; private set; }
 
+        /// <summary>
+        /// Gets the current <see cref="TimeOfDay"/> within the game world
+        /// </summary>
         public static TimeOfDay CurrentTimeOfDay { get; private set; }
 
-
-        public static event EventHandler OnTimeOfDayChange;
+        /// <summary>
+        /// Event called when the <see cref="TimeOfDay"/> has changed in game
+        /// </summary>
+        public static event EventHandler OnTimeOfDayChanged;
 
         /// <summary>
         /// 
@@ -55,7 +60,7 @@ namespace AgencyCalloutsPlus.API
         internal static RegionCrimeGenerator CrimeGenerator { get; set; }
 
         /// <summary>
-        /// Gets the number of zones <see cref="Dispatch"/> is spawning calls in
+        /// Gets the number of zones under the player's <see cref="Agency"/> jurisdiction
         /// </summary>
         internal static int ZoneCount => CrimeGenerator.Zones.Length;
 
@@ -149,11 +154,11 @@ namespace AgencyCalloutsPlus.API
         static Dispatch()
         {
             // Initialize callout types
-            Scenarios = new Dictionary<string, TimeOfDaySpawnGenerator<CalloutScenarioInfo>>();
-            ScenarioPool = new Dictionary<CalloutType, TimeOfDaySpawnGenerator<CalloutScenarioInfo>>(8);
+            Scenarios = new Dictionary<string, TimeOfDayProbabilityGenerator<CalloutScenarioInfo>>();
+            ScenarioPool = new Dictionary<CalloutType, TimeOfDayProbabilityGenerator<CalloutScenarioInfo>>(8);
             foreach (var type in Enum.GetValues(typeof(CalloutType)))
             {
-                ScenarioPool.Add((CalloutType)type, new TimeOfDaySpawnGenerator<CalloutScenarioInfo>());
+                ScenarioPool.Add((CalloutType)type, new TimeOfDayProbabilityGenerator<CalloutScenarioInfo>());
             }
 
             // Create call Queue
@@ -423,7 +428,7 @@ namespace AgencyCalloutsPlus.API
                     PlayerActiveCall.CallDeclinedByPlayer = true;
                     PlayerActiveCall.CallStatus = CallStatus.Created;
                     PlayerActiveCall = null;
-                    Log.Info($"Dispatch.RequestCallInfo: It appears that the player spawned a callout of type {calloutName}");
+                    Log.Warning($"Dispatch.RequestPlayerCallInfo: Player active call type does not match callout of type {calloutName}");
                 }
             }
 
@@ -432,6 +437,7 @@ namespace AgencyCalloutsPlus.API
             if (Scenarios.ContainsKey(calloutName))
             {
                 CallStatus[] status = { CallStatus.Created, CallStatus.Waiting, CallStatus.Dispatched };
+                var playerPosition = Game.LocalPlayer.Character.Position;
 
                 // Lets see if we have a call already created
                 for (int i = 0; i < 4; i++)
@@ -439,6 +445,7 @@ namespace AgencyCalloutsPlus.API
                     var calls = (
                         from x in CallQueue[i]
                         where x.ScenarioInfo.CalloutName.Equals(calloutName) && status.Contains(x.CallStatus)
+                        orderby x.Location.Position.DistanceTo(playerPosition) ascending
                         select x
                     ).ToArray();
 
@@ -451,6 +458,31 @@ namespace AgencyCalloutsPlus.API
                 }
 
                 // Still here? Maybe we can create a call?
+                if (Scenarios[calloutName].TrySpawn(CurrentTimeOfDay, out CalloutScenarioInfo scenarioInfo))
+                {
+                    // Log
+                    Log.Info($"Dispatch.RequestPlayerCallInfo: It appears that the player requested a callout of type '{calloutName}' using an outside source. Creating a call out of thin air");
+
+                    // Create the call
+                    var call = CrimeGenerator.CreateCallFromScenario(scenarioInfo);
+                    if (call == null)
+                    {
+                        return null;
+                    }
+
+                    // Add call
+                    // Add call to priority Queue
+                    lock (_lock)
+                    {
+                        CallQueue[call.Priority - 1].Add(call);
+                        Log.Debug($"Dispatch: Added Call to Queue '{call.ScenarioInfo.Name}' in zone '{call.Zone.FullName}'");
+
+                        // Invoke the next callout for player
+                        InvokeForPlayer = call;
+                    }
+
+                    return call;
+                }
             }
 
             // cant do anything at this point
@@ -476,6 +508,9 @@ namespace AgencyCalloutsPlus.API
                 PlayerUnit.CompleteCall(CallCloseFlag.Completed);
                 SetPlayerStatus(OfficerStatus.Available);
             }
+
+            // Set active call to null
+            PlayerActiveCall = null;
         }
 
         /// <summary>
@@ -580,8 +615,15 @@ namespace AgencyCalloutsPlus.API
                 // Invoke the next callout for player?
                 if (SendNextCallToPlayer)
                 {
+                    // Unflag
                     SendNextCallToPlayer = false;
-                    InvokeForPlayer = call;
+
+                    // Ensure player isnt in a callout already!
+                    if (PlayerActiveCall == null)
+                    {
+                        // Set call to invoke
+                        InvokeForPlayer = call;
+                    }
                 }
             }
         }
@@ -707,6 +749,7 @@ namespace AgencyCalloutsPlus.API
                 // Debugging
                 Log.Debug("Starting duty with the following Agency data:");
                 Log.Debug($"\t\tAgency Name: {PlayerAgency.FriendlyName}");
+                Log.Debug($"\t\tAgency Type: {PlayerAgency.AgencyType}");
                 Log.Debug($"\t\tAgency Staff Level: {PlayerAgency.StaffLevel}");
                 Log.Debug($"\t\tAgency Actual Patrols: {PlayerAgency.ActualPatrols}");
                 Log.Debug("Starting duty with the following Region data:");
@@ -875,7 +918,7 @@ namespace AgencyCalloutsPlus.API
                         CurrentTimeOfDay = currentTimeOfDay;
 
                         // Fire event
-                        OnTimeOfDayChange?.Invoke(null, null);
+                        OnTimeOfDayChanged?.Invoke(null, null);
                     }
                 }
                 catch (Exception e)
@@ -1498,7 +1541,7 @@ namespace AgencyCalloutsPlus.API
                         // Create entry if not already
                         if (!Scenarios.ContainsKey(calloutName))
                         {
-                            Scenarios.Add(calloutName, new TimeOfDaySpawnGenerator<CalloutScenarioInfo>());
+                            Scenarios.Add(calloutName, new TimeOfDayProbabilityGenerator<CalloutScenarioInfo>());
                         }
 
                         // Get agency probability

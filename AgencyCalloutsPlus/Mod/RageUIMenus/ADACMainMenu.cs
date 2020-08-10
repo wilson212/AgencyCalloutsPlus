@@ -1,4 +1,5 @@
 ﻿using AgencyCalloutsPlus.API;
+using AgencyCalloutsPlus.Extensions;
 using Rage;
 using RAGENativeUI;
 using RAGENativeUI.Elements;
@@ -339,8 +340,15 @@ namespace AgencyCalloutsPlus.RageUIMenus
             if (player.Character.IsInAnyVehicle(false))
             {
                 // Find a safe vehicle location
-                var location = World.GetNextPositionOnStreet(pos);
-                World.TeleportLocalPlayer(location, false);
+                if (pos.GetClosestVehicleSpawnPoint(out SpawnPoint p))
+                {
+                    World.TeleportLocalPlayer(p, false);
+                }
+                else
+                {
+                    var location = World.GetNextPositionOnStreet(pos);
+                    World.TeleportLocalPlayer(location, false);
+                }
             }
             else
             {
@@ -372,8 +380,11 @@ namespace AgencyCalloutsPlus.RageUIMenus
                     {
                         // Disable the Callout menu button if player is not on a callout
                         EndCallMenuButton.Enabled = Dispatch.PlayerActiveCall != null;
-                        PatrolAreaMenuButton.Enabled = (Dispatch.PlayerAgency.AgencyType == AgencyType.HighwayPatrol);
                         RequestCallMenuButton.Enabled = Dispatch.CanInvokeCalloutForPlayer();
+                    }
+                    else if (PatrolUIMenu.Visible)
+                    {
+                        PatrolAreaMenuButton.Enabled = (Dispatch.PlayerAgency.AgencyType == AgencyType.HighwayPatrol);
                     }
                 }
             });

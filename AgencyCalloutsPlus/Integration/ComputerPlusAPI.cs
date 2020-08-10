@@ -7,7 +7,7 @@ using System.Collections.Generic;
 namespace AgencyCalloutsPlus.Integration
 {
     /// <summary>
-    /// Provides a nice API to access Computer+
+    /// Provides a nice API to access Computer+ if its running
     /// </summary>
     internal class ComputerPlusAPI
     {
@@ -23,7 +23,12 @@ namespace AgencyCalloutsPlus.Integration
                 IsRunning = Globals.IsLSPDFRPluginRunning("ComputerPlus", new Version("1.4.1.1"));
                 if (IsRunning)
                 {
+                    Log.Info("Detected ComputerPlus is running. Registering CAD interfaces");
                     Functions.RegisterInterface("Computer Aided Dispatch", "Brexin212", () => new CADMainGwenForm());
+                }
+                else
+                {
+                    Log.Info("Determined that ComputerPlus is not running");
                 }
             }
         }

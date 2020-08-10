@@ -5,11 +5,11 @@ using System.Linq;
 namespace AgencyCalloutsPlus
 {
     /// <summary>
-    /// Guaranteed spawn generator. The cumulative probability is set to the max
-    /// threshold, not 1000!
+    /// A Probability based random item generator.
     /// </summary>
+    /// <remarks>P( T item ) = item.Probability / CumulativeProbability</remarks>
     /// <typeparam name="T"></typeparam>
-    internal class SpawnGenerator<T> where T : ISpawnable
+    internal class ProbabilityGenerator<T> where T : ISpawnable
     {
         private CryptoRandom Randomizer = new CryptoRandom();
         private List<SpawnableWrapper<T>> SpawnableEntities;
@@ -22,13 +22,13 @@ namespace AgencyCalloutsPlus
         /// </summary>
         public int CumulativeProbability { get; protected set; }
 
-        public SpawnGenerator()
+        public ProbabilityGenerator()
         {
             //TypeIsCloneable = typeof(ICloneable).IsAssignableFrom(typeof(T));
             SpawnableEntities = new List<SpawnableWrapper<T>>();
         }
 
-        public SpawnGenerator(IEnumerable<T> objects)
+        public ProbabilityGenerator(IEnumerable<T> objects)
         {
             //TypeIsCloneable = typeof(ICloneable).IsAssignableFrom(typeof(T));
             SpawnableEntities = new List<SpawnableWrapper<T>>();

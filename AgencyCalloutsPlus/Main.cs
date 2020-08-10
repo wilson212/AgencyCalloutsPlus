@@ -1,6 +1,7 @@
 ﻿using AgencyCalloutsPlus.API;
 using AgencyCalloutsPlus.Integration;
 using AgencyCalloutsPlus.Mod;
+using AgencyCalloutsPlus.NativeUI;
 using AgencyCalloutsPlus.RageUIMenus;
 using LSPD_First_Response.Mod.API;
 using Rage;
@@ -184,8 +185,10 @@ namespace AgencyCalloutsPlus
 
                 // Load locations based on current agency jurisdiction.
                 // This method needs called everytime the player Agency is changed
-                var zonesLoaded = ZoneInfo.LoadZones(Agency.GetCurrentAgencyJurisdictionZones());
-                if (zonesLoaded == 0)
+                var numZonesLoaded = ZoneInfo.LoadZones(Agency.GetCurrentAgencyZoneNames());
+
+                // If no zones are loaded, we cannot continue
+                if (numZonesLoaded == 0)
                 {
                     // Display notification to the player
                     Game.DisplayNotification(
@@ -203,11 +206,12 @@ namespace AgencyCalloutsPlus
                     PluginMenu = new ADACMainMenu();
                     PluginMenu.BeginListening();
 
-                    // Check for C+ API
+                    // Check for and initialize API classes
                     ComputerPlusAPI.Initialize();
+                    StopThePedAPI.Initialize();
 
-                    // TEMPORARY
-                    ExampleTable.Initialize();
+                    // Initialize CAD
+                    ComputerAidedDispatchMenu.Initialize();
 
                     // Display notification to the player
                     Game.DisplayNotification(

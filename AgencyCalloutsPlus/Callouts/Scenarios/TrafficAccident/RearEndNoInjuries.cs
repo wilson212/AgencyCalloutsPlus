@@ -3,7 +3,10 @@ using AgencyCalloutsPlus.Extensions;
 using AgencyCalloutsPlus.Mod;
 using AgencyCalloutsPlus.Mod.Conversation;
 using AgencyCalloutsPlus.RageUIMenus;
+using LSPD_First_Response;
 using Rage;
+using System;
+using System.Collections.Generic;
 using System.Xml;
 
 namespace AgencyCalloutsPlus.Callouts.Scenarios.TrafficAccident
@@ -11,6 +14,9 @@ namespace AgencyCalloutsPlus.Callouts.Scenarios.TrafficAccident
     /// <summary>
     /// One scenario of the <see cref="Callouts.TrafficAccident"/> callout
     /// </summary>
+    /// <remarks>
+    /// Victim may or may not be at fault. No injuries in this accident
+    /// </remarks>
     internal class RearEndNoInjuries : CalloutScenario
     {
         /// <summary>
@@ -18,45 +24,51 @@ namespace AgencyCalloutsPlus.Callouts.Scenarios.TrafficAccident
         /// </summary>
         private Callouts.TrafficAccident Callout { get; set; }
 
-        private string FlowOutcomeId { get; set; }
-
         /// <summary>
         /// Gets the SpawnPoint location of this <see cref="CalloutScenario"/>
         /// </summary>
         public SpawnPoint SpawnPoint { get; protected set; }
+
+        /// <summary>
+        /// Contains the interaction menu for this scenario
+        /// </summary>
+        private CalloutPedInteractionMenu Menu { get; set; }
+
+        #region Victim fields
 
         private Ped Victim;
         private VehicleClass VictimVehicleType;
         private Vehicle VictimVehicle;
         private Blip VictimBlip;
 
+        #endregion
+
+        #region Suspect fields
+
         private Ped Suspect;
         private VehicleClass SuspectVehicleType;
         private Vehicle SuspectVehicle;
         private Blip SuspectBlip;
 
-        private CalloutPedInteractionMenu Menu;
+        #endregion
 
-        private ExpressionParser Parser { get; set; }
-
-        public RearEndNoInjuries(Callouts.TrafficAccident callout, XmlNode scenarioNode)
+        /// <summary>
+        /// Creates a new instance of this scenario
+        /// </summary>
+        /// <param name="callout">The parent callout instance</param>
+        /// <param name="scenarioNode">The <see cref="XmlNode"/> for this scenario specifically</param>
+        public RearEndNoInjuries(Callouts.TrafficAccident callout, XmlNode scenarioNode) : base(scenarioNode)
         {
             // Store spawn point
             this.SpawnPoint = callout.SpawnPoint;
 
             // Get Victim 1 vehicle type using probability defined in the CalloutMeta.xml
             var cars = scenarioNode.SelectSingleNode("Victim1/VehicleTypes").ChildNodes;
-            VictimVehicleType = GetRandomCarTypeFromScenarioNodeList(cars);
+            VictimVehicleType = GetRandomVehicleType(cars);
 
             // Get Victim 2 vehicle type using probability defined in the CalloutMeta.xml
             cars = scenarioNode.SelectSingleNode("Victim2/VehicleTypes").ChildNodes;
-            SuspectVehicleType = GetRandomCarTypeFromScenarioNodeList(cars);
-
-            var nodes = scenarioNode.SelectSingleNode("FlowSequence").SelectNodes("FlowOutcome");
-            FlowOutcomeId = GetRandomFlowOutcomeIdFromScenarioNodeList(nodes);
-
-            // Create expression parser
-            Parser = new ExpressionParser();
+            SuspectVehicleType = GetRandomVehicleType(cars);
         }
 
         /// <summary>
@@ -65,6 +77,12 @@ namespace AgencyCalloutsPlus.Callouts.Scenarios.TrafficAccident
         /// </summary>
         public override void Setup()
         {
+            // Ensure our FlowOutcome is not null
+            if (FlowOutcome == null)
+            {
+                throw new ArgumentNullException(nameof(FlowOutcome));
+            }
+
             // Show player notification
             Game.DisplayNotification(
                 "3dtextures",
@@ -76,44 +94,64 @@ namespace AgencyCalloutsPlus.Callouts.Scenarios.TrafficAccident
 
             // Create victim car
             var victimV = VehicleInfo.GetRandomVehicleByType(VictimVehicleType);
-            VictimVehicle = new Vehicle(victimV.ModelName, SpawnPoint.Position, SpawnPoint.Heading);
-            VictimVehicle.IsPersistent = true;
-            VictimVehicle.EngineHealth = 0;
-            VictimVehicle.DeformRear(200, 200);
+            VictimVehicle = new Vehicle(victimV.ModelName, SpawnPoint.Position, SpawnPoint.Heading)
+            {
+                IsPersistent = true,
+                EngineHealth = 0
+            };
 
             // Create Victim
             Victim = VictimVehicle.CreateRandomDriver();
             Victim.IsPersistent = true;
             Victim.BlockPermanentEvents = true;
-            Parser.SetParamater("Victim1", Victim);
 
             // Create suspect vehicle 1m behind victim vehicle
             var vector = VictimVehicle.GetOffsetPositionFront(-(VictimVehicle.Length + 1f));
             var suspectV = VehicleInfo.GetRandomVehicleByType(SuspectVehicleType);
-
-            SuspectVehicle = new Vehicle(suspectV.ModelName, vector, SpawnPoint.Heading);
-            SuspectVehicle.IsPersistent = true;
-            SuspectVehicle.EngineHealth = 0;
-            SuspectVehicle.DeformFront(200, 200);
+            SuspectVehicle = new Vehicle(suspectV.ModelName, vector, SpawnPoint.Heading)
+            {
+                IsPersistent = true,
+                EngineHealth = 0
+            };
 
             // Create suspect
             Suspect = SuspectVehicle.CreateRandomDriver();
             Suspect.IsPersistent = true;
             Suspect.BlockPermanentEvents = true;
-            Parser.SetParamater("Victim2", Suspect);
 
             // Attach Blips
             VictimBlip = Victim.AttachBlip();
             VictimBlip.IsRouteEnabled = true;
             SuspectBlip = Suspect.AttachBlip();
 
-            // Load flow sequences
-            var document = LoadFlowSequenceFile("TrafficAccident", "FlowSequence", "RearEndNoInjuries", "Victim2.xml");
-            var suspectSeq = new FlowSequence(Suspect, FlowOutcomeId, document, Parser);
+            // Damage the rear of the victim vehicle and front of suspect vehicle
+            VictimVehicle.DeformRear(200, 200);
+            SuspectVehicle.DeformFront(200, 200);
 
-            document = LoadFlowSequenceFile("TrafficAccident", "FlowSequence", "RearEndNoInjuries", "Victim1.xml");
-            var victimSeq = new FlowSequence(Victim, FlowOutcomeId, document, Parser);
-            victimSeq.SetVariable("CarType", GetCarDescription(VictimVehicleType));
+            // Add parser variables
+            var suspect = new PedWrapper(Suspect);
+            var victim = new PedWrapper(Victim);
+            Parser.SetParamater("Victim", victim);
+            Parser.SetParamater("Suspect", suspect);
+
+            // Create variable dictionary
+            var variables = new Dictionary<string, object>()
+            {
+                { "SuspectVehicleType", VehicleInfo.GetVehicleTypeDescription(SuspectVehicleType) },
+                { "VictimVehicleType", VehicleInfo.GetVehicleTypeDescription(VictimVehicleType) },
+                { "SuspectTitle", $"{suspect.GenderTitle}. {suspect.Persona.Surname}" },
+                { "VictimTitle", $"{victim.GenderTitle}. {victim.Persona.Surname}" },
+            };
+
+            // Load converation flow sequence for the suspect
+            var document = LoadFlowSequenceFile("TrafficAccident", "FlowSequence", "RearEndNoInjuries", "Suspect.xml");
+            var suspectSeq = new FlowSequence("Suspect", Suspect, FlowOutcome, document, Parser);
+            suspectSeq.SetVariableDictionary(variables);
+
+            // Load converation flow sequence for the victim
+            document = LoadFlowSequenceFile("TrafficAccident", "FlowSequence", "RearEndNoInjuries", "Victim.xml");
+            var victimSeq = new FlowSequence("Victim", Victim, FlowOutcome, document, Parser);
+            victimSeq.SetVariableDictionary(variables);
 
             // Register menu
             Menu = new CalloutPedInteractionMenu("Callout Interaction", "~b~Traffic Accident: ~y~Rear End Collision");
@@ -121,9 +159,14 @@ namespace AgencyCalloutsPlus.Callouts.Scenarios.TrafficAccident
             Menu.RegisterPedConversation(Victim, victimSeq);
         }
 
+        /// <summary>
+        /// Processes the current <see cref="CalloutScenario"/>. This method must be called
+        /// in the <see cref="LSPD_First_Response.Mod.Callouts.Callout.Process()"/> method
+        /// on every tick
+        /// </summary>
         public override void Process()
         {
-            // Process Menu
+            // Process Menu events
             Menu.Process();
 
             // Temporary
@@ -133,6 +176,11 @@ namespace AgencyCalloutsPlus.Callouts.Scenarios.TrafficAccident
             }
         }
 
+        /// <summary>
+        /// This method is responsible for cleaning up all of the objects in this <see cref="CalloutScenario"/>.
+        /// This method must be called in the <see cref="LSPD_First_Response.Mod.Callouts.Callout.End()"/> 
+        /// method
+        /// </summary>
         public override void Cleanup()
         {
             // Clean up
@@ -150,27 +198,6 @@ namespace AgencyCalloutsPlus.Callouts.Scenarios.TrafficAccident
 
             SuspectVehicle?.Cleanup();
             SuspectVehicle = null;
-        }
-
-        private string GetCarDescription(VehicleClass vehicleType)
-        {
-            switch (vehicleType)
-            {
-                case VehicleClass.Compact:
-                case VehicleClass.Coupe:
-                case VehicleClass.Muscle:
-                case VehicleClass.Sedan:
-                case VehicleClass.Sport:
-                case VehicleClass.SportClassic:
-                    return "car";
-                case VehicleClass.Emergency:
-                    return "truck";
-                case VehicleClass.SUV:
-                case VehicleClass.Van:
-                    return "suv";
-                default:
-                    return "vehicle";
-            }
         }
     }
 }

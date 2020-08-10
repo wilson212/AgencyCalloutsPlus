@@ -24,19 +24,18 @@ namespace AgencyCalloutsPlus.Mod.UI
         public static void Show(string loadingText = null, LoadingSpinnerType spinnerType = LoadingSpinnerType.RegularClockwise)
         {
             Hide();
-            /*
+
             if (loadingText == null)
             {
-                Function.Call(Hash.BEGIN_TEXT_COMMAND_BUSYSPINNER_ON, SHVDN.NativeMemory.NullString);
+                Natives.BeginTextCommandBusyspinnerOn("FM_COR_AUTOD");
             }
             else
             {
-                Function.Call(Hash.BEGIN_TEXT_COMMAND_BUSYSPINNER_ON, SHVDN.NativeMemory.String);
-                Function.Call(Hash.ADD_TEXT_COMPONENT_SUBSTRING_PLAYER_NAME, loadingText);
+                Natives.BeginTextCommandBusyspinnerOn("STRING");
+                Natives.AddTextComponentSubstringPlayerName(loadingText);
             }
 
-            Function.Call(Hash.END_TEXT_COMMAND_BUSYSPINNER_ON, spinnerType);
-            */
+            Natives.EndTextCommandBusyspinnerOn(spinnerType);
         }
 
         /// <summary>

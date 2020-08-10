@@ -42,11 +42,6 @@ namespace AgencyCalloutsPlus.API
         public Population Population { get; protected set; }
 
         /// <summary>
-        /// Gets the overall crime level of the zone
-        /// </summary>
-        public CrimeLevel CrimeLevel { get; protected set; }
-
-        /// <summary>
         /// Gets the zone size
         /// </summary>
         public ZoneSize Size { get; protected set; }
@@ -60,11 +55,6 @@ namespace AgencyCalloutsPlus.API
         /// Gets the social class of this zones citizens
         /// </summary>
         public SocialClass SocialClass { get; protected set; }
-
-        /// <summary>
-        /// Gets the number of desired patrols for this zone
-        /// </summary>
-        public double IdealPatrolCount { get; protected set; }
 
         /// <summary>
         /// Contains a dictionary of how often specific crimes happen in this zone
@@ -94,7 +84,7 @@ namespace AgencyCalloutsPlus.API
         /// <summary>
         /// Spawns a <see cref="CalloutType"/> based on the <see cref="CrimeTypeProbabilities"/> probabilites set
         /// </summary>
-        private TimeOfDaySpawnGenerator<SpawnableCalloutType> CrimeGenerator { get; set; }
+        private TimeOfDayProbabilityGenerator<SpawnableCalloutType> CrimeGenerator { get; set; }
 
         /// <summary>
         /// Creates a new instance of <see cref="ZoneInfo"/>
@@ -148,7 +138,7 @@ namespace AgencyCalloutsPlus.API
 
             // Load crime probabilites
             var crimeTypeProbabilities = new Dictionary<CalloutType, Dictionary<TimeOfDay, int>>(10);
-            CrimeGenerator = new TimeOfDaySpawnGenerator<SpawnableCalloutType>();
+            CrimeGenerator = new TimeOfDayProbabilityGenerator<SpawnableCalloutType>();
 
             // Get average calls by time of day
             var subNode = catagoryNode.SelectSingleNode("AverageCalls");
@@ -205,8 +195,6 @@ namespace AgencyCalloutsPlus.API
 
             // Internal vars
             CrimeTypeProbabilities = new ReadOnlyDictionary<CalloutType, Dictionary<TimeOfDay, int>>(crimeTypeProbabilities);
-
-            IdealPatrolCount = GetOptimumPatrolCount(Size, Population, CrimeLevel);
         }
 
         private Dictionary<TimeOfDay, int> GetTimeOfDayProbabilities(XmlNode subNode)
@@ -358,6 +346,8 @@ namespace AgencyCalloutsPlus.API
 
                     // Create home
                     var home = new HomeLocation(this, vector);
+
+                    // Extract nodes
                     try
                     {
                         home.Address = homeNode.SelectSingleNode("Address")?.InnerText ?? throw new ArgumentException("Address");
@@ -381,6 +371,13 @@ namespace AgencyCalloutsPlus.API
                             throw new ArgumentException("Type");
                         }
                         home.Type = sType;
+
+                        // Try and parse type
+                        val = homeNode.SelectSingleNode("Flags")?.InnerText;
+                        if (!String.IsNullOrEmpty(val))
+                        {
+                            AddLocationFlagsFromCSV(val, home);
+                        }
                     }
                     catch (ArgumentException e)
                     {
@@ -428,6 +425,27 @@ namespace AgencyCalloutsPlus.API
             }
 
             return new HomeLocation[0];
+        }
+
+        /// <summary>
+        /// Extracts and add the <see cref="LocationFlags"/> from a comma seperated string
+        /// to a <see cref="WorldLocation"/>
+        /// </summary>
+        /// <param name="csv">Comma seperated values</param>
+        /// <param name="location"></param>
+        private void AddLocationFlagsFromCSV(string csv, WorldLocation location)
+        {
+            if (!String.IsNullOrWhiteSpace(csv))
+            {
+                string[] vals = csv.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+                foreach (string val in vals)
+                {
+                    if (Enum.TryParse(val, out LocationFlags flag))
+                    {
+                        location.Flags |= flag;
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -501,83 +519,13 @@ namespace AgencyCalloutsPlus.API
 
             // Create the Vector3
             Vector3 vector = new Vector3(x, y, z);
-            return new SpawnPoint(vector, heading);
-        }
+            var sp = new SpawnPoint(vector, heading);
 
-        /// <summary>
-        /// Determines the optimal number of patrols this zone should have based
-        /// on <see cref="ZoneSize"/>, <see cref="API.Population"/> and
-        /// <see cref="API.CrimeLevel"/> of crimes
-        /// </summary>
-        /// <param name="Size"></param>
-        /// <param name="Population"></param>
-        /// <param name="CrimeLevel"></param>
-        /// <returns></returns>
-        private static double GetOptimumPatrolCount(ZoneSize Size, Population Population, CrimeLevel CrimeLevel)
-        {
-            double baseCount = 0;
-            double modifier = 0;
+            // Try and extract spawn point flags
+            if (n.Attributes["flags"]?.Value != null)
+                AddLocationFlagsFromCSV(n.Attributes["flags"].Value, sp);
 
-            switch (Size)
-            {
-                case ZoneSize.VerySmall:
-                    baseCount = 0.25;
-                    break;
-                case ZoneSize.Small:
-                    baseCount = 0.50;
-                    break;
-                case ZoneSize.Medium:
-                    baseCount = 1;
-                    break;
-                case ZoneSize.Large:
-                    baseCount = 1.50;
-                    break;
-                case ZoneSize.VeryLarge:
-                    baseCount = 2.25;
-                    break;
-                case ZoneSize.Massive:
-                    baseCount = 3.50;
-                    break;
-            }
-
-            switch (Population)
-            {
-                default: // None
-                    return 0;
-                case Population.Scarce:
-                    // No adjustment
-                    break;
-                case Population.Moderate:
-                    baseCount *= 1.5;
-                    break;
-                case Population.Dense:
-                    baseCount *= 2;
-                    break;
-            }
-
-            switch (CrimeLevel)
-            {
-                default: // None
-                    modifier = 0.25;
-                    break;
-                case CrimeLevel.VeryLow:
-                    modifier = 0.33;
-                    break;
-                case CrimeLevel.Low:
-                    modifier = 0.66;
-                    break;
-                case CrimeLevel.Moderate:
-                    modifier = 1;
-                    break;
-                case CrimeLevel.High:
-                    modifier = 1.33;
-                    break;
-                case CrimeLevel.VeryHigh:
-                    modifier = 1.75;
-                    break;
-            }
-
-            return baseCount * modifier;
+            return sp;
         }
 
         /// <summary>

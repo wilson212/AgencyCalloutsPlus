@@ -69,6 +69,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\__Dependencies\v1868\RagePluginHookSDK.dll</HintPath>
     </Reference>
+    <Reference Include="StopThePed">
+      <HintPath>..\..\__Dependencies\v1868\StopThePed.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data.Entity" />
@@ -82,11 +85,17 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="API\Enums\LocationFlags.cs" />
+    <Compile Include="API\Enums\Weather.cs" />
+    <Compile Include="API\GameWorld.cs" />
+    <Compile Include="Mod\WeatherInfo.cs" />
+    <Compile Include="Mod\Conversation\FlowOutcome.cs" />
     <Compile Include="Extensions\ColorExtensions.cs" />
     <Compile Include="Extensions\RegexExtensions.cs" />
     <Compile Include="Extensions\DynamicLinq.cs" />
     <Compile Include="Extensions\IntExtensions.cs" />
     <Compile Include="Extensions\XmlExtensions.cs" />
+    <Compile Include="Integration\StopThePedAPI.cs" />
     <Compile Include="Mod\AgencyCallout.cs" />
     <Compile Include="API\Agencies\CityPoliceAgency.cs" />
     <Compile Include="API\Enums\HomeFlags.cs" />
@@ -120,10 +129,13 @@
     <Compile Include="Callouts\Scenarios\DomesticViolence\DomesticArguingOnly.cs" />
     <Compile Include="Mod\Enums\TimeOfDay.cs" />
     <Compile Include="Mod\ExpressionParser.cs" />
+    <Compile Include="Mod\NativeUI\CurrentCallTabItem.cs" />
+    <Compile Include="Mod\NativeUI\Elements\IElement.cs" />
+    <Compile Include="Mod\NativeUI\MyTabItem.cs" />
     <Compile Include="Mod\RegionCrimeInfo.cs" />
     <Compile Include="SpawnableWrapper.cs" />
     <Compile Include="SubtitleQueue.cs" />
-    <Compile Include="Mod\Conversation\Response.cs" />
+    <Compile Include="Mod\Conversation\PedResponse.cs" />
     <Compile Include="Mod\PedWrapper.cs" />
     <Compile Include="Mod\RegionCrimeGenerator.cs" />
     <Compile Include="Extensions\EntityExtensions.cs" />
@@ -176,7 +188,7 @@
     <Compile Include="Mod\Conversation\LineSet.cs" />
     <Compile Include="Mod\UI\Alignment.cs" />
     <Compile Include="Mod\UI\ContainerElement.cs" />
-    <Compile Include="Mod\UI\Font.cs" />
+    <Compile Include="Mod\NativeUI\GameFont.cs" />
     <Compile Include="Mod\UI\IElement.cs" />
     <Compile Include="Mod\UI\LoadingSpinner.cs" />
     <Compile Include="Mod\UI\LoadingSpinnerType.cs" />
@@ -189,14 +201,14 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="RageUIMenus\ADACMainMenu.cs" />
-    <Compile Include="RageUIMenus\CalloutPedInteractionMenu.cs" />
-    <Compile Include="RageUIMenus\ExampleTable.cs" />
+    <Compile Include="Mod\RageUIMenus\ADACMainMenu.cs" />
+    <Compile Include="Mod\RageUIMenus\CalloutPedInteractionMenu.cs" />
+    <Compile Include="Mod\NativeUI\ComputerAidedDispatchMenu.cs" />
     <Compile Include="Range.cs" />
     <Compile Include="Settings.cs" />
-    <Compile Include="SpawnGenerator.cs" />
+    <Compile Include="ProbabilityGenerator.cs" />
     <Compile Include="SpawnHelper.cs" />
-    <Compile Include="TimeOfDaySpawnGenerator.cs" />
+    <Compile Include="TimeOfDayProbabilityGenerator.cs" />
     <Compile Include="TimeScale.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -215,14 +227,13 @@
     <Content Include="AgencyCalloutsPlus\Agencies.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="AgencyCalloutsPlus\Callouts\DomesticViolence\CalloutMeta.xml" />
     <Content Include="AgencyCalloutsPlus\Callouts\TrafficAccident\CalloutMeta.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="AgencyCalloutsPlus\Callouts\TrafficAccident\FlowSequence\RearEndNoInjuries\Victim1.xml">
+    <Content Include="AgencyCalloutsPlus\Callouts\TrafficAccident\FlowSequence\RearEndNoInjuries\Victim.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="AgencyCalloutsPlus\Callouts\TrafficAccident\FlowSequence\RearEndNoInjuries\Victim2.xml">
+    <Content Include="AgencyCalloutsPlus\Callouts\TrafficAccident\FlowSequence\RearEndNoInjuries\Suspect.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="AgencyCalloutsPlus\Locations\AIRP.xml">

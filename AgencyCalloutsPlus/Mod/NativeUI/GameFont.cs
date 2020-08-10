@@ -4,12 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace AgencyCalloutsPlus.Mod.UI
+namespace AgencyCalloutsPlus.Mod.NativeUI
 {
     /// <summary>
 	/// An enumeration of fonts the game supports.
 	/// </summary>
-	public enum Font : int
+	public enum GameFont : int
     {
         ChaletLondon = 0,
         HouseScript = 1,

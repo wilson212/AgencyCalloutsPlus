@@ -61,7 +61,7 @@ Callouts:
 	- BankHiestPursuit						[Robbery]
 - Burglary 
 	- ResidentBreakInAftermath				[Property]
-	- ResidentAlarmTriggered				[Property]
+	- ResidentAlarmTriggered	(Ring)		[Property] (80% false positive)
 	- StoreBreakInAftermath					[Property]
 	- StoreSilentAlarmTriggered				[Property]
 	- ShopLifting							[Property]

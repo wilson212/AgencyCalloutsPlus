@@ -3,21 +3,21 @@ using System.Collections.Generic;
 
 namespace AgencyCalloutsPlus
 {
-    public class TimeOfDaySpawnGenerator<T> where T : ISpawnable
+    public class TimeOfDayProbabilityGenerator<T> where T : ISpawnable
     {
         /// <summary>
         /// A dictionary containing our spawn generators
         /// </summary>
-        private Dictionary<TimeOfDay, SpawnGenerator<T>> Generators { get; set; }
+        private Dictionary<TimeOfDay, ProbabilityGenerator<T>> Generators { get; set; }
 
-        public TimeOfDaySpawnGenerator()
+        public TimeOfDayProbabilityGenerator()
         {
-            Generators = new Dictionary<TimeOfDay, SpawnGenerator<T>>()
+            Generators = new Dictionary<TimeOfDay, ProbabilityGenerator<T>>()
             {
-                { TimeOfDay.Morning, new SpawnGenerator<T>() },
-                { TimeOfDay.Day, new SpawnGenerator<T>() },
-                { TimeOfDay.Evening, new SpawnGenerator<T>() },
-                { TimeOfDay.Night, new SpawnGenerator<T>() },
+                { TimeOfDay.Morning, new ProbabilityGenerator<T>() },
+                { TimeOfDay.Day, new ProbabilityGenerator<T>() },
+                { TimeOfDay.Evening, new ProbabilityGenerator<T>() },
+                { TimeOfDay.Night, new ProbabilityGenerator<T>() },
             };
         }
 

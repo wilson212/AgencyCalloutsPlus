@@ -29,7 +29,7 @@ namespace AgencyCalloutsPlus.Mod
         public Dictionary<TimeOfDay, RegionCrimeInfo> RegionCrimeInfoByTimeOfDay { get; private set; }
 
         /// <summary>
-        /// Containts a range of time between calls, using the current <see cref="CrimeLevel"/>.
+        /// Containts a range of time between calls in milliseconds (real life timne), using the current <see cref="CrimeLevel"/>.
         /// </summary>
         public Range<int> CallTimerRange { get; set; }
 
@@ -46,12 +46,12 @@ namespace AgencyCalloutsPlus.Mod
         /// <summary>
         /// Gets a list of zones in this jurisdiction
         /// </summary>
-        protected SpawnGenerator<ZoneInfo> CrimeZoneGenerator { get; set; }
+        protected ProbabilityGenerator<ZoneInfo> CrimeZoneGenerator { get; set; }
 
         /// <summary>
         /// Spawn generator for random crime levels
         /// </summary>
-        private static SpawnGenerator<CrimeLevelWrapper> CrimeLevelGenerator { get; set; }
+        private static ProbabilityGenerator<CrimeLevelWrapper> CrimeLevelGenerator { get; set; }
 
         /// <summary>
         /// GameFiber containing the CallCenter functions
@@ -61,7 +61,7 @@ namespace AgencyCalloutsPlus.Mod
         static RegionCrimeGenerator()
         {
             // Create our crime level generator
-            CrimeLevelGenerator = new SpawnGenerator<CrimeLevelWrapper>();
+            CrimeLevelGenerator = new ProbabilityGenerator<CrimeLevelWrapper>();
             CrimeLevelGenerator.Add(new CrimeLevelWrapper() { CrimeLevel = CrimeLevel.None, Probability = 6 });
             CrimeLevelGenerator.Add(new CrimeLevelWrapper() { CrimeLevel = CrimeLevel.VeryLow, Probability = 12 });
             CrimeLevelGenerator.Add(new CrimeLevelWrapper() { CrimeLevel = CrimeLevel.Low, Probability = 20 });
@@ -83,7 +83,7 @@ namespace AgencyCalloutsPlus.Mod
         {
             // Create instance variables
             RegionCrimeInfoByTimeOfDay = new Dictionary<TimeOfDay, RegionCrimeInfo>();
-            CrimeZoneGenerator = new SpawnGenerator<ZoneInfo>();
+            CrimeZoneGenerator = new ProbabilityGenerator<ZoneInfo>();
 
             // Only attempt to add if we have zones
             if (zones.Length > 0)
@@ -115,6 +115,10 @@ namespace AgencyCalloutsPlus.Mod
             AdjustCallFrequencyTimer();
         }
 
+        /// <summary>
+        /// Begins a new <see cref="Rage.GameFiber"/> to spawn <see cref="CalloutScenario"/>s
+        /// based on current <see cref="TimeOfDay"/>
+        /// </summary>
         public void Begin()
         {
             if (CrimeFiber == null)
@@ -122,9 +126,9 @@ namespace AgencyCalloutsPlus.Mod
                 IsRunning = true;
 
                 // Register for Dispatch event
-                Dispatch.OnTimeOfDayChange += Dispatch_OnTimeOfDayChange;
+                Dispatch.OnTimeOfDayChanged += Dispatch_OnTimeOfDayChanged;
 
-                // Determine our Crime level during this period
+                // Determine our initial Crime level during this period
                 CurrentCrimeLevel = CrimeLevelGenerator.Spawn().CrimeLevel;
 
                 // Must be called
@@ -135,14 +139,22 @@ namespace AgencyCalloutsPlus.Mod
             }
         }
 
+        /// <summary>
+        /// Stops this <see cref="RegionCrimeGenerator"/> from spawning anymore calls
+        /// </summary>
         public void End()
         {
-            Dispatch.OnTimeOfDayChange -= Dispatch_OnTimeOfDayChange;
+            Dispatch.OnTimeOfDayChanged -= Dispatch_OnTimeOfDayChanged;
             IsRunning = false;
             CrimeFiber.Abort();
             CrimeFiber = null;
         }
 
+        /// <summary>
+        /// Uses the <see cref="ProbabilityGenerator{T}"/> to spawn which zone the next crime
+        /// will be commited in
+        /// </summary>
+        /// <returns>returns a <see cref="ZoneInfo"/>, or null on failure</returns>
         public ZoneInfo GetNextRandomCrimeZone()
         {
             if (CrimeZoneGenerator.TrySpawn(out ZoneInfo zone))
@@ -187,7 +199,7 @@ namespace AgencyCalloutsPlus.Mod
                         // Get average calls per period
                         var calls = zone.AverageCalls[period];
                         crimeInfo.AverageCrimeCalls += calls;
-                        optimumPatrols += zone.IdealPatrolCount;
+                        optimumPatrols += GetOptimumPatrolCountForZone(calls, zone.Size, zone.Population);
                     }
                 }
 
@@ -229,7 +241,7 @@ namespace AgencyCalloutsPlus.Mod
 
                 // Determine random time till next call
                 var time = Randomizer.Next(CallTimerRange.Minimum, CallTimerRange.Maximum);
-                Log.Debug($"Starting next call in {time}ms (Current Crime Level: {Enum.GetName(typeof(CrimeLevel), CurrentCrimeLevel)})");
+                Log.Debug($"Starting next call in {time}ms");
 
                 // Wait
                 GameFiber.Wait(time);
@@ -237,31 +249,51 @@ namespace AgencyCalloutsPlus.Mod
         }
 
         /// <summary>
-        /// Method called on event <see cref="Dispatch.OnTimeOfDayChange"/>
+        /// Method called on event <see cref="Dispatch.OnTimeOfDayChanged"/>
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void Dispatch_OnTimeOfDayChange(object sender, EventArgs e)
+        private void Dispatch_OnTimeOfDayChanged(object sender, EventArgs e)
         {
-            var oldLevel = Enum.GetName(typeof(CrimeLevel), CurrentCrimeLevel);
+            var oldLevel = CurrentCrimeLevel;
 
             // Change our Crime level during this period
             CurrentCrimeLevel = CrimeLevelGenerator.Spawn().CrimeLevel;
+            var name = Enum.GetName(typeof(TimeOfDay), Dispatch.CurrentTimeOfDay);
 
-            // Call process
+            // Log change
+            Log.Info($"RegionCrimeGenerator: The time of day is transitioning to {name}. Settings crime level to {Enum.GetName(typeof(CrimeLevel), CurrentCrimeLevel)}");
+
+            // Adjust our call frequency based on new crime level
             AdjustCallFrequencyTimer();
 
             // Determine message
             string current = Enum.GetName(typeof(CrimeLevel), CurrentCrimeLevel);
+            if (CurrentCrimeLevel != oldLevel)
+            {
+                var oldName = Enum.GetName(typeof(CrimeLevel), CurrentCrimeLevel);
+                var text = (oldLevel > CurrentCrimeLevel) ? "~g~decrease~w~" : "~y~increase~w~";
 
-            // Show the player some dialog
-            Game.DisplayNotification(
-                "3dtextures",
-                "mpgroundlogo_cops",
-                "Agency Dispatch and Callouts+",
-                "~b~Call Center Update",
-                $"Crime levels have changed from {oldLevel} to {current}"
-            );
+                // Show the player some dialog
+                Game.DisplayNotification(
+                    "3dtextures",
+                    "mpgroundlogo_cops",
+                    "Agency Dispatch and Callouts+",
+                    "~b~Call Center Update",
+                    $"The time of day is transitioning to ~y~{name}~w~. Crime levels are starting to {text}"
+                );
+            }
+            else
+            {
+                // Show the player some dialog
+                Game.DisplayNotification(
+                    "3dtextures",
+                    "mpgroundlogo_cops",
+                    "Agency Dispatch and Callouts+",
+                    "~b~Call Center Update",
+                    $"The time of day is transitioning to ~y~{name}~w~. Crime levels are not expected to change"
+                );
+            }
         }
 
         /// <summary>
@@ -320,7 +352,12 @@ namespace AgencyCalloutsPlus.Mod
             // Adjust call frequency timer
             CallTimerRange = new Range<int>(min, max);
         }
-
+        
+        /// <summary>
+        /// Gets a <see cref="TimeSpan"/> until the next time of day change using the
+        /// game's current time scale
+        /// </summary>
+        /// <returns></returns>
         private TimeSpan GetTimeUntilNextTimeOfDay()
         {
             // Now get time difference
@@ -349,7 +386,59 @@ namespace AgencyCalloutsPlus.Mod
             return untilNextChange;
         }
 
-        protected virtual PriorityCall GenerateCall()
+        /// <summary>
+        /// Determines the optimal number of patrols this zone should have based
+        /// on <see cref="ZoneSize"/>, <see cref="API.Population"/> and
+        /// <see cref="API.CrimeLevel"/> of crimes
+        /// </summary>
+        /// <param name="averageCalls"></param>
+        /// <param name="Size"></param>
+        /// <param name="Population"></param>
+        /// <returns></returns>
+        private static double GetOptimumPatrolCountForZone(int averageCalls, ZoneSize Size, Population Population)
+        {
+            double baseCount = Math.Max(1, averageCalls / 6d);
+
+            switch (Size)
+            {
+                case ZoneSize.VerySmall:
+                case ZoneSize.Small:
+                    baseCount--;
+                    break;
+                case ZoneSize.Medium:
+                case ZoneSize.Large:
+                    break;
+                case ZoneSize.VeryLarge:
+                case ZoneSize.Massive:
+                    baseCount += 1;
+                    break;
+            }
+
+            switch (Population)
+            {
+                default: // None
+                    return 0;
+                case Population.Scarce:
+                    baseCount *= 0.75;
+                    // No adjustment
+                    break;
+                case Population.Moderate:
+                    break;
+                case Population.Dense:
+                    baseCount *= 1.25;
+                    break;
+            }
+
+            return Math.Max(0.25d, baseCount);
+        }
+
+        /// <summary>
+        /// Creates a <see cref="PriorityCall"/> with a crime location for the <paramref name="scenario"/>.
+        /// This method does not add the call to <see cref="Dispatch"/> call queue
+        /// </summary>
+        /// <param name="scenario"></param>
+        /// <returns></returns>
+        public PriorityCall CreateCallFromScenario(CalloutScenarioInfo scenario)
         {
             // Try to generate a call
             for (int i = 0; i < Settings.MaxLocationAttempts; i++)
@@ -364,17 +453,8 @@ namespace AgencyCalloutsPlus.Mod
                         continue;
                     }
 
-                    // Spawn crime type from our spawned zone
-                    var tod = Dispatch.CurrentTimeOfDay;
-                    CalloutType type = zone.GetNextRandomCrimeType();
-                    if (!Dispatch.ScenarioPool[type].TrySpawn(tod, out CalloutScenarioInfo scenario))
-                    {
-                        Log.Debug($"CrimeGenerator: Unable to pull CalloutType {type} from zone '{zone.FullName}'");
-                        continue;
-                    }
-
                     // Get a random location!
-                    WorldLocation location = GetScenarioLocation(zone, scenario);
+                    WorldLocation location = GetScenarioLocationFromZone(zone, scenario);
                     if (location == null)
                     {
                         Log.Debug($"CrimeGenerator: Unable to pull Location type {scenario.LocationType} from zone '{zone.FullName}'");
@@ -401,7 +481,59 @@ namespace AgencyCalloutsPlus.Mod
             return null;
         }
 
-        protected virtual WorldLocation GetScenarioLocation(ZoneInfo zone, CalloutScenarioInfo scenario)
+        protected virtual PriorityCall GenerateCall()
+        {
+            // Try to generate a call
+            for (int i = 0; i < Settings.MaxLocationAttempts; i++)
+            {
+                try
+                {
+                    // Spawn a zone in our jurisdiction
+                    ZoneInfo zone = GetNextRandomCrimeZone();
+                    if (zone == null)
+                    {
+                        Log.Debug($"CrimeGenerator: Attempted to pull a zone but zone is null");
+                        continue;
+                    }
+
+                    // Spawn crime type from our spawned zone
+                    var tod = Dispatch.CurrentTimeOfDay;
+                    CalloutType type = zone.GetNextRandomCrimeType();
+                    if (!Dispatch.ScenarioPool[type].TrySpawn(tod, out CalloutScenarioInfo scenario))
+                    {
+                        Log.Debug($"CrimeGenerator: Unable to pull CalloutType {type} from zone '{zone.FullName}'");
+                        continue;
+                    }
+
+                    // Get a random location!
+                    WorldLocation location = GetScenarioLocationFromZone(zone, scenario);
+                    if (location == null)
+                    {
+                        Log.Debug($"CrimeGenerator: Unable to pull Location type {scenario.LocationType} from zone '{zone.FullName}'");
+                        continue;
+                    }
+
+                    // Create PriorityCall wrapper
+                    var call = new PriorityCall(NextCallId++, scenario)
+                    {
+                        Location = location,
+                        CallStatus = CallStatus.Created,
+                        Zone = zone
+                    };
+
+                    // Add call to priority Queue
+                    return call;
+                }
+                catch (Exception ex)
+                {
+                    Log.Exception(ex);
+                }
+            }
+
+            return null;
+        }
+
+        protected virtual WorldLocation GetScenarioLocationFromZone(ZoneInfo zone, CalloutScenarioInfo scenario)
         {
             switch (scenario.LocationType)
             {

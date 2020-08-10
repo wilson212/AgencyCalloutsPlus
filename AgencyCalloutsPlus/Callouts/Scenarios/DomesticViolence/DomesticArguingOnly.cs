@@ -36,18 +36,18 @@ namespace AgencyCalloutsPlus.Callouts.Scenarios.DomesticViolence
 
         private CalloutPedInteractionMenu Menu;
 
-        public DomesticArguingOnly(Callouts.DomesticViolence callout, XmlNode scenarioNode)
+        public DomesticArguingOnly(Callouts.DomesticViolence callout, XmlNode scenarioNode) : base(scenarioNode)
         {
             // Store spawn point
             this.SpawnPoint = callout.SpawnPoint;
 
             // Get Victim 1 vehicle type using probability defined in the CalloutMeta.xml
             var cars = scenarioNode.SelectSingleNode("Victim1/VehicleTypes").ChildNodes;
-            VictimVehicleType = GetRandomCarTypeFromScenarioNodeList(cars);
+            VictimVehicleType = GetRandomVehicleType(cars);
 
             // Get Victim 2 vehicle type using probability defined in the CalloutMeta.xml
             cars = scenarioNode.SelectSingleNode("Victim2/VehicleTypes").ChildNodes;
-            SuspectVehicleType = GetRandomCarTypeFromScenarioNodeList(cars);
+            SuspectVehicleType = GetRandomVehicleType(cars);
         }
 
         /// <summary>

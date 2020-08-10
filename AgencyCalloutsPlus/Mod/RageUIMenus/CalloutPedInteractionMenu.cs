@@ -1,9 +1,9 @@
 ﻿using AgencyCalloutsPlus.Extensions;
 using AgencyCalloutsPlus.Mod.Conversation;
-using LSPD_First_Response.Mod.API;
 using Rage;
 using RAGENativeUI;
 using RAGENativeUI.Elements;
+using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
 
@@ -34,6 +34,12 @@ namespace AgencyCalloutsPlus.RageUIMenus
         /// The bool value indicates wether the Ped has been spoken with yet.
         /// </summary>
         private Dictionary<Ped, FlowSequence> Conversations { get; set; }
+
+        /// <summary>
+        /// Contains a list of <see cref="Ped"/> entities that this menu can be used with.
+        /// The bool value indicates wether the Ped has been spoken with yet.
+        /// </summary>
+        private Dictionary<string, FlowSequence> ConversationsById { get; set; }
 
         /// <summary>
         /// Gets the Ped that was last within range and angle to have a conversation with
@@ -78,27 +84,8 @@ namespace AgencyCalloutsPlus.RageUIMenus
             // internals
             Peds = new Dictionary<Ped, bool>();
             Conversations = new Dictionary<Ped, FlowSequence>();
+            ConversationsById = new Dictionary<string, FlowSequence>();
             HasModifier = (Settings.OpenCalloutMenuModifierKey != Keys.None);
-        }
-
-        private void SpeakWithButton_Activated(UIMenu sender, UIMenuItem selectedItem)
-        {
-            // Distance and facing check
-            if (CurrentPed == null) return;
-            Peds[CurrentPed] = true;
-
-            // Check for an open FlowSequence menu!
-            if (CurrentSequence != null)
-            {
-                CurrentSequence.SetMenuVisible(false);
-            }
-
-            // Open flow sequence main menu
-            CurrentSequence = Conversations[CurrentPed];
-            CurrentSequence.SetMenuVisible(true);
-
-            // Close current menu
-            AllMenus.CloseAllMenus();
         }
 
         /// <summary>
@@ -237,6 +224,11 @@ namespace AgencyCalloutsPlus.RageUIMenus
                 kvp.Value.Dispose();
             }
 
+            foreach (var kvp in ConversationsById)
+            {
+                kvp.Value.Dispose();
+            }
+
             AllMenus.CloseAllMenus();
             AllMenus.Clear();
             AllMenus = null;
@@ -251,6 +243,148 @@ namespace AgencyCalloutsPlus.RageUIMenus
         {
             Peds.Add(ped, false);
             Conversations.Add(ped, sequence);
+            ConversationsById.Add(sequence.SequenceId, sequence);
+
+            // Fire event on PedResponse
+            sequence.OnPedResponse += FlowSequence_OnPedResponse;
+        }
+
+        /// <summary>
+        /// Displays the specified hidden menu items 
+        /// </summary>
+        /// <param name="menuPaths"></param>
+        /// <param name="defaultSequence"></param>
+        private void ShowMenuItems(string[] menuPaths, FlowSequence defaultSequence)
+        {
+            string referenceMenuId = defaultSequence.SequenceId;
+            string buttonId = String.Empty;
+
+            foreach (string id in menuPaths)
+            {
+                // Extract full name of the menu
+                if (id.Contains("."))
+                {
+                    var path = id.Split(new[] { '.' }, 2, StringSplitOptions.RemoveEmptyEntries);
+                    referenceMenuId = path[0];
+                    buttonId = path[1];
+                }
+                else
+                {
+                    buttonId = id;
+                }
+
+                // Grab FlowSequence by ID
+                if (!ConversationsById.TryGetValue(referenceMenuId, out FlowSequence referenceMenu))
+                {
+                    Log.Debug($"InteractionMenu.ShowMenuItems: Reference FlowSequence menu with ID '{id}' does not exist");
+                    continue;
+                }
+
+                // Debug logging
+                if (!referenceMenu.ShowMenuItem(buttonId))
+                {
+                    Log.Debug($"InteractionMenu.ShowMenuItems: Failed to show button with ID '{id}'");
+                }
+            }
+        }
+
+        /// <summary>
+        /// Hides the specified menu items
+        /// </summary>
+        /// <param name="menuPaths"></param>
+        /// <param name="defaultSequence"></param>
+        private void HideMenuItems(string[] menuPaths, FlowSequence defaultSequence)
+        {
+            string referenceMenuId = defaultSequence.SequenceId;
+            string buttonId = String.Empty;
+
+            foreach (string id in menuPaths)
+            {
+                // Extract full name of the menu
+                if (id.Contains("."))
+                {
+                    var path = id.Split(new[] { '.' }, 2, StringSplitOptions.RemoveEmptyEntries);
+                    referenceMenuId = path[0];
+                    buttonId = path[1];
+                }
+                else
+                {
+                    buttonId = id;
+                }
+
+                // Grab FlowSequence by ID
+                if (!ConversationsById.TryGetValue(referenceMenuId, out FlowSequence referenceMenu))
+                {
+                    Log.Debug($"InteractionMenu.HideMenuItems: Reference FlowSequence menu with ID '{id}' does not exist");
+                    continue;
+                }
+
+                // Debug logging
+                if (!referenceMenu.HideMenuItem(buttonId))
+                {
+                    Log.Debug($"InteractionMenu.HideMenuItems: Failed to show button with ID '{id}'");
+                }
+            }
+        }
+
+        /// <summary>
+        /// Method called everytime a <see cref="PedResponse"/> is displayed. We
+        /// use this method to hide and show questioning menu items
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="response"></param>
+        /// <param name="lineSet"></param>
+        private void FlowSequence_OnPedResponse(FlowSequence sender, PedResponse response, LineSet lineSet)
+        {
+            // Does this change visibility of a menu option?
+            if (response.ShowMenuItems.Length > 0)
+            {
+                ShowMenuItems(response.ShowMenuItems, sender);
+            }
+
+            if (lineSet.ShowMenuItems.Length > 0)
+            {
+                ShowMenuItems(lineSet.ShowMenuItems, sender);
+            }
+
+            // Does this change visibility of a menu option?
+            if (response.HidesMenuItems.Length > 0)
+            {
+                HideMenuItems(response.HidesMenuItems, sender);
+            }
+
+            if (lineSet.HidesMenuItems.Length > 0)
+            {
+                HideMenuItems(lineSet.HidesMenuItems, sender);
+            }
+        }
+
+        /// <summary>
+        /// Method called everytime a player selects an option in the questioning menu
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="selectedItem"></param>
+        private void SpeakWithButton_Activated(UIMenu sender, UIMenuItem selectedItem)
+        {
+            // Distance and facing check
+            if (CurrentPed == null) return;
+
+            // Indicate that this ped has been talked to. This will stop displaying
+            // the hint that appears on the top left of the screen
+            Peds[CurrentPed] = true;
+
+            // Check for an open FlowSequence menu!
+            if (CurrentSequence != null)
+            {
+                CurrentSequence.SetMenuVisible(false);
+            }
+
+            // Open flow sequence main menu
+            CurrentSequence = Conversations[CurrentPed];
+            CurrentSequence.SetMenuVisible(true);
+
+            // Close current menu
+            AllMenus.CloseAllMenus();
         }
     }
 }

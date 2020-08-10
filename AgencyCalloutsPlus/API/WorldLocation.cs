@@ -1,6 +1,4 @@
 ﻿using Rage;
-using System.Collections.Generic;
-using System.Xml;
 
 namespace AgencyCalloutsPlus.API
 {
@@ -25,12 +23,23 @@ namespace AgencyCalloutsPlus.API
         public int Postal { get; internal set; }
 
         /// <summary>
+        /// Gets the <see cref="LocationFlags"/> for this <see cref="WorldLocation"/>
+        /// </summary>
+        public LocationFlags Flags { get; internal set; }
+
+        /// <summary>
+        /// Gets the <see cref="AgencyCalloutsPlus.API.LocationType"/> for this <see cref="WorldLocation"/>
+        /// </summary>
+        public abstract LocationType LocationType { get; }
+
+        /// <summary>
         /// Creates a new instance of <see cref="WorldLocation"/>
         /// </summary>
         /// <param name="position"></param>
         internal WorldLocation(Vector3 position)
         {
             this.Position = position;
+            Flags = new LocationFlags();
         }
 
         /// <summary>

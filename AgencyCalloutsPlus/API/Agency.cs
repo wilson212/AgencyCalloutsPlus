@@ -75,7 +75,7 @@ namespace AgencyCalloutsPlus.API
         /// <summary>
         /// Containts a <see cref="SpawnGenerator{T}"/> list of vehicles for this agency
         /// </summary>
-        private Dictionary<PatrolType, SpawnGenerator<PoliceVehicleInfo>> Vehicles { get; set; }
+        private Dictionary<PatrolType, ProbabilityGenerator<PoliceVehicleInfo>> Vehicles { get; set; }
 
         #endregion
 
@@ -306,7 +306,7 @@ namespace AgencyCalloutsPlus.API
         /// <summary>
         /// Gets an array of all zones under the players current Jurisdiction
         /// </summary>
-        public static string[] GetCurrentAgencyJurisdictionZones()
+        public static string[] GetCurrentAgencyZoneNames()
         {
             string name = Functions.GetCurrentAgencyScriptName().ToLowerInvariant();
             if (AgencyZones.ContainsKey(name))
@@ -380,7 +380,7 @@ namespace AgencyCalloutsPlus.API
             StaffLevel = staffLevel;
 
             // Initiate vars
-            Vehicles = new Dictionary<PatrolType, SpawnGenerator<PoliceVehicleInfo>>();
+            Vehicles = new Dictionary<PatrolType, ProbabilityGenerator<PoliceVehicleInfo>>();
         }
 
         /// <summary>
@@ -392,7 +392,7 @@ namespace AgencyCalloutsPlus.API
         {
             if (!Vehicles.ContainsKey(type))
             {
-                Vehicles.Add(type, new SpawnGenerator<PoliceVehicleInfo>());
+                Vehicles.Add(type, new ProbabilityGenerator<PoliceVehicleInfo>());
             }
 
             Vehicles[type].Add(info);
@@ -502,6 +502,11 @@ namespace AgencyCalloutsPlus.API
             }
 
             return dic;
+        }
+
+        public override string ToString()
+        {
+            return FriendlyName;
         }
 
         #endregion

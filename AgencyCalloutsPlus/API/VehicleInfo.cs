@@ -19,7 +19,7 @@ namespace AgencyCalloutsPlus.API
         /// <summary>
         /// Contains a list of Spawnable vehicles
         /// </summary>
-        private static Dictionary<VehicleClass, SpawnGenerator<VehicleInfo>> Vehicles { get; set; }
+        private static Dictionary<VehicleClass, ProbabilityGenerator<VehicleInfo>> Vehicles { get; set; }
 
         /// <summary>
         /// Loads the vehicle data from the Vehicles.xml
@@ -34,10 +34,10 @@ namespace AgencyCalloutsPlus.API
             int itemsAdded = 0;
 
             // Initialize vehicle types
-            Vehicles = new Dictionary<VehicleClass, SpawnGenerator<VehicleInfo>>(8);
+            Vehicles = new Dictionary<VehicleClass, ProbabilityGenerator<VehicleInfo>>(8);
             foreach (var type in Enum.GetValues(typeof(VehicleClass)))
             {
-                Vehicles.Add((VehicleClass)type, new SpawnGenerator<VehicleInfo>());
+                Vehicles.Add((VehicleClass)type, new ProbabilityGenerator<VehicleInfo>());
             }
 
             // Load XML document
@@ -183,6 +183,38 @@ namespace AgencyCalloutsPlus.API
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Gets a vehicle type description by <see cref="VehicleClass"/>
+        /// </summary>
+        /// <param name="vehicleType"></param>
+        /// <returns></returns>
+        public static string GetVehicleTypeDescription(VehicleClass vehicleType)
+        {
+            switch (vehicleType)
+            {
+                case VehicleClass.Compact:
+                case VehicleClass.Coupe:
+                case VehicleClass.Muscle:
+                case VehicleClass.Sedan:
+                case VehicleClass.Sport:
+                case VehicleClass.SportClassic:
+                    return "car";
+                case VehicleClass.Emergency:
+                    return "truck";
+                case VehicleClass.SUV:
+                case VehicleClass.Van:
+                    return "suv";
+                case VehicleClass.Boat:
+                    return "boat";
+                case VehicleClass.Cycle:
+                    return "bike";
+                case VehicleClass.Motorcycle:
+                    return "motorcycle";
+                default:
+                    return "vehicle";
+            }
         }
 
         #endregion Static Methods

@@ -1,5 +1,6 @@
 ﻿using Rage;
 using Rage.Native;
+using AgencyCalloutsPlus.Integration;
 
 namespace AgencyCalloutsPlus.Extensions
 {
@@ -23,10 +24,10 @@ namespace AgencyCalloutsPlus.Extensions
         /// </summary>
         /// <param name="ped"></param>
         /// <seealso cref="https://github.com/Albo1125/Albo1125-Common/blob/master/Albo1125.Common/CommonLibrary/ExtensionMethods.cs#L298"/>
-        public static void MakeMissionPed(this Ped ped)
+        public static void MakeMissionPed(this Ped ped, bool value)
         {
-            ped.BlockPermanentEvents = true;
-            ped.IsPersistent = true;
+            ped.BlockPermanentEvents = value;
+            ped.IsPersistent = value;
         }
 
         /// <summary>
@@ -38,6 +39,46 @@ namespace AgencyCalloutsPlus.Extensions
         public static bool IsPolicePed(this Ped ped)
         {
             return ped.RelationshipGroup == "COP";
+        }
+
+        /// <summary>
+        /// Sets whether the <see cref="Ped"/> is under the influence of alcohol
+        /// </summary>
+        /// <param name="ped"></param>
+        /// <param name="isDrunk"></param>
+        public static void SetIsDrunk(this Ped ped, bool isDrunk)
+        {
+            StopThePedAPI.SetPedIsDrunk(ped, isDrunk);
+        }
+
+        /// <summary>
+        /// Sets whether the <see cref="Ped"/> is under the influence of drugs
+        /// </summary>
+        /// <param name="ped"></param>
+        /// <param name="isDrunk"></param>
+        public static void SetIsUnderDrugInfluence(this Ped ped, bool isInfluenced)
+        {
+            StopThePedAPI.SetPedIsDrugInfluenced(ped, isInfluenced);
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether this <see cref="Ped"/> is under the influence of alcohol
+        /// </summary>
+        /// <param name="ped"></param>
+        /// <returns></returns>
+        public static bool IsPedDrunk(this Ped ped)
+        {
+            return StopThePedAPI.IsPedDrunk(ped);
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether this <see cref="Ped"/> is under the influence of drugs
+        /// </summary>
+        /// <param name="ped"></param>
+        /// <returns></returns>
+        public static bool IsUnderDrugInfluence(this Ped ped)
+        {
+            return StopThePedAPI.IsPedUnderDrugInfluence(ped);
         }
     }
 }

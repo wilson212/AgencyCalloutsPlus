@@ -5,6 +5,7 @@ using RAGENativeUI.Elements;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Xml;
 
@@ -21,6 +22,11 @@ namespace AgencyCalloutsPlus.Mod.Conversation
         private static Regex VariableExpression = new Regex(@"\$(\w+)\$", RegexOptions.Compiled);
 
         /// <summary>
+        /// Gets the sequence ID for this conversation event
+        /// </summary>
+        public string SequenceId { get; protected set; }
+
+        /// <summary>
         /// Gets the <see cref="Rage.Ped"/> this <see cref="FlowSequence"/> is attacthed to
         /// </summary>
         public PedWrapper SubjectPed { get; private set; }
@@ -28,7 +34,7 @@ namespace AgencyCalloutsPlus.Mod.Conversation
         /// <summary>
         /// Contains the main menu string name
         /// </summary>
-        protected string MainMenu { get; set; }
+        protected string InitialMenuName { get; set; }
 
         /// <summary>
         /// A <see cref="MenuPool"/> that contains all of this <see cref="FlowSequence"/> <see cref="UIMenu"/>s
@@ -41,9 +47,20 @@ namespace AgencyCalloutsPlus.Mod.Conversation
         protected Dictionary<string, UIMenu> FlowReturnMenus { get; set; }
 
         /// <summary>
+        /// Contains a list of <see cref="UIMenuItem"/>s by id
+        /// that it belongs to
+        /// </summary>
+        protected Dictionary<string, UIMenuItem> MenuButtonsById { get; set; }
+
+        /// <summary>
+        /// Contains a list of flow return menu items that are initially no visible
+        /// </summary>
+        protected Dictionary<string, UIMenuItem> HiddenMenuItems { get; set; }
+
+        /// <summary>
         /// Contains our <see cref="ResponseSet"/> for this <see cref="FlowSequence"/>
         /// </summary>
-        internal ResponseSet FlowOutcome { get; set; }
+        internal ResponseSet PedResponses { get; set; }
 
         /// <summary>
         /// Contains officer dialogs attached to each menu option
@@ -66,19 +83,38 @@ namespace AgencyCalloutsPlus.Mod.Conversation
         public string FlowOutcomeId { get; protected set; }
 
         /// <summary>
+        /// Delegate to handle a <see cref="FlowSequenceEvent"/>
+        /// </summary>
+        /// <param name="sender">The <see cref="FlowSequence"/> that triggered the <see cref="PedResponse"/></param>
+        /// <param name="e">The <see cref="PedResponse"/> instance</param>
+        /// <param name="l">The displayed <see cref="LineSet"/> to the player in game</param>
+        public delegate void PedResponseEventHandler(FlowSequence sender, PedResponse e, LineSet l);
+
+        /// <summary>
+        /// Event fired whenever a <see cref="PedResponse"/> is displayed
+        /// </summary>
+        public event PedResponseEventHandler OnPedResponse;
+
+        /// <summary>
         /// Creates a new <see cref="FlowSequence"/> instance
         /// </summary>
         /// <param name="ped">The conversation subject ped</param>
         /// <param name="outcomeId">The selected outcome <see cref="ResponseSet"/></param>
         /// <param name="document">The XML document containing the <see cref="FlowSequence"/> XML data</param>
         /// <param name="parser">An <see cref="ExpressionParser" /> containing parameters to parse "if" statements in the XML</param>
-        public FlowSequence(Ped ped, string outcomeId, XmlDocument document, ExpressionParser parser)
+        public FlowSequence(string sequenceId, Ped ped, FlowOutcome outcome, XmlDocument document, ExpressionParser parser)
         {
-            FlowOutcomeId = outcomeId;
+            // Set internal vars
+            SequenceId = sequenceId;
+            FlowOutcomeId = outcome.Id;
             SubjectPed = new PedWrapper(ped);
             Parser = parser;
             Variables = new Dictionary<string, object>();
-            LoadXml(document, outcomeId);
+            HiddenMenuItems = new Dictionary<string, UIMenuItem>();
+            MenuButtonsById = new Dictionary<string, UIMenuItem>();
+
+            // Parse XML document
+            LoadXml(document, outcome.Id);
         }
 
         /// <summary>
@@ -88,14 +124,21 @@ namespace AgencyCalloutsPlus.Mod.Conversation
         /// <param name="player"></param>
         public void Process(Ped player)
         {
-            // Process all menu's
-            AllMenus.ProcessMenus();
-
-            // Ensure we are still talking to the Ped and in distance
-            if (!InTalkingDistance(player))
+            try
             {
-                AllMenus.CloseAllMenus();
-                return;
+                // Process all menu's
+                AllMenus.ProcessMenus();
+
+                // Ensure we are still talking to the Ped and in distance
+                if (!InTalkingDistance(player))
+                {
+                    AllMenus.CloseAllMenus();
+                    return;
+                }
+            }
+            catch (Exception e)
+            {
+                Log.Exception(e);
             }
         }
 
@@ -107,7 +150,7 @@ namespace AgencyCalloutsPlus.Mod.Conversation
         private bool InTalkingDistance(Ped player)
         {
             // Is player within 3m of the ped?
-            if (player.Position.DistanceTo(SubjectPed.Ped.Position) > 5f)
+            if (player.Position.DistanceTo(SubjectPed.Ped.Position) > 3f)
             {
                 // too far away
                 return false;
@@ -121,17 +164,14 @@ namespace AgencyCalloutsPlus.Mod.Conversation
         /// </summary>
         /// <param name="text"></param>
         /// <returns></returns>
-        public LineSet GetResponseTo(string text)
+        public PedResponse GetResponseToQuestionId(string text)
         {
             //var inputId = TranslateQuestion(text);
-            var response = FlowOutcome.GetResponseTo(text);
-            if (response == null) return null;
-
-            return response.GetResponseLineSet();
+            return PedResponses.GetResponseTo(text);
         }
 
         /// <summary>
-        /// Sets a variabe to be parsed on each conversation line
+        /// Sets a variable to be parsed on each conversation line
         /// </summary>
         /// <param name="name"></param>
         /// <param name="value"></param>
@@ -147,11 +187,25 @@ namespace AgencyCalloutsPlus.Mod.Conversation
             }
         }
 
+        /// <summary>
+        /// Sets a variable dictionary with string replacements to be parsed on each conversation line
+        /// </summary>
+        public void SetVariableDictionary(Dictionary<string, object> variables)
+        {
+            Variables = variables;
+        }
+
+        /// <summary>
+        /// Dispose method to clear memory
+        /// </summary>
         public void Dispose()
         {
-            AllMenus.CloseAllMenus();
-            AllMenus.Clear();
-            AllMenus = null;
+            if (AllMenus != null)
+            {
+                AllMenus.CloseAllMenus();
+                AllMenus.Clear();
+                AllMenus = null;
+            }
 
             foreach (var menu in FlowReturnMenus)
             {
@@ -175,14 +229,111 @@ namespace AgencyCalloutsPlus.Mod.Conversation
             else if (visible && !isAnyOpen)
             {
                 // Open default menu
-                FlowReturnMenus[MainMenu].Visible = true;
+                FlowReturnMenus[InitialMenuName].Visible = true;
             }
+        }
+
+        /// <summary>
+        /// Hides a questioning menu item by id
+        /// </summary>
+        /// <param name="buttonId">the button id to hide</param>
+        public bool HideMenuItem(string buttonId)
+        {
+            // Already hidden?
+            if (HiddenMenuItems.ContainsKey(buttonId) || !MenuButtonsById.ContainsKey(buttonId))
+                return false;
+
+            // Grab menu ID for this item ID
+            var menuItem = MenuButtonsById[buttonId];
+
+            // Add to hidden items
+            HiddenMenuItems.Add(buttonId, menuItem);
+
+            // Remove Item
+            int index = menuItem.Parent.MenuItems.IndexOf(menuItem);
+            menuItem.Parent.RemoveItemAt(index);
+            menuItem.Parent.RefreshIndex();
+            return true;
+        }
+
+        /// <summary>
+        /// Displays a hidden questioning menu item by id
+        /// </summary>
+        /// <param name="buttonId">the button id to show</param>
+        public bool ShowMenuItem(string buttonId)
+        {
+            // Already being displayed?
+            if (!HiddenMenuItems.ContainsKey(buttonId))
+                return false;
+
+            // Grab menu ID for this item ID
+            var menuItem = HiddenMenuItems[buttonId];
+
+            // Add Item
+            menuItem.Parent.AddItem(menuItem);
+            menuItem.Parent.RefreshIndex();
+
+            // Remove from hidden items
+            HiddenMenuItems.Remove(buttonId);
+            return true;
+        }
+
+        /// <summary>
+        /// Method called on event <see cref="UIMenuItem.Activated"/>
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="selectedItem"></param>
+        private void On_ItemActivated(UIMenu sender, UIMenuItem selectedItem)
+        {
+            // Disable button from spam clicks
+            selectedItem.Enabled = false;
+
+            // Dont do anything right now!
+            var response = GetResponseToQuestionId(selectedItem.Description);
+            if (response == null)
+            {
+                Game.DisplayNotification($"~r~No XML Response[@to='~b~{selectedItem.Description}~r~'] node for this Ped.");
+                return;
+            }
+
+            // Grab dialog
+            var lineSet = response.GetResponseLineSet();
+            if (lineSet == null || lineSet.Lines.Length == 0)
+            {
+                Log.Error($"FlowSequence.Item_Activated: Response to '{selectedItem.Description}' has no lines");
+                return;
+            }
+
+            // Clear any queued messages
+            SubtitleQueue.Clear();
+
+            // Officer Dialogs first
+            foreach (LineItem line in OfficerDialogs[selectedItem.Description])
+            {
+                var text = VariableExpression.ReplaceTokens(line.Text, Variables);
+                SubtitleQueue.Add($"~y~You~w~: {text}<br /><br />", line.Time);
+            }
+
+            // Add Ped response
+            foreach (LineItem line in lineSet.Lines)
+            {
+                var text = VariableExpression.ReplaceTokens(line.Text, Variables);
+                SubtitleQueue.Add($"~y~{SubjectPed.Persona.Forename}~w~: {text}<br /><br />", line.Time);
+            }
+
+            // Enable button and change font color to show its been clicked before
+            selectedItem.Enabled = true;
+            selectedItem.ForeColor = Color.Gray;
+
+            // Fire off event
+            OnPedResponse(this, response, lineSet);
         }
 
         #region XML loading methods
 
         private void LoadXml(XmlDocument document, string outcomeId)
         {
+            var documentRoot = document.SelectSingleNode("FlowSequence");
             AllMenus = new MenuPool();
             FlowReturnMenus = new Dictionary<string, UIMenu>();
             OfficerDialogs = new Dictionary<string, LineItem[]>();
@@ -190,7 +341,7 @@ namespace AgencyCalloutsPlus.Mod.Conversation
             // ====================================================
             // Load input flow return menus
             // ====================================================
-            XmlNode catagoryNode = document.DocumentElement.SelectSingleNode("Input");
+            XmlNode catagoryNode = documentRoot.SelectSingleNode("Input");
             if (catagoryNode == null || !catagoryNode.HasChildNodes)
             {
                 throw new ArgumentNullException("Input");
@@ -208,7 +359,7 @@ namespace AgencyCalloutsPlus.Mod.Conversation
                 }
 
                 // Create
-                string name = n.Attributes["id"].Value;
+                string menuId = n.Attributes["id"].Value;
                 var menu = new UIMenu("Ped Interaction", $"~y~{SubjectPed.Persona.FullName}");
 
                 // Extract menu items
@@ -222,26 +373,38 @@ namespace AgencyCalloutsPlus.Mod.Conversation
                     }
 
                     // Extract id attriibute
-                    string id = menuItemNode.Attributes["id"]?.Value;
-                    if (String.IsNullOrWhiteSpace(id))
+                    string buttonId = menuItemNode.Attributes["id"]?.Value;
+                    if (String.IsNullOrWhiteSpace(buttonId))
                     {
                         Log.Error($"FlowSequence.LoadXml(): Menu -> MenuItem has no or empty 'id' attribute");
                         continue;
                     }
 
                     // Ensure ID is unique
-                    if (OfficerDialogs.ContainsKey(id))
+                    if (OfficerDialogs.ContainsKey(buttonId))
                     {
                         Log.Error($"FlowSequence.LoadXml(): Menu -> MenuItem 'id' attribute is not unique");
                         continue;
                     }
 
-                    // Extract text attriibute
-                    string text = menuItemNode.Attributes["text"]?.Value;
+                    // Extract button text attriibute
+                    string text = menuItemNode.Attributes["buttonText"]?.Value;
                     if (String.IsNullOrWhiteSpace(text))
                     {
-                        Log.Error($"FlowSequence.LoadXml(): Menu -> MenuItem has no or empty 'text' attribute");
+                        Log.Error($"FlowSequence.LoadXml(): Menu -> MenuItem has no or empty 'buttonText' attribute");
                         continue;
+                    }
+
+                    // Extract visible attriibute
+                    bool isVisible = true;
+                    string val = menuItemNode.Attributes["visible"]?.Value;
+                    if (!String.IsNullOrWhiteSpace(text))
+                    {
+                        if (!bool.TryParse(val, out isVisible))
+                        {
+                            isVisible = true;
+                            Log.Warning($"FlowSequence.LoadXml(): Menu -> MenuItem attribute 'visible' attribute is not correctly formatted");
+                        }
                     }
 
                     // Ensure we have lines to read
@@ -252,88 +415,110 @@ namespace AgencyCalloutsPlus.Mod.Conversation
                     }
 
                     // Load dialog for officer
-                    List<LineItem> lines = new List<LineItem>(menuItemNode.ChildNodes.Count);
-
-                    // Each Line
-                    foreach (XmlNode lNode in menuItemNode)
+                    var subNodes = menuItemNode.SelectNodes("Line");
+                    if (subNodes != null && subNodes.Count > 0)
                     {
-                        // Validate and extract attributes
-                        if (lNode.Attributes == null || !Int32.TryParse(lNode.Attributes["time"]?.Value, out int time))
+                        List<LineItem> lines = new List<LineItem>(subNodes.Count);
+                        foreach (XmlNode lNode in subNodes)
                         {
-                            time = 3000;
+                            // Validate and extract attributes
+                            if (lNode.Attributes == null || !Int32.TryParse(lNode.Attributes["time"]?.Value, out int time))
+                            {
+                                time = 3000;
+                            }
+
+                            lines.Add(new LineItem() { Text = lNode.InnerText, Time = time });
                         }
 
-                        lines.Add(new LineItem() { Text = lNode.InnerText, Time = time });
+                        // Save lines
+                        OfficerDialogs.Add(buttonId, lines.ToArray());
                     }
+                    else
+                    {
+                        // Log
+                        Log.Warning("FlowSequence.LoadXml(): Menu -> MenuItem has no Line nodes");
 
-                    // Save lines
-                    OfficerDialogs.Add(id, lines.ToArray());
+                        // Save default line
+                        OfficerDialogs.Add(buttonId, new LineItem[] { new LineItem() { Text = text, Time = 3000 } });
+                    }
 
                     // Create button
                     UIMenuItem item = new UIMenuItem(text);
-                    item.Description = id;
-                    item.Activated += Item_Activated;
+                    item.Description = buttonId;
+                    item.Parent = menu; // !! Important !!
+                    item.Activated += On_ItemActivated;
+
+                    // Add named item to our hash table
+                    if (!MenuButtonsById.ContainsKey(buttonId))
+                    {
+                        MenuButtonsById.Add(buttonId, item);
+                    }
 
                     // Add item to menu
-                    menu.AddItem(item);
+                    //menu.AddItem(item);
+
+                    // Handle item visibility
+                    if (!isVisible)
+                    {
+                        // Remove item
+                        //menu.MenuItems.Remove(item);
+
+                        // Store for later
+                        HiddenMenuItems.Add(buttonId, item);
+                    }
+                    else
+                    {
+                        menu.AddItem(item);
+                    }
                 }
 
                 // Add menu
                 AllMenus.Add(menu);
-                FlowReturnMenus.Add(name, menu);
+                FlowReturnMenus.Add(menuId, menu);
 
                 if (i == 0)
                 {
-                    MainMenu = name;
+                    InitialMenuName = menuId;
                 }
 
                 i++;
             }
 
+            // Call menu refresh
+            AllMenus.RefreshIndex();
+
             // ====================================================
             // Load response sequences
             // ====================================================
-            catagoryNode = document.DocumentElement.SelectSingleNode($"Output/FlowOutcome[@id = '{outcomeId}']");
+            catagoryNode = documentRoot.SelectSingleNode($"Output/FlowOutcome[@id = '{outcomeId}']");
             if (catagoryNode == null || !catagoryNode.HasChildNodes)
             {
                 throw new ArgumentNullException("Output", $"Scenario FlowOutcome does not exist '{outcomeId}'");
             }
 
-            FlowOutcome = new ResponseSet(outcomeId, catagoryNode, Parser);
-        }
-
-        private void Item_Activated(UIMenu sender, UIMenuItem selectedItem)
-        {
-            // Disable button from spam clicks
-            selectedItem.Enabled = false;
-
-            // Dont do anything right now!
-            var response = GetResponseTo(selectedItem.Description);
-            if (response == null || response.Lines.Length == 0)
+            // Validate and extract attributes
+            if (!String.IsNullOrWhiteSpace(catagoryNode.Attributes["initialMenu"]?.Value))
             {
-                Game.DisplayNotification($"~r~No XML Response[@to='~b~{selectedItem.Description}~r~'] node for this Ped.");
-                return;
+                // Ensure menu exists
+                var menuName = catagoryNode.Attributes["initialMenu"].Value;
+                if (FlowReturnMenus.ContainsKey(menuName))
+                {
+                    InitialMenuName = menuName;
+                }
+                else
+                {
+                    // Log as warning and continue
+                    Log.Warning($"FlowSequence.LoadXml(): Specified initial menu for FlowOutcome '{FlowOutcomeId}' does not exist!");
+                }
+            }
+            else
+            {
+                // Log as warning and continue
+                Log.Warning($"FlowSequence.LoadXml(): FlowOutcome '{FlowOutcomeId}' does not have an 'initialMenu' attribute!");
             }
 
-            // Clear any queued messages
-            SubtitleQueue.Clear();
-
-            // Officer Dialogs first
-            foreach (LineItem line in OfficerDialogs[selectedItem.Description])
-            {
-                SubtitleQueue.Add($"~y~You~w~: {selectedItem.Text}<br /><br />", line.Time);
-            }
-
-            // Add Ped response
-            foreach (LineItem line in response.Lines)
-            {
-                var text = VariableExpression.ReplaceTokens(line.Text, Variables);
-                SubtitleQueue.Add($"~y~{SubjectPed.Persona.Forename}~w~: {text}<br /><br />", line.Time);
-            }
-
-            // Enable button and change font color to show its been clicked before
-            selectedItem.Enabled = true;
-            selectedItem.ForeColor = Color.Gray;
+            // Load flow outcome
+            PedResponses = new ResponseSet(outcomeId, catagoryNode, Parser);
         }
 
         #endregion XML loading methods

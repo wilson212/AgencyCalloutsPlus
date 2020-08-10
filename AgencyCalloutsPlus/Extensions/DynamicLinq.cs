@@ -14,6 +14,7 @@ namespace System.Linq.Dynamic
     /// Very handy when, at compile time, you don't know the type of queries that will be generated.
     /// </summary>
     /// <permission cref="https://github.com/zzzprojects/System.Linq.Dynamic" />
+    /// <seealso cref="https://github.com/zzzprojects/System.Linq.Dynamic/wiki/Dynamic-Expressions"/>
     public static class DynamicQueryable
     {
         #region IQueryable Extensions

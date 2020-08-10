@@ -30,6 +30,11 @@ namespace AgencyCalloutsPlus.API
         public HomeType Type { get; internal set; }
 
         /// <summary>
+        /// Gets the <see cref="AgencyCalloutsPlus.API.LocationType"/> for this <see cref="WorldLocation"/>
+        /// </summary>
+        public override LocationType LocationType => LocationType.Homes;
+
+        /// <summary>
         /// Creates a new instance of <see cref="HomeLocation"/>
         /// </summary>
         /// <param name="location"></param>

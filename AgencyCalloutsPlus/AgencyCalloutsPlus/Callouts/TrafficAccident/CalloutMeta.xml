@@ -28,15 +28,15 @@
       </Dispatch>
       <FlowSequence>
         <FlowOutcome id="distracted" probability="10" />
-        <!--
         <FlowOutcome id="eating" probability="3" />
-        <FlowOutcome id="tailgating" probability="5" />
-        <FlowOutcome id="drunkDriver" probability="2" set="Victim2.IsDrunk = true" />
-        <FlowOutcome id="impaired" probability="2" set="Victim2.IsHigh = true" />
+        <FlowOutcome id="tailgating" probability="5000" />
+        <FlowOutcome id="wetRoads" probability="7" if="Weather.RoadsAreWet == true and Weather.IsSnowing == false"/>
+        <FlowOutcome id="snowing" probability="15" if="Weather.IsSnowing == true"/>
+        <!-- 
+        <FlowOutcome id="drunkDriver" probability="2" />
+        <FlowOutcome id="impaired" probability="2" />
         <FlowOutcome id="speeding" probability="5" />
         <FlowOutcome id="mechanicalFailure" probability="2" />
-        <FlowOutcome id="wetRoads" probability="7" if="Weather.RoadsAreWet"/>
-        <FlowOutcome id="snowing" probability="15" if="Weather.IsSnowing"/>
         -->
       </FlowSequence>
       <Victim1>
