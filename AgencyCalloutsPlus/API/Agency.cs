@@ -456,7 +456,7 @@ namespace AgencyCalloutsPlus.API
         {
             var zones = GetZoneNamesByAgencyName(ScriptName).Select(x => ZoneInfo.GetZoneByName(x)).ToArray();
             var crimeGenerator = new RegionCrimeGenerator(this, zones ?? new ZoneInfo[0]);
-            var tod = Dispatch.GetCurrentWorldTimeOfDay();
+            var tod = GameWorld.CurrentTimeOfDay;
 
             // Deterime our patrol count
             var crimeInfo = crimeGenerator.RegionCrimeInfoByTimeOfDay[tod];

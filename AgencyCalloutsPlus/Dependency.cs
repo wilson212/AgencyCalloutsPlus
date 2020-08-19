@@ -3,6 +3,9 @@ using System.IO;
 
 namespace AgencyCalloutsPlus
 {
+    /// <summary>
+    /// Represents a dependancy that this mod relies on
+    /// </summary>
     internal class Dependancy
     {
         public string FilePath;

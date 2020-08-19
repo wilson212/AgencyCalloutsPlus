@@ -118,7 +118,7 @@ namespace AgencyCalloutsPlus.API
             CallId = id;
             CallCreated = World.DateTime;
             ScenarioInfo = scenarioInfo ?? throw new ArgumentNullException(nameof(scenarioInfo));
-            Description = scenarioInfo.GetRandomDescription();
+            Description = scenarioInfo.Descriptions.Spawn();
             AttachedOfficers = new List<OfficerUnit>(4);
 
             // Temp

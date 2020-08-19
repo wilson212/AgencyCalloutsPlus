@@ -34,12 +34,22 @@ namespace AgencyCalloutsPlus
         /// <summary>
         /// The key to open the callout interaction menu
         /// </summary>
-        internal static Keys OpenCalloutMenuKey { get; set; } = Keys.F10;
+        internal static Keys OpenCalloutMenuKey { get; set; } = Keys.F11;
 
         /// <summary>
         /// The modifier key to open the callout interaction menu
         /// </summary>
-        internal static Keys OpenCalloutMenuModifierKey { get; set; } = Keys.None;
+        internal static Keys OpenCalloutMenuModifierKey { get; set; } = Keys.LShiftKey;
+
+        /// <summary>
+        /// The key to open the callout CAD interface
+        /// </summary>
+        internal static Keys OpenCADMenuKey { get; set; } = Keys.F9;
+
+        /// <summary>
+        /// The modifier key to open the callout CAD interface
+        /// </summary>
+        internal static Keys OpenCADMenuModifierKey { get; set; } = Keys.None;
 
         /// <summary>
         /// Gets or sets whether to load the On Duty Status Hud
@@ -85,8 +95,10 @@ namespace AgencyCalloutsPlus
             // Read key bindings
             OpenMenuKey = ini.ReadEnum("KEYBINDINGS", "OpenMenuKey", Keys.F11);
             OpenMenuModifierKey = ini.ReadEnum("KEYBINDINGS", "OpenMenuModifierKey", Keys.None);
-            OpenCalloutMenuKey = ini.ReadEnum("KEYBINDINGS", "OpenCalloutMenuKey", Keys.F10);
-            OpenCalloutMenuModifierKey = ini.ReadEnum("KEYBINDINGS", "OpenCalloutMenuModifierKey", Keys.None);
+            OpenCalloutMenuKey = ini.ReadEnum("KEYBINDINGS", "OpenCalloutMenuKey", Keys.F11);
+            OpenCalloutMenuModifierKey = ini.ReadEnum("KEYBINDINGS", "OpenCalloutMenuModifierKey", Keys.LShiftKey);
+            OpenCADMenuKey = ini.ReadEnum("KEYBINDINGS", "OpenCADMenuKey", Keys.F9);
+            OpenCADMenuModifierKey = ini.ReadEnum("KEYBINDINGS", "OpenCADMenuModifierKey", Keys.None);
 
             AudioDivision = ini.ReadInt32("GENERAL", "Division", 1);
             AudioUnitType = ini.ReadString("GENERAL", "UnitType", "LINCOLN").ToUpperInvariant();

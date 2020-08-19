@@ -1,16 +1,19 @@
-﻿using AgencyCalloutsPlus.Mod;
-using LSPD_First_Response.Mod.API;
-using Rage;
+﻿using Rage;
 using Rage.Native;
 using System;
 using System.Linq;
-using System.Reflection;
 using System.Windows.Forms;
 
 namespace AgencyCalloutsPlus
 {
-    internal static class Globals
+    /// <summary>
+    /// Provides methods to access the state of the Keyboard
+    /// </summary>
+    internal static class Keyboard
     {
+        /// <summary>
+        /// An array of valid computer key modifiers
+        /// </summary>
         internal static Keys[] Modifiers = { Keys.LControlKey, Keys.RControlKey, Keys.Alt, Keys.LShiftKey, Keys.RShiftKey };
 
         /// <summary>
@@ -121,57 +124,6 @@ namespace AgencyCalloutsPlus
             */
 
             return (Game.IsAltKeyDownRightNow || Game.IsShiftKeyDownRightNow || Game.IsControlKeyDownRightNow);
-        }
-
-        internal static bool IsLSPDFRPluginRunning(string Plugin, Version minversion = null)
-        {
-            foreach (Assembly assembly in Functions.GetAllUserPlugins())
-            {
-                AssemblyName an = assembly.GetName();
-                if (an.Name.ToLower() == Plugin.ToLower())
-                {
-                    if (minversion == null || an.Version.CompareTo(minversion) >= 0)
-                    {
-                        return true;
-                    }
-                }
-            }
-            return false;
-        }
-
-        internal static bool IsLSPDFRPluginRunning(string Plugin, out Version version)
-        {
-            foreach (Assembly assembly in Functions.GetAllUserPlugins())
-            {
-                AssemblyName an = assembly.GetName();
-                if (an.Name.ToLower() == Plugin.ToLower())
-                {
-                    version = an.Version;
-                    return true;
-                }
-            }
-
-            version = default(Version);
-            return false;
-        }
-
-        internal static bool IsLSPDFRPluginRunning(string Plugin, Version minversion, out Version version)
-        {
-            foreach (Assembly assembly in Functions.GetAllUserPlugins())
-            {
-                AssemblyName an = assembly.GetName();
-                if (an.Name.ToLower() == Plugin.ToLower())
-                {
-                    if (minversion == null || an.Version.CompareTo(minversion) >= 0)
-                    {
-                        version = an.Version;
-                        return true;
-                    }
-                }
-            }
-
-            version = default(Version);
-            return false;
         }
     }
 }

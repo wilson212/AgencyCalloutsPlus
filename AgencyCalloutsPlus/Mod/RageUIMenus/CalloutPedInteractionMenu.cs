@@ -144,7 +144,7 @@ namespace AgencyCalloutsPlus.RageUIMenus
                 // Is modifier key pressed
                 if (HasModifier)
                 {
-                    if (Globals.IsKeyDownWithModifier(Settings.OpenCalloutMenuKey, Settings.OpenCalloutMenuModifierKey))
+                    if (Keyboard.IsKeyDownWithModifier(Settings.OpenCalloutMenuKey, Settings.OpenCalloutMenuModifierKey))
                     {
                         Game.HideHelp();
                         MainUIMenu.Visible = true;

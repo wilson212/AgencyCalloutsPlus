@@ -85,9 +85,19 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="API\CallListUpdateHandler.cs" />
+    <Compile Include="API\Enums\Gender.cs" />
     <Compile Include="API\Enums\LocationFlags.cs" />
+    <Compile Include="API\Enums\PedVariantGroup.cs" />
     <Compile Include="API\Enums\Weather.cs" />
     <Compile Include="API\GameWorld.cs" />
+    <Compile Include="Extensions\EnumExtensions.cs" />
+    <Compile Include="Mod\NativeUI\ActiveCallListTabPage.cs" />
+    <Compile Include="Mod\NativeUI\MyUIMenuItem.cs" />
+    <Compile Include="Mod\NativeUI\PriorityCallTabItem.cs" />
+    <Compile Include="Mod\PedDescriptionProperty.cs" />
+    <Compile Include="Mod\PedInfo.cs" />
+    <Compile Include="Mod\PedModelMeta.cs" />
     <Compile Include="Mod\WeatherInfo.cs" />
     <Compile Include="Mod\Conversation\FlowOutcome.cs" />
     <Compile Include="Extensions\ColorExtensions.cs" />
@@ -102,7 +112,6 @@
     <Compile Include="API\Enums\HomeType.cs" />
     <Compile Include="API\Enums\OfficerRole.cs" />
     <Compile Include="API\Agencies\HighwayPatrolAgency.cs" />
-    <Compile Include="API\PedInfo.cs" />
     <Compile Include="API\PriorityCallDescription.cs" />
     <Compile Include="API\Enums\CallCloseFlag.cs" />
     <Compile Include="API\Enums\CallStatus.cs" />
@@ -129,9 +138,7 @@
     <Compile Include="Callouts\Scenarios\DomesticViolence\DomesticArguingOnly.cs" />
     <Compile Include="Mod\Enums\TimeOfDay.cs" />
     <Compile Include="Mod\ExpressionParser.cs" />
-    <Compile Include="Mod\NativeUI\CurrentCallTabItem.cs" />
-    <Compile Include="Mod\NativeUI\Elements\IElement.cs" />
-    <Compile Include="Mod\NativeUI\MyTabItem.cs" />
+    <Compile Include="Mod\NativeUI\CurrentCallTabPage.cs" />
     <Compile Include="Mod\RegionCrimeInfo.cs" />
     <Compile Include="SpawnableWrapper.cs" />
     <Compile Include="SubtitleQueue.cs" />
@@ -179,7 +186,7 @@
     <Compile Include="API\Agency.cs" />
     <Compile Include="API\Enums\LocationType.cs" />
     <Compile Include="Extensions\AttributeExtensions.cs" />
-    <Compile Include="Mod\Globals.cs" />
+    <Compile Include="Keyboard.cs" />
     <Compile Include="ISpawnable.cs" />
     <Compile Include="Main.cs" />
     <Compile Include="Mod\Conversation\ResponseSet.cs" />
@@ -188,7 +195,7 @@
     <Compile Include="Mod\Conversation\LineSet.cs" />
     <Compile Include="Mod\UI\Alignment.cs" />
     <Compile Include="Mod\UI\ContainerElement.cs" />
-    <Compile Include="Mod\NativeUI\GameFont.cs" />
+    <Compile Include="Mod\UI\GameFont.cs" />
     <Compile Include="Mod\UI\IElement.cs" />
     <Compile Include="Mod\UI\LoadingSpinner.cs" />
     <Compile Include="Mod\UI\LoadingSpinnerType.cs" />
@@ -207,9 +214,11 @@
     <Compile Include="Range.cs" />
     <Compile Include="Settings.cs" />
     <Compile Include="ProbabilityGenerator.cs" />
-    <Compile Include="SpawnHelper.cs" />
-    <Compile Include="TimeOfDayProbabilityGenerator.cs" />
+    <Compile Include="WeatherCatagory.cs" />
+    <Compile Include="WorldStateMultipliers.cs" />
+    <Compile Include="WorldStateProbabilityGenerator.cs" />
     <Compile Include="TimeScale.cs" />
+    <Compile Include="XmlExtractor.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Integration\C+Interfaces\CallDetailsGwenFormTemplate.resx">

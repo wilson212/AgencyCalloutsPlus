@@ -20,7 +20,7 @@ namespace AgencyCalloutsPlus.Integration
         {
             if (!IsRunning)
             {
-                IsRunning = Globals.IsLSPDFRPluginRunning("ComputerPlus", new Version("1.4.1.1"));
+                IsRunning = Main.IsLSPDFRPluginRunning("ComputerPlus", new Version("1.4.1.1"));
                 if (IsRunning)
                 {
                     Log.Info("Detected ComputerPlus is running. Registering CAD interfaces");

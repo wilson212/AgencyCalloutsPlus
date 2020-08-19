@@ -38,7 +38,7 @@ namespace AgencyCalloutsPlus.Mod
             var text = new TextElement("10-8: ", new PointF(1, 1))
             {
                 Size = (Settings.HudTextScale * 0.3f),
-                Font = NativeUI.GameFont.ChaletLondon,
+                Font = GameFont.ChaletLondon,
                 Outline = true,
                 Shadow = true,
                 Color = Color.WhiteSmoke
@@ -53,7 +53,7 @@ namespace AgencyCalloutsPlus.Mod
             text = new TextElement("Available", point)
             {
                 Size = (Settings.HudTextScale * 0.3f),
-                Font = NativeUI.GameFont.ChaletLondon,
+                Font = GameFont.ChaletLondon,
                 Outline = true,
                 Shadow = true,
                 Color = Color.Green
@@ -68,7 +68,7 @@ namespace AgencyCalloutsPlus.Mod
             text = new TextElement("Priority Calls: ", point)
             {
                 Size = (Settings.HudTextScale * 0.3f),
-                Font = NativeUI.GameFont.ChaletLondon,
+                Font = GameFont.ChaletLondon,
                 Outline = true,
                 Shadow = true,
                 Color = Color.WhiteSmoke
@@ -82,7 +82,7 @@ namespace AgencyCalloutsPlus.Mod
             text = new TextElement("2", point)
             {
                 Size = (Settings.HudTextScale * 0.3f),
-                Font = NativeUI.GameFont.ChaletLondon,
+                Font = GameFont.ChaletLondon,
                 Outline = true,
                 Shadow = true,
                 Color = Color.WhiteSmoke

@@ -43,6 +43,7 @@ Callouts:
 	- NoiseComplaintLoudMusicAfterDark		[Disturbance]
 	- ShoutingProfanityInPublic				[Disturbance]
 	- RefusingToLeaveProperty				[Disturbance]
+	- PedWavingAWeapon						[Violent]
 - GangActivity
 	- GangHasseling							[Gang]
 	- GangStolenCar							[Gang]
@@ -69,6 +70,8 @@ Callouts:
 - Vandalism 
 	- VandalisedVehicle						[Property]
 	- VandalisedHome						[Property]
+	- VandalisedStore						[Property]
+	- ActiveVandalism						[Property]
 - Statutory 
 	- PublicIntoxication					[Statutory]
 	- DrivingUnderInfluence					[Statutory]
@@ -90,10 +93,10 @@ Callouts:
 	- PhyisicalAltercationCheating			[Violent]
 	- BeingHeldAtGunpoint					[Violent]
 - SexualAssault
-	- Rape									[Sexual]
-	- AttemptedRape							[Sexual]
-	- StatutoryRape							[Sexual]
-	- UnWelcomeGroping						[Sexual]
+	- Rape									[Other]
+	- AttemptedRape							[Other]
+	- StatutoryRape							[Other]
+	- UnWelcomeGroping						[Other]
 - Homocide
 	- DeadBodyFound							[Violent]
 	- DriveByShooting						[Violent]
@@ -107,9 +110,9 @@ Callouts:
 	- SuspiciousVehicleIndicentExposure		[Disturbance]
 	- SuspiciousVehicleSpying				[Disturbance]
 - MissingPerson
-	- DemensiaPatientMissing
-	- MissingPersonReport
-	- ChildRunawayReport
-	- Kidnapping
+	- DemensiaPatientMissing				[Other]
+	- MissingPersonReport					[Other]
+	- ChildRunawayReport					[Other]
+	- Kidnapping							[Other]
  - Warrant
-	- ServingWarrant
+	- ServingWarrant						[Other]

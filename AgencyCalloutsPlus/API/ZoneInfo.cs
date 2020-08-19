@@ -3,7 +3,6 @@ using AgencyCalloutsPlus.Mod;
 using Rage;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Xml;
@@ -59,7 +58,7 @@ namespace AgencyCalloutsPlus.API
         /// <summary>
         /// Contains a dictionary of how often specific crimes happen in this zone
         /// </summary>
-        public IReadOnlyDictionary<CalloutType, Dictionary<TimeOfDay, int>> CrimeTypeProbabilities { get; protected set; }
+        //public IReadOnlyDictionary<CalloutType, WorldStateMultipliers> CrimeTypeProbabilities { get; protected set; }
 
         /// <summary>
         /// Contains a dictionary of the average number of calls per time of day in this zone
@@ -79,12 +78,12 @@ namespace AgencyCalloutsPlus.API
         /// <summary>
         /// Gets the crime level probability of this zone
         /// </summary>
-        public int Probability => AverageCalls[Dispatch.CurrentTimeOfDay];
+        public int Probability => AverageCalls[GameWorld.CurrentTimeOfDay];
 
         /// <summary>
         /// Spawns a <see cref="CalloutType"/> based on the <see cref="CrimeTypeProbabilities"/> probabilites set
         /// </summary>
-        private TimeOfDayProbabilityGenerator<SpawnableCalloutType> CrimeGenerator { get; set; }
+        private WorldStateProbabilityGenerator<CalloutType> CrimeGenerator { get; set; }
 
         /// <summary>
         /// Creates a new instance of <see cref="ZoneInfo"/>
@@ -137,8 +136,8 @@ namespace AgencyCalloutsPlus.API
             }
 
             // Load crime probabilites
-            var crimeTypeProbabilities = new Dictionary<CalloutType, Dictionary<TimeOfDay, int>>(10);
-            CrimeGenerator = new TimeOfDayProbabilityGenerator<SpawnableCalloutType>();
+            //var crimeTypeProbabilities = new Dictionary<CalloutType, WorldStateMultipliers>(10);
+            CrimeGenerator = new WorldStateProbabilityGenerator<CalloutType>();
 
             // Get average calls by time of day
             var subNode = catagoryNode.SelectSingleNode("AverageCalls");
@@ -155,26 +154,30 @@ namespace AgencyCalloutsPlus.API
                 }
 
                 // Extract crime probabilites
-                foreach (XmlNode n in catagoryNode.ChildNodes)
+                foreach (CalloutType calloutType in Enum.GetValues(typeof(CalloutType)))
                 {
+                    var nodeName = Enum.GetName(typeof(CalloutType), calloutType);
+                    XmlNode n = catagoryNode.SelectSingleNode(nodeName);
+
                     // Try and parse the crime type from the node name
-                    if (!Enum.TryParse(n.Name, out CalloutType calloutType))
+                    if (n == null)
                     {
-                        Log.Warning($"ZoneInfo.ctor: Unable to parse CrimeType {n.Name} in zone '{ScriptName}'");
+                        Log.Warning($"ZoneInfo.ctor: Missing CrimeType '{nodeName}' in zone '{ScriptName}'");
                         continue;
                     }
 
-                    // Try and parse the probability levels by Time of Day
-                    var items = GetTimeOfDayProbabilities(n);
-                    foreach (var item in items)
+                    // See if this calloutType is possible in this zone
+                    if (bool.TryParse(n.Attributes["possible"]?.Value, out bool possible))
                     {
-                        if (item.Value == 0) continue;
-
-                        CrimeGenerator.Add(item.Key, new SpawnableCalloutType(item.Value, calloutType));
+                        if (!possible) continue;
                     }
 
+                    // Try and parse the probability levels by Time of Day
+                    var multipliers = XmlExtractor.GetWorldStateMultipliers(n);
+                    CrimeGenerator.Add(calloutType, multipliers);
+
                     // Add
-                    crimeTypeProbabilities.Add(calloutType, items);
+                    //crimeTypeProbabilities.Add(calloutType, multipliers);
                 }
             }
 
@@ -194,7 +197,7 @@ namespace AgencyCalloutsPlus.API
             HomeLocations = ExtractHomes(catagoryNode);
 
             // Internal vars
-            CrimeTypeProbabilities = new ReadOnlyDictionary<CalloutType, Dictionary<TimeOfDay, int>>(crimeTypeProbabilities);
+            //CrimeTypeProbabilities = new ReadOnlyDictionary<CalloutType, WorldStateMultipliers>(crimeTypeProbabilities);
         }
 
         private Dictionary<TimeOfDay, int> GetTimeOfDayProbabilities(XmlNode subNode)
@@ -274,9 +277,9 @@ namespace AgencyCalloutsPlus.API
         /// </returns>
         public CalloutType GetNextRandomCrimeType()
         {
-            if (CrimeGenerator.TrySpawn(Dispatch.CurrentTimeOfDay, out SpawnableCalloutType type))
+            if (CrimeGenerator.TrySpawn(out CalloutType calloutType))
             {
-                return type.CalloutType;
+                return calloutType;
             }
 
             return CalloutType.Traffic;

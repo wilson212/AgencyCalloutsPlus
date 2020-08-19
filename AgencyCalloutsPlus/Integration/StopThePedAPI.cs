@@ -18,7 +18,7 @@ namespace AgencyCalloutsPlus.Integration
         {
             if (!IsRunning)
             {
-                IsRunning = Globals.IsLSPDFRPluginRunning("StopThePed", new Version("1.9.2.5"));
+                IsRunning = Main.IsLSPDFRPluginRunning("StopThePed", new Version("1.9.2.5"));
                 if (IsRunning)
                 {
                     Log.Info("Detected StopThePed is running. Registering API functions");

@@ -1,4 +1,5 @@
 ﻿using AgencyCalloutsPlus.Extensions;
+using AgencyCalloutsPlus.Mod.NativeUI;
 using Rage;
 using RAGENativeUI;
 using RAGENativeUI.Elements;
@@ -283,16 +284,23 @@ namespace AgencyCalloutsPlus.Mod.Conversation
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="selectedItem"></param>
-        private void On_ItemActivated(UIMenu sender, UIMenuItem selectedItem)
+        private void On_ItemActivated(UIMenu sender, UIMenuItem selectedMenuItem)
         {
+            // Convert to my menu item
+            var selectedItem = selectedMenuItem as MyUIMenuItem<string>;
+            if (selectedMenuItem == null)
+            {
+                return;
+            }
+
             // Disable button from spam clicks
             selectedItem.Enabled = false;
 
             // Dont do anything right now!
-            var response = GetResponseToQuestionId(selectedItem.Description);
+            var response = GetResponseToQuestionId(selectedItem.Tag);
             if (response == null)
             {
-                Game.DisplayNotification($"~r~No XML Response[@to='~b~{selectedItem.Description}~r~'] node for this Ped.");
+                Game.DisplayNotification($"~r~No XML Response[@to='~b~{selectedItem.Tag}~r~'] node for this Ped.");
                 return;
             }
 
@@ -300,7 +308,7 @@ namespace AgencyCalloutsPlus.Mod.Conversation
             var lineSet = response.GetResponseLineSet();
             if (lineSet == null || lineSet.Lines.Length == 0)
             {
-                Log.Error($"FlowSequence.Item_Activated: Response to '{selectedItem.Description}' has no lines");
+                Log.Error($"FlowSequence.Item_Activated: Response to '{selectedItem.Tag}' has no lines");
                 return;
             }
 
@@ -308,7 +316,7 @@ namespace AgencyCalloutsPlus.Mod.Conversation
             SubtitleQueue.Clear();
 
             // Officer Dialogs first
-            foreach (LineItem line in OfficerDialogs[selectedItem.Description])
+            foreach (LineItem line in OfficerDialogs[selectedItem.Tag])
             {
                 var text = VariableExpression.ReplaceTokens(line.Text, Variables);
                 SubtitleQueue.Add($"~y~You~w~: {text}<br /><br />", line.Time);
@@ -443,8 +451,8 @@ namespace AgencyCalloutsPlus.Mod.Conversation
                     }
 
                     // Create button
-                    UIMenuItem item = new UIMenuItem(text);
-                    item.Description = buttonId;
+                    var item = new MyUIMenuItem<string>(text);
+                    item.Tag = buttonId;
                     item.Parent = menu; // !! Important !!
                     item.Activated += On_ItemActivated;
 

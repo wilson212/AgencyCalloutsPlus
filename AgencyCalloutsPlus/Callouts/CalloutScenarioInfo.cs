@@ -6,13 +6,14 @@ namespace AgencyCalloutsPlus.Callouts
     /// <summary>
     /// Contains Scenario info for an <see cref="AgencyCallout"/>
     /// </summary>
-    internal class CalloutScenarioInfo : ISpawnable
+    internal class CalloutScenarioInfo
     {
         /// <summary>
-        /// Gets the total probability of this scenario spawning from
-        /// a <see cref="SpawnGenerator{T}"/>
+        /// Gets the base probability based on the players current <see cref="Agency"/>
         /// </summary>
         public int Probability { get; set; }
+
+        public WorldStateMultipliers  ProbabilityMultipliers { get; set; }
 
         /// <summary>
         /// Gets the name of the Scenario
@@ -57,15 +58,10 @@ namespace AgencyCalloutsPlus.Callouts
         /// <summary>
         /// Gets an array of call descriptions
         /// </summary>
-        public PriorityCallDescription[] Descriptions { get; set; }
+        public ProbabilityGenerator<PriorityCallDescription> Descriptions { get; set; }
 
-        internal PriorityCallDescription GetRandomDescription()
-        {
-            if (Descriptions.Length == 0) return null;
+        public string SpriteName { get; internal set; }
 
-            int count = Descriptions.Length - 1;
-            int index = new Random().Next(0, count);
-            return Descriptions[index];
-        }
+        public string SpriteTextureDict { get; internal set; }
     }
 }

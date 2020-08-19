@@ -370,7 +370,7 @@ namespace AgencyCalloutsPlus.RageUIMenus
                     AllMenus.ProcessMenus();
 
                     // If menu is closed, Wait for key press, then open menu
-                    if (!AllMenus.IsAnyMenuOpen() && Globals.IsKeyDownWithModifier(Settings.OpenMenuKey, Settings.OpenMenuModifierKey))
+                    if (!AllMenus.IsAnyMenuOpen() && Keyboard.IsKeyDownWithModifier(Settings.OpenMenuKey, Settings.OpenMenuModifierKey))
                     {
                         MainUIMenu.Visible = true;
                     }

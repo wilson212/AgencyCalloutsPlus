@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <!-- 
-  Reference: https://gta.fandom.com/wiki/Sandy_Shores 
+  Reference: https://gta.fandom.com/wiki/Sandy_Shores  SkullWasIt
   
   Sandy Shores does not have many house numbers, so many addresses are only street names!
 -->
@@ -13,15 +13,60 @@
   <Crime>
     <AverageCalls morning="6" day="15" evening="21" night="6" />
     <Probabilities>
-      <Robbery morning="5" day="3" evening="5" night="2" />
-      <Property morning="5" day="3" evening="5" night="2" />
-      <Drugs morning="5" day="3" evening="5" night="2" />
-      <Gang morning="0" day="0" evening="0" night="0" />
-      <Disturbance morning="5" day="3" evening="5" night="2" />
-      <Statutory morning="5" day="3" evening="5" night="2" />
-      <Traffic morning="5" day="3" evening="5" night="2" />
-      <Violent morning="5" day="3" evening="5" night="2" />
-      <Other morning="5" day="3" evening="5" night="2" />
+      <Robbery prossible="false">
+        <Morning clear="10" overcast="10" rain="10" snow="10" storm="10" />
+        <Day clear="10" overcast="10" rain="10" snow="10" storm="10" />
+        <Evening clear="10" overcast="10" rain="10" snow="10" storm="10" />
+        <Night clear="10" overcast="10" rain="10" snow="10" storm="10" />
+      </Robbery>
+      <Property prossible="false">
+        <Morning clear="10" overcast="10" rain="10" snow="10" storm="10" />
+        <Day clear="10" overcast="10" rain="10" snow="10" storm="10" />
+        <Evening clear="10" overcast="10" rain="10" snow="10" storm="10" />
+        <Night clear="10" overcast="10" rain="10" snow="10" storm="10" />
+      </Property>
+      <Drugs prossible="false">
+        <Morning clear="10" overcast="10" rain="10" snow="10" storm="10" />
+        <Day clear="10" overcast="10" rain="10" snow="10" storm="10" />
+        <Evening clear="10" overcast="10" rain="10" snow="10" storm="10" />
+        <Night clear="10" overcast="10" rain="10" snow="10" storm="10" />
+      </Drugs>
+      <Gang prossible="false">
+        <Morning clear="10" overcast="10" rain="10" snow="10" storm="10" />
+        <Day clear="10" overcast="10" rain="10" snow="10" storm="10" />
+        <Evening clear="10" overcast="10" rain="10" snow="10" storm="10" />
+        <Night clear="10" overcast="10" rain="10" snow="10" storm="10" />
+      </Gang>
+      <Disturbance prossible="false">
+        <Morning clear="10" overcast="10" rain="10" snow="10" storm="10" />
+        <Day clear="10" overcast="10" rain="10" snow="10" storm="10" />
+        <Evening clear="10" overcast="10" rain="10" snow="10" storm="10" />
+        <Night clear="10" overcast="10" rain="10" snow="10" storm="10" />
+      </Disturbance>
+      <Statutory prossible="false">
+        <Morning clear="10" overcast="10" rain="10" snow="10" storm="10" />
+        <Day clear="10" overcast="10" rain="10" snow="10" storm="10" />
+        <Evening clear="10" overcast="10" rain="10" snow="10" storm="10" />
+        <Night clear="10" overcast="10" rain="10" snow="10" storm="10" />
+      </Statutory>
+      <Traffic prossible="true">
+        <Morning clear="10" overcast="10" rain="15" snow="18" storm="12" />
+        <Day clear="10" overcast="10" rain="15" snow="18" storm="12" />
+        <Evening clear="10" overcast="10" rain="15" snow="18" storm="12" />
+        <Night clear="10" overcast="10" rain="15" snow="18" storm="12" />
+      </Traffic>
+      <Violent prossible="false">
+        <Morning clear="10" overcast="10" rain="10" snow="10" storm="10" />
+        <Day clear="10" overcast="10" rain="10" snow="10" storm="10" />
+        <Evening clear="10" overcast="10" rain="10" snow="10" storm="10" />
+        <Night clear="10" overcast="10" rain="10" snow="10" storm="10" />
+      </Violent>
+      <Other prossible="false">
+        <Morning clear="10" overcast="10" rain="10" snow="10" storm="10" />
+        <Day clear="10" overcast="10" rain="10" snow="10" storm="10" />
+        <Evening clear="10" overcast="10" rain="10" snow="10" storm="10" />
+        <Night clear="10" overcast="10" rain="10" snow="10" storm="10" />
+      </Other>
     </Probabilities>
   </Crime>
   <Locations>

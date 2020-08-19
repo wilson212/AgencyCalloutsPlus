@@ -1,7 +1,7 @@
 ﻿using AgencyCalloutsPlus.API;
 using AgencyCalloutsPlus.Integration;
 using AgencyCalloutsPlus.Mod;
-using AgencyCalloutsPlus.NativeUI;
+using AgencyCalloutsPlus.Mod.NativeUI;
 using AgencyCalloutsPlus.RageUIMenus;
 using LSPD_First_Response.Mod.API;
 using Rage;
@@ -177,11 +177,17 @@ namespace AgencyCalloutsPlus
                 // Wait!
                 GameFiber.Wait(2000);
 
+                // Initialize GameWorld FIRST!!! Important!
+                GameWorld.Initialize();
+
                 // Load our agencies and such (this will only initialize once per game session)
                 Agency.Initialize();
 
                 // Load vehicles (this will only initialize once per game session)
                 VehicleInfo.Initialize();
+
+                // Load peds (this will only initialize once per game session)
+                PedInfo.Initialize();
 
                 // Load locations based on current agency jurisdiction.
                 // This method needs called everytime the player Agency is changed
@@ -202,6 +208,9 @@ namespace AgencyCalloutsPlus
                 // Finally, start dispatch call center
                 else if (Dispatch.StartDuty())
                 {
+                    // Tell GameWorld to begin listening
+                    GameWorld.BeginFibers();
+
                     // Begin listening for the Plugin Menu
                     PluginMenu = new ADACMainMenu();
                     PluginMenu.BeginListening();
@@ -221,9 +230,6 @@ namespace AgencyCalloutsPlus
                         "~g~Plugin is Now Active.",
                         $"Now on duty serving ~g~{Dispatch.ZoneCount}~s~ zone(s)"
                     );
-
-                    // Display the Status Heads Up Display
-                    StatusHUD.Show();
                 }
                 else
                 {
@@ -237,6 +243,77 @@ namespace AgencyCalloutsPlus
                     );
                 }
             });
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether the specified plugin is running, and at the minimum version specified
+        /// </summary>
+        /// <param name="pluginName"></param>
+        /// <param name="minversion"></param>
+        /// <returns></returns>
+        internal static bool IsLSPDFRPluginRunning(string pluginName, Version minversion = null)
+        {
+            foreach (Assembly assembly in Functions.GetAllUserPlugins())
+            {
+                AssemblyName an = assembly.GetName();
+                if (an.Name.ToLower() == pluginName.ToLower())
+                {
+                    if (minversion == null || an.Version.CompareTo(minversion) >= 0)
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether the specified plugin is running, and returns the running version
+        /// </summary>
+        /// <param name="Plugin"></param>
+        /// <param name="version"></param>
+        /// <returns></returns>
+        internal static bool IsLSPDFRPluginRunning(string Plugin, out Version version)
+        {
+            foreach (Assembly assembly in Functions.GetAllUserPlugins())
+            {
+                AssemblyName an = assembly.GetName();
+                if (an.Name.ToLower() == Plugin.ToLower())
+                {
+                    version = an.Version;
+                    return true;
+                }
+            }
+
+            version = default(Version);
+            return false;
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether the specified plugin is running, and at the minimum version specified.
+        /// Returns the version that is running
+        /// </summary>
+        /// <param name="Plugin"></param>
+        /// <param name="minversion"></param>
+        /// <param name="version"></param>
+        /// <returns></returns>
+        internal static bool IsLSPDFRPluginRunning(string Plugin, Version minversion, out Version version)
+        {
+            foreach (Assembly assembly in Functions.GetAllUserPlugins())
+            {
+                AssemblyName an = assembly.GetName();
+                if (an.Name.ToLower() == Plugin.ToLower())
+                {
+                    if (minversion == null || an.Version.CompareTo(minversion) >= 0)
+                    {
+                        version = an.Version;
+                        return true;
+                    }
+                }
+            }
+
+            version = default(Version);
+            return false;
         }
 
         public override void Finally()

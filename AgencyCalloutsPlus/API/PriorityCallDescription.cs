@@ -2,7 +2,7 @@
 
 namespace AgencyCalloutsPlus.API
 {
-    public class PriorityCallDescription
+    public class PriorityCallDescription : ISpawnable
     {
         /// <summary>
         /// Gets the description text for the <see cref="PriorityCall"/>
@@ -14,8 +14,11 @@ namespace AgencyCalloutsPlus.API
         /// </summary>
         public string Source { get; protected set; }
 
-        public PriorityCallDescription(string description, string source)
+        public int Probability { get; }
+
+        public PriorityCallDescription(int probabilty, string description, string source)
         {
+            Probability = probabilty;
             Text = description ?? throw new ArgumentNullException(nameof(description));
             Source = source ?? String.Empty;
         }

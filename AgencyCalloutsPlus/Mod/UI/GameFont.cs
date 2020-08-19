@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace AgencyCalloutsPlus.Mod.NativeUI
+﻿namespace AgencyCalloutsPlus.Mod.UI
 {
     /// <summary>
 	/// An enumeration of fonts the game supports.

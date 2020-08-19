@@ -85,7 +85,7 @@
         </LineSet>
         <!-- Honest 2 -->
         <LineSet probability="10">
-          <Line time="4000">I was watching eating my lunch and wasn't paying attention.</Line>
+          <Line time="4000">I was eating my lunch and wasn't paying attention.</Line>
         </LineSet>
         <!-- brake check asshole -->
         <LineSet probability="10" if="Victim.Ped.IsMale == true">
@@ -165,7 +165,7 @@
           <Line time="4000">This asshole in front of me brake checked me! Does he not know its icy out here?</Line>
         </LineSet>
         <LineSet probability="10" if="Victim.Ped.IsFemale == true and Weather.IsSnowing">
-          <Line time="4000">This bitch in front of me brake checked me! Does he not know its icy out here?</Line>
+          <Line time="4000">This bitch in front of me brake checked me! Does she not know its icy out here?</Line>
         </LineSet>
         <LineSet probability="10" if="Victim.Ped.IsMale == true and Weather.RoadsAreWet == true">
           <Line time="4000">This asshole in front of me brake checked me! The roads are slippery today</Line>

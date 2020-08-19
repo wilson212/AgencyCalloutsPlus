@@ -24,15 +24,20 @@ namespace AgencyCalloutsPlus.API
         private static System.Object _lock = new System.Object();
 
         /// <summary>
+        /// Contains a list Scenarios by name
+        /// </summary>
+        internal static Dictionary<string, CalloutScenarioInfo> ScenariosByName { get; set; }
+
+        /// <summary>
         /// Contains a list Scenarios seperated by CalloutType that will be used
         /// to populate the calls board
         /// </summary>
-        internal static Dictionary<CalloutType, TimeOfDayProbabilityGenerator<CalloutScenarioInfo>> ScenarioPool { get; set; }
+        internal static Dictionary<CalloutType, WorldStateProbabilityGenerator<CalloutScenarioInfo>> ScenariosByCalloutType { get; set; }
 
         /// <summary>
         /// Contains a list of scenario's by callout name
         /// </summary>
-        internal static Dictionary<string, TimeOfDayProbabilityGenerator<CalloutScenarioInfo>> Scenarios { get; set; }
+        internal static Dictionary<string, WorldStateProbabilityGenerator<CalloutScenarioInfo>> ScenariosByCalloutName { get; set; }
 
         /// <summary>
         /// Randomizer method used to randomize callouts and locations
@@ -45,17 +50,28 @@ namespace AgencyCalloutsPlus.API
         public static Agency PlayerAgency { get; private set; }
 
         /// <summary>
-        /// Gets the current <see cref="TimeOfDay"/> within the game world
+        /// Event called when a call is added to the call list
         /// </summary>
-        public static TimeOfDay CurrentTimeOfDay { get; private set; }
+        public static event CallListUpdateHandler OnCallAdded;
 
         /// <summary>
-        /// Event called when the <see cref="TimeOfDay"/> has changed in game
+        /// Event called when a call is removed from the call list
         /// </summary>
-        public static event EventHandler OnTimeOfDayChanged;
+        public static event CallListUpdateHandler OnCallCompleted;
 
         /// <summary>
-        /// 
+        /// Event called when a call is accepted by the player
+        /// </summary>
+        public static event CallListUpdateHandler OnPlayerCallAccepted;
+
+        /// <summary>
+        /// Event called when a call is completed by the player
+        /// </summary>
+        public static event CallListUpdateHandler OnPlayerCallCompleted;
+
+        /// <summary>
+        /// Gets or sets the <see cref="RegionCrimeGenerator"/>, responsible for spawning
+        /// <see cref="PriorityCall"/>s
         /// </summary>
         internal static RegionCrimeGenerator CrimeGenerator { get; set; }
 
@@ -154,11 +170,12 @@ namespace AgencyCalloutsPlus.API
         static Dispatch()
         {
             // Initialize callout types
-            Scenarios = new Dictionary<string, TimeOfDayProbabilityGenerator<CalloutScenarioInfo>>();
-            ScenarioPool = new Dictionary<CalloutType, TimeOfDayProbabilityGenerator<CalloutScenarioInfo>>(8);
+            ScenariosByName = new Dictionary<string, CalloutScenarioInfo>();
+            ScenariosByCalloutName = new Dictionary<string, WorldStateProbabilityGenerator<CalloutScenarioInfo>>();
+            ScenariosByCalloutType = new Dictionary<CalloutType, WorldStateProbabilityGenerator<CalloutScenarioInfo>>();
             foreach (var type in Enum.GetValues(typeof(CalloutType)))
             {
-                ScenarioPool.Add((CalloutType)type, new TimeOfDayProbabilityGenerator<CalloutScenarioInfo>());
+                ScenariosByCalloutType.Add((CalloutType)type, new WorldStateProbabilityGenerator<CalloutScenarioInfo>());
             }
 
             // Create call Queue
@@ -434,7 +451,7 @@ namespace AgencyCalloutsPlus.API
 
             // If we are here, maybe the player used a console command to start the callout.
             // At this point, see if we have anything in the call Queue
-            if (Scenarios.ContainsKey(calloutName))
+            if (ScenariosByCalloutName.ContainsKey(calloutName))
             {
                 CallStatus[] status = { CallStatus.Created, CallStatus.Waiting, CallStatus.Dispatched };
                 var playerPosition = Game.LocalPlayer.Character.Position;
@@ -458,7 +475,7 @@ namespace AgencyCalloutsPlus.API
                 }
 
                 // Still here? Maybe we can create a call?
-                if (Scenarios[calloutName].TrySpawn(CurrentTimeOfDay, out CalloutScenarioInfo scenarioInfo))
+                if (ScenariosByCalloutName[calloutName].TrySpawn(out CalloutScenarioInfo scenarioInfo))
                 {
                     // Log
                     Log.Info($"Dispatch.RequestPlayerCallInfo: It appears that the player requested a callout of type '{calloutName}' using an outside source. Creating a call out of thin air");
@@ -507,10 +524,16 @@ namespace AgencyCalloutsPlus.API
             {
                 PlayerUnit.CompleteCall(CallCloseFlag.Completed);
                 SetPlayerStatus(OfficerStatus.Available);
+
+                // Set active call to null
+                PlayerActiveCall = null;
+
+                // Fire event
+                OnPlayerCallCompleted?.Invoke(call);
             }
 
-            // Set active call to null
-            PlayerActiveCall = null;
+            // Call event
+            OnCallCompleted?.Invoke(call);
         }
 
         /// <summary>
@@ -546,6 +569,9 @@ namespace AgencyCalloutsPlus.API
 
             // Assign callout property
             call.Callout = callout;
+
+            // Fire event
+            OnPlayerCallAccepted?.Invoke(call);
         }
 
         /// <summary>
@@ -625,6 +651,9 @@ namespace AgencyCalloutsPlus.API
                         InvokeForPlayer = call;
                     }
                 }
+
+                // Call event
+                OnCallAdded?.Invoke(call);
             }
         }
 
@@ -737,9 +766,6 @@ namespace AgencyCalloutsPlus.API
                     DisposeAIUnits();
                     OfficerUnits = new List<OfficerUnit>(PlayerAgency.ActualPatrols);
                 }
-
-                // Get current time of day
-                CurrentTimeOfDay = GetCurrentWorldTimeOfDay();
 
                 // Here we allow the Agency itself to specify which crime 
                 // Generator we are to use
@@ -897,40 +923,6 @@ namespace AgencyCalloutsPlus.API
 
         #region GameFiber methods
 
-        private static void ProcessDispatchLogic()
-        {
-            // Wait
-            GameFiber.Wait(3000);
-
-            // While we are on duty accept calls
-            while (Main.OnDuty)
-            {
-                try
-                {
-                    // Do dispatching checks
-                    DoPoliceChecks();
-
-                    // Get current Time of Day and check for changes
-                    var currentTimeOfDay = GetCurrentWorldTimeOfDay();
-                    if (currentTimeOfDay != CurrentTimeOfDay)
-                    {
-                        // Set
-                        CurrentTimeOfDay = currentTimeOfDay;
-
-                        // Fire event
-                        OnTimeOfDayChanged?.Invoke(null, null);
-                    }
-                }
-                catch (Exception e)
-                {
-                    Log.Exception(e);
-                }
-
-                // Wait
-                GameFiber.Wait(2000);
-            }
-        }
-
         /// <summary>
         /// Processes the Logic for AI Simulation
         /// </summary>
@@ -1005,7 +997,7 @@ namespace AgencyCalloutsPlus.API
         /// <summary>
         /// Main thread loop for Dispatch handling calls and player activity
         /// </summary>
-        private static void DoPoliceChecks()
+        internal static void ProcessDispatchLogic()
         {
             /* Keep watch on the players status
             if (PlayerUnit.Status == OfficerStatus.Available)
@@ -1232,26 +1224,6 @@ namespace AgencyCalloutsPlus.API
         #endregion Filter and Order methods
 
         /// <summary>
-        /// Gets the <see cref="TimeOfDay"/>
-        /// </summary>
-        /// <returns></returns>
-        internal static TimeOfDay GetCurrentWorldTimeOfDay()
-        {
-            var currentHour = World.TimeOfDay.Hours;
-            var currentTimeOfDay = Parse(currentHour);
-            return currentTimeOfDay;
-
-            // Local function
-            TimeOfDay Parse(int hour)
-            {
-                if (hour < 6) return TimeOfDay.Night;
-                else if (hour < 12) return TimeOfDay.Morning;
-                else if (hour < 18) return TimeOfDay.Day;
-                else return TimeOfDay.Evening;
-            }
-        }
-
-        /// <summary>
         /// Disposes and clears all AI units
         /// </summary>
         private static void DisposeAIUnits()
@@ -1281,8 +1253,8 @@ namespace AgencyCalloutsPlus.API
             }
 
             // Clear old scenarios
-            Scenarios.Clear();
-            foreach (var item in ScenarioPool.Values)
+            ScenariosByCalloutName.Clear();
+            foreach (var item in ScenariosByCalloutType.Values)
             {
                 item.Clear();
             }
@@ -1292,8 +1264,9 @@ namespace AgencyCalloutsPlus.API
             var assembly = typeof(Dispatch).Assembly;
             XmlDocument document = new XmlDocument();
             var agencyProbabilites = new Dictionary<AgencyType, int>(10);
+            var agencies = new List<AgencyType>(6);
             Agency agency = Agency.GetCurrentPlayerAgency();
-            List<PriorityCallDescription> desc = new List<PriorityCallDescription>(5);
+            ProbabilityGenerator<PriorityCallDescription> descriptions = null;
 
             // Load callout scripts
             foreach (var calloutDirectory in directory.GetDirectories())
@@ -1321,9 +1294,20 @@ namespace AgencyCalloutsPlus.API
                         document.Load(file);
                     }
 
-                    // Process the XML scenarios
-                    foreach (XmlNode scenarioNode in document.DocumentElement.SelectSingleNode("Scenarios")?.ChildNodes)
+                    // Ensure proper format at the top
+                    var rootElement = document.SelectSingleNode("CalloutMeta");
+                    if (rootElement == null)
                     {
+                        Log.Error($"Dispatch.LoadScenarios(): Unable to load CalloutMeta data for '{calloutDirectory.Name}'");
+                        continue;
+                    }
+
+                    // Process the XML scenarios
+                    foreach (XmlNode scenarioNode in rootElement.SelectSingleNode("Scenarios")?.ChildNodes)
+                    {
+                        // Skip all but elements
+                        if (scenarioNode.NodeType == XmlNodeType.Comment) continue;
+
                         // Grab the CalloutType
                         XmlNode catagoryNode = scenarioNode.SelectSingleNode("Catagory");
                         if (!Enum.TryParse(catagoryNode.InnerText, out CalloutType crimeType))
@@ -1334,16 +1318,8 @@ namespace AgencyCalloutsPlus.API
                             continue;
                         }
 
-                        // Grab probabilities node
-                        XmlNode probNode = scenarioNode.SelectSingleNode("Probability");
-                        if (probNode == null)
-                        {
-                            Log.Error($"Dispatch.LoadScenarios(): Unable to load probabilities in CalloutMeta for '{calloutDirectory.Name}'");
-                            continue;
-                        }
-
                         // Grab agency list
-                        XmlNode agenciesNode = probNode.SelectSingleNode("Agencies");
+                        XmlNode agenciesNode = scenarioNode.SelectSingleNode("Agencies");
                         if (agenciesNode == null)
                         {
                             Log.Error($"Dispatch.LoadScenarios(): Unable to load agency data in CalloutMeta for '{calloutDirectory.Name}'");
@@ -1354,88 +1330,47 @@ namespace AgencyCalloutsPlus.API
                         if (!agenciesNode.HasChildNodes) continue;
 
                         // Itterate through items
-                        agencyProbabilites.Clear();
+                        agencies.Clear();
                         foreach (XmlNode n in agenciesNode.SelectNodes("Agency"))
                         {
-                            // Ensure we have attributes
-                            if (n.Attributes == null)
-                            {
-                                Log.Warning(
-                                    $"Dispatch.LoadScenarios(): Agency item has no attributes in '{calloutDirName}/CalloutMeta.xml -> {scenarioNode.Name} -> Agencies'"
-                                );
-                                continue;
-                            }
-
                             // Try and extract type value
-                            if (!Enum.TryParse(n.Attributes["type"].Value, out AgencyType agencyType))
+                            if (!Enum.TryParse(n.InnerText, out AgencyType agencyType))
                             {
                                 Log.Warning(
-                                    $"Dispatch.LoadScenarios(): Unable to extract Agency type value for '{calloutDirName}/CalloutMeta.xml -> '{scenarioNode.Name}'"
+                                    $"Dispatch.LoadScenarios(): Unable to parse AgencyType value for '{calloutDirName}/CalloutMeta.xml -> '{scenarioNode.Name}'"
                                 );
                                 continue;
                             }
 
-                            // Try and extract probability value
-                            if (!int.TryParse(n.Attributes["probability"].Value, out int probability))
-                            {
-                                Log.Warning(
-                                    $"Dispatch.LoadScenarios(): Unable to extract Agency probability value for '{calloutDirName}/CalloutMeta.xml -> '{scenarioNode.Name}'"
-                                );
-                            }
-
-                            agencyProbabilites.Add(agencyType, probability);
+                            agencies.Add(agencyType);
                         }
 
                         // If player agency is not included
-                        if (!agencyProbabilites.ContainsKey(agency.AgencyType))
+                        if (!agencies.Contains(agency.AgencyType))
                         {
                             // Skip
                             continue;
                         }
 
-                        // Grab TimeOfDay probabilities
-                        XmlNode todNode = probNode.SelectSingleNode("TimeOfDay");
-                        if (todNode == null || todNode.Attributes == null)
+                        // ============================================== //
+                        // Grab probabilities
+                        // ============================================== //
+                        XmlNode probNode = scenarioNode.SelectSingleNode("Probabilities");
+                        if (probNode == null || !probNode.HasChildNodes)
                         {
-                            Log.Error($"Dispatch.LoadScenarios(): Unable to load TimeOfDay probability data in CalloutMeta for '{calloutDirectory.Name}'");
+                            Log.Error($"Dispatch.LoadScenarios(): Unable to load probabilities in CalloutMeta for '{calloutDirectory.Name}'");
                             continue;
                         }
 
-                        var todProbabilities = new int[4];
-
-                        // Extract morning probability
-                        if (!Int32.TryParse(todNode.Attributes["morning"]?.Value, out todProbabilities[0]))
+                        // Create world state probabilities
+                        WorldStateMultipliers multipliers = null;
+                        try
                         {
-                            Log.Warning(
-                                $"Dispatch.LoadScenarios(): Unable to extract TimeOfDay morning attribute value for '{calloutDirName}/CalloutMeta.xml -> '{scenarioNode.Name}'"
-                            );
-                            continue;
+                            multipliers = XmlExtractor.GetWorldStateMultipliers(probNode);
                         }
-
-                        // Extract day probability
-                        if (!Int32.TryParse(todNode.Attributes["day"]?.Value, out todProbabilities[1]))
+                        catch (Exception e)
                         {
-                            Log.Warning(
-                                $"Dispatch.LoadScenarios(): Unable to extract TimeOfDay day attribute value for '{calloutDirName}/CalloutMeta.xml -> '{scenarioNode.Name}'"
-                            );
-                            continue;
-                        }
-
-                        // Extract day probability
-                        if (!Int32.TryParse(todNode.Attributes["evening"]?.Value, out todProbabilities[2]))
-                        {
-                            Log.Warning(
-                                $"Dispatch.LoadScenarios(): Unable to extract TimeOfDay evening attribute value for '{calloutDirName}/CalloutMeta.xml -> '{scenarioNode.Name}'"
-                            );
-                            continue;
-                        }
-
-                        // Extract day probability
-                        if (!Int32.TryParse(todNode.Attributes["night"]?.Value, out todProbabilities[3]))
-                        {
-                            Log.Warning(
-                                $"Dispatch.LoadScenarios(): Unable to extract TimeOfDay night attribute value for '{calloutDirName}/CalloutMeta.xml -> '{scenarioNode.Name}'"
-                            );
+                            Log.Warning("Dispatch.LoadScenarios(): " + e.Message);
                             continue;
                         }
 
@@ -1495,31 +1430,81 @@ namespace AgencyCalloutsPlus.API
                         }
 
                         // Try and extract descriptions
-                        childNode = dispatchNode.SelectSingleNode("Description");
+                        childNode = dispatchNode.SelectSingleNode("Descriptions");
                         if (childNode == null || !childNode.HasChildNodes)
                         {
                             Log.Warning(
-                                $"Dispatch.LoadScenarios(): Unable to extract scenario description values for '{calloutDirName}/CalloutMeta.xml -> {scenarioNode.Name}'"
+                                $"Dispatch.LoadScenarios(): Unable to extract scenario descriptions values for '{calloutDirName}/CalloutMeta.xml -> {scenarioNode.Name}'"
                             );
                             continue;
                         }
                         else
                         {
                             // Clear old descriptions
-                            desc.Clear();
-                            foreach (XmlNode descNode in childNode.ChildNodes)
+                            descriptions = new ProbabilityGenerator<PriorityCallDescription>();
+                            foreach (XmlNode descNode in childNode.SelectNodes("Description"))
                             {
                                 // Ensure we have attributes
-                                if (descNode.Attributes == null)
+                                if (descNode.Attributes == null || !int.TryParse(descNode.Attributes["probability"]?.Value, out int prob))
                                 {
-                                    desc.Add(new PriorityCallDescription(descNode.InnerText, null));
+                                    Log.Warning(
+                                        $"Dispatch.LoadScenarios(): Unable to extract probability value for Description in '{calloutDirName}->Scenarios->{scenarioNode.Name}'->Dispatch->Descriptions"
+                                    );
+                                    continue;
                                 }
-                                else
+
+                                // Extract call source value
+                                var srcNode = descNode.SelectSingleNode("Source");
+                                if (srcNode == null)
                                 {
-                                    desc.Add(new PriorityCallDescription(descNode.InnerText, descNode.Attributes["source"]?.Value));
+                                    Log.Warning(
+                                        $"Dispatch.LoadScenarios(): Unable to extract Source value for Description in '{calloutDirName}->Scenarios->{scenarioNode.Name}'->Dispatch->Descriptions"
+                                    );
+                                    continue;
                                 }
+
+                                // Extract desc text value
+                                var descTextNode = descNode.SelectSingleNode("Text");
+                                if (descTextNode == null)
+                                {
+                                    Log.Warning(
+                                        $"Dispatch.LoadScenarios(): Unable to extract Text value for Description in '{calloutDirName}->Scenarios->{scenarioNode.Name}'->Dispatch->Descriptions"
+                                    );
+                                    continue;
+                                }
+
+                                descriptions.Add(new PriorityCallDescription(prob, descTextNode.InnerText, srcNode.InnerText));
+                            }
+
+                            // If we have no descriptions, we failed
+                            if (descriptions.ItemCount == 0)
+                            {
+                                Log.Warning(
+                                    $"Dispatch.LoadScenarios(): Scenario has no Descriptions '{calloutDirName}->Scenarios->{scenarioNode.Name}'->Dispatch"
+                                );
+                                continue;
                             }
                         }
+
+                        // Grab the CAD Texture
+                        childNode = dispatchNode.SelectSingleNode("CADTexture");
+                        if (String.IsNullOrWhiteSpace(childNode.InnerText))
+                        {
+                            Log.Warning(
+                                $"Dispatch.LoadScenarios(): Unable to extract CADTexture value for '{calloutDirName}->Scenarios->{scenarioNode.Name}'"
+                            );
+                            continue;
+                        }
+                        else if (childNode.Attributes == null || childNode.Attributes["textureDict"]?.Value == null)
+                        {
+                            Log.Warning(
+                                $"Dispatch.LoadScenarios(): Unable to extract CADTexture[textureDict] attribute for '{calloutDirName}->Scenarios->{scenarioNode.Name}'"
+                            );
+                            continue;
+                        }
+
+                        string textName = childNode.InnerText;
+                        string textDict = childNode.Attributes["textureDict"].Value;
 
                         // Grab the Incident
                         childNode = dispatchNode.SelectSingleNode("IncidentType");
@@ -1538,41 +1523,39 @@ namespace AgencyCalloutsPlus.API
                             continue;
                         }
 
-                        // Create entry if not already
-                        if (!Scenarios.ContainsKey(calloutName))
-                        {
-                            Scenarios.Add(calloutName, new TimeOfDayProbabilityGenerator<CalloutScenarioInfo>());
-                        }
-
                         // Get agency probability
-                        int baseProbability = agencyProbabilites[agency.AgencyType];
-                        var desciptions = desc.ToArray();
+                        int baseProbability = 1; // agencyProbabilites[agency.AgencyType];
 
-                        // Add time of day scenarios
-                        for (int i = 0; i < 4; i++)
+                        // Create scenario
+                        var scene = new CalloutScenarioInfo()
                         {
-                            TimeOfDay time = (TimeOfDay)i;
+                            Name = scenarioNode.Name,
+                            CalloutName = calloutName,
+                            Probability = baseProbability,
+                            ProbabilityMultipliers = multipliers,
+                            Priority = priority,
+                            ResponseCode = code,
+                            LocationType = locationType,
+                            ScannerText = scanner,
+                            Descriptions = descriptions,
+                            IncidentText = childNode.InnerText,
+                            IncidentAbbreviation = childNode.Attributes["abbreviation"].Value,
+                            SpriteName = textName,
+                            SpriteTextureDict = textDict
+                        };
 
-                            // Create scenario node
-                            var scene = new CalloutScenarioInfo()
-                            {
-                                Name = scenarioNode.Name,
-                                CalloutName = calloutName,
-                                Probability = baseProbability * todProbabilities[i],
-                                Priority = priority,
-                                ResponseCode = code,
-                                LocationType = locationType,
-                                ScannerText = scanner,
-                                Descriptions = desciptions,
-                                IncidentText = childNode.InnerText,
-                                IncidentAbbreviation = childNode.Attributes["abbreviation"].Value
-                            };
-
-                            // Add scenario to the pool
-                            Scenarios[calloutName].Add(time, scene);
-                            ScenarioPool[crimeType].Add(time, scene);
+                        // Create entry if not already
+                        if (!ScenariosByCalloutName.ContainsKey(calloutName))
+                        {
+                            ScenariosByCalloutName.Add(calloutName, new WorldStateProbabilityGenerator<CalloutScenarioInfo>());
                         }
-                        
+
+                        // Add scenario to the pools
+                        ScenariosByName.Add(scenarioNode.Name, scene);
+                        ScenariosByCalloutName[calloutName].Add(scene, multipliers);
+                        ScenariosByCalloutType[crimeType].Add(scene, multipliers);
+
+                        // Statistics trackins
                         itemsAdded++;
                     }
 

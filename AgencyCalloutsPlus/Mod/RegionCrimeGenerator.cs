@@ -126,7 +126,7 @@ namespace AgencyCalloutsPlus.Mod
                 IsRunning = true;
 
                 // Register for Dispatch event
-                Dispatch.OnTimeOfDayChanged += Dispatch_OnTimeOfDayChanged;
+                GameWorld.OnTimeOfDayChanged += GameWorld_OnTimeOfDayChanged;
 
                 // Determine our initial Crime level during this period
                 CurrentCrimeLevel = CrimeLevelGenerator.Spawn().CrimeLevel;
@@ -144,7 +144,7 @@ namespace AgencyCalloutsPlus.Mod
         /// </summary>
         public void End()
         {
-            Dispatch.OnTimeOfDayChanged -= Dispatch_OnTimeOfDayChanged;
+            GameWorld.OnTimeOfDayChanged -= GameWorld_OnTimeOfDayChanged;
             IsRunning = false;
             CrimeFiber.Abort();
             CrimeFiber = null;
@@ -249,17 +249,17 @@ namespace AgencyCalloutsPlus.Mod
         }
 
         /// <summary>
-        /// Method called on event <see cref="Dispatch.OnTimeOfDayChanged"/>
+        /// Method called on event <see cref="GameWorld.OnTimeOfDayChanged"/>
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void Dispatch_OnTimeOfDayChanged(object sender, EventArgs e)
+        private void GameWorld_OnTimeOfDayChanged(object sender, EventArgs e)
         {
             var oldLevel = CurrentCrimeLevel;
 
             // Change our Crime level during this period
             CurrentCrimeLevel = CrimeLevelGenerator.Spawn().CrimeLevel;
-            var name = Enum.GetName(typeof(TimeOfDay), Dispatch.CurrentTimeOfDay);
+            var name = Enum.GetName(typeof(TimeOfDay), GameWorld.CurrentTimeOfDay);
 
             // Log change
             Log.Info($"RegionCrimeGenerator: The time of day is transitioning to {name}. Settings crime level to {Enum.GetName(typeof(CrimeLevel), CurrentCrimeLevel)}");
@@ -302,7 +302,7 @@ namespace AgencyCalloutsPlus.Mod
         private void AdjustCallFrequencyTimer()
         {
             // Grab our RegionCrimeInfo for this time period
-            var crimeInfo = RegionCrimeInfoByTimeOfDay[Dispatch.CurrentTimeOfDay];
+            var crimeInfo = RegionCrimeInfoByTimeOfDay[GameWorld.CurrentTimeOfDay];
             int ms = crimeInfo.AverageMillisecondsPerCall;
 
             int min = 0; 
@@ -365,7 +365,7 @@ namespace AgencyCalloutsPlus.Mod
 
             // Get target timespan
             var target = TimeSpan.Zero;
-            switch (Dispatch.CurrentTimeOfDay)
+            switch (GameWorld.CurrentTimeOfDay)
             {
                 case TimeOfDay.Morning:
                     target = TimeSpan.FromHours(12);
@@ -481,6 +481,10 @@ namespace AgencyCalloutsPlus.Mod
             return null;
         }
 
+        /// <summary>
+        /// Creates a new <see cref="PriorityCall"/> using <see cref="WorldStateMultipliers"/>
+        /// </summary>
+        /// <returns></returns>
         protected virtual PriorityCall GenerateCall()
         {
             // Try to generate a call
@@ -497,9 +501,8 @@ namespace AgencyCalloutsPlus.Mod
                     }
 
                     // Spawn crime type from our spawned zone
-                    var tod = Dispatch.CurrentTimeOfDay;
                     CalloutType type = zone.GetNextRandomCrimeType();
-                    if (!Dispatch.ScenarioPool[type].TrySpawn(tod, out CalloutScenarioInfo scenario))
+                    if (!Dispatch.ScenariosByCalloutType[type].TrySpawn(out CalloutScenarioInfo scenario))
                     {
                         Log.Debug($"CrimeGenerator: Unable to pull CalloutType {type} from zone '{zone.FullName}'");
                         continue;
@@ -533,6 +536,12 @@ namespace AgencyCalloutsPlus.Mod
             return null;
         }
 
+        /// <summary>
+        /// Returns a <see cref="WorldLocation"/> from a <see cref="ZoneInfo"/> for a <see cref="CalloutScenarioInfo"/>
+        /// </summary>
+        /// <param name="zone"></param>
+        /// <param name="scenario"></param>
+        /// <returns></returns>
         protected virtual WorldLocation GetScenarioLocationFromZone(ZoneInfo zone, CalloutScenarioInfo scenario)
         {
             switch (scenario.LocationType)

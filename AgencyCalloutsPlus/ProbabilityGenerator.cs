@@ -132,5 +132,15 @@ namespace AgencyCalloutsPlus
                 return false;
             }
         }
+
+        internal void Rebuild()
+        {
+            T[] items = GetItems();
+
+            SpawnableEntities.Clear();
+            CumulativeProbability = 0;
+
+            AddRange(items);
+        }
     }
 }

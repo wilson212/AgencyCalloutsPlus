@@ -3,24 +3,40 @@
   <Scenarios>
     
     <RearEndNoInjuries>
-      <!-- Total Probability = (Agencies -> Agency[playerAgencyType][probability]) * TimeOfDay[currentTimeOfDay] -->
-      <Probability>
-        <Agencies>
-          <Agency type="CityPolice" probability="5" />
-          <Agency type="CountySheriff" probability="5" />
-          <Agency type="HighwayPatrol" probability="8" />
-        </Agencies>
-        <TimeOfDay morning="5" day="3" evening="5" night="2" />
-      </Probability>
+      <!-- Agencies that handle this callout scenario -->
+      <Agencies>
+        <Agency>CityPolice</Agency>
+        <Agency>CountySheriff</Agency>
+        <Agency>HighwayPatrol</Agency>
+      </Agencies>
+      <!-- The probability of this scenario happening relative to every other scenario of this crime catagory -->
+      <Probabilities>
+        <Morning clear="10" overcast="10" rain="15" snow="18" storm="12" />
+        <Day clear="10" overcast="10" rain="15" snow="18" storm="12" />
+        <Evening clear="10" overcast="10" rain="15" snow="18" storm="12" />
+        <Night clear="10" overcast="10" rain="15" snow="18" storm="12" />
+      </Probabilities>
       <Catagory>Traffic</Catagory>
       <Dispatch>
         <!-- Scanner Audio for call. Unit Division-UnitType-Beat will prefix this message -->
         <Scanner>WE_HAVE_01 CRIME_TRAFFIC_ALERT IN_OR_ON_POSITION</Scanner>
-        <!-- Callout Details are for ComputerPlus -->
-        <Description>
-          <Meta source="Citizen">We have received multiple reports of a vehicle collision near {{location}}. No medical response was requested. Please respond code 2.</Meta>
-          <Meta source="Citizen">A concerned citizen has called police stating that he witnessed a vehicle collision near {{location}}. Caller indicated that there does not seem to be any injuries. Please respond code 2.</Meta>
-        </Description>
+        <!-- CAD texture for this call in call details -->
+        <CADTexture textureDict="char_chat_call">char_chat_call</CADTexture>
+        <!-- Callout Details are for ComputerPlus / CAD -->
+        <Descriptions>
+          <Description probability="10">
+            <Source>Citizen</Source>
+            <Text>We have received multiple reports of a vehicle collision near $Location$. Caller indicated that there does not seem to be any injuries. Please respond code 2.</Text>
+          </Description>
+          <Description probability="10">
+            <Source>Citizen</Source>
+            <Text>A concerned citizen has called police stating that he witnessed a vehicle collision near $Location$. Caller indicated that there does not seem to be any injuries. Please respond code 2.</Text>
+          </Description>
+          <Description probability="1000">
+            <Source>Citizen</Source>
+            <Text>RP SAYS THEY WERE INVLOVED IN A VEHICLE COLLISION NEAR $LOCATION$. NO INJURIES REPORTED AT THIS TIME. ~n~~n~RP STATED THAT OTHER INVOLED PED IS BEING AGRESSIVE. RESPOND CODE 2</Text>
+          </Description>
+        </Descriptions>
         <IncidentType abbreviation="MVA">Motor Vehicle Accident</IncidentType>
         <Priority>4</Priority>
         <Response>2</Response>
