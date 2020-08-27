@@ -7,173 +7,219 @@
     - VictimTitle         : Gets the title and surname of the victim (ex: Ms. Clark)
     
   Condition Statement Defined Variables:
-    - Victim    -> [T:AgencyCalloutsPlus.Mod.PedWrapper]  (source: https://github.com/wilson212/AgencyCalloutsPlus/blob/master/AgencyCalloutsPlus/Mod/PedWrapper.cs)
-    - Suspect   -> [T:AgencyCalloutsPlus.Mod.PedWrapper]  (source: https://github.com/wilson212/AgencyCalloutsPlus/blob/master/AgencyCalloutsPlus/Mod/PedWrapper.cs)
+    - Victim    -> [T:AgencyCalloutsPlus.Mod.GamePed]  (source: https://github.com/wilson212/AgencyCalloutsPlus/blob/master/AgencyCalloutsPlus/Mod/GamePed.cs)
+    - Suspect   -> [T:AgencyCalloutsPlus.Mod.GamePed]  (source: https://github.com/wilson212/AgencyCalloutsPlus/blob/master/AgencyCalloutsPlus/Mod/GamePed.cs)
     - Weather   -> [T:AgencyCalloutsPlus.Mod.WeatherInfo] (source: https://github.com/wilson212/AgencyCalloutsPlus/blob/master/AgencyCalloutsPlus/Mod/WeatherInfo.cs)
 -->
 <FlowSequence>
+
   <Input>
     <!-- Initial Questioning Menu -->
     <Menu id="main">
       <MenuItem id="ok" buttonText="Do you need medical?" visible="true">
-        <Line time="2000">Do you require any medical attention?</Line>
+        <Subtitle time="2000">Do you require any medical attention?</Subtitle>
       </MenuItem>
       <MenuItem id="how" buttonText="How did this happen?" visible="true">
-        <Line time="2000">How did this happen?</Line>
+        <Subtitle time="2000">How did this happen?</Subtitle>
       </MenuItem>
       <MenuItem id="tailgate" buttonText="Tailgating?" visible="false">
-        <Line time="3000">$VictimTitle$ stated that you were tailgating. Is this a true statement?</Line>
+        <Subtitle time="3000">$VictimTitle$ stated that you were tailgating. Is this a true statement?</Subtitle>
       </MenuItem>
     </Menu>
   </Input>
+  
   <Output>
 
     <!-- Default Outcome: Victim2 is at fault for texting and driving -->
     <FlowOutcome id="distracted" initialMenu="main">
-      <Response to="ok" returnMenu="main">
-        <LineSet probability="100">
-          <Line time="3000">No, I seem to be ok...</Line>
-        </LineSet>
-        <LineSet probability="100">
-          <Line time="3000">I am ok officer</Line>
-        </LineSet>
-        <LineSet probability="100">
-          <Line time="3000">Nope, I'm fine thanks...</Line>
-        </LineSet>
-      </Response>
-      <Response to="how" returnMenu="main">
-        <!-- Honest 1 -->
-        <LineSet probability="10">
-          <Line time="3000">Well officer, Ill be honest... I was texting and driving.</Line>
-        </LineSet>
-        <!-- Honest 2 -->
-        <LineSet probability="10">
-          <Line time="4000">I was watching YouTube on my phone and wasn't paying attention.</Line>
-        </LineSet>
-        <!-- Honest 3 -->
-        <LineSet probability="10">
-          <Line time="4000">I was day dreaming and didn't see the car in front of my hit thier brakes.</Line>
-        </LineSet>
-        <!-- brake check asshole -->
-        <LineSet probability="10" if="Victim.Ped.IsMale == true">
-          <Line time="4000">This asshole in front of me brake checked me!</Line>
-        </LineSet>
-        <!-- brake check bitch -->
-        <LineSet probability="10" if="Victim.Ped.IsFemale == true">
-          <Line time="4000">This bitch in front of me brake checked me!</Line>
-        </LineSet>
-      </Response>
+      <Ped drunkChance="3" highChance="3">
+        <Inventory></Inventory>
+        <Presentation>
+          <Demeanor probability="10">Calm</Demeanor>
+          <Demeanor probability="10">Worried</Demeanor>
+          <Demeanor probability="10">Agitated</Demeanor>
+          <Demeanor probability="5">Angry</Demeanor>
+        </Presentation>
+      </Ped>
+      <Responses>
+        <Response to="ok" returnMenu="main">
+          <Statement probability="100" mustBe="Calm">
+            <Subtitle time="3000">No, I seem to be ok...</Subtitle>
+          </Statement>
+          <Statement probability="100">
+            <Subtitle time="3000">I am ok officer</Subtitle>
+          </Statement>
+          <Statement probability="100">
+            <Subtitle time="3000">Nope, I'm fine thanks...</Subtitle>
+          </Statement>
+        </Response>
+        <Response to="how" returnMenu="main">
+          <!-- Honest 1 -->
+          <Statement probability="10">
+            <Subtitle time="3000">Well officer, Ill be honest... I was texting and driving.</Subtitle>
+          </Statement>
+          <!-- Honest 2 -->
+          <Statement probability="10">
+            <Subtitle time="4000">I was watching YouTube on my phone and wasn't paying attention.</Subtitle>
+          </Statement>
+          <!-- Honest 3 -->
+          <Statement probability="10">
+            <Subtitle time="4000">I was day dreaming and didn't see the car in front of my hit thier brakes.</Subtitle>
+          </Statement>
+          <!-- brake check asshole -->
+          <Statement probability="10" if="Victim.Ped.IsMale == true">
+            <Subtitle time="4000">This asshole in front of me brake checked me!</Subtitle>
+          </Statement>
+          <!-- brake check bitch -->
+          <Statement probability="10" if="Victim.Ped.IsFemale == true">
+            <Subtitle time="4000">This bitch in front of me brake checked me!</Subtitle>
+          </Statement>
+        </Response>
+      </Responses>
     </FlowOutcome>
 
     <!-- Outcome: Victim2 is at fault for eating and driving -->
     <FlowOutcome id="eating" initialMenu="main">
-      <Response to="ok" returnMenu="main">
-        <LineSet probability="100">
-          <Line time="3000">No, I seem to be ok...</Line>
-        </LineSet>
-        <LineSet probability="100">
-          <Line time="3000">I am ok officer</Line>
-        </LineSet>
-        <LineSet probability="100">
-          <Line time="3000">Nope, I'm fine thanks...</Line>
-        </LineSet>
-      </Response>
-      <Response to="how" returnMenu="main">
-        <!-- Honest 1 -->
-        <LineSet probability="10">
-          <Line time="3000">Well officer, Ill be honest... I was eating my lunch and didnt notice the car in front slow down.</Line>
-        </LineSet>
-        <!-- Honest 2 -->
-        <LineSet probability="10">
-          <Line time="4000">I was eating my lunch and wasn't paying attention.</Line>
-        </LineSet>
-        <!-- brake check asshole -->
-        <LineSet probability="10" if="Victim.Ped.IsMale == true">
-          <Line time="4000">This asshole in front of me brake checked me!</Line>
-        </LineSet>
-        <!-- brake check bitch -->
-        <LineSet probability="10" if="Victim.Ped.IsFemale == true">
-          <Line time="4000">This bitch in front of me brake checked me!</Line>
-        </LineSet>
-      </Response>
+      <Ped drunkChance="3" highChance="7">
+        <Inventory></Inventory>
+        <Presentation>
+          <Demeanor probability="10">Calm</Demeanor>
+          <Demeanor probability="10">Worried</Demeanor>
+          <Demeanor probability="10">Agitated</Demeanor>
+          <Demeanor probability="5">Angry</Demeanor>
+        </Presentation>
+      </Ped>
+      <Responses>
+        <Response to="ok" returnMenu="main">
+          <Statement probability="100">
+            <Subtitle time="3000">No, I seem to be ok...</Subtitle>
+          </Statement>
+          <Statement probability="100">
+            <Subtitle time="3000">I am ok officer</Subtitle>
+          </Statement>
+          <Statement probability="100">
+            <Subtitle time="3000">Nope, I'm fine thanks...</Subtitle>
+          </Statement>
+        </Response>
+        <Response to="how" returnMenu="main">
+          <!-- Honest 1 -->
+          <Statement probability="10">
+            <Subtitle time="3000">Well officer, Ill be honest... I was eating my lunch and didnt notice the car in front slow down.</Subtitle>
+          </Statement>
+          <!-- Honest 2 -->
+          <Statement probability="10">
+            <Subtitle time="4000">I was eating my lunch and wasn't paying attention.</Subtitle>
+          </Statement>
+          <!-- brake check asshole -->
+          <Statement probability="10" if="Victim.Ped.IsMale == true">
+            <Subtitle time="4000">This asshole in front of me brake checked me!</Subtitle>
+          </Statement>
+          <!-- brake check bitch -->
+          <Statement probability="10" if="Victim.Ped.IsFemale == true">
+            <Subtitle time="4000">This bitch in front of me brake checked me!</Subtitle>
+          </Statement>
+        </Response>
+      </Responses>
     </FlowOutcome>
 
     <!-- Outcome: Victim2 is at fault for tailgating -->
     <FlowOutcome id="tailgating" initialMenu="main">
-      <Response to="ok" returnMenu="main">
-        <LineSet probability="100">
-          <Line time="3000">No, I seem to be ok...</Line>
-        </LineSet>
-        <LineSet probability="100">
-          <Line time="3000">I am ok officer</Line>
-        </LineSet>
-        <LineSet probability="100">
-          <Line time="3000">Nope, I'm fine thanks...</Line>
-        </LineSet>
-      </Response>
-      <Response to="how" returnMenu="main">
-        <!-- Honest 1 -->
-        <LineSet probability="10">
-          <Line time="3000">Well officer, Ill be honest... I was was in a hurry...</Line>
-          <Line time="3000">and I might have been following too close to the car in front of me</Line>
-        </LineSet>
-        <!-- brake check asshole -->
-        <LineSet probability="10" if="Victim.Ped.IsMale == true">
-          <Line time="4000">This asshole in front of me brake checked me!</Line>
-        </LineSet>
-        <!-- brake check bitch -->
-        <LineSet probability="10" if="Victim.Ped.IsFemale == true">
-          <Line time="4000">This bitch in front of me brake checked me!</Line>
-        </LineSet>
-      </Response>
-      <Response to="tailgate" returnMenu="main">
-        <LineSet probability="5" if="Victim.Ped.IsFemale == true">
-          <Line time="4000">I was driving a little close I suppose...</Line>
-        </LineSet>
-        <LineSet probability="5" if="Victim.Ped.IsFemale == true">
-          <Line time="4000">pfffft, Whatever...</Line>
-        </LineSet>
-        <LineSet probability="5" if="Victim.Ped.IsMale == true">
-          <Line time="4000">No, that dude is lying!</Line>
-        </LineSet>
-        <LineSet probability="5" if="Victim.Ped.IsFemale == true">
-          <Line time="4000">No, that chick is lying!</Line>
-        </LineSet>
-      </Response>
+      <Ped drunkChance="5" highChance="5">
+        <Inventory></Inventory>
+        <Presentation>
+          <Demeanor probability="10">Calm</Demeanor>
+          <Demeanor probability="10">Worried</Demeanor>
+          <Demeanor probability="10">Nervous</Demeanor>
+          <Demeanor probability="5">Angry</Demeanor>
+        </Presentation>
+      </Ped>
+      <Responses>
+        <Response to="ok" returnMenu="main">
+          <Statement probability="100">
+            <Subtitle time="3000">No, I seem to be ok...</Subtitle>
+          </Statement>
+          <Statement probability="100">
+            <Subtitle time="3000">I am ok officer</Subtitle>
+          </Statement>
+          <Statement probability="100">
+            <Subtitle time="3000">Nope, I'm fine thanks...</Subtitle>
+          </Statement>
+        </Response>
+        <Response to="how" returnMenu="main">
+          <!-- Honest 1 -->
+          <Statement probability="10">
+            <Subtitle time="3000">Well officer, Ill be honest... I was was in a hurry...</Subtitle>
+            <Subtitle time="3000">and I might have been following too close to the car in front of me</Subtitle>
+          </Statement>
+          <!-- brake check asshole -->
+          <Statement probability="10" if="Victim.Ped.IsMale == true">
+            <Subtitle time="4000">This asshole in front of me brake checked me!</Subtitle>
+          </Statement>
+          <!-- brake check bitch -->
+          <Statement probability="10" if="Victim.Ped.IsFemale == true">
+            <Subtitle time="4000">This bitch in front of me brake checked me!</Subtitle>
+          </Statement>
+        </Response>
+        <Response to="tailgate" returnMenu="main">
+          <Statement probability="5" if="Victim.Ped.IsFemale == true">
+            <Subtitle time="4000">I was driving a little close I suppose...</Subtitle>
+          </Statement>
+          <Statement probability="5" if="Victim.Ped.IsFemale == true">
+            <Subtitle time="4000">pfffft, Whatever...</Subtitle>
+          </Statement>
+          <Statement probability="5" if="Victim.Ped.IsMale == true">
+            <Subtitle time="4000">No, that dude is lying!</Subtitle>
+          </Statement>
+          <Statement probability="5" if="Victim.Ped.IsFemale == true">
+            <Subtitle time="4000">No, that chick is lying!</Subtitle>
+          </Statement>
+        </Response>
+      </Responses>
     </FlowOutcome>
 
     <!-- Outcome: Victim2 is at fault for tailgating -->
     <FlowOutcome id="wetRoads,snowing" initialMenu="main">
-      <Response to="ok" returnMenu="main">
-        <LineSet probability="100">
-          <Line time="3000">No, I seem to be ok...</Line>
-        </LineSet>
-        <LineSet probability="100">
-          <Line time="3000">I am ok officer</Line>
-        </LineSet>
-        <LineSet probability="100">
-          <Line time="3000">Nope, I'm fine thanks...</Line>
-        </LineSet>
-      </Response>
-      <Response to="how" returnMenu="main">
-        <!-- Honest 1 -->
-        <LineSet probability="10">
-          <Line time="4000">Well officer, I tried to slow down but my $SuspectVehicleType$ just slid right into the back of them</Line>
-        </LineSet>
-        <!-- brake check asshole -->
-        <LineSet probability="10" if="Victim.Ped.IsMale == true and Weather.IsSnowing">
-          <Line time="4000">This asshole in front of me brake checked me! Does he not know its icy out here?</Line>
-        </LineSet>
-        <LineSet probability="10" if="Victim.Ped.IsFemale == true and Weather.IsSnowing">
-          <Line time="4000">This bitch in front of me brake checked me! Does she not know its icy out here?</Line>
-        </LineSet>
-        <LineSet probability="10" if="Victim.Ped.IsMale == true and Weather.RoadsAreWet == true">
-          <Line time="4000">This asshole in front of me brake checked me! The roads are slippery today</Line>
-        </LineSet>
-        <LineSet probability="10" if="Victim.Ped.IsFemale == true and Weather.RoadsAreWet == true">
-          <Line time="4000">This bitch in front of me brake checked me! The roads are slippery today</Line>
-        </LineSet>
-      </Response>
+      <Ped drunkChance="3" highChance="3">
+        <Inventory></Inventory>
+        <Presentation>
+          <Demeanor probability="10">Calm</Demeanor>
+          <Demeanor probability="10">Worried</Demeanor>
+          <Demeanor probability="10">Agitated</Demeanor>
+          <Demeanor probability="5">Angry</Demeanor>
+        </Presentation>
+      </Ped>
+      <Responses>
+        <Response to="ok" returnMenu="main">
+          <Statement probability="100">
+            <Subtitle time="3000">No, I seem to be ok...</Subtitle>
+          </Statement>
+          <Statement probability="100">
+            <Subtitle time="3000">I am ok officer</Subtitle>
+          </Statement>
+          <Statement probability="100">
+            <Subtitle time="3000">Nope, I'm fine thanks...</Subtitle>
+          </Statement>
+        </Response>
+        <Response to="how" returnMenu="main">
+          <!-- Honest 1 -->
+          <Statement probability="10">
+            <Subtitle time="4000">Well officer, I tried to slow down but my $SuspectVehicleType$ just slid right into the back of them</Subtitle>
+          </Statement>
+          <!-- brake check asshole -->
+          <Statement probability="10" if="Victim.Ped.IsMale == true and Weather.IsSnowing">
+            <Subtitle time="4000">This asshole in front of me brake checked me! Does he not know its icy out here?</Subtitle>
+          </Statement>
+          <Statement probability="10" if="Victim.Ped.IsFemale == true and Weather.IsSnowing">
+            <Subtitle time="4000">This bitch in front of me brake checked me! Does she not know its icy out here?</Subtitle>
+          </Statement>
+          <Statement probability="10" if="Victim.Ped.IsMale == true and Weather.RoadsAreWet == true">
+            <Subtitle time="4000">This asshole in front of me brake checked me! The roads are slippery today</Subtitle>
+          </Statement>
+          <Statement probability="10" if="Victim.Ped.IsFemale == true and Weather.RoadsAreWet == true">
+            <Subtitle time="4000">This bitch in front of me brake checked me! The roads are slippery today</Subtitle>
+          </Statement>
+        </Response>
+      </Responses>
     </FlowOutcome>
 
   </Output>

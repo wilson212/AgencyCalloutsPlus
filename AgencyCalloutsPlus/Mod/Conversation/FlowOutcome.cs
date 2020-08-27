@@ -1,5 +1,8 @@
 ﻿namespace AgencyCalloutsPlus.Mod.Conversation
 {
+    /// <summary>
+    /// Represents a conversation flow outcome for a scenario
+    /// </summary>
     public class FlowOutcome : ISpawnable
     {
         /// <summary>

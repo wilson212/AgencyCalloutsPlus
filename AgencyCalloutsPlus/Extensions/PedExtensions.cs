@@ -66,7 +66,7 @@ namespace AgencyCalloutsPlus.Extensions
         /// </summary>
         /// <param name="ped"></param>
         /// <returns></returns>
-        public static bool IsPedDrunk(this Ped ped)
+        public static bool GetIsDrunk(this Ped ped)
         {
             return StopThePedAPI.IsPedDrunk(ped);
         }
@@ -76,7 +76,7 @@ namespace AgencyCalloutsPlus.Extensions
         /// </summary>
         /// <param name="ped"></param>
         /// <returns></returns>
-        public static bool IsUnderDrugInfluence(this Ped ped)
+        public static bool GetIsUnderDrugInfluence(this Ped ped)
         {
             return StopThePedAPI.IsPedUnderDrugInfluence(ped);
         }

@@ -11,9 +11,9 @@ using System.Linq;
 namespace AgencyCalloutsPlus.Mod.NativeUI
 {
     /// <summary>
-    /// Represents the "Active Calls" tab in the CAD pause menu
+    /// Represents the "Open Calls" tab in the CAD pause menu
     /// </summary>
-    internal class ActiveCallListTabPage : TabItem // TabSubmenuItem
+    internal class OpenCallListTabPage : TabItem // TabSubmenuItem
     {
         /// <summary>
         /// Defines the maximum calls to display in the list at once before needing to scroll
@@ -37,10 +37,10 @@ namespace AgencyCalloutsPlus.Mod.NativeUI
         public Range<int> IndexesInView { get; private set; }
 
         /// <summary>
-        /// Creates a new instance of <see cref="ActiveCallListTabPage"/>
+        /// Creates a new instance of <see cref="OpenCallListTabPage"/>
         /// </summary>
         /// <param name="name"></param>
-        public ActiveCallListTabPage(string name) : base(name)
+        public OpenCallListTabPage(string name) : base(name)
         {
             Items = new List<PriorityCallTabItem>();
             IndexesInView = new Range<int>(0, MaxItemsToDisplay - 1);

@@ -28,7 +28,7 @@ namespace AgencyCalloutsPlus.Mod.NativeUI
         /// <summary>
         /// Contains the call list tab
         /// </summary>
-        private static ActiveCallListTabPage CallListTab { get; set; }
+        private static OpenCallListTabPage CallListTab { get; set; }
 
 
         /// <summary>
@@ -54,7 +54,7 @@ namespace AgencyCalloutsPlus.Mod.NativeUI
             tabView.OnMenuClose += (s, e) => Game.IsPaused = false;
 
             // Add active calls list
-            tabView.AddTab(CallListTab = new ActiveCallListTabPage("Open Calls"));
+            tabView.AddTab(CallListTab = new OpenCallListTabPage("Open Calls"));
 
             // Add Current Call tab
             tabView.AddTab(CurrentCallTab = new CurrentCallTabPage("Assigned Call"));

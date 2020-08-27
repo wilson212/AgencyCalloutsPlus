@@ -1,4 +1,5 @@
-﻿using AgencyCalloutsPlus.Mod;
+﻿using AgencyCalloutsPlus.API;
+using AgencyCalloutsPlus.Mod;
 using AgencyCalloutsPlus.Mod.Conversation;
 using Rage;
 using System;
@@ -29,6 +30,7 @@ namespace AgencyCalloutsPlus.Callouts
         {
             Parser = new ExpressionParser();
             Parser.SetParamater("Weather", new WeatherInfo());
+            Parser.SetParamater("Call", Dispatch.PlayerActiveCall);
 
             // Select a random FlowOutcome for this scenario
             FlowOutcome = GetRandomFlowOutcome(scenarioNode);

@@ -4,7 +4,7 @@
     {
         SpawnPoint,
         SideOfRoad,
-        Homes,
-        Stores
+        Residence,
+        Store
     }
 }

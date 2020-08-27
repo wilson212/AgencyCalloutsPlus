@@ -18,7 +18,7 @@ namespace AgencyCalloutsPlus
         /// <summary>
         /// Contains our subtitle lines to display.
         /// </summary>
-        private static Queue<LineItem> LineQueue { get; set; }
+        private static Queue<Subtitle> LineQueue { get; set; }
 
         /// <summary>
         /// The GameFiber responsible for timing the displays
@@ -36,7 +36,7 @@ namespace AgencyCalloutsPlus
         /// </summary>
         static SubtitleQueue()
         {
-            LineQueue = new Queue<LineItem>();
+            LineQueue = new Queue<Subtitle>();
         }
 
         /// <summary>
@@ -60,12 +60,13 @@ namespace AgencyCalloutsPlus
             IsEnabled = true;
             Fiber = GameFiber.StartNew(() =>
             {
-                LineItem item = null;
+                Subtitle item = null;
                 while (IsEnabled)
                 {
                     // Always yield in a continuous GameFiber!
                     GameFiber.Yield();
 
+                    // Lock to prevent threading issues
                     lock (_lock)
                     {
                         // Ensure we have at least one item!
@@ -79,20 +80,17 @@ namespace AgencyCalloutsPlus
                         item = LineQueue.Dequeue();
                     }
 
-                    // Display item
-                    Game.DisplaySubtitle(item.Text, item.Time);
-
-                    // Now wait
-                    GameFiber.Wait(item.Time);
+                    // Display sentance
+                    item.Display();
                 }
             });
         }
 
         /// <summary>
-        /// Adds a new <see cref="LineItem"/> to the queue
+        /// Adds a new <see cref="Sentance"/> to the queue
         /// </summary>
         /// <param name="line"></param>
-        public static void Add(LineItem line)
+        public static void Add(Subtitle line)
         {
             lock (_lock)
             {
@@ -111,7 +109,7 @@ namespace AgencyCalloutsPlus
         {
             lock (_lock)
             {
-                LineQueue.Enqueue(new LineItem() { Text = line, Time = timeMS });
+                LineQueue.Enqueue(new Subtitle() { Text = line, Duration = timeMS });
             }
 
             if (!IsEnabled) Begin();

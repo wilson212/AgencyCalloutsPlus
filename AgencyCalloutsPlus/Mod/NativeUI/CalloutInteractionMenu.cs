@@ -7,12 +7,12 @@ using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
 
-namespace AgencyCalloutsPlus.RageUIMenus
+namespace AgencyCalloutsPlus.Mod.NativeUI
 {
     /// <summary>
     /// Represents a basic <see cref="RAGENativeUI.MenuPool"/> for questioning peds during a callout
     /// </summary>
-    public class CalloutPedInteractionMenu
+    public class CalloutInteractionMenu
     {
         private UIMenu MainUIMenu;
         private MenuPool AllMenus;
@@ -57,14 +57,29 @@ namespace AgencyCalloutsPlus.RageUIMenus
         protected FlowSequence CurrentSequence { get; set; }
 
         /// <summary>
-        /// Creates a new instance of <see cref="CalloutPedInteractionMenu"/>
+        /// 
         /// </summary>
-        /// <param name="title"></param>
-        /// <param name="subTitle"></param>
-        public CalloutPedInteractionMenu(string title, string subTitle)
+        public bool IsMenuVisible
+        {
+            get
+            {
+                // Check if child sequence menu is open
+                if (CurrentSequence != null && CurrentSequence.AllMenus.IsAnyMenuOpen())
+                    return true;
+
+                return AllMenus.IsAnyMenuOpen();
+            }
+        }
+
+        /// <summary>
+        /// Creates a new instance of <see cref="CalloutInteractionMenu"/>
+        /// </summary>
+        /// <param name="calloutName">The name of the <see cref="AgencyCallout"/></param>
+        /// <param name="scenarioName">The name of the <see cref="Callouts.CalloutScenario"/></param>
+        public CalloutInteractionMenu(string calloutName, string scenarioName)
         {
             // Create main menu
-            MainUIMenu = new UIMenu(title, subTitle);
+            MainUIMenu = new UIMenu("Callout Interaction", $"~b~{calloutName}: ~y~{scenarioName}");
             MainUIMenu.MouseControlsEnabled = false;
             MainUIMenu.AllowCameraMovement = true;
             MainUIMenu.SetMenuWidthOffset(12);
@@ -99,71 +114,81 @@ namespace AgencyCalloutsPlus.RageUIMenus
             // vars
             var player = Game.LocalPlayer.Character;
 
+            // If a FlowSequence is open, process that!
+            if (CurrentSequence != null)
+            {
+                if (CurrentSequence.AllMenus.IsAnyMenuOpen())
+                {
+                    CurrentSequence.Process(player);
+                    return;
+                }
+            }
+
             // If player is close to and facing another ped, show press Y to open menu
             if (!MainUIMenu.Visible)
             {
                 // Only allow interaction menu to open on Foot
                 if (!player.IsOnFoot) return;
 
-                // If a FlowSequence is open, process that!
-                if (CurrentSequence != null)
-                {
-                    if (CurrentSequence.AllMenus.IsAnyMenuOpen())
-                    {
-                        CurrentSequence.Process(player);
-                        return;
-                    }
-                }
-
-                // Distance and facing check
-                if (!TryGetPedForConversation(player, out Ped ped))
-                {
-                    // No ped in range or facing? skip for now
-                    return;
-                }
-
-                // Set current ped
-                CurrentPed = ped;
-
                 // Only show if we havent spoken with this ped yet!
-                if (Peds[ped] == false)
+                if (CurrentPed != null && Peds[CurrentPed] == false)
                 {
                     // Let player know they can open the menu
-                    var k1 = Settings.OpenCalloutMenuModifierKey.ToString("F");
-                    var k2 = Settings.OpenCalloutMenuKey.ToString("F");
-                    if (HasModifier)
-                    {
-                        Game.DisplayHelp($"Press the ~y~{k1}~s~ + ~y~{k2}~s~ keys to open the interaction menu.");
-                    }
-                    else
-                    {
-                        Game.DisplayHelp($"Press the ~y~{k2}~s~ key to open the interaction menu.");
-                    }
+                    DisplayMenuHelpMessage();
                 }
 
-                // Is modifier key pressed
-                if (HasModifier)
-                {
-                    if (Keyboard.IsKeyDownWithModifier(Settings.OpenCalloutMenuKey, Settings.OpenCalloutMenuModifierKey))
-                    {
-                        Game.HideHelp();
-                        MainUIMenu.Visible = true;
-                    }
-                }
-                else if (Game.IsKeyDown(Settings.OpenCalloutMenuKey))
+                // If menu key is pressed, show menu
+                if (Keyboard.IsKeyDownWithModifier(Settings.OpenCalloutMenuKey, Settings.OpenCalloutMenuModifierKey))
                 {
                     Game.HideHelp();
                     MainUIMenu.Visible = true;
+
+                    // Disable on first frame!
+                    SpeakWithButton.Enabled = false;
                 }
             }
             else // Menu is open
             {
-                // Distance and facing check
-                if (!TryGetPedForConversation(player, out Ped ped))
+                // If menu key is pressed, hide menu
+                if (Keyboard.IsKeyDownWithModifier(Settings.OpenCalloutMenuKey, Settings.OpenCalloutMenuModifierKey))
                 {
                     MainUIMenu.Visible = false;
-                    return;
                 }
+
+                // See if we have a ped we can speak with
+                if (TryGetPedForConversation(player, out Ped ped))
+                {
+                    // Set current ped
+                    CurrentPed = ped;
+                    SpeakWithButton.Enabled = true;
+                }
+                else
+                {
+                    // Disable the speak with button
+                    SpeakWithButton.Enabled = false;
+
+                    // If a FlowSequence is open, close it
+                    if (CurrentSequence != null && CurrentSequence.AllMenus.IsAnyMenuOpen())
+                    {
+                        CurrentSequence.AllMenus.CloseAllMenus();
+                        CurrentSequence = null;
+                    }
+                }
+            }
+        }
+
+        public void DisplayMenuHelpMessage()
+        {
+            // Let player know they can open the menu
+            var k1 = Settings.OpenCalloutMenuModifierKey.ToString("F");
+            var k2 = Settings.OpenCalloutMenuKey.ToString("F");
+            if (HasModifier)
+            {
+                Game.DisplayHelp($"Press the ~y~{k1}~s~ + ~y~{k2}~s~ keys to open the interaction menu.", false);
+            }
+            else
+            {
+                Game.DisplayHelp($"Press the ~y~{k2}~s~ key to open the interaction menu.", false);
             }
         }
 
@@ -217,6 +242,27 @@ namespace AgencyCalloutsPlus.RageUIMenus
             this.Enabled = false;
         }
 
+        /// <summary>
+        /// Adds the menu to the internal <see cref="MenuPool"/>
+        /// </summary>
+        /// <param name="menu"></param>
+        public void AddMenu(UIMenu menu)
+        {
+            AllMenus.Add(menu);
+        }
+
+        /// <summary>
+        /// Adds the <see cref="UIMenuItem"/> to the main <see cref="UIMenu"/>
+        /// </summary>
+        /// <param name="item"></param>
+        public void AddMenuItem(UIMenuItem item)
+        {
+            MainUIMenu.AddItem(item);
+        }
+
+        /// <summary>
+        /// Disposes this instance and all <see cref="FlowSequence"/> instances
+        /// </summary>
         public void Dispose()
         {
             foreach (var kvp in Conversations)
@@ -333,8 +379,8 @@ namespace AgencyCalloutsPlus.RageUIMenus
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="response"></param>
-        /// <param name="lineSet"></param>
-        private void FlowSequence_OnPedResponse(FlowSequence sender, PedResponse response, LineSet lineSet)
+        /// <param name="statement"></param>
+        private void FlowSequence_OnPedResponse(FlowSequence sender, PedResponse response, Statement statement)
         {
             // Does this change visibility of a menu option?
             if (response.ShowMenuItems.Length > 0)
@@ -342,9 +388,9 @@ namespace AgencyCalloutsPlus.RageUIMenus
                 ShowMenuItems(response.ShowMenuItems, sender);
             }
 
-            if (lineSet.ShowMenuItems.Length > 0)
+            if (statement.ShowMenuItems.Length > 0)
             {
-                ShowMenuItems(lineSet.ShowMenuItems, sender);
+                ShowMenuItems(statement.ShowMenuItems, sender);
             }
 
             // Does this change visibility of a menu option?
@@ -353,9 +399,9 @@ namespace AgencyCalloutsPlus.RageUIMenus
                 HideMenuItems(response.HidesMenuItems, sender);
             }
 
-            if (lineSet.HidesMenuItems.Length > 0)
+            if (statement.HidesMenuItems.Length > 0)
             {
-                HideMenuItems(lineSet.HidesMenuItems, sender);
+                HideMenuItems(statement.HidesMenuItems, sender);
             }
         }
 

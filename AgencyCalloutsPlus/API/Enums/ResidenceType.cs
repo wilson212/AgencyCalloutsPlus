@@ -1,6 +1,6 @@
 ﻿namespace AgencyCalloutsPlus.API
 {
-    public enum HomeType
+    public enum ResidenceType
     {
         House,
 

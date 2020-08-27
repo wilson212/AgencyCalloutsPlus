@@ -1,6 +1,9 @@
 ﻿using AgencyCalloutsPlus.Mod;
 using Rage;
 using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using static Rage.Native.NativeFunction;
 
@@ -222,8 +225,7 @@ namespace AgencyCalloutsPlus.API
             {
                 if (weatherHash == Game.GetHashKey(WeatherNames[i]))
                 {
-                    LastKnownWeather = (Weather)i;
-                    return LastKnownWeather;
+                    return (Weather)i;
                 }
             }
 
@@ -300,19 +302,17 @@ namespace AgencyCalloutsPlus.API
         /// and deletes them if they are. If false, and there is an <see cref="Entity"/> at this location, this method will fail and return false</param>
         /// <param name="ped">if successful, containts the <see cref="Ped"/> spawned</param>
         /// <returns></returns>
-        public static bool TrySpawnPedAtPosition(SpawnPoint spawnPoint, PedVariantGroup group, Gender gender, bool delete, out Ped ped)
+        public static bool TrySpawnRandomPedAtPosition(SpawnPoint spawnPoint, PedVariantGroup group, Gender gender, bool delete, out Ped ped)
         {
+            // Randmonize gender
             var random = new CryptoRandom();
-            ped = default(Ped);
-
-            // Randmonize
             if (gender == Gender.Unknown)
             {
-                var val = random.Next(1, 2);
-                gender = (Gender)val;
+                gender = random.PickOne(Gender.Male, Gender.Female);
             }
 
             // Grab all peds in the specified variant group
+            ped = default(Ped);
             var groupPeds = PedInfo.PedModelsByVariant[group];
             if (groupPeds.Count == 0)
             {
@@ -327,27 +327,9 @@ namespace AgencyCalloutsPlus.API
             // Criteria cant be met
             if (items.Length == 0) return false;
 
-            // Ensure no other entities are there
-            var flags = GetEntitiesFlags.ConsiderGroundVehicles | GetEntitiesFlags.ConsiderHumanPeds;
-            var entities = World.GetEntities(spawnPoint.Position, 1f, flags);
-            if (entities.Length > 0)
-            {
-                if (delete)
-                {
-                    // Delete each entity
-                    foreach (var ent in entities)
-                        ent.Delete();
-                }
-                else
-                {
-                    return false;
-                }
-            }
-
-            // grab random ped name
+            // Grab random name and attempt to spawn
             var name = items[random.Next(0, items.Length - 1)];
-            ped = new Ped(name, spawnPoint.Position, spawnPoint.Heading);
-            return true;
+            return TrySpawnPedAtPosition(name, spawnPoint, delete, out ped);
         }
 
         /// <summary>
@@ -360,16 +342,13 @@ namespace AgencyCalloutsPlus.API
         /// and deletes them if they are. If false, and there is an <see cref="Entity"/> at this location, this method will fail and return false</param>
         /// <param name="ped">if successful, containts the <see cref="Ped"/> spawned</param>
         /// <returns></returns>
-        public static bool TrySpawnPedAtPosition(SpawnPoint spawnPoint, Gender gender, bool delete, out Ped ped)
+        public static bool TrySpawnRandomPedAtPosition(SpawnPoint spawnPoint, Gender gender, bool delete, out Ped ped)
         {
+            // Randmonize gender
             var random = new CryptoRandom();
-            ped = default(Ped);
-
-            // Randmonize
             if (gender == Gender.Unknown)
             {
-                var val = random.Next(1, 2);
-                gender = (Gender)val;
+                gender = random.PickOne(Gender.Male, Gender.Female);
             }
 
             // Pull gender
@@ -377,8 +356,28 @@ namespace AgencyCalloutsPlus.API
             var items = Model.PedModels.Where(x => x.Name.Contains(pull)).ToArray();
 
             // Criteria cant be met
-            if (items.Length == 0) return false;
+            if (items.Length == 0)
+            {
+                ped = default(Ped);
+                return false;
+            }
 
+            // Grab random name and attempt to spawn
+            var name = items[random.Next(0, items.Length - 1)];
+            return TrySpawnPedAtPosition(name, spawnPoint, delete, out ped);
+        }
+
+        /// <summary>
+        /// Attempts to spawn a <see cref="Rage.Ped"/> at the specified location safely, without collision of another
+        /// <see cref="Entity"/> at the specified <see cref="Vector3"/>.
+        /// </summary>
+        /// <param name="pedName"></param>
+        /// <param name="spawnPoint"></param>
+        /// <param name="delete"></param>
+        /// <param name="ped"></param>
+        /// <returns></returns>
+        public static bool TrySpawnPedAtPosition(Model pedName, SpawnPoint spawnPoint, bool delete, out Ped ped)
+        {
             // Ensure no other entities are there
             var flags = GetEntitiesFlags.ConsiderGroundVehicles | GetEntitiesFlags.ConsiderHumanPeds;
             var entities = World.GetEntities(spawnPoint.Position, 1f, flags);
@@ -392,13 +391,13 @@ namespace AgencyCalloutsPlus.API
                 }
                 else
                 {
+                    ped = default(Ped);
                     return false;
                 }
             }
 
-            // grab random ped name
-            var name = items[random.Next(0, items.Length - 1)];
-            ped = new Ped(name, spawnPoint.Position, spawnPoint.Heading);
+            // Spawn ped
+            ped = new Ped(pedName, spawnPoint.Position, spawnPoint.Heading);
             return true;
         }
 
@@ -410,6 +409,16 @@ namespace AgencyCalloutsPlus.API
         public static Ped SpawnRandomPedAtPosition(Vector3 position)
         {
             return new Ped(position);
+        }
+
+        /// <summary>
+        /// Creates a random ped at the specified position
+        /// </summary>
+        /// <param name="position"></param>
+        /// <returns></returns>
+        public static Ped SpawnRandomPedAtPosition(SpawnPoint position)
+        {
+            return new Ped(position.Position, position.Heading);
         }
 
         #endregion Spawning Entity Methods 
@@ -452,6 +461,44 @@ namespace AgencyCalloutsPlus.API
             }
             safePedPoint = tempSpawn;
             return true;
+        }
+
+        /// <summary>
+        /// Creates a checkpoint at the specified location, and returns the handle
+        /// </summary>
+        /// <remarks>
+        /// Checkpoints are already handled by the game itself, so you must not loop it like markers.
+        /// </remarks>
+        /// <param name="pos">The position of the checkpoint</param>
+        /// <param name="radius">The radius of the checkpoint cylinder</param>
+        /// <param name="color">The color of the checkpoint</param>
+        /// <returns>returns the handle of the checkpoint</returns>
+        public static int CreateCheckpoint(Vector3 pos, Color color, float radius = 5f, float nearHeight = 4f, float farHeight = 4f, bool forceGround = false)
+        {
+            if (forceGround)
+            {
+                var level = World.GetGroundZ(pos, true, false);
+                if (level.HasValue)
+                    pos.Z = level.Value;
+            }
+
+            // Create checkpoint
+            int handle = Natives.CreateCheckpoint<int>(47, pos.X, pos.Y, pos.Z, pos.X, pos.Y, pos.Z, 1f, color.R, color.G, color.B, color.A, 0);
+
+            // Set hieght
+            Natives.SetCheckpointCylinderHeight(handle, nearHeight, farHeight, radius);
+
+            // return handle
+            return handle;
+        }
+
+        /// <summary>
+        /// Deletes a checkpoint with the specified handle
+        /// </summary>
+        /// <param name="handle"></param>
+        public static void DeleteCheckpoint(int handle)
+        {
+            Natives.DeleteCheckpoint(handle);
         }
     }
 }

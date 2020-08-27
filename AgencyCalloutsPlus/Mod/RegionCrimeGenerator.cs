@@ -6,6 +6,10 @@ using System.Collections.Generic;
 
 namespace AgencyCalloutsPlus.Mod
 {
+    /// <summary>
+    /// This class is responsible for generating <see cref="PriorityCall"/>s that
+    /// happen within the players current jurisdiction.
+    /// </summary>
     internal class RegionCrimeGenerator
     {
         /// <summary>
@@ -29,7 +33,7 @@ namespace AgencyCalloutsPlus.Mod
         public Dictionary<TimeOfDay, RegionCrimeInfo> RegionCrimeInfoByTimeOfDay { get; private set; }
 
         /// <summary>
-        /// Containts a range of time between calls in milliseconds (real life timne), using the current <see cref="CrimeLevel"/>.
+        /// Containts a range of time between calls in milliseconds (real life time), using the current <see cref="CrimeLevel"/>.
         /// </summary>
         public Range<int> CallTimerRange { get; set; }
 
@@ -144,10 +148,13 @@ namespace AgencyCalloutsPlus.Mod
         /// </summary>
         public void End()
         {
-            GameWorld.OnTimeOfDayChanged -= GameWorld_OnTimeOfDayChanged;
-            IsRunning = false;
-            CrimeFiber.Abort();
-            CrimeFiber = null;
+            if (IsRunning)
+            {
+                GameWorld.OnTimeOfDayChanged -= GameWorld_OnTimeOfDayChanged;
+                IsRunning = false;
+                CrimeFiber?.Abort();
+                CrimeFiber = null;
+            }
         }
 
         /// <summary>
@@ -204,9 +211,13 @@ namespace AgencyCalloutsPlus.Mod
                 }
 
                 // Get our average real time milliseconds per call
+                var timerUntilNext = GetTimeUntilNextTimeOfDay();
+                var nextChangeRealTimeSeconds = (timerUntilNext.Milliseconds / Settings.TimeScale) / 1000;
                 var hourGameTimeToSecondsRealTime = (60d / Settings.TimeScale) * 60;
                 var callsPerSecondRT = (crimeInfo.AverageCallsPerHour / hourGameTimeToSecondsRealTime);
-                var realSecondsPerCall = (1d / callsPerSecondRT);
+
+                // Prevent divide by zero... check for zero calls average this Time Of Day
+                var realSecondsPerCall = (callsPerSecondRT == 0) ? nextChangeRealTimeSeconds : (1d / callsPerSecondRT);
 
                 // Set numbers
                 crimeInfo.OptimumPatrols = (int)Math.Ceiling(optimumPatrols);
@@ -315,42 +326,58 @@ namespace AgencyCalloutsPlus.Mod
                 switch (CurrentCrimeLevel)
                 {
                     case CrimeLevel.VeryHigh:
-                        min = (int)(ms / 2.5d);
-                        max = (int)(ms / 1.75d);
+                        min = Convert.ToInt32(ms / 2.5d);
+                        max = Convert.ToInt32(ms / 1.75d);
                         break;
                     case CrimeLevel.High:
-                        min = (int)(ms / 1.75d);
-                        max = (int)(ms / 1.25d);
+                        min = Convert.ToInt32(ms / 1.75d);
+                        max = Convert.ToInt32(ms / 1.25d);
                         break;
                     case CrimeLevel.Moderate:
-                        min = (int)(ms / 1.25d);
-                        max = (int)(ms * 1.25d);
+                        min = Convert.ToInt32(ms / 1.25d);
+                        max = Convert.ToInt32(ms * 1.25d);
                         break;
                     case CrimeLevel.Low:
-                        min = (int)(ms * 1.5d);
-                        max = (int)(ms * 2d);
+                        min = Convert.ToInt32(ms * 1.5d);
+                        max = Convert.ToInt32(ms * 2d);
                         break;
                     case CrimeLevel.VeryLow:
-                        min = (int)(ms * 2d);
-                        max = (int)(ms * 2.5d);
+                        min = Convert.ToInt32(ms * 2d);
+                        max = Convert.ToInt32(ms * 2.5d);
+                        break;
+                    default:
+                        // None - This gets fixed later down
                         break;
                 }
             }
 
+            //Log.Debug($"\t\t\t1) Minimum MS Per Call: {min}");
+
             // Get time until the next TimeOfDay change
             var timerUntilNext = GetTimeUntilNextTimeOfDay();
-            var nextChangeRealTimeMS = (timerUntilNext.Milliseconds / Settings.TimeScale);
+            var nextChangeRealTimeMS = Convert.ToInt32(timerUntilNext.TotalMilliseconds / Settings.TimeScale);
             var hourGameTimeToSecondsRealTime = (60d / Settings.TimeScale) * 60;
 
             // Ensure we do not float too far into the next timer period
-            if (min > nextChangeRealTimeMS)
+            if (CurrentCrimeLevel == CrimeLevel.None || min > nextChangeRealTimeMS)
             {
                 min = nextChangeRealTimeMS;
                 max = (int)(nextChangeRealTimeMS + (hourGameTimeToSecondsRealTime * 1000));
             }
-            
+
+            //Log.Debug($"\t\t\t2) Minimum MS Per Call: {min}");
+
             // Adjust call frequency timer
             CallTimerRange = new Range<int>(min, max);
+
+            // Check for zeroes!
+            if (min == 0 || !CallTimerRange.IsValid())
+            {
+                Log.Error($"RegionCrimeGenerator.AdjustCallFrequencyTimer(): Detected a bad call timer range of {CallTimerRange}");
+                Log.Debug($"\t\t\tCurrent Crime Level: {CurrentCrimeLevel}");
+                Log.Debug($"\t\t\tAvg MS Per Call: {ms}");
+                Log.Debug($"\t\t\tTime Until Next TimeOfDay MS: {nextChangeRealTimeMS}");
+            }
         }
         
         /// <summary>
@@ -449,7 +476,7 @@ namespace AgencyCalloutsPlus.Mod
                     ZoneInfo zone = GetNextRandomCrimeZone();
                     if (zone == null)
                     {
-                        Log.Debug($"CrimeGenerator: Attempted to pull a zone but zone is null");
+                        Log.Debug($"CrimeGenerator.CreateCallFromScenario(): Attempted to pull a zone but zone is null");
                         continue;
                     }
 
@@ -457,7 +484,7 @@ namespace AgencyCalloutsPlus.Mod
                     WorldLocation location = GetScenarioLocationFromZone(zone, scenario);
                     if (location == null)
                     {
-                        Log.Debug($"CrimeGenerator: Unable to pull Location type {scenario.LocationType} from zone '{zone.FullName}'");
+                        Log.Debug($"CrimeGenerator.CreateCallFromScenario(): Unable to pull Location type {scenario.LocationType} from zone '{zone.FullName}'");
                         continue;
                     }
 
@@ -548,6 +575,8 @@ namespace AgencyCalloutsPlus.Mod
             {
                 case LocationType.SideOfRoad:
                     return zone.GetRandomSideOfRoadLocation();
+                case LocationType.Residence:
+                    return zone.GetRandomResidence();
             }
 
             return null;

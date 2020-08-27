@@ -86,10 +86,10 @@ namespace AgencyCalloutsPlus.Mod.Conversation
                 }
 
                 // Check for line sets
-                var childNodes = n.SelectNodes("LineSet");
+                var childNodes = n.SelectNodes("Statement");
                 if (childNodes == null || childNodes.Count == 0)
                 {
-                    Log.Error($"ResponseSet.LoadResponsesFromXml(): Response has no LineSet child nodes");
+                    Log.Error($"ResponseSet.LoadResponsesFromXml(): Response has no Statement child nodes");
                     continue;
                 }
 
@@ -124,14 +124,14 @@ namespace AgencyCalloutsPlus.Mod.Conversation
                     // Ensure we have lines to read
                     if (!lsNode.HasChildNodes)
                     {
-                        Log.Error($"ResponseSet.LoadResponsesFromXml(): LineSet has no Line child nodes");
+                        Log.Error($"ResponseSet.LoadResponsesFromXml(): Statement has no Sentance child nodes");
                         continue;
                     }
 
                     // Validate and extract attributes
                     if (lsNode.Attributes == null || !Int32.TryParse(lsNode.Attributes["probability"]?.Value, out int prob))
                     {
-                        Log.Error($"ResponseSet.LoadResponsesFromXml(): LineSet has no attributes or cannot parse 'id' attribute");
+                        Log.Error($"ResponseSet.LoadResponsesFromXml(): Statement has no attributes or cannot parse 'id' attribute");
                         continue;
                     }
 
@@ -142,7 +142,7 @@ namespace AgencyCalloutsPlus.Mod.Conversation
                         if (parser == null)
                         {
                             string id = response.FromInputIds[0]; 
-                            Log.Warning($"ResponseSet.LoadResponsesFromXml(): LineSet from Response TO '{id}' has 'if' statement but no ExpressionParser is defined... Skipping");
+                            Log.Warning($"ResponseSet.LoadResponsesFromXml(): Statement from Response TO '{id}' has 'if' statement but no ExpressionParser is defined... Skipping");
                             continue;
                         }
 
@@ -155,33 +155,33 @@ namespace AgencyCalloutsPlus.Mod.Conversation
                     }
 
                     // Create LineSet
-                    var lineSet = new LineSet(prob);
+                    var statement = new Statement(prob);
 
                     // See if we have an hide statement to hide menuitems
                     if (lsNode.Attributes["hide"]?.Value != null)
                     {
-                        var items = lsNode.Attributes["hide"].Value.Split(',');
-                        lineSet.HidesMenuItems = items;
+                        var items = lsNode.Attributes["hide"].Value.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+                        statement.HidesMenuItems = items;
                     }
                     else
                     {
-                        lineSet.HidesMenuItems = new string[0];
+                        statement.HidesMenuItems = new string[0];
                     }
 
                     // See if we have an unhide statement to hide menuitems
                     if (lsNode.Attributes["show"]?.Value != null)
                     {
-                        var items = lsNode.Attributes["show"].Value.Split(',');
-                        lineSet.ShowMenuItems = items;
+                        var items = lsNode.Attributes["show"].Value.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+                        statement.ShowMenuItems = items;
                     }
                     else
                     {
-                        lineSet.ShowMenuItems = new string[0];
+                        statement.ShowMenuItems = new string[0];
                     }
 
                     // Fetch response lines
-                    List<LineItem> lines = new List<LineItem>(lsNode.ChildNodes.Count);
-                    foreach (XmlNode lNode in lsNode)
+                    List<Subtitle> lines = new List<Subtitle>(lsNode.ChildNodes.Count);
+                    foreach (XmlNode lNode in lsNode.SelectNodes("Subtitle"))
                     {
                         // Validate and extract attributes
                         if (lNode.Attributes == null || !Int32.TryParse(lNode.Attributes["time"]?.Value, out int time))
@@ -189,12 +189,12 @@ namespace AgencyCalloutsPlus.Mod.Conversation
                             time = 3000;
                         }
 
-                        lines.Add(new LineItem() { Text = lNode.InnerText, Time = time });
+                        lines.Add(new Subtitle() { Text = lNode.InnerText, Duration = time });
                     }
 
                     // Save lines
-                    lineSet.Lines = lines.ToArray();
-                    response.AddLineSet(lineSet);
+                    statement.Subtitles = lines.ToArray();
+                    response.AddStatement(statement);
                 }
 
                 // Add final response

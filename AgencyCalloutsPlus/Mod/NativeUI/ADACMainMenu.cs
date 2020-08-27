@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace AgencyCalloutsPlus.RageUIMenus
+namespace AgencyCalloutsPlus.Mod.NativeUI
 {
     /// <summary>
     /// Represents a basic <see cref="RAGENativeUI.MenuPool"/> for questioning peds during a callout

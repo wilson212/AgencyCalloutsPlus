@@ -1,4 +1,5 @@
-﻿using AgencyCalloutsPlus.Extensions;
+﻿using AgencyCalloutsPlus.API;
+using AgencyCalloutsPlus.Extensions;
 using AgencyCalloutsPlus.Mod.NativeUI;
 using Rage;
 using RAGENativeUI;
@@ -30,7 +31,7 @@ namespace AgencyCalloutsPlus.Mod.Conversation
         /// <summary>
         /// Gets the <see cref="Rage.Ped"/> this <see cref="FlowSequence"/> is attacthed to
         /// </summary>
-        public PedWrapper SubjectPed { get; private set; }
+        public GamePed SubjectPed { get; private set; }
 
         /// <summary>
         /// Contains the main menu string name
@@ -66,7 +67,7 @@ namespace AgencyCalloutsPlus.Mod.Conversation
         /// <summary>
         /// Contains officer dialogs attached to each menu option
         /// </summary>
-        protected Dictionary<string, LineItem[]> OfficerDialogs { get; set; }
+        protected Dictionary<string, Subtitle[]> OfficerDialogs { get; set; }
 
         /// <summary>
         /// Contains string replacements in the Output strings
@@ -88,8 +89,8 @@ namespace AgencyCalloutsPlus.Mod.Conversation
         /// </summary>
         /// <param name="sender">The <see cref="FlowSequence"/> that triggered the <see cref="PedResponse"/></param>
         /// <param name="e">The <see cref="PedResponse"/> instance</param>
-        /// <param name="l">The displayed <see cref="LineSet"/> to the player in game</param>
-        public delegate void PedResponseEventHandler(FlowSequence sender, PedResponse e, LineSet l);
+        /// <param name="l">The displayed <see cref="Statement"/> to the player in game</param>
+        public delegate void PedResponseEventHandler(FlowSequence sender, PedResponse e, Statement l);
 
         /// <summary>
         /// Event fired whenever a <see cref="PedResponse"/> is displayed
@@ -108,7 +109,7 @@ namespace AgencyCalloutsPlus.Mod.Conversation
             // Set internal vars
             SequenceId = sequenceId;
             FlowOutcomeId = outcome.Id;
-            SubjectPed = new PedWrapper(ped);
+            SubjectPed = new GamePed(ped);
             Parser = parser;
             Variables = new Dictionary<string, object>();
             HiddenMenuItems = new Dictionary<string, UIMenuItem>();
@@ -167,7 +168,6 @@ namespace AgencyCalloutsPlus.Mod.Conversation
         /// <returns></returns>
         public PedResponse GetResponseToQuestionId(string text)
         {
-            //var inputId = TranslateQuestion(text);
             return PedResponses.GetResponseTo(text);
         }
 
@@ -280,6 +280,30 @@ namespace AgencyCalloutsPlus.Mod.Conversation
         }
 
         /// <summary>
+        /// If a question is asked more than once, this method is called and returns
+        /// a response that is prefixed into the <see cref="SubtitleQueue"/> to make
+        /// the <see cref="Ped"/> feel more alive in thier repsonses.
+        /// </summary>
+        /// <returns></returns>
+        private string GetRepeatPrefixText()
+        {
+            var random = new CryptoRandom();
+
+            // Return a random demeanor
+            switch (SubjectPed.Demeanor)
+            {
+                case PedDemeanor.Angry:
+                case PedDemeanor.Hostile:
+                    return random.PickOne("Did you not hear what I already told you??", "Are you deaf? I already told you!");
+                case PedDemeanor.Agitated:
+                case PedDemeanor.Annoyed:
+                    return random.PickOne("(Sighs) Are you not hearing what I am saying??", "I already told you this...");
+                default:
+                    return random.PickOne("Like I said already officer...", "Didn't you ask me this already?");
+            }
+        }
+
+        /// <summary>
         /// Method called on event <see cref="UIMenuItem.Activated"/>
         /// </summary>
         /// <param name="sender"></param>
@@ -305,8 +329,8 @@ namespace AgencyCalloutsPlus.Mod.Conversation
             }
 
             // Grab dialog
-            var lineSet = response.GetResponseLineSet();
-            if (lineSet == null || lineSet.Lines.Length == 0)
+            var statement = response.GetStatement();
+            if (statement == null || statement.Subtitles.Length == 0)
             {
                 Log.Error($"FlowSequence.Item_Activated: Response to '{selectedItem.Tag}' has no lines");
                 return;
@@ -314,19 +338,45 @@ namespace AgencyCalloutsPlus.Mod.Conversation
 
             // Clear any queued messages
             SubtitleQueue.Clear();
+            var player = Game.LocalPlayer.Character;
 
             // Officer Dialogs first
-            foreach (LineItem line in OfficerDialogs[selectedItem.Tag])
+            foreach (Subtitle line in OfficerDialogs[selectedItem.Tag])
             {
-                var text = VariableExpression.ReplaceTokens(line.Text, Variables);
-                SubtitleQueue.Add($"~y~You~w~: {text}<br /><br />", line.Time);
+                // Set ped in statement to allow animations
+                line.Speaker = player;
+                line.PrefixText = "~y~You~w~:";
+                line.Text = VariableExpression.ReplaceTokens(line.Text, Variables);
+
+                // Add line
+                SubtitleQueue.Add(line);
+            }
+
+            // Has the player asked this question already?
+            if (selectedItem.ForeColor == Color.Gray)
+            {
+                var line = new Subtitle()
+                {
+                    PrefixText = $"~y~{SubjectPed.Persona.Forename}~w~:",
+                    Speaker = SubjectPed.Ped,
+                    Text = GetRepeatPrefixText(),
+                    Duration = 2500
+                };
+
+                // Add line
+                SubtitleQueue.Add(line);
             }
 
             // Add Ped response
-            foreach (LineItem line in lineSet.Lines)
+            foreach (Subtitle line in statement.Subtitles)
             {
-                var text = VariableExpression.ReplaceTokens(line.Text, Variables);
-                SubtitleQueue.Add($"~y~{SubjectPed.Persona.Forename}~w~: {text}<br /><br />", line.Time);
+                // Set ped in statement to allow animations
+                line.Speaker = SubjectPed.Ped;
+                line.PrefixText = $"~y~{SubjectPed.Persona.Forename}~w~:";
+                line.Text = VariableExpression.ReplaceTokens(line.Text, Variables);
+
+                // Add line
+                SubtitleQueue.Add(line);
             }
 
             // Enable button and change font color to show its been clicked before
@@ -334,7 +384,7 @@ namespace AgencyCalloutsPlus.Mod.Conversation
             selectedItem.ForeColor = Color.Gray;
 
             // Fire off event
-            OnPedResponse(this, response, lineSet);
+            OnPedResponse(this, response, statement);
         }
 
         #region XML loading methods
@@ -344,7 +394,7 @@ namespace AgencyCalloutsPlus.Mod.Conversation
             var documentRoot = document.SelectSingleNode("FlowSequence");
             AllMenus = new MenuPool();
             FlowReturnMenus = new Dictionary<string, UIMenu>();
-            OfficerDialogs = new Dictionary<string, LineItem[]>();
+            OfficerDialogs = new Dictionary<string, Subtitle[]>();
 
             // ====================================================
             // Load input flow return menus
@@ -423,10 +473,10 @@ namespace AgencyCalloutsPlus.Mod.Conversation
                     }
 
                     // Load dialog for officer
-                    var subNodes = menuItemNode.SelectNodes("Line");
+                    var subNodes = menuItemNode.SelectNodes("Subtitle");
                     if (subNodes != null && subNodes.Count > 0)
                     {
-                        List<LineItem> lines = new List<LineItem>(subNodes.Count);
+                        List<Subtitle> lines = new List<Subtitle>(subNodes.Count);
                         foreach (XmlNode lNode in subNodes)
                         {
                             // Validate and extract attributes
@@ -435,7 +485,7 @@ namespace AgencyCalloutsPlus.Mod.Conversation
                                 time = 3000;
                             }
 
-                            lines.Add(new LineItem() { Text = lNode.InnerText, Time = time });
+                            lines.Add(new Subtitle() { Text = lNode.InnerText, Duration = time });
                         }
 
                         // Save lines
@@ -447,7 +497,7 @@ namespace AgencyCalloutsPlus.Mod.Conversation
                         Log.Warning("FlowSequence.LoadXml(): Menu -> MenuItem has no Line nodes");
 
                         // Save default line
-                        OfficerDialogs.Add(buttonId, new LineItem[] { new LineItem() { Text = text, Time = 3000 } });
+                        OfficerDialogs.Add(buttonId, new Subtitle[] { new Subtitle() { Text = text, Duration = 3000 } });
                     }
 
                     // Create button
@@ -525,8 +575,114 @@ namespace AgencyCalloutsPlus.Mod.Conversation
                 Log.Warning($"FlowSequence.LoadXml(): FlowOutcome '{FlowOutcomeId}' does not have an 'initialMenu' attribute!");
             }
 
+            // Extract Ped data
+            var subNode = catagoryNode.SelectSingleNode("Ped");
+            if (subNode == null || !subNode.HasChildNodes)
+            {
+                throw new ArgumentNullException("Output", $"Scenario FlowOutcome '{outcomeId}' does not contain a Ped node");
+            }
+
+            // Extract drunk attribute
+            var random = new CryptoRandom();
+            if (Int32.TryParse(catagoryNode.Attributes["drunkChance"]?.Value, out int drunkChance))
+            {
+                // Set ped to drunk?
+                if (drunkChance.InRange(1, 100) && random.Next(1, 100) <= drunkChance)
+                {
+                    SubjectPed.IsDrunk = true;
+                }
+            }
+
+            // Extract high attribute
+            if (Int32.TryParse(catagoryNode.Attributes["highChance"]?.Value, out drunkChance))
+            {
+                // Set ped to drunk?
+                if (drunkChance.InRange(1, 100) && random.Next(1, 100) <= drunkChance)
+                {
+                    SubjectPed.IsHigh = true;
+                }
+            }
+
+            // ====================================================
+            // @TODO :: Extract inventory items
+            // ====================================================
+
+            // ====================================================
+            // Get SubjectPed Demeanor
+            // ====================================================
+            subNode = subNode.SelectSingleNode("Presentation");
+            var items = subNode.SelectNodes("Demeanor");
+            if (subNode == null || items.Count == 0)
+            {
+                SubjectPed.Demeanor = PedDemeanor.Calm;
+
+                // Log as warning and continue
+                Log.Warning($"FlowSequence.LoadXml(): FlowOutcome '{FlowOutcomeId}' does not have a Ped->Presentation node");
+            }
+            else
+            {
+                var gen = new ProbabilityGenerator<SpawnablePedDemeanor>();
+                foreach (XmlNode item in items)
+                {
+                    // Skip if we cant parse the value
+                    if (!Enum.TryParse(item.InnerText, out PedDemeanor demeanor))
+                    {
+                        // Log as warning and continue
+                        Log.Warning($"FlowSequence.LoadXml(): Unable to parse FlowOutcome['{FlowOutcomeId}'] Ped->Presentation->Demeanor node value");
+                        continue;
+                    }                    
+
+                    // Skip if we cant parse the value
+                    if (!Int32.TryParse(item.Attributes["probability"]?.Value, out int prob))
+                    {
+                        // Log as warning and continue
+                        Log.Warning($"FlowSequence.LoadXml(): Unable to parse FlowOutcome['{FlowOutcomeId}'] Ped->Presentation->Demeanor probability attribute value");
+                        continue;
+                    }
+
+                    // See if we have an IF statement
+                    if (!String.IsNullOrEmpty(item.Attributes["if"]?.Value))
+                    {
+                        // Do we have a parser?
+                        if (Parser == null)
+                        {
+                            Log.Warning($"FlowSequence.LoadXml(): Statement from FlowOutcome['{FlowOutcomeId}']->Ped->Presentation->Demeanor has 'if' statement but no ExpressionParser is defined... Skipping");
+                            continue;
+                        }
+
+                        // parse expression
+                        if (!Parser.Evaluate<bool>(item.Attributes["if"].Value))
+                        {
+                            // If we failed to evaluate to true, skip
+                            continue;
+                        }
+                    }
+
+                    gen.Add(new SpawnablePedDemeanor(prob, demeanor));
+                }
+
+                // If we extracted anything
+                if (gen.ItemCount > 0)
+                {
+                    SubjectPed.Demeanor = gen.Spawn().Demeanor;
+                }
+            }
+
             // Load flow outcome
-            PedResponses = new ResponseSet(outcomeId, catagoryNode, Parser);
+            PedResponses = new ResponseSet(outcomeId, catagoryNode.SelectSingleNode("Responses"), Parser);
+        }
+
+        private class SpawnablePedDemeanor : ISpawnable
+        {
+            public int Probability { get; }
+
+            public PedDemeanor Demeanor { get; }
+
+            public SpawnablePedDemeanor(int probability, PedDemeanor de)
+            {
+                Probability = probability;
+                Demeanor = de;
+            }
         }
 
         #endregion XML loading methods

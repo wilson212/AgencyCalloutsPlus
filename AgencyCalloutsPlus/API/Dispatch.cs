@@ -513,6 +513,14 @@ namespace AgencyCalloutsPlus.API
         /// <param name="call"></param>
         public static void RegisterCallComplete(PriorityCall call)
         {
+            // Ensure the call is not null. This can happen when trying
+            // to initiate a scenario from a menu
+            if (call == null)
+            {
+                Log.Error("Dispatch.RegisterCallComplete(): Tried to reference a call that is null");
+                return;
+            }
+
             var priority = call.Priority - 1;
             lock (_lock)
             {
@@ -632,11 +640,19 @@ namespace AgencyCalloutsPlus.API
         /// <param name="call"></param>
         internal static void AddIncomingCall(PriorityCall call)
         {
+            // Ensure the call is not null. This can happen when trying
+            // to initiate a scenario from a menu
+            if (call == null)
+            {
+                Log.Error("Dispatch.AddIncomingCall(): Tried to add a call that is a null reference");
+                return;
+            }
+
             // Add call to priority Queue
             lock (_lock)
             {
                 CallQueue[call.Priority - 1].Add(call);
-                Log.Debug($"Dispatch: Added Call to Queue '{call.ScenarioInfo.Name}' in zone '{call.Zone.FullName}'");
+                Log.Debug($"Dispatch.AddIncomingCall(): Added Call to Queue '{call.ScenarioInfo.Name}' in zone '{call.Zone.FullName}'");
 
                 // Invoke the next callout for player?
                 if (SendNextCallToPlayer)

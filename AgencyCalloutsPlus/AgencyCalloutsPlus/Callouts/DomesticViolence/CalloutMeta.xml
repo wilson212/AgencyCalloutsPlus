@@ -1,0 +1,43 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<CalloutMeta>
+  <Scenarios>
+
+    <ReportsOfArguingThreats>
+      <!-- Agencies that handle this callout scenario -->
+      <Agencies>
+        <Agency>CityPolice</Agency>
+        <Agency>CountySheriff</Agency>
+        <Agency>HighwayPatrol</Agency>
+      </Agencies>
+      <!-- The probability of this scenario happening relative to every other scenario of this crime catagory -->
+      <Probabilities>
+        <Morning clear="10" overcast="10" rain="15" snow="18" storm="12" />
+        <Day clear="10" overcast="10" rain="15" snow="18" storm="12" />
+        <Evening clear="10" overcast="10" rain="15" snow="18" storm="12" />
+        <Night clear="10" overcast="10" rain="15" snow="18" storm="12" />
+      </Probabilities>
+      <Catagory>Disturbance</Catagory>
+      <Dispatch>
+        <!-- Scanner Audio for call. Unit Division-UnitType-Beat will prefix this message -->
+        <Scanner>WE_HAVE_01 CRIME_DOMESTIC_DISTURBANCE_02 IN_OR_ON_POSITION</Scanner>
+        <!-- CAD texture for this call in call details -->
+        <CADTexture textureDict="char_chat_call">char_chat_call</CADTexture>
+        <!-- Callout Details are for ComputerPlus / CAD -->
+        <Descriptions>
+          <Description probability="10">
+            <Source>Citizen</Source>
+            <Text>RP SAYS THEY HEARD THIER NEIGHBORS VERBALLY FIGHTING AND HEARD A LOUD CRASH NOISE INSIDE THE HOME AT $LOCATION$. RP STATED THEY OVERHEARD THE SUSPECT SAY THEY WERE GOING TO KILL SOMEONE. RESPOND CODE 3</Text>
+          </Description>
+        </Descriptions>
+        <IncidentType abbreviation="DIST">Domestic Disturbance</IncidentType>
+        <Priority>2</Priority>
+        <Response>3</Response>
+        <LocationType>Residence</LocationType>
+      </Dispatch>
+      <FlowSequence>
+        <FlowOutcome id="cheating" probability="10" />
+      </FlowSequence> 
+    </ReportsOfArguingThreats>
+
+  </Scenarios>
+</CalloutMeta>

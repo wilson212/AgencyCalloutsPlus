@@ -19,6 +19,7 @@ Callouts:
 	- MultiCarCollision						[Traffic]
 	- HitAndRun								[Traffic]
 	- RanRedLightTBoned						[Traffic]
+	- Rollover								[Traffic]
 - TrafficReport
 	- RecklessDriver						[Traffic]
 	- ExcessiveSpeeding						[Traffic]
@@ -31,12 +32,14 @@ Callouts:
 	- ALPR Hit								[Traffic]
 	- ByOwner								[Traffic]
 - DomesticViolence
-	- DomesticArguingOnly					[Disturbance]
+	- DomesticRefusingToLeave				[Disturbance]
+	- DomesticArguingThreats				[Disturbance]
 	- DomesticDenial						[Disturbance]
 	- DomesticWithAssault					[Violent]
 	- DomesticHoldUp						[Violent]
 	- AnimalAbuse							[Disturbance]
 	- AnimalNeglect							[Disturbance]
+	- DisobeyRestrainingOrder				[Disturbance]
 - Disturbance
 	- NoiseComplaintParty					[Disturbance]
 	- NoiseComplaintEngineReving			[Disturbance]

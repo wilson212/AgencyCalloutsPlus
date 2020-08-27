@@ -66,9 +66,9 @@ namespace AgencyCalloutsPlus.API
         public IReadOnlyDictionary<TimeOfDay, int> AverageCalls { get; protected set; }
 
         /// <summary>
-        /// Containts a list <see cref="HomeLocation"/>(s) in this zone
+        /// Containts a list <see cref="ResidenceLocation"/>(s) in this zone
         /// </summary>
-        public HomeLocation[] HomeLocations { get; protected set; }
+        public ResidenceLocation[] Residences { get; protected set; }
 
         /// <summary>
         /// Containts an array of SideOfRoad locations
@@ -193,8 +193,8 @@ namespace AgencyCalloutsPlus.API
             SideOfRoadLocations = ExtractSpawnPoints(LocationType.SideOfRoad, catagoryNode);
 
             // Load Home locations
-            catagoryNode = node.SelectSingleNode("Homes");
-            HomeLocations = ExtractHomes(catagoryNode);
+            catagoryNode = node.SelectSingleNode("Residences");
+            Residences = ExtractHomes(catagoryNode);
 
             // Internal vars
             //CrimeTypeProbabilities = new ReadOnlyDictionary<CalloutType, WorldStateMultipliers>(crimeTypeProbabilities);
@@ -264,6 +264,8 @@ namespace AgencyCalloutsPlus.API
             if (SideOfRoadLocations != null)
                 count += SideOfRoadLocations.Length;
 
+            count += Residences.Length;
+
             return count;
         }
 
@@ -286,22 +288,29 @@ namespace AgencyCalloutsPlus.API
         }
 
         /// <summary>
-        /// Gets a randome Side of the Road location in this zone
+        /// Gets a random Side of the Road location in this zone
         /// </summary>
         /// <returns>returns a random <see cref="SpawnPoint"/> on success, or null on failure</returns>
         public SpawnPoint GetRandomSideOfRoadLocation()
         {
             // Load randomizer
-            var rando = new CryptoRandom();
-
-            // Get zones in this jurisdiction
-            if (SideOfRoadLocations == null || SideOfRoadLocations.Length == 0)
-            {
-                return null;
-            }
+            var random = new CryptoRandom();
 
             // Get random location
-            return SideOfRoadLocations[rando.Next(0, SideOfRoadLocations.Length - 1)];
+            return random.PickOne(SideOfRoadLocations);
+        }
+
+        /// <summary>
+        /// Gets a random <see cref="ResidenceLocation"/> in this zone
+        /// </summary>
+        /// <returns>returns a random <see cref="ResidenceLocation"/> on success, or null on failure</returns>
+        public ResidenceLocation GetRandomResidence()
+        {
+            // Load randomizer
+            var random = new CryptoRandom();
+
+            // Get zones in this jurisdiction
+            return random.PickOne(Residences);
         }
 
         /// <summary>
@@ -309,125 +318,135 @@ namespace AgencyCalloutsPlus.API
         /// </summary>
         /// <param name="catagoryNode"></param>
         /// <returns></returns>
-        private HomeLocation[] ExtractHomes(XmlNode catagoryNode)
+        private ResidenceLocation[] ExtractHomes(XmlNode catagoryNode)
         {
-            if (catagoryNode != null && catagoryNode.HasChildNodes)
+            // Ensure we have a proper node
+            if (catagoryNode == null || !catagoryNode.HasChildNodes)
             {
-                var homes = new List<HomeLocation>(catagoryNode.ChildNodes.Count);
-                foreach (XmlNode homeNode in catagoryNode.SelectNodes("Home"))
-                {
-                    Vector3 vector;
-
-                    // Ensure we have attributes
-                    if (homeNode.Attributes == null)
-                    {
-                        Log.Warning($"ZoneInfo.ExtractHomes(): Home item has no attributes");
-                        continue;
-                    }
-
-                    // Try and extract probability value
-                    if (String.IsNullOrWhiteSpace(homeNode.Attributes["position"]?.Value))
-                    {
-                        Log.Warning($"ZoneInfo.ExtractHomes(): Unable to extract home position attribute value in zone '{ScriptName}'");
-                        continue;
-                    }
-                    else // Parse Vector3
-                    {
-                        string[] parts = homeNode.Attributes["position"].Value.Split(';');
-                        if (parts.Length != 2)
-                        {
-                            Log.Warning($"ZoneInfo.ExtractHomes(): Home position attribute value is not formatted properly in zone '{ScriptName}'");
-                            continue;
-                        }
-
-                        if (!Vector3Extensions.TryParse(parts[0], out vector))
-                        {
-                            Log.Warning($"ZoneInfo.ExtractHomes(): Unable to parse home position attribute value in zone '{ScriptName}'");
-                            continue;
-                        }
-                    }
-
-                    // Create home
-                    var home = new HomeLocation(this, vector);
-
-                    // Extract nodes
-                    try
-                    {
-                        home.Address = homeNode.SelectSingleNode("Address")?.InnerText ?? throw new ArgumentException("Address");
-                        if (int.TryParse(homeNode.SelectSingleNode("Postal")?.InnerText, out int postal))
-                        {
-                            home.Postal = postal;
-                        }
-
-                        // Try and parse social class
-                        string val = homeNode.SelectSingleNode("Class")?.InnerText;
-                        if (String.IsNullOrEmpty(val) || !Enum.TryParse(val, out SocialClass sClass))
-                        {
-                            throw new ArgumentException("Class");
-                        }
-                        home.Class = sClass;
-
-                        // Try and parse type
-                        val = homeNode.SelectSingleNode("Type")?.InnerText;
-                        if (String.IsNullOrEmpty(val) || !Enum.TryParse(val, out HomeType sType))
-                        {
-                            throw new ArgumentException("Type");
-                        }
-                        home.Type = sType;
-
-                        // Try and parse type
-                        val = homeNode.SelectSingleNode("Flags")?.InnerText;
-                        if (!String.IsNullOrEmpty(val))
-                        {
-                            AddLocationFlagsFromCSV(val, home);
-                        }
-                    }
-                    catch (ArgumentException e)
-                    {
-                        Log.Warning($"ZoneInfo.ExtractHomes(): Unable to extract/parse home value {e.ParamName} in zone '{ScriptName}'");
-                        continue;
-                    }
-
-                    // Parse spawn points!
-                    XmlNode pointsNode = homeNode.SelectSingleNode("Points");
-                    if (pointsNode == null || !pointsNode.HasChildNodes)
-                    {
-                        Log.Warning($"ZoneInfo.ExtractHomes(): Unable to extract home SpawnPoints in zone '{ScriptName}'");
-                        continue;
-                    }
-
-                    // Parse spawn points
-                    foreach (XmlNode sp in pointsNode.SelectNodes("SpawnPoint"))
-                    {
-                        var item = ParseSpawnPoint(LocationType.Homes, sp);
-                        if (item == null)
-                            continue;
-
-                        // Try and extract typ value
-                        if (sp.Attributes["id"]?.Value == null || !Enum.TryParse(sp.Attributes["id"].Value, out HomeSpawnId s))
-                        {
-                            Log.Warning($"ZoneInfo.ParseSpawnPoint(): Unable to extract SpawnPoint id value for '{ScriptName}->Homes->Home->Points'");
-                            break;
-                        }
-
-                        home.SpawnPoints[s] = item;
-                    }
-
-                    // Not ok?
-                    if (!home.IsValid())
-                    {
-                        Log.Warning($"ZoneInfo.ExtractHomes(): Home node is missing some SpawnPoints in zone '{ScriptName}'");
-                        continue;
-                    }
-
-                    // Add home to collection
-                    homes.Add(home);
-                }
-
-                return homes.ToArray();
+                Log.Warning($"ZoneInfo.ExtractHomes(): Residences XmlNode is null or has no child nodes for '{ScriptName}'");
+                return new ResidenceLocation[0];
             }
 
-            return new HomeLocation[0];
+            // Create a new list to return
+            var nodes = catagoryNode.SelectNodes("Residence");
+            var homes = new List<ResidenceLocation>(nodes.Count);
+            foreach (XmlNode homeNode in nodes)
+            {
+                Vector3 vector;
+
+                // Ensure we have attributes
+                if (homeNode.Attributes == null)
+                {
+                    Log.Warning($"ZoneInfo.ExtractHomes(): Home item has no attributes");
+                    continue;
+                }
+
+                // Try and extract probability value
+                if (String.IsNullOrWhiteSpace(homeNode.Attributes["position"]?.Value))
+                {
+                    Log.Warning($"ZoneInfo.ExtractHomes(): Unable to extract home position attribute value in zone '{ScriptName}'");
+                    continue;
+                }
+                else // Parse Vector3
+                {
+                    string[] parts = homeNode.Attributes["position"].Value.Split(';');
+                    if (parts.Length != 2)
+                    {
+                        Log.Warning($"ZoneInfo.ExtractHomes(): Home position attribute value is not formatted properly in zone '{ScriptName}'");
+                        continue;
+                    }
+
+                    if (!Vector3Extensions.TryParse(parts[0], out vector))
+                    {
+                        Log.Warning($"ZoneInfo.ExtractHomes(): Unable to parse home position attribute value in zone '{ScriptName}'");
+                        continue;
+                    }
+                }
+
+                // Create home
+                var home = new ResidenceLocation(this, vector);
+
+                // Extract nodes
+                try
+                {
+                    home.Address = homeNode.SelectSingleNode("Address")?.InnerText ?? throw new ArgumentException("Address");
+                    if (int.TryParse(homeNode.SelectSingleNode("Postal")?.InnerText, out int postal))
+                    {
+                        home.Postal = postal;
+                    }
+
+                    // Try and parse social class
+                    string val = homeNode.SelectSingleNode("Class")?.InnerText;
+                    if (String.IsNullOrEmpty(val) || !Enum.TryParse(val, out SocialClass sClass))
+                    {
+                        throw new ArgumentException("Class");
+                    }
+                    home.Class = sClass;
+
+                    // Try and parse type
+                    val = homeNode.SelectSingleNode("Type")?.InnerText;
+                    if (String.IsNullOrEmpty(val) || !Enum.TryParse(val, out ResidenceType sType))
+                    {
+                        throw new ArgumentException("Type");
+                    }
+                    home.Type = sType;
+
+                    // Try and parse type
+                    val = homeNode.SelectSingleNode("Flags")?.InnerText;
+                    if (!String.IsNullOrEmpty(val))
+                    {
+                        AddLocationFlagsFromCSV(val, home);
+                    }
+                }
+                catch (ArgumentException e)
+                {
+                    Log.Warning($"ZoneInfo.ExtractHomes(): Unable to extract/parse home value {e.ParamName} in zone '{ScriptName}'");
+                    continue;
+                }
+
+                // Parse spawn points!
+                XmlNode pointsNode = homeNode.SelectSingleNode("Points");
+                if (pointsNode == null || !pointsNode.HasChildNodes)
+                {
+                    Log.Warning($"ZoneInfo.ExtractHomes(): Unable to extract home SpawnPoints in zone '{ScriptName}'");
+                    continue;
+                }
+
+                // Parse spawn points
+                foreach (XmlNode sp in pointsNode.SelectNodes("SpawnPoint"))
+                {
+                    var item = ParseSpawnPoint(LocationType.Residence, sp);
+                    if (item == null)
+                        continue;
+
+                    // Try and extract typ value
+                    if (sp.Attributes["id"]?.Value == null || !Enum.TryParse(sp.Attributes["id"].Value, out HomeSpawnId s))
+                    {
+                        Log.Warning($"ZoneInfo.ParseSpawnPoint(): Unable to extract SpawnPoint id value for '{ScriptName}->Homes->Home->Points'");
+                        break;
+                    }
+
+                    home.SpawnPoints[s] = item;
+                }
+
+                // Not ok?
+                if (!home.IsValid())
+                {
+                    Log.Warning($"ZoneInfo.ExtractHomes(): Home node is missing some SpawnPoints in zone '{ScriptName}'");
+                    continue;
+                }
+
+                // Add home to collection
+                homes.Add(home);
+            }
+
+            // Did we extract anything?
+            if (homes.Count == 0)
+            {
+                Log.Warning($"ZoneInfo.ExtractHomes(): No residences to extract in '{ScriptName}'");
+            }
+
+            return homes.ToArray();
         }
 
         /// <summary>

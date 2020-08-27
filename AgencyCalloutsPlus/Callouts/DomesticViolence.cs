@@ -18,9 +18,9 @@ namespace AgencyCalloutsPlus.Callouts
     public class DomesticViolence : AgencyCallout
     {
         /// <summary>
-        /// Stores the <see cref="API.SpawnPoint"/> where the accident occured
+        /// Stores the <see cref="API.ResidenceLocation"/> where the accident occured
         /// </summary>
-        public SpawnPoint SpawnPoint { get; protected set; }
+        public ResidenceLocation Location { get; protected set; }
 
         /// <summary>
         /// Stores the current randomized scenario
@@ -51,16 +51,16 @@ namespace AgencyCalloutsPlus.Callouts
 
             // Store data
             ActiveCall = call;
-            SpawnPoint = call.Location as SpawnPoint;
+            Location = call.Location as ResidenceLocation;
             ScenarioNode = LoadScenarioNode(call.ScenarioInfo);
 
             // Create scenario class handler
             Scenario = CreateScenarioInstance();
 
             // Show are blip and message
-            ShowCalloutAreaBlipBeforeAccepting(SpawnPoint.Position, 40f);
+            ShowCalloutAreaBlipBeforeAccepting(Location.Position, 40f);
             CalloutMessage = call.IncidentText;
-            CalloutPosition = SpawnPoint.Position;
+            CalloutPosition = Location.Position;
 
             // Play scanner audio
             if (call.ScenarioInfo.ResponseCode == 3)
@@ -72,27 +72,57 @@ namespace AgencyCalloutsPlus.Callouts
             return base.OnBeforeCalloutDisplayed();
         }
 
+        /// <summary>
+        /// Event called right after the Callout is accepted by the player
+        /// </summary>
+        /// <returns>false on failure, true otherwise</returns>
         public override bool OnCalloutAccepted()
         {
-            // Setup active scene
-            Scenario.Setup();
+            try
+            {
+                // Setup active scene
+                Scenario.Setup();
+            }
+            catch (Exception e)
+            {
+                // Log exception
+                Log.Exception(e);
+
+                // Clean up entities
+                Scenario.Cleanup();
+
+                // Clear call
+                base.OnCalloutNotAccepted();
+
+                // Tell LSPDFR we failed to setup the scenario
+                return false;
+            }
 
             // AgencyCallout base class will handle the Dispatch stuff
             return base.OnCalloutAccepted();
         }
 
+        /// <summary>
+        /// Event called right if the callout is not accepted by the player
+        /// </summary>
         public override void OnCalloutNotAccepted()
         {
             // AgencyCallout base class will handle the Dispatch stuff
             base.OnCalloutNotAccepted();
         }
 
+        /// <summary>
+        /// Method called every tick
+        /// </summary>
         public override void Process()
         {
             base.Process();
             Scenario.Process();
         }
 
+        /// <summary>
+        /// Method called when the callout has ended
+        /// </summary>
         public override void End()
         {
             Scenario.Cleanup();
@@ -107,10 +137,10 @@ namespace AgencyCalloutsPlus.Callouts
         {
             switch (ActiveCall.ScenarioInfo.Name)
             {
-                case "DomesticArguingOnly":
-                    return new DomesticArguingOnly(this, ScenarioNode);
+                case "ReportsOfArguingThreats":
+                    return new ReportsOfArguingThreats(this, ScenarioNode);
                 default:
-                    throw new Exception($"Unsupported TrafficAccident Scenario '{ActiveCall.ScenarioInfo.Name}'");
+                    throw new Exception($"Unsupported DomesticViolence Scenario '{ActiveCall.ScenarioInfo.Name}'");
             }
         }
     }

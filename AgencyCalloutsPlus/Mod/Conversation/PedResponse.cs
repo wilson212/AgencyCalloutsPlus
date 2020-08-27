@@ -8,7 +8,7 @@
         /// <summary>
         /// Contains our possible responses
         /// </summary>
-        private ProbabilityGenerator<LineSet> Responses { get; set; }
+        private ProbabilityGenerator<Statement> Statements { get; set; }
 
         /// <summary>
         /// Gets the button ID's that prompts this <see cref="PedResponse" />
@@ -24,7 +24,7 @@
         /// Contains the selected response to the question. This does not
         /// change once selected!
         /// </summary>
-        private LineSet SelectedLineSet { get; set; }
+        private Statement SelectedStatement { get; set; }
 
         /// <summary>
         /// Contains an array of <see cref="RAGENativeUI.Elements.UIMenuItem"/> names to hide
@@ -45,7 +45,7 @@
         /// <param name="returnMenuId"></param>
         public PedResponse(string[] fromInputIds, string returnMenuId)
         {
-            Responses = new ProbabilityGenerator<LineSet>();
+            Statements = new ProbabilityGenerator<Statement>();
             FromInputIds = fromInputIds;
             ReturnMenuId = returnMenuId;
         }
@@ -54,32 +54,32 @@
         /// Adds a lineset to the internal <see cref="ProbabilityGenerator{T}"/>
         /// </summary>
         /// <param name="set"></param>
-        internal void AddLineSet(LineSet set)
+        internal void AddStatement(Statement set)
         {
-            Responses.Add(set);
+            Statements.Add(set);
         }
 
         /// <summary>
-        /// Gets a random <see cref="LineSet"/> from this <see cref="PedResponse"/>
+        /// Gets a random <see cref="Statement"/> from this <see cref="PedResponse"/>
         /// </summary>
         /// <param name="cacheResponse">if true, the same response will be returned everytime this method is called</param>
         /// <returns></returns>
-        public LineSet GetResponseLineSet(bool cacheResponse = true)
+        public Statement GetStatement(bool cacheResponse = true)
         {
             if (cacheResponse)
             {
                 // Spawn a response if we have not selected one yet
-                if (SelectedLineSet == null)
+                if (SelectedStatement == null)
                 {
-                    SelectedLineSet = Responses.Spawn();
+                    SelectedStatement = Statements.Spawn();
                 }
             }
             else
             {
-                SelectedLineSet = Responses.Spawn();
+                SelectedStatement = Statements.Spawn();
             }
 
-            return SelectedLineSet;
+            return SelectedStatement;
         }
     }
 }

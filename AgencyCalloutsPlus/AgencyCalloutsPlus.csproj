@@ -88,11 +88,13 @@
     <Compile Include="API\CallListUpdateHandler.cs" />
     <Compile Include="API\Enums\Gender.cs" />
     <Compile Include="API\Enums\LocationFlags.cs" />
+    <Compile Include="API\Enums\PedDemeanor.cs" />
     <Compile Include="API\Enums\PedVariantGroup.cs" />
     <Compile Include="API\Enums\Weather.cs" />
     <Compile Include="API\GameWorld.cs" />
     <Compile Include="Extensions\EnumExtensions.cs" />
-    <Compile Include="Mod\NativeUI\ActiveCallListTabPage.cs" />
+    <Compile Include="Mod\Conversation\SubtitleEventHandler.cs" />
+    <Compile Include="Mod\NativeUI\OpenCallListTabPage.cs" />
     <Compile Include="Mod\NativeUI\MyUIMenuItem.cs" />
     <Compile Include="Mod\NativeUI\PriorityCallTabItem.cs" />
     <Compile Include="Mod\PedDescriptionProperty.cs" />
@@ -109,7 +111,7 @@
     <Compile Include="Mod\AgencyCallout.cs" />
     <Compile Include="API\Agencies\CityPoliceAgency.cs" />
     <Compile Include="API\Enums\HomeFlags.cs" />
-    <Compile Include="API\Enums\HomeType.cs" />
+    <Compile Include="API\Enums\ResidenceType.cs" />
     <Compile Include="API\Enums\OfficerRole.cs" />
     <Compile Include="API\Agencies\HighwayPatrolAgency.cs" />
     <Compile Include="API\PriorityCallDescription.cs" />
@@ -123,7 +125,7 @@
     <Compile Include="API\Enums\ZoneType.cs" />
     <Compile Include="API\Simulation\AISceneSimulation.cs" />
     <Compile Include="API\WorldLocation.cs" />
-    <Compile Include="API\Locations\HomeLocation.cs" />
+    <Compile Include="API\Locations\ResidenceLocation.cs" />
     <Compile Include="API\Enums\Population.cs" />
     <Compile Include="API\Enums\OfficerStatus.cs" />
     <Compile Include="API\Enums\OfficerStatusColor.cs" />
@@ -135,7 +137,7 @@
     <Compile Include="API\Enums\CallPriority.cs" />
     <Compile Include="API\Simulation\VirtualAIOfficerUnit.cs" />
     <Compile Include="Callouts\DomesticViolence.cs" />
-    <Compile Include="Callouts\Scenarios\DomesticViolence\DomesticArguingOnly.cs" />
+    <Compile Include="Callouts\Scenarios\DomesticViolence\ReportsOfArguingThreats.cs" />
     <Compile Include="Mod\Enums\TimeOfDay.cs" />
     <Compile Include="Mod\ExpressionParser.cs" />
     <Compile Include="Mod\NativeUI\CurrentCallTabPage.cs" />
@@ -143,7 +145,7 @@
     <Compile Include="SpawnableWrapper.cs" />
     <Compile Include="SubtitleQueue.cs" />
     <Compile Include="Mod\Conversation\PedResponse.cs" />
-    <Compile Include="Mod\PedWrapper.cs" />
+    <Compile Include="Mod\GamePed.cs" />
     <Compile Include="Mod\RegionCrimeGenerator.cs" />
     <Compile Include="Extensions\EntityExtensions.cs" />
     <Compile Include="Extensions\Enums\ENeonLights.cs" />
@@ -191,8 +193,8 @@
     <Compile Include="Main.cs" />
     <Compile Include="Mod\Conversation\ResponseSet.cs" />
     <Compile Include="Mod\Conversation\FlowSequence.cs" />
-    <Compile Include="Mod\Conversation\LineItem.cs" />
-    <Compile Include="Mod\Conversation\LineSet.cs" />
+    <Compile Include="Mod\Conversation\Subtitle.cs" />
+    <Compile Include="Mod\Conversation\Statement.cs" />
     <Compile Include="Mod\UI\Alignment.cs" />
     <Compile Include="Mod\UI\ContainerElement.cs" />
     <Compile Include="Mod\UI\GameFont.cs" />
@@ -208,8 +210,8 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="Mod\RageUIMenus\ADACMainMenu.cs" />
-    <Compile Include="Mod\RageUIMenus\CalloutPedInteractionMenu.cs" />
+    <Compile Include="Mod\NativeUI\ADACMainMenu.cs" />
+    <Compile Include="Mod\NativeUI\CalloutInteractionMenu.cs" />
     <Compile Include="Mod\NativeUI\ComputerAidedDispatchMenu.cs" />
     <Compile Include="Range.cs" />
     <Compile Include="Settings.cs" />
@@ -234,6 +236,15 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="AgencyCalloutsPlus\Agencies.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AgencyCalloutsPlus\Callouts\DomesticViolence\CalloutMeta.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AgencyCalloutsPlus\Callouts\DomesticViolence\FlowSequence\ReportsOfArguingThreats\Suspect.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AgencyCalloutsPlus\Callouts\DomesticViolence\FlowSequence\ReportsOfArguingThreats\Victim.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="AgencyCalloutsPlus\Callouts\TrafficAccident\CalloutMeta.xml">

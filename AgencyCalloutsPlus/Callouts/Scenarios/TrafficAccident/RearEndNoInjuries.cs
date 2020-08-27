@@ -2,8 +2,7 @@
 using AgencyCalloutsPlus.Extensions;
 using AgencyCalloutsPlus.Mod;
 using AgencyCalloutsPlus.Mod.Conversation;
-using AgencyCalloutsPlus.RageUIMenus;
-using LSPD_First_Response;
+using AgencyCalloutsPlus.Mod.NativeUI;
 using Rage;
 using System;
 using System.Collections.Generic;
@@ -32,7 +31,7 @@ namespace AgencyCalloutsPlus.Callouts.Scenarios.TrafficAccident
         /// <summary>
         /// Contains the interaction menu for this scenario
         /// </summary>
-        private CalloutPedInteractionMenu Menu { get; set; }
+        private CalloutInteractionMenu Menu { get; set; }
 
         #region Victim fields
 
@@ -129,8 +128,8 @@ namespace AgencyCalloutsPlus.Callouts.Scenarios.TrafficAccident
             SuspectVehicle.DeformFront(200, 200);
 
             // Add parser variables
-            var suspect = new PedWrapper(Suspect);
-            var victim = new PedWrapper(Victim);
+            var suspect = new GamePed(Suspect);
+            var victim = new GamePed(Victim);
             Parser.SetParamater("Victim", victim);
             Parser.SetParamater("Suspect", suspect);
 
@@ -154,7 +153,7 @@ namespace AgencyCalloutsPlus.Callouts.Scenarios.TrafficAccident
             victimSeq.SetVariableDictionary(variables);
 
             // Register menu
-            Menu = new CalloutPedInteractionMenu("Callout Interaction", "~b~Traffic Accident: ~y~Rear End Collision");
+            Menu = new CalloutInteractionMenu("Traffic Accident", "Rear End Collision");
             Menu.RegisterPedConversation(Suspect, suspectSeq);
             Menu.RegisterPedConversation(Victim, victimSeq);
         }
@@ -174,6 +173,7 @@ namespace AgencyCalloutsPlus.Callouts.Scenarios.TrafficAccident
             {
                 World.TeleportLocalPlayer(SpawnPoint.Position.Around(15f), true);
             }
+            
         }
 
         /// <summary>

@@ -7,7 +7,7 @@ namespace AgencyCalloutsPlus.API
     /// <summary>
     /// Represents a <see cref="WorldLocation"/> that is a home
     /// </summary>
-    public class HomeLocation : WorldLocation
+    public class ResidenceLocation : WorldLocation
     {
         /// <summary>
         /// Containts a list of spawn points for <see cref="Rage.Entity"/> types
@@ -25,20 +25,25 @@ namespace AgencyCalloutsPlus.API
         public SocialClass Class { get; internal set; }
 
         /// <summary>
-        /// Gets the <see cref="API.HomeType"/> of this home
+        /// Gets the <see cref="API.ResidenceType"/> of this home
         /// </summary>
-        public HomeType Type { get; internal set; }
+        public ResidenceType Type { get; internal set; }
 
         /// <summary>
         /// Gets the <see cref="AgencyCalloutsPlus.API.LocationType"/> for this <see cref="WorldLocation"/>
         /// </summary>
-        public override LocationType LocationType => LocationType.Homes;
+        public override LocationType LocationType => LocationType.Residence;
 
         /// <summary>
-        /// Creates a new instance of <see cref="HomeLocation"/>
+        /// Gets the <see cref="Vector3"/> location of this residence
+        /// </summary>
+        public Vector3 Location { get; set; }
+
+        /// <summary>
+        /// Creates a new instance of <see cref="ResidenceLocation"/>
         /// </summary>
         /// <param name="location"></param>
-        internal HomeLocation(ZoneInfo zone, Vector3 location) : base(location)
+        internal ResidenceLocation(ZoneInfo zone, Vector3 location) : base(location)
         {
             // @todo
             Zone = zone;
@@ -55,6 +60,14 @@ namespace AgencyCalloutsPlus.API
             }
 
             return true;
+        }
+
+        public SpawnPoint GetSpawnPoint(HomeSpawnId type)
+        {
+            if (!SpawnPoints.ContainsKey(type))
+                return null;
+
+            return SpawnPoints[type];
         }
     }
 }

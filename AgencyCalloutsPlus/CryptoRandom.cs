@@ -17,6 +17,28 @@ namespace AgencyCalloutsPlus
         public CryptoRandom(Int32 ignoredSeed) { }
 
         /// <summary>
+        /// Picks a random element of <typeparamref name="T"/> that is provided in
+        /// the  <paramref name="items"/> list and returns it.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="items"></param>
+        /// <returns></returns>
+        public T PickOne<T>(params T[] items)
+        {
+            // Need at least 1 item
+            if (items.Length == 0)
+                throw new ArgumentOutOfRangeException("items");
+
+            // If ony a single item, return that
+            if (items.Length == 1)
+                return items[0];
+
+            // Grab random index
+            int index = Next(1, items.Length);
+            return items[index - 1];
+        }
+
+        /// <summary>
         /// Gets the next random number in the sequence
         /// </summary>
         /// <returns></returns>

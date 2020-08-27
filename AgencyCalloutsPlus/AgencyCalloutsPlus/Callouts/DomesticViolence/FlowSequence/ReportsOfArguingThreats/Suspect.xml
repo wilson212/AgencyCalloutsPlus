@@ -1,0 +1,81 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<!--
+  Defined Variables for string replacement (ex: $varName$)
+    - SuspectVehicleType  : Gets the name of the suspects vehicle type (ex: car, truck, motorcycle etc)
+    - VictimVehicleType   : Gets the name of the victims vehicle type (ex: car, truck, motorcycle etc)
+    - SuspectTitle        : Gets the title and surname of the suspect (ex: Mr. Smith)
+    - VictimTitle         : Gets the title and surname of the victim (ex: Ms. Clark)
+    
+  Condition Statement Defined Variables:
+    - Victim    -> [T:AgencyCalloutsPlus.Mod.GamePed]  (source: https://github.com/wilson212/AgencyCalloutsPlus/blob/master/AgencyCalloutsPlus/Mod/GamePed.cs)
+    - Suspect   -> [T:AgencyCalloutsPlus.Mod.GamePed]  (source: https://github.com/wilson212/AgencyCalloutsPlus/blob/master/AgencyCalloutsPlus/Mod/GamePed.cs)
+    - Weather   -> [T:AgencyCalloutsPlus.Mod.WeatherInfo] (source: https://github.com/wilson212/AgencyCalloutsPlus/blob/master/AgencyCalloutsPlus/Mod/WeatherInfo.cs)
+-->
+<FlowSequence>
+  <Input>
+    <!-- Initial Questioning Menu -->
+    <Menu id="main">
+      <MenuItem id="ok" buttonText="Do you need medical?" visible="true">
+        <Subtitle time="2000">Do you require any medical attention?</Subtitle>
+      </MenuItem>
+      <MenuItem id="how" buttonText="How did this happen?" visible="true">
+        <Subtitle time="2000">How did this happen?</Subtitle>
+      </MenuItem>
+      <MenuItem id="tailgate" buttonText="Tailgating?" visible="false">
+        <Subtitle time="3000">$VictimTitle$ stated that you were tailgating. Is this a true statement?</Subtitle>
+      </MenuItem>
+    </Menu>
+  </Input>
+  <Output>
+
+    <!-- Default Outcome: Victim2 is at fault for texting and driving -->
+    <FlowOutcome id="cheating" initialMenu="main">
+      <Ped drunkChance="3" highChance="3">
+        <Inventory></Inventory>
+        <Presentation>
+          <Demeanor probability="10">Calm</Demeanor>
+          <Demeanor probability="20">Nervous</Demeanor>
+          <Demeanor probability="10">Annoyed</Demeanor>
+          <Demeanor probability="15">Agitated</Demeanor>
+          <Demeanor probability="15">Angry</Demeanor>
+        </Presentation>
+      </Ped>
+      <Responses>
+        <Response to="ok" returnMenu="main">
+          <Statement probability="100">
+            <Subtitle time="3000">No, I seem to be ok...</Subtitle>
+          </Statement>
+          <Statement probability="100">
+            <Subtitle time="3000">I am ok officer</Subtitle>
+          </Statement>
+          <Statement probability="100">
+            <Subtitle time="3000">Nope, I'm fine thanks...</Subtitle>
+          </Statement>
+        </Response>
+        <Response to="how" returnMenu="main">
+          <!-- Honest 1 -->
+          <Statement probability="10">
+            <Subtitle time="3000">Well officer, Ill be honest... I was texting and driving.</Subtitle>
+          </Statement>
+          <!-- Honest 2 -->
+          <Statement probability="10">
+            <Subtitle time="4000">I was watching YouTube on my phone and wasn't paying attention.</Subtitle>
+          </Statement>
+          <!-- Honest 3 -->
+          <Statement probability="10">
+            <Subtitle time="4000">I was day dreaming and didn't see the car in front of my hit thier brakes.</Subtitle>
+          </Statement>
+          <!-- brake check asshole -->
+          <Statement probability="10" if="Victim.Ped.IsMale == true">
+            <Subtitle time="4000">This asshole in front of me brake checked me!</Subtitle>
+          </Statement>
+          <!-- brake check bitch -->
+          <Statement probability="10" if="Victim.Ped.IsFemale == true">
+            <Subtitle time="4000">This bitch in front of me brake checked me!</Subtitle>
+          </Statement>
+        </Response>
+      </Responses>
+    </FlowOutcome>
+
+  </Output>
+</FlowSequence>
