@@ -9,7 +9,7 @@ namespace AgencyCalloutsPlus
     /// </summary>
     /// <remarks>P( T item ) = item.Probability / CumulativeProbability</remarks>
     /// <typeparam name="T"></typeparam>
-    internal class ProbabilityGenerator<T> where T : ISpawnable
+    public class ProbabilityGenerator<T> where T : ISpawnable
     {
         private CryptoRandom Randomizer = new CryptoRandom();
         private List<SpawnableWrapper<T>> SpawnableEntities;

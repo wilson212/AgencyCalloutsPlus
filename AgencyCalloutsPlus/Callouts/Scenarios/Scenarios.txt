@@ -24,9 +24,11 @@ Callouts:
 	- RecklessDriver						[Traffic]
 	- ExcessiveSpeeding						[Traffic]
 	- StreetRacing							[Traffic]
+	- CarBlockingTraffic					[Traffic]
 	- AbandonedVehicleOnHighway				[Traffic]
 	- BikersHarrasingCar					[Traffic]
 	- UnRoadWorthyVehicle					[Traffic]
+	- VehicleOnFire							[Traffic]
 - StolenVehicleSpotted
 	- ByCop: Begins Pursuit					[Traffic]
 	- ALPR Hit								[Traffic]
@@ -115,7 +117,7 @@ Callouts:
 - MissingPerson
 	- DemensiaPatientMissing				[Other]
 	- MissingPersonReport					[Other]
-	- ChildRunawayReport					[Other]
 	- Kidnapping							[Other]
+	- LostHiker								[Other]
  - Warrant
 	- ServingWarrant						[Other]

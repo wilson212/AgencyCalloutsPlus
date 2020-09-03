@@ -40,6 +40,11 @@ namespace AgencyCalloutsPlus.API
         internal static Dictionary<string, WorldStateProbabilityGenerator<CalloutScenarioInfo>> ScenariosByCalloutName { get; set; }
 
         /// <summary>
+        /// Contains a hash table of <see cref="WorldLocation"/>s that are currently in use by the Call Queue
+        /// </summary>
+        internal static Dictionary<LocationType, List<WorldLocation>> ActiveCrimeLocations { get; set; }
+
+        /// <summary>
         /// Randomizer method used to randomize callouts and locations
         /// </summary>
         private static CryptoRandom Randomizer { get; set; }
@@ -173,9 +178,16 @@ namespace AgencyCalloutsPlus.API
             ScenariosByName = new Dictionary<string, CalloutScenarioInfo>();
             ScenariosByCalloutName = new Dictionary<string, WorldStateProbabilityGenerator<CalloutScenarioInfo>>();
             ScenariosByCalloutType = new Dictionary<CalloutType, WorldStateProbabilityGenerator<CalloutScenarioInfo>>();
-            foreach (var type in Enum.GetValues(typeof(CalloutType)))
+            foreach (CalloutType type in Enum.GetValues(typeof(CalloutType)))
             {
-                ScenariosByCalloutType.Add((CalloutType)type, new WorldStateProbabilityGenerator<CalloutScenarioInfo>());
+                ScenariosByCalloutType.Add(type, new WorldStateProbabilityGenerator<CalloutScenarioInfo>());
+            }
+
+            // Intialize a hash table of active crime locations
+            ActiveCrimeLocations = new Dictionary<LocationType, List<WorldLocation>>();
+            foreach (LocationType type in Enum.GetValues(typeof(LocationType)))
+            {
+                ActiveCrimeLocations.Add(type, new List<WorldLocation>(10));
             }
 
             // Create call Queue
@@ -239,7 +251,7 @@ namespace AgencyCalloutsPlus.API
 
             // Set new unit string
             Settings.AudioDivision = division;
-            PlayerUnit.CallSign = $"{Settings.AudioDivision}{Settings.AudioUnitType}-{Settings.AudioBeat}";
+            PlayerUnit.CallSign = $"{Settings.AudioDivision}{Settings.AudioUnitTypeLetter}-{Settings.AudioBeat}";
         }
 
         /// <summary>
@@ -255,7 +267,7 @@ namespace AgencyCalloutsPlus.API
 
             // Set new unit string
             Settings.AudioUnitType = LAPDphonetic[phoneticId - 1];
-            PlayerUnit.CallSign = $"{Settings.AudioDivision}{Settings.AudioUnitType}-{Settings.AudioBeat}";
+            PlayerUnit.CallSign = $"{Settings.AudioDivision}{Settings.AudioUnitTypeLetter}-{Settings.AudioBeat}";
         }
 
         /// <summary>
@@ -270,7 +282,7 @@ namespace AgencyCalloutsPlus.API
 
             // Set new unit string
             Settings.AudioBeat = beat;
-            PlayerUnit.CallSign = $"{Settings.AudioDivision}{Settings.AudioUnitType}-{Settings.AudioBeat}";
+            PlayerUnit.CallSign = $"{Settings.AudioDivision}{Settings.AudioUnitTypeLetter}-{Settings.AudioBeat}";
         }
 
         /// <summary>
@@ -317,6 +329,17 @@ namespace AgencyCalloutsPlus.API
             }
 
             return callCount;
+        }
+
+        /// <summary>
+        /// Gets an array of <see cref="WorldLocation"/>s currently in use based
+        /// on the specified <see cref="LocationType"/>
+        /// </summary>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        public static WorldLocation[] GetActiveCrimeLocationsByType(LocationType type)
+        {
+            return ActiveCrimeLocations[type].ToArray();
         }
 
         /// <summary>
@@ -525,6 +548,7 @@ namespace AgencyCalloutsPlus.API
             lock (_lock)
             {
                 CallQueue[priority].Remove(call);
+                ActiveCrimeLocations[call.Location.LocationType].Remove(call.Location);
             }
 
             // Set player status
@@ -642,9 +666,9 @@ namespace AgencyCalloutsPlus.API
         {
             // Ensure the call is not null. This can happen when trying
             // to initiate a scenario from a menu
-            if (call == null)
+            if (call == null || call.Location == null)
             {
-                Log.Error("Dispatch.AddIncomingCall(): Tried to add a call that is a null reference");
+                Log.Error("Dispatch.AddIncomingCall(): Tried to add a call that is a null reference, or has a null location reference");
                 return;
             }
 
@@ -652,6 +676,7 @@ namespace AgencyCalloutsPlus.API
             lock (_lock)
             {
                 CallQueue[call.Priority - 1].Add(call);
+                ActiveCrimeLocations[call.Location.LocationType].Add(call.Location);
                 Log.Debug($"Dispatch.AddIncomingCall(): Added Call to Queue '{call.ScenarioInfo.Name}' in zone '{call.Zone.FullName}'");
 
                 // Invoke the next callout for player?

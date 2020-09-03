@@ -288,29 +288,62 @@ namespace AgencyCalloutsPlus.API
         }
 
         /// <summary>
-        /// Gets a random Side of the Road location in this zone
+        /// Gets a random <see cref="WorldLocation"/>
         /// </summary>
-        /// <returns>returns a random <see cref="SpawnPoint"/> on success, or null on failure</returns>
-        public SpawnPoint GetRandomSideOfRoadLocation()
+        /// <param name="type"></param>
+        /// <param name="pool"></param>
+        /// <param name="inactiveOnly">If true, will only return a <see cref="WorldLocation"/> that is not currently in use</param>
+        /// <returns></returns>
+        internal WorldLocation GetRandomLocation(LocationType type, WorldLocation[] pool, bool inactiveOnly)
         {
+            // If we have no locations, return null
+            if (pool.Length == 0)
+            {
+                Log.Debug($"ZoneInfo.GetRandomLocation(): Unable to pull a {type} from zone '{ScriptName}' because the list is empty");
+                return null;
+            }
+
             // Load randomizer
             var random = new CryptoRandom();
 
+            // Will any location work?
+            if (!inactiveOnly) return random.PickOne(pool);
+
+            // Find all locations not in use
+            var active = Dispatch.GetActiveCrimeLocationsByType(type);
+            var available = pool.Except(active).ToArray();
+
+            // If no locations are available
+            if (available.Length == 0)
+            {
+                Log.Debug($"ZoneInfo.GetRandomLocation(): Unable to pull an available '{type}' location from zone '{ScriptName}' because the list is empty");
+                return null;
+            }
+
+            // We are good to go!
+            return random.PickOne(available);
+        }
+
+        /// <summary>
+        /// Gets a random Side of the Road location in this zone
+        /// </summary>
+        /// <param name="inactiveOnly">If true, will only return a <see cref="WorldLocation"/> that is not currently in use</param>
+        /// <returns>returns a random <see cref="SpawnPoint"/> on success, or null on failure</returns>
+        public SpawnPoint GetRandomSideOfRoadLocation(bool inactiveOnly = false)
+        {
             // Get random location
-            return random.PickOne(SideOfRoadLocations);
+            return GetRandomLocation(LocationType.SideOfRoad, SideOfRoadLocations, inactiveOnly) as SpawnPoint;
         }
 
         /// <summary>
         /// Gets a random <see cref="ResidenceLocation"/> in this zone
         /// </summary>
+        /// <param name="inactiveOnly">If true, will only return a <see cref="WorldLocation"/> that is not currently in use</param>
         /// <returns>returns a random <see cref="ResidenceLocation"/> on success, or null on failure</returns>
-        public ResidenceLocation GetRandomResidence()
+        public ResidenceLocation GetRandomResidence(bool inactiveOnly = false)
         {
-            // Load randomizer
-            var random = new CryptoRandom();
-
-            // Get zones in this jurisdiction
-            return random.PickOne(Residences);
+            // Get random location
+            return GetRandomLocation(LocationType.Residence, Residences, inactiveOnly) as ResidenceLocation;
         }
 
         /// <summary>

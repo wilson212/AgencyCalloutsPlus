@@ -234,6 +234,10 @@ namespace AgencyCalloutsPlus.Mod
         /// </summary>
         private void ProcessCrimeLogic()
         {
+            // stored local variables
+            int time = 0;
+            int timesFailed = 0;
+
             // While we are on duty accept calls
             while (IsRunning)
             {
@@ -241,18 +245,45 @@ namespace AgencyCalloutsPlus.Mod
                 var call = GenerateCall();
                 if (call == null)
                 {
+                    // If we keep failing, then show the player a message and quit
+                    if (timesFailed > 9)
+                    {
+                        // Display notification to the player
+                        Game.DisplayNotification(
+                            "3dtextures",
+                            "mpgroundlogo_cops",
+                            "Agency Dispatch and Callouts+",
+                            "~o~Region Crime Generator.",
+                            $"Failed to generate a call too many times. Disabling the crime generator. Please check your ~y~Game.log~w~ for errors"
+                        );
+
+                        // Log the error
+                        Log.Error("RegionCrimeGenerator.ProcessCrimeLogic(): Failed to generate a call 10 times. Please contact the developer.");
+
+                        // Turn off
+                        IsRunning = false;
+                        break;
+                    }
+
                     // Log as warning for developer
-                    Log.Warning($"Unable to generate a PriorityCall for player Agency!");
+                    Log.Warning($"Failed to generate a PriorityCall. Trying again in 1 second.");
+                    time = 1000;
+
+                    // Count
+                    timesFailed++;
                 }
                 else
                 {
                     // Register call so that it can be dispatched
                     Dispatch.AddIncomingCall(call);
-                }
 
-                // Determine random time till next call
-                var time = Randomizer.Next(CallTimerRange.Minimum, CallTimerRange.Maximum);
-                Log.Debug($"Starting next call in {time}ms");
+                    // Determine random time till next call
+                    time = Randomizer.Next(CallTimerRange.Minimum, CallTimerRange.Maximum);
+                    Log.Debug($"Starting next call in {time}ms");
+
+                    // Reset
+                    timesFailed = 0;
+                }
 
                 // Wait
                 GameFiber.Wait(time);
@@ -351,8 +382,6 @@ namespace AgencyCalloutsPlus.Mod
                 }
             }
 
-            //Log.Debug($"\t\t\t1) Minimum MS Per Call: {min}");
-
             // Get time until the next TimeOfDay change
             var timerUntilNext = GetTimeUntilNextTimeOfDay();
             var nextChangeRealTimeMS = Convert.ToInt32(timerUntilNext.TotalMilliseconds / Settings.TimeScale);
@@ -365,12 +394,8 @@ namespace AgencyCalloutsPlus.Mod
                 max = (int)(nextChangeRealTimeMS + (hourGameTimeToSecondsRealTime * 1000));
             }
 
-            //Log.Debug($"\t\t\t2) Minimum MS Per Call: {min}");
-
             // Adjust call frequency timer
             CallTimerRange = new Range<int>(min, max);
-
-            // Check for zeroes!
             if (min == 0 || !CallTimerRange.IsValid())
             {
                 Log.Error($"RegionCrimeGenerator.AdjustCallFrequencyTimer(): Detected a bad call timer range of {CallTimerRange}");
@@ -465,7 +490,7 @@ namespace AgencyCalloutsPlus.Mod
         /// </summary>
         /// <param name="scenario"></param>
         /// <returns></returns>
-        public PriorityCall CreateCallFromScenario(CalloutScenarioInfo scenario)
+        internal PriorityCall CreateCallFromScenario(CalloutScenarioInfo scenario)
         {
             // Try to generate a call
             for (int i = 0; i < Settings.MaxLocationAttempts; i++)
@@ -476,28 +501,20 @@ namespace AgencyCalloutsPlus.Mod
                     ZoneInfo zone = GetNextRandomCrimeZone();
                     if (zone == null)
                     {
-                        Log.Debug($"CrimeGenerator.CreateCallFromScenario(): Attempted to pull a zone but zone is null");
-                        continue;
+                        Log.Error($"CrimeGenerator.CreateCallFromScenario(): Attempted to pull a zone but zone is null");
+                        break;
                     }
 
                     // Get a random location!
                     WorldLocation location = GetScenarioLocationFromZone(zone, scenario);
                     if (location == null)
                     {
-                        Log.Debug($"CrimeGenerator.CreateCallFromScenario(): Unable to pull Location type {scenario.LocationType} from zone '{zone.FullName}'");
+                        Log.Warning($"CrimeGenerator.CreateCallFromScenario(): Zone '{zone.FullName}' does not have any available '{scenario.LocationType}' locations");
                         continue;
                     }
 
-                    // Create PriorityCall wrapper
-                    var call = new PriorityCall(NextCallId++, scenario)
-                    {
-                        Location = location,
-                        CallStatus = CallStatus.Created,
-                        Zone = zone
-                    };
-
-                    // Add call to priority Queue
-                    return call;
+                    // Add call to the dispatch Queue
+                    return new PriorityCall(NextCallId++, scenario, zone, location);
                 }
                 catch (Exception ex)
                 {
@@ -514,24 +531,24 @@ namespace AgencyCalloutsPlus.Mod
         /// <returns></returns>
         protected virtual PriorityCall GenerateCall()
         {
+            // Spawn a zone in our jurisdiction
+            ZoneInfo zone = GetNextRandomCrimeZone();
+            if (zone == null)
+            {
+                Log.Error($"RegionCrimeGenerator.GenerateCall(): Attempted to pull a random zone but zone is null");
+                return null;
+            }
+
             // Try to generate a call
             for (int i = 0; i < Settings.MaxLocationAttempts; i++)
             {
                 try
                 {
-                    // Spawn a zone in our jurisdiction
-                    ZoneInfo zone = GetNextRandomCrimeZone();
-                    if (zone == null)
-                    {
-                        Log.Debug($"CrimeGenerator: Attempted to pull a zone but zone is null");
-                        continue;
-                    }
-
                     // Spawn crime type from our spawned zone
                     CalloutType type = zone.GetNextRandomCrimeType();
                     if (!Dispatch.ScenariosByCalloutType[type].TrySpawn(out CalloutScenarioInfo scenario))
                     {
-                        Log.Debug($"CrimeGenerator: Unable to pull CalloutType {type} from zone '{zone.FullName}'");
+                        Log.Warning($"RegionCrimeGenerator.GenerateCall(): Unable to find a CalloutScenario of CalloutType {type} from zone '{zone.FullName}'");
                         continue;
                     }
 
@@ -539,24 +556,18 @@ namespace AgencyCalloutsPlus.Mod
                     WorldLocation location = GetScenarioLocationFromZone(zone, scenario);
                     if (location == null)
                     {
-                        Log.Debug($"CrimeGenerator: Unable to pull Location type {scenario.LocationType} from zone '{zone.FullName}'");
+                        // Log this as a warning... May need to add more locations!
+                        Log.Warning($"RegionCrimeGenerator.GenerateCall(): Zone '{zone.FullName}' does not have any available '{scenario.LocationType}' locations");
                         continue;
                     }
 
-                    // Create PriorityCall wrapper
-                    var call = new PriorityCall(NextCallId++, scenario)
-                    {
-                        Location = location,
-                        CallStatus = CallStatus.Created,
-                        Zone = zone
-                    };
-
-                    // Add call to priority Queue
-                    return call;
+                    // Add call to the dispatch Queue
+                    return new PriorityCall(NextCallId++, scenario, zone, location);
                 }
                 catch (Exception ex)
                 {
                     Log.Exception(ex);
+                    break;
                 }
             }
 
@@ -574,9 +585,9 @@ namespace AgencyCalloutsPlus.Mod
             switch (scenario.LocationType)
             {
                 case LocationType.SideOfRoad:
-                    return zone.GetRandomSideOfRoadLocation();
+                    return zone.GetRandomSideOfRoadLocation(true);
                 case LocationType.Residence:
-                    return zone.GetRandomResidence();
+                    return zone.GetRandomResidence(true);
             }
 
             return null;

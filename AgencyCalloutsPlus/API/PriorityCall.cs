@@ -113,13 +113,16 @@ namespace AgencyCalloutsPlus.API
         /// </summary>
         /// <param name="id"></param>
         /// <param name="scenarioInfo"></param>
-        internal PriorityCall(int id, CalloutScenarioInfo scenarioInfo)
+        internal PriorityCall(int id, CalloutScenarioInfo scenarioInfo, ZoneInfo zone, WorldLocation location)
         {
             CallId = id;
             CallCreated = World.DateTime;
             ScenarioInfo = scenarioInfo ?? throw new ArgumentNullException(nameof(scenarioInfo));
             Description = scenarioInfo.Descriptions.Spawn();
             AttachedOfficers = new List<OfficerUnit>(4);
+            CallStatus = CallStatus.Created;
+            Zone = zone;
+            Location = location;
 
             // Temp
             AISimulation = new AISceneSimulation(this);

@@ -37,17 +37,5 @@ namespace AgencyCalloutsPlus.Mod.Conversation
         {
             Probability = probability;
         }
-
-        /// <summary>
-        /// Displays the response as a subtitle in game
-        /// </summary>
-        /// <param name="speaker"></param>
-        public void Play(GamePed speaker)
-        {
-            foreach (var line in Subtitles)
-            {
-                Game.DisplaySubtitle($"~y~{speaker.Persona.Forename}~w~: {line.Text}", line.Duration);
-            }
-        }
     }
 }

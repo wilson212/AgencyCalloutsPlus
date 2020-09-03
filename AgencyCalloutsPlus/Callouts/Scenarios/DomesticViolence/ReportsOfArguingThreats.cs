@@ -157,7 +157,7 @@ namespace AgencyCalloutsPlus.Callouts.Scenarios.DomesticViolence
             Menu.AddMenuItem(KnockButton);
 
             // Create blip at the hime
-            AddressBlip = new Blip(Residence.GetSpawnPoint(HomeSpawnId.FrontDoorPed), 10f)
+            AddressBlip = new Blip(Residence.GetSpawnPoint(HomeSpawnId.FrontDoorPed))
             {
                 IsRouteEnabled = true,
                 Sprite = BlipSprite.PointOfInterest
@@ -211,11 +211,15 @@ namespace AgencyCalloutsPlus.Callouts.Scenarios.DomesticViolence
                     // Play player knocking animation
                     player.Tasks.PlayAnimation("timetable@jimmy@doorknock@", "knockdoor_idle", 1f, AnimationFlags.SecondaryTask).WaitForCompletion();
 
+                    // Spawn a Ped out of view close by... prevents ped from falling down when 
+                    // their position is changed to the front door directly
+                    var ped = new CryptoRandom().PickOne(Suspect, Victim);
+                    ped.Position = Residence.GetSpawnPoint(HomeSpawnId.BackYardPed);
+
                     // Wait for an answer
                     GameFiber.Wait(3000);
 
                     // Spawn a Ped at the door
-                    var ped = new CryptoRandom().PickOne(Suspect, Victim);
                     ped.Position = Residence.GetSpawnPoint(HomeSpawnId.FrontDoorPed);
 
                     // Attach Blips

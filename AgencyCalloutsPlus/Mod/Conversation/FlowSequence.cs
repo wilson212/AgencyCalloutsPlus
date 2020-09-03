@@ -512,15 +512,9 @@ namespace AgencyCalloutsPlus.Mod.Conversation
                         MenuButtonsById.Add(buttonId, item);
                     }
 
-                    // Add item to menu
-                    //menu.AddItem(item);
-
                     // Handle item visibility
                     if (!isVisible)
                     {
-                        // Remove item
-                        //menu.MenuItems.Remove(item);
-
                         // Store for later
                         HiddenMenuItems.Add(buttonId, item);
                     }

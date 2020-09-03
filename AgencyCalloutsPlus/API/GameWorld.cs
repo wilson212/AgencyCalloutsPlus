@@ -1,8 +1,6 @@
 ﻿using AgencyCalloutsPlus.Mod;
 using Rage;
 using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using static Rage.Native.NativeFunction;
@@ -473,7 +471,7 @@ namespace AgencyCalloutsPlus.API
         /// <param name="radius">The radius of the checkpoint cylinder</param>
         /// <param name="color">The color of the checkpoint</param>
         /// <returns>returns the handle of the checkpoint</returns>
-        public static int CreateCheckpoint(Vector3 pos, Color color, float radius = 5f, float nearHeight = 4f, float farHeight = 4f, bool forceGround = false)
+        public static int CreateCheckpoint(Vector3 pos, Color color, float radius = 5f, float nearHeight = 3f, float farHeight = 3f, bool forceGround = false)
         {
             if (forceGround)
             {
@@ -485,7 +483,7 @@ namespace AgencyCalloutsPlus.API
             // Create checkpoint
             int handle = Natives.CreateCheckpoint<int>(47, pos.X, pos.Y, pos.Z, pos.X, pos.Y, pos.Z, 1f, color.R, color.G, color.B, color.A, 0);
 
-            // Set hieght
+            // Set hieght and radius of the cylinder
             Natives.SetCheckpointCylinderHeight(handle, nearHeight, farHeight, radius);
 
             // return handle
