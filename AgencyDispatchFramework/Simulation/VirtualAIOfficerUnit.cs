@@ -130,10 +130,14 @@ namespace AgencyDispatchFramework.Simulation
             // Set updated location
             Position = CurrentCall.Location.Position;
 
-            // 30 in game minutes
+            // Set status
             Status = OfficerStatus.OnScene;
             LastStatusChange = World.DateTime;
-            NextStatusChange = LastStatusChange.AddMinutes(120);
+
+            // Determine how long we will be on scene
+            var random = new CryptoRandom();
+            var callTime = random.Next(CurrentCall.ScenarioInfo.SimulationTime);
+            NextStatusChange = LastStatusChange.AddMinutes(callTime);
         }
 
         /// <summary>
@@ -164,6 +168,43 @@ namespace AgencyDispatchFramework.Simulation
         public override Vector3 GetPosition()
         {
             return Position;
+        }
+
+        internal override void AssignToCallWithRandomCompletion(PriorityCall call)
+        {
+            // Assign ourselves
+            base.AssignToCall(call, true);
+
+            // Determine if we are on scene, and for how long we have been
+            var random = new CryptoRandom();
+            var onScene = random.Next(1, 100) > 20;
+
+            if (onScene)
+            {
+                // Random time to completion
+                var callTime = random.Next(CurrentCall.ScenarioInfo.SimulationTime);
+                double percent = random.Next(10, 80);
+                var timeToComplete = Convert.ToInt32(callTime / percent);
+                var timeOnScene = callTime - timeToComplete;
+
+                // Set updated location
+                Position = CurrentCall.Location.Position;
+
+                // Set status
+                call.CallStatus = CallStatus.OnScene;
+                Status = OfficerStatus.OnScene;
+                LastStatusChange = World.DateTime.AddMinutes(-timeOnScene);
+                NextStatusChange = LastStatusChange.AddMinutes(timeToComplete);
+            }
+            else
+            {
+                int arrivalTime = random.Next(5, 30);
+
+                // 30 in game minutes
+                Status = OfficerStatus.Dispatched;
+                LastStatusChange = World.DateTime;
+                NextStatusChange = LastStatusChange.AddMinutes(arrivalTime);
+            }
         }
     }
 }

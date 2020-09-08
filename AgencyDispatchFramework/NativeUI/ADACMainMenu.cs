@@ -1,7 +1,7 @@
 ﻿using AgencyDispatchFramework.Dispatching;
 using AgencyDispatchFramework.Extensions;
 using AgencyDispatchFramework.Game;
-using AgencyDispatchFramework.Game.Location;
+using AgencyDispatchFramework.Game.Locations;
 using Rage;
 using RAGENativeUI;
 using RAGENativeUI.Elements;
@@ -386,7 +386,7 @@ namespace AgencyDispatchFramework.NativeUI
                     }
                     else if (PatrolUIMenu.Visible)
                     {
-                        PatrolAreaMenuButton.Enabled = (Dispatch.PlayerAgency.AgencyType == AgencyType.HighwayPatrol);
+                        PatrolAreaMenuButton.Enabled = (Dispatch.ActiveAgency.AgencyType == AgencyType.HighwayPatrol);
                     }
                 }
             });

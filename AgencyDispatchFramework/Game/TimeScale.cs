@@ -1,5 +1,4 @@
-﻿using Rage;
-using System;
+﻿using System;
 
 namespace AgencyDispatchFramework.Game
 {

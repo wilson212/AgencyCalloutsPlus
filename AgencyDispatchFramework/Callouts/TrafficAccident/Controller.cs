@@ -1,11 +1,10 @@
-﻿using AgencyDispatchFramework.Callouts.Scenarios.TrafficAccident;
-using AgencyDispatchFramework.Dispatching;
-using AgencyDispatchFramework.Game.Location;
+﻿using AgencyDispatchFramework.Dispatching;
+using AgencyDispatchFramework.Game.Locations;
 using LSPD_First_Response.Mod.Callouts;
 using System;
 using System.Xml;
 
-namespace AgencyDispatchFramework.Callouts
+namespace AgencyDispatchFramework.Callouts.TrafficAccident
 {
     /// <summary>
     /// A callout representing a routine traffic accident call with multiple scenarios
@@ -16,12 +15,12 @@ namespace AgencyDispatchFramework.Callouts
     /// and <see cref="CalloutScenarioInfo"/> information.
     /// </remarks>
     [CalloutInfo("AgencyCallout.TrafficAccident", CalloutProbability.Never)]
-    internal class TrafficAccident : AgencyCallout
+    internal class Controller : AgencyCallout
     {
         /// <summary>
         /// Stores the <see cref="API.SpawnPoint"/> where the accident occured
         /// </summary>
-        public SpawnPoint SpawnPoint { get; protected set; }
+        public RoadShoulder Location { get; protected set; }
 
         /// <summary>
         /// Stores the current randomized scenario
@@ -43,7 +42,7 @@ namespace AgencyDispatchFramework.Callouts
         public override bool OnBeforeCalloutDisplayed()
         {
             // Grab the priority call dispatched to player
-            PriorityCall call = Dispatch.RequestPlayerCallInfo(typeof(TrafficAccident));
+            PriorityCall call = Dispatch.RequestPlayerCallInfo(typeof(Controller));
             if (call == null)
             {
                 Log.Error("AgencyCallout.TrafficAccident: This is awkward... No PriorityCall of this type for player");
@@ -52,16 +51,16 @@ namespace AgencyDispatchFramework.Callouts
 
             // Store data
             ActiveCall = call;
-            SpawnPoint = call.Location as SpawnPoint;
+            Location = call.Location as RoadShoulder;
             ScenarioNode = LoadScenarioNode(call.ScenarioInfo);
 
             // Create scenario class handler
             Scenario = CreateScenarioInstance();
 
             // Show are blip and message
-            ShowCalloutAreaBlipBeforeAccepting(SpawnPoint.Position, 40f);
+            ShowCalloutAreaBlipBeforeAccepting(Location.Position, 40f);
             CalloutMessage = "Vehicle Accident";
-            CalloutPosition = SpawnPoint.Position;
+            CalloutPosition = Location.Position;
 
             // Play scanner audio
             if (call.ScenarioInfo.ResponseCode == 3)

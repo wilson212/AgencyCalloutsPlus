@@ -1,6 +1,6 @@
 ﻿using Rage;
 
-namespace AgencyDispatchFramework.Game.Location
+namespace AgencyDispatchFramework.Game.Locations
 {
     /// <summary>
     /// A <see cref="WorldLocation"/> that is a shoulder of a road, used for pullover locations
@@ -33,6 +33,15 @@ namespace AgencyDispatchFramework.Game.Location
         {
             Zone = zone;
             Heading = heading;
+        }
+
+        /// <summary>
+        /// Enables casting to a <see cref="Vector3"/>
+        /// </summary>
+        /// <param name="s"></param>
+        public static implicit operator SpawnPoint(RoadShoulder s)
+        {
+            return new SpawnPoint(s.Position, s.Heading);
         }
 
         /// <summary>

@@ -1,4 +1,4 @@
-﻿using AgencyDispatchFramework.Game.Location;
+﻿using AgencyDispatchFramework.Game.Locations;
 using Rage;
 using System;
 using System.Drawing;
@@ -198,7 +198,7 @@ namespace AgencyDispatchFramework.Game
         /// <returns></returns>
         private static TimeOfDay GetCurrentWorldTimeOfDay()
         {
-            var currentHour = Rage.World.TimeOfDay.Hours;
+            var currentHour = World.TimeOfDay.Hours;
             var currentTimeOfDay = Parse(currentHour);
             return currentTimeOfDay;
 

@@ -87,6 +87,13 @@ namespace AgencyDispatchFramework
             }
         }
 
+        /// <summary>
+        /// Gets the next random number within the specified <see cref="Range{T}"/>
+        /// </summary>
+        /// <param name="range"></param>
+        /// <returns></returns>
+        public Int32 Next(Range<int> range) => Next(range.Minimum, range.Maximum);
+
         public override void NextBytes(byte[] b)
         {
             RNG.GetBytes(b);

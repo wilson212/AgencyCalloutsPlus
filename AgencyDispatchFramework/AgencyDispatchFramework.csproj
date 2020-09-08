@@ -86,8 +86,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Dispatching\CallListUpdateHandler.cs" />
+    <Compile Include="Extensions\ListExtensions.cs" />
     <Compile Include="Game\Enums\PedGender.cs" />
-    <Compile Include="Game\Location\LocationFlags.cs" />
+    <Compile Include="Game\Locations\LocationFlags.cs" />
     <Compile Include="Game\Enums\PedDemeanor.cs" />
     <Compile Include="Game\Enums\PedVariantGroup.cs" />
     <Compile Include="Game\Enums\Weather.cs" />
@@ -110,7 +111,7 @@
     <Compile Include="Integration\StopThePedAPI.cs" />
     <Compile Include="Callouts\AgencyCallout.cs" />
     <Compile Include="Dispatching\Agency\CityPoliceAgency.cs" />
-    <Compile Include="Game\Location\ResidenceType.cs" />
+    <Compile Include="Game\Locations\ResidenceType.cs" />
     <Compile Include="Dispatching\Enums\OfficerRole.cs" />
     <Compile Include="Dispatching\Agency\HighwayPatrolAgency.cs" />
     <Compile Include="Dispatching\PriorityCallDescription.cs" />
@@ -119,12 +120,12 @@
     <Compile Include="Dispatching\Enums\CalloutType.cs" />
     <Compile Include="Dispatching\Enums\CrimeLevel.cs" />
     <Compile Include="Dispatching\Enums\AgencyType.cs" />
-    <Compile Include="Game\Location\ResidencePosition.cs" />
+    <Compile Include="Game\Locations\ResidencePosition.cs" />
     <Compile Include="Dispatching\Enums\PatrolType.cs" />
     <Compile Include="Game\Enums\ZoneType.cs" />
     <Compile Include="Simulation\AISceneSimulation.cs" />
-    <Compile Include="Game\Location\WorldLocation.cs" />
-    <Compile Include="Game\Location\Residence.cs" />
+    <Compile Include="Game\Locations\WorldLocation.cs" />
+    <Compile Include="Game\Locations\Residence.cs" />
     <Compile Include="Game\Enums\Population.cs" />
     <Compile Include="Dispatching\Enums\OfficerStatus.cs" />
     <Compile Include="Dispatching\Enums\OfficerStatusColor.cs" />
@@ -135,13 +136,13 @@
     <Compile Include="Game\Enums\SocialClass.cs" />
     <Compile Include="Dispatching\Enums\CallPriority.cs" />
     <Compile Include="Simulation\VirtualAIOfficerUnit.cs" />
-    <Compile Include="Callouts\Controllers\DomesticViolence.cs" />
-    <Compile Include="Callouts\Scenarios\DomesticViolence\ReportsOfArguingThreats.cs" />
+    <Compile Include="Callouts\DomesticViolence\Controller.cs" />
+    <Compile Include="Callouts\DomesticViolence\ReportsOfArguingThreats.cs" />
     <Compile Include="Game\Enums\TimeOfDay.cs" />
     <Compile Include="ExpressionParser.cs" />
     <Compile Include="NativeUI\CurrentCallTabPage.cs" />
     <Compile Include="Dispatching\RegionCrimeInfo.cs" />
-    <Compile Include="Game\Location\RoadShoulder.cs" />
+    <Compile Include="Game\Locations\RoadShoulder.cs" />
     <Compile Include="Conversation\SubtitleQueue.cs" />
     <Compile Include="Conversation\PedResponse.cs" />
     <Compile Include="Game\GamePed.cs" />
@@ -168,15 +169,15 @@
     </Compile>
     <Compile Include="Log.cs" />
     <Compile Include="Spawnable{T}.cs" />
-    <Compile Include="Game\Location\SpawnPoint.cs" />
+    <Compile Include="Game\Locations\SpawnPoint.cs" />
     <Compile Include="Dispatching\Enums\StaffLevel.cs" />
     <Compile Include="Game\ZoneInfo.cs" />
     <Compile Include="Game\VehicleInfo.cs" />
     <Compile Include="Game\Enums\ZoneSize.cs" />
     <Compile Include="Dispatching\CalloutScenarioInfo.cs" />
     <Compile Include="Callouts\CalloutScenario.cs" />
-    <Compile Include="Callouts\Scenarios\TrafficAccident\RearEndNoInjuries.cs" />
-    <Compile Include="Callouts\Controllers\TrafficAccident.cs" />
+    <Compile Include="Callouts\TrafficAccident\RearEndNoInjuries.cs" />
+    <Compile Include="Callouts\TrafficAccident\Controller.cs" />
     <Compile Include="Dependency.cs" />
     <Compile Include="Extensions\PedExtensions.cs" />
     <Compile Include="Extensions\StringExtensions.cs" />
@@ -185,7 +186,7 @@
     <Compile Include="Dispatching\Dispatch.cs" />
     <Compile Include="CryptoRandom.cs" />
     <Compile Include="Dispatching\Agency\Agency.cs" />
-    <Compile Include="Game\Location\LocationType.cs" />
+    <Compile Include="Game\Locations\LocationType.cs" />
     <Compile Include="Extensions\AttributeExtensions.cs" />
     <Compile Include="Keyboard.cs" />
     <Compile Include="ISpawnable.cs" />
@@ -524,7 +525,7 @@
     <Content Include="AgencyDispatchFramework\Vehicles.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Callouts\Scenarios\Scenarios.txt" />
+    <Content Include="Callouts\Scenarios.txt" />
     <Content Include="Todo.txt" />
   </ItemGroup>
   <ItemGroup>

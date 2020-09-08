@@ -146,5 +146,7 @@ namespace AgencyDispatchFramework.Dispatching
             CurrentCall = null;
             LastStatusChange = World.DateTime;
         }
+
+        internal abstract void AssignToCallWithRandomCompletion(PriorityCall call);
     }
 }

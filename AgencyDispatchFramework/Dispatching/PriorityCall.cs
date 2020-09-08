@@ -1,6 +1,6 @@
 ﻿using AgencyDispatchFramework.Simulation;
 using AgencyDispatchFramework.Game;
-using AgencyDispatchFramework.Game.Location;
+using AgencyDispatchFramework.Game.Locations;
 using LSPD_First_Response.Mod.Callouts;
 using System;
 using System.Collections.Generic;

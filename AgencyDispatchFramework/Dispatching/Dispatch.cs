@@ -2,7 +2,7 @@
 using AgencyDispatchFramework.Extensions;
 using AgencyDispatchFramework.Simulation;
 using AgencyDispatchFramework.Game;
-using AgencyDispatchFramework.Game.Location;
+using AgencyDispatchFramework.Game.Locations;
 using LSPD_First_Response.Mod.API;
 using LSPD_First_Response.Mod.Callouts;
 using Rage;
@@ -55,7 +55,7 @@ namespace AgencyDispatchFramework
         /// <summary>
         /// Gets the player's current selected <see cref="Agency"/>
         /// </summary>
-        public static Agency PlayerAgency { get; private set; }
+        public static Agency ActiveAgency { get; private set; }
 
         /// <summary>
         /// Event called when a call is added to the call list
@@ -92,11 +92,6 @@ namespace AgencyDispatchFramework
         /// Gets the overall crime level definition for the current <see cref="Agency"/>
         /// </summary>
         public static CrimeLevel CurrentCrimeLevel => CrimeGenerator.CurrentCrimeLevel;
-
-        /// <summary>
-        /// GameFiber containing the AI Police and Dispatching functions
-        /// </summary>
-        private static GameFiber DispatchFiber { get; set; }
 
         /// <summary>
         /// The <see cref="GameFiber"/> that runs the logic for all the AI units
@@ -775,11 +770,11 @@ namespace AgencyDispatchFramework
             try
             {
                 // Get players current agency
-                Agency oldAgency = PlayerAgency;
-                PlayerAgency = Agency.GetCurrentPlayerAgency();
-                if (PlayerAgency == null)
+                Agency oldAgency = ActiveAgency;
+                ActiveAgency = Agency.GetCurrentPlayerAgency();
+                if (ActiveAgency == null)
                 {
-                    PlayerAgency = oldAgency;
+                    ActiveAgency = oldAgency;
                     Log.Error("Dispatch.StartDuty(): Player Agency is null");
                     return false;
                 }
@@ -789,18 +784,18 @@ namespace AgencyDispatchFramework
                     CrimeGenerator.End();
 
                 // Did we change agency type?
-                if (oldAgency == null || PlayerAgency.AgencyType != oldAgency.AgencyType)
+                if (oldAgency == null || ActiveAgency.AgencyType != oldAgency.AgencyType)
                 {
                     // Reload scenarios for updated probabilities
                     RegisterCalloutsFromPath(Path.Combine(Main.ThisPluginFolderPath, "Callouts"), typeof(Dispatch).Assembly);
 
                     // Clear AI units
                     DisposeAIUnits();
-                    OfficerUnits = new List<OfficerUnit>(PlayerAgency.ActualPatrols);
+                    OfficerUnits = new List<OfficerUnit>(ActiveAgency.ActualPatrols);
                 }
 
                 // Did we change Agencies?
-                if (oldAgency == null || !PlayerAgency.ScriptName.Equals(oldAgency.ScriptName))
+                if (oldAgency == null || !ActiveAgency.ScriptName.Equals(oldAgency.ScriptName))
                 {
                     // Clear calls
                     foreach (var callList in CallQueue)
@@ -808,20 +803,20 @@ namespace AgencyDispatchFramework
 
                     // Clear old police units
                     DisposeAIUnits();
-                    OfficerUnits = new List<OfficerUnit>(PlayerAgency.ActualPatrols);
+                    OfficerUnits = new List<OfficerUnit>(ActiveAgency.ActualPatrols);
                 }
 
                 // Here we allow the Agency itself to specify which crime 
                 // Generator we are to use
-                CrimeGenerator = PlayerAgency.CreateCrimeGenerator();
+                CrimeGenerator = ActiveAgency.CreateCrimeGenerator();
                 var hourGameTimeToSecondsRealTime = (60d / Settings.TimeScale) * 60;
 
                 // Debugging
                 Log.Debug("Starting duty with the following Agency data:");
-                Log.Debug($"\t\tAgency Name: {PlayerAgency.FriendlyName}");
-                Log.Debug($"\t\tAgency Type: {PlayerAgency.AgencyType}");
-                Log.Debug($"\t\tAgency Staff Level: {PlayerAgency.StaffLevel}");
-                Log.Debug($"\t\tAgency Actual Patrols: {PlayerAgency.ActualPatrols}");
+                Log.Debug($"\t\tAgency Name: {ActiveAgency.FriendlyName}");
+                Log.Debug($"\t\tAgency Type: {ActiveAgency.AgencyType}");
+                Log.Debug($"\t\tAgency Staff Level: {ActiveAgency.StaffLevel}");
+                Log.Debug($"\t\tAgency Actual Patrols: {ActiveAgency.ActualPatrols}");
                 Log.Debug("Starting duty with the following Region data:");
                 Log.Debug($"\t\tRegion Zone Count: {CrimeGenerator.Zones.Length}");
 
@@ -837,10 +832,21 @@ namespace AgencyDispatchFramework
                     Log.Debug($"\t\t\tAverage Calls: {crimeInfo.AverageCrimeCalls}");
                     Log.Debug($"\t\t\tIdeal Patrols: {crimeInfo.OptimumPatrols}");
                     Log.Debug($"\t\t\tReal Seconds Per Call (Average): {realSecondsPerCall}");
-                }        
+                }
+
+                // Start Dispatching logic fibers
+                CrimeGenerator.Begin();
+                Log.Debug($"Current crime level: {CrimeGenerator.CurrentCrimeLevel}");
 
                 // Start timer
-                BeginCallTimer();
+                BeginAISimulation();
+
+                // Add player unit LAST!
+                string unitNum = $"{Settings.AudioDivision}{Settings.AudioUnitTypeLetter}-{Settings.AudioBeat}";
+                PlayerUnit = new PlayerOfficerUnit(Rage.Game.LocalPlayer, unitNum);
+                PlayerUnit.StartDuty();
+                OfficerUnits.Add(PlayerUnit);
+
                 return true;
             }
             catch (Exception e)
@@ -855,63 +861,59 @@ namespace AgencyDispatchFramework
         {
             // End crime generation
             CrimeGenerator?.End();
-            StopCallTimer();   
+            StopAISimulation();   
         }
 
         #endregion Duty Methods
 
-        #region Timer Methods
+        #region AI Officer Simulation
 
         /// <summary>
         /// Stops the 2 <see cref="GameFiber"/>(s) that run the call center
         /// and AI dispatching
         /// </summary>
-        private static void StopCallTimer()
+        private static void StopAISimulation()
         {
             if (AISimulationFiber != null && (AISimulationFiber.IsAlive || AISimulationFiber.IsSleeping))
             {
                 AISimulationFiber.Abort();
             }
-
-            if (DispatchFiber != null && (DispatchFiber.IsAlive || DispatchFiber.IsSleeping))
-            {
-                DispatchFiber.Abort();
-            }
         }
 
         /// <summary>
-        /// Begins the 2 <see cref="GameFiber"/>(s) that run the call center
-        /// and AI dispatching
+        /// Loads the AI officer units and begins the <see cref="RegionCrimeGenerator"/>
         /// </summary>
-        private static void BeginCallTimer()
+        private static void BeginAISimulation()
         {
             // Always call Stop first!
-            StopCallTimer();
+            StopAISimulation();
+
+            // Get total ai patrols to spawn
+            int aiPatrolCount = Math.Max(0, ActiveAgency.ActualPatrols - 1);
+            var locations = CrimeGenerator.GetRandomShoulderLocations(aiPatrolCount);
+
+            // Ensure we have enough locations to spawn patrols at
+            if (locations.Length < aiPatrolCount)
+            {
+                Log.Warning($"The amount of locations available ({locations.Length}) to spawn AI officer units is less than the number of total AI officers ({aiPatrolCount})");
+                aiPatrolCount = locations.Length;
+            }
 
             // To be replaced later @todo
             if (Settings.EnableFullSimulation)
             {
-                Log.Debug("Full Simulation Enabled");
-                for (int i = 0; i < PlayerAgency.ActualPatrols - 1; i++)
+                Log.Debug("Full Simulation Mode Enabled");
+                for (int i = 0; i < aiPatrolCount; i++)
                 {
-                    // Spawn random zone to spread the units out
-                    ZoneInfo zone = CrimeGenerator.GetNextRandomCrimeZone();
-                    var sp = zone.GetRandomSideOfRoadLocation();
-                    while (sp == null)
-                    {
-                        zone = CrimeGenerator.GetNextRandomCrimeZone();
-                        sp = zone.GetRandomSideOfRoadLocation();
-                    }
-
                     // Create AI vehicle
-                    var car = PlayerAgency.GetRandomPoliceVehicle(PatrolType.Marked, sp);
+                    var sp = locations[i];
+                    var car = ActiveAgency.GetRandomPoliceVehicle(PatrolType.Marked, sp);
                     car.Model.LoadAndWait();
                     car.IsPersistent = true;
 
                     // Create AI officer
                     var driver = car.CreateRandomDriver();
-                    driver.IsPersistent = true;
-                    driver.BlockPermanentEvents = true;
+                    driver.MakeMissionPed(true);
 
                     // Create instance
                     var num = i + 10;
@@ -920,50 +922,78 @@ namespace AgencyDispatchFramework
 
                     // Start duty
                     unit.StartDuty();
-
-                    // Yield
                     GameFiber.Yield();
                 }
+
+                // Log for debugging
+                Log.Debug($"Loaded {aiPatrolCount} Persistent AI officer units");
             }
             else
             {
-                for (int i = 0; i < PlayerAgency.ActualPatrols - 1; i++)
+                for (int i = 0; i < aiPatrolCount; i++)
                 {
-                    // Spawn random zone to spread the units out
-                    ZoneInfo zone = CrimeGenerator.GetNextRandomCrimeZone();
-                    var sp = zone.GetRandomSideOfRoadLocation();
-                    while (sp == null)
-                    {
-                        zone = CrimeGenerator.GetNextRandomCrimeZone();
-                        sp = zone.GetRandomSideOfRoadLocation();
-                    }
-
                     // Create instance
+                    var sp = locations[i];
                     var num = i + 10;
                     var unit = new VirtualAIOfficerUnit(sp.Position, $"1A-{num}");
                     OfficerUnits.Add(unit);
 
                     // Start Duty
                     unit.StartDuty();
-
-                    // Yield
                     GameFiber.Yield();
                 }
+
+                // Log for debugging
+                Log.Debug($"Loaded {aiPatrolCount} Virtual AI officer units");
             }
 
-            // Add player unit
-            string unitNum = $"{Settings.AudioDivision}{Settings.AudioUnitType}-{Settings.AudioBeat}";
-            PlayerUnit = new PlayerOfficerUnit(Rage.Game.LocalPlayer, unitNum);
-            PlayerUnit.StartDuty();
-            OfficerUnits.Add(PlayerUnit);
+            // Determine initial amount of calls to spawn in
+            var crime = CrimeGenerator.RegionCrimeInfoByTimeOfDay[GameWorld.CurrentTimeOfDay];
+            var numCalls = 0;
+            switch (CrimeGenerator.CurrentCrimeLevel)
+            {
+                default:
+                case CrimeLevel.VeryLow:
+                    break;
+                case CrimeLevel.Low:
+                    numCalls = Convert.ToInt32(crime.MaxCrimeCalls * 0.10);
+                    break;
+                case CrimeLevel.Moderate:
+                    numCalls = Convert.ToInt32(crime.MaxCrimeCalls * 0.20);
+                    break;
+                case CrimeLevel.High:
+                    numCalls = Convert.ToInt32(crime.MaxCrimeCalls * 0.33);
+                    break;
+                case CrimeLevel.VeryHigh:
+                    numCalls = Convert.ToInt32(crime.MaxCrimeCalls * 0.50);
+                    break;
+            }
 
-            // Start Dispatching logic fibers
-            CrimeGenerator.Begin();
+            // Assign officers to initial amount of calls
+            var officers = new List<OfficerUnit>(OfficerUnits);
+            for (int i = 0; i < numCalls; i++)
+            {
+                // Keep generating calls
+                var call = CrimeGenerator.GenerateCall();
+                if (call == null)
+                    break;
+
+                // Add call
+                AddIncomingCall(call);
+
+                // If we have more calls than available officers
+                if (officers.Count <= i)
+                    continue;
+
+                // Dispatch an AI unit to this call at a random completion time
+                officers[i].AssignToCallWithRandomCompletion(call);
+            }
+
+            // Start simulation fiber
             AISimulationFiber = GameFiber.StartNew(ProcessAISimulationLogic);
-            DispatchFiber = GameFiber.StartNew(ProcessDispatchLogic);
         }
 
-        #endregion Timer Methods
+        #endregion AI Officer Simlation
 
         #region GameFiber methods
 
@@ -979,7 +1009,7 @@ namespace AgencyDispatchFramework
                 // the VirtualAIUnit(s)
                 if (!Settings.EnableFullSimulation)
                 {
-                    var date = Rage.World.DateTime;
+                    var date = World.DateTime;
 
                     // Start duty for each officer
                     foreach (var officer in OfficerUnits)
@@ -1039,31 +1069,11 @@ namespace AgencyDispatchFramework
         }
 
         /// <summary>
-        /// Main thread loop for Dispatch handling calls and player activity
+        /// Main thread loop for Dispatch handling calls and player activity. This method must
+        /// be called only from the <see cref="GameWorld.WorldWatchingFiber"/>
         /// </summary>
         internal static void ProcessDispatchLogic()
         {
-            /* Keep watch on the players status
-            if (PlayerUnit.Status == OfficerStatus.Available)
-            {
-                if (Functions.GetCurrentPullover() != default(LHandle))
-                {
-                    SetPlayerStatus(OfficerStatus.OnTrafficStop);
-                }
-            }
-            else if (Functions.IsPlayerAvailableForCalls())
-            {
-                if (Functions.IsCalloutRunning())
-                {
-                    SetPlayerStatus(OfficerStatus.Busy);
-                }
-                else if (PlayerUnit.Status != OfficerStatus.MealBreak)
-                {
-                    SetPlayerStatus(OfficerStatus.Available);
-                }
-            }
-            */
-
             // Are we invoking a call to the player?
             if (InvokeForPlayer != null)
             {
@@ -1328,10 +1338,10 @@ namespace AgencyDispatchFramework
                 }
 
                 // Get callout type name
-                var typeName = rootElement.SelectSingleNode("ClassType")?.InnerText;
+                var typeName = rootElement.SelectSingleNode("Controller")?.InnerText;
                 if (String.IsNullOrWhiteSpace(typeName))
                 {
-                    Log.Error($"Dispatch.RegisterCalloutsFromPath(): Unable to extract ClassType value in CalloutMeta.xml in directory '{calloutDirName}' for Assembly: '{assembly.FullName}'");
+                    Log.Error($"Dispatch.RegisterCalloutsFromPath(): Unable to extract Controller value in CalloutMeta.xml in directory '{calloutDirName}' for Assembly: '{assembly.FullName}'");
                     continue;
                 }
 
@@ -1339,12 +1349,17 @@ namespace AgencyDispatchFramework
                 Type calloutType = assembly.GetType(typeName);
                 if (calloutType == null)
                 {
-                    Log.Error($"Dispatch.RegisterCalloutsFromPath(): Unable to find Callout in Assembly: '{calloutDirName}'");
+                    Log.Error($"Dispatch.RegisterCalloutsFromPath(): Unable to find Callout class '{typeName}' in Assembly '{assembly.FullName}'");
                     continue;
                 }
 
-                // Get callout official name
+                // Get official callout name
                 string calloutName = calloutType.GetAttributeValue((CalloutInfoAttribute attr) => attr.Name);
+                if (String.IsNullOrWhiteSpace(calloutName))
+                {
+                    Log.Error($"Dispatch.RegisterCalloutsFromPath(): Callout class '{typeName}' in Assembly '{assembly.FullName}' is missing the CalloutInfoAttribute!");
+                    continue;
+                }
 
                 // Process the XML scenarios
                 foreach (XmlNode scenarioNode in rootElement.SelectSingleNode("Scenarios")?.ChildNodes)
@@ -1396,6 +1411,24 @@ namespace AgencyDispatchFramework
                         continue;
                     }
 
+                    // Extract simulation time
+                    int min = 0, max = 0;
+                    XmlNode childNode = scenarioNode.SelectSingleNode("Simulation")?.SelectSingleNode("CallTime");
+                    if (childNode == null)
+                    {
+                        Log.Warning(
+                            $"Dispatch.RegisterCalloutsFromPath(): Unable to extract Simulation->CallTime element for '{calloutDirName}->Scenarios->{scenarioNode.Name}'"
+                        );
+                        continue;
+                    }
+                    else if (childNode.Attributes == null || !Int32.TryParse(childNode.Attributes["min"]?.Value, out min) || !Int32.TryParse(childNode.Attributes["max"]?.Value, out max))
+                    {
+                        Log.Warning(
+                            $"Dispatch.RegisterCalloutsFromPath(): Unable to extract CallTime[min] or CallTime[max] attribute for '{calloutDirName}->Scenarios->{scenarioNode.Name}'"
+                        );
+                        continue;
+                    }
+
                     // ============================================== //
                     // Grab probabilities
                     // ============================================== //
@@ -1429,7 +1462,7 @@ namespace AgencyDispatchFramework
                     }
 
                     // Try and extract probability value
-                    XmlNode childNode = dispatchNode.SelectSingleNode("Priority");
+                    childNode = dispatchNode.SelectSingleNode("Priority");
                     if (!int.TryParse(childNode.InnerText, out int priority))
                     {
                         Log.Warning(
@@ -1585,7 +1618,8 @@ namespace AgencyDispatchFramework
                         IncidentText = childNode.InnerText,
                         IncidentAbbreviation = childNode.Attributes["abbreviation"].Value,
                         SpriteName = textName,
-                        SpriteTextureDict = textDict
+                        SpriteTextureDict = textDict,
+                        SimulationTime = new Range<int>(min, max)
                     };
 
                     // Create entry if not already

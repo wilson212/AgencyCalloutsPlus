@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace AgencyDispatchFramework.Game.Location
+namespace AgencyDispatchFramework.Game.Locations
 {
     /// <summary>
     /// Represents a <see cref="WorldLocation"/> that is a home

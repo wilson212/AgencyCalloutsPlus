@@ -1,11 +1,10 @@
-﻿using AgencyDispatchFramework.Callouts.Scenarios.DomesticViolence;
-using AgencyDispatchFramework.Dispatching;
-using AgencyDispatchFramework.Game.Location;
+﻿using AgencyDispatchFramework.Dispatching;
+using AgencyDispatchFramework.Game.Locations;
 using LSPD_First_Response.Mod.Callouts;
 using System;
 using System.Xml;
 
-namespace AgencyDispatchFramework.Callouts
+namespace AgencyDispatchFramework.Callouts.DomesticViolence
 {
     /// <summary>
     /// A callout representing a domestic violence call with multiple scenarios
@@ -16,7 +15,7 @@ namespace AgencyDispatchFramework.Callouts
     /// and <see cref="CalloutScenarioInfo"/> information.
     /// </remarks>
     [CalloutInfo("AgencyCallout.DomesticViolence", CalloutProbability.Never)]
-    internal class DomesticViolence : AgencyCallout
+    internal class Controller : AgencyCallout
     {
         /// <summary>
         /// Stores the <see cref="API.Residence"/> where the accident occured
@@ -43,7 +42,7 @@ namespace AgencyDispatchFramework.Callouts
         public override bool OnBeforeCalloutDisplayed()
         {
             // Grab the priority call dispatched to player
-            PriorityCall call = Dispatch.RequestPlayerCallInfo(typeof(DomesticViolence));
+            PriorityCall call = Dispatch.RequestPlayerCallInfo(typeof(Controller));
             if (call == null)
             {
                 Log.Error("AgencyCallout.DomesticViolence: This is awkward... No PriorityCall of this type for player");

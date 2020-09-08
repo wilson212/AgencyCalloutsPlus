@@ -1,6 +1,6 @@
 ﻿using AgencyDispatchFramework.Dispatching;
 using AgencyDispatchFramework.Game;
-using AgencyDispatchFramework.Game.Location;
+using AgencyDispatchFramework.Game.Locations;
 using Rage;
 using System;
 using System.Drawing;
@@ -97,6 +97,8 @@ namespace AgencyDispatchFramework.Simulation
                             break;
                         case TaskSignal.DriveToCall:
                             DriveToCall();
+                            break;
+                        case TaskSignal.DoScene:
                             break;
                     }
                 }
@@ -262,11 +264,11 @@ namespace AgencyDispatchFramework.Simulation
 
                     // Determine spawn point
                     var oldCar = PoliceCar;
-                    var location = Rage.World.GetNextPositionOnStreet(Officer.Position.Around(25));
+                    var location = World.GetNextPositionOnStreet(Officer.Position.Around(25));
                     var sp = new SpawnPoint(location);
 
                     // Create car
-                    PoliceCar = Dispatch.PlayerAgency.GetRandomPoliceVehicle(PatrolType.Marked, sp);
+                    PoliceCar = Dispatch.ActiveAgency.GetRandomPoliceVehicle(PatrolType.Marked, sp);
                     PoliceCar.Model.LoadAndWait();
                     PoliceCar.MakePersistent();
 
@@ -352,14 +354,14 @@ namespace AgencyDispatchFramework.Simulation
 
                 // Find close location
                 parkingNicely = false;
-                var loc = Rage.World.GetNextPositionOnStreet(CurrentCall.Location.Position.Around(15));
+                var loc = World.GetNextPositionOnStreet(CurrentCall.Location.Position.Around(15));
                 drivingTask = task.DriveToPosition(loc, Code3TravelSpeed, VehicleDrivingFlags.Emergency);
             }
             else
             {
                 // Find close location
                 SetBlipColor(OfficerStatusColor.DispatchedCode2);
-                var loc = Rage.World.GetNextPositionOnStreet(CurrentCall.Location.Position.Around(15));
+                var loc = World.GetNextPositionOnStreet(CurrentCall.Location.Position.Around(15));
                 drivingTask = task.DriveToPosition(loc, Code2TravelSpeed, VehicleDrivingFlags.Normal);
             }
 
@@ -394,11 +396,18 @@ namespace AgencyDispatchFramework.Simulation
             // Teleport car to parking spot because AI sucks at parking
             SetPoliceCarPosition(CurrentCall.Location.Position, sp.Heading);
 
-            // Travel time
-            var span = Rage.World.DateTime - LastStatusChange;
-            var mins = Math.Round(span.TotalMinutes, 0);
+            // Signal
+            NextTask = TaskSignal.DoScene;
+        }
 
+        /// <summary>
+        /// Processes the officer on scene
+        /// </summary>
+        private void ProcessScene()
+        {
             // Debug
+            var span = World.DateTime - LastStatusChange;
+            var mins = Math.Round(span.TotalMinutes, 0);
             Log.Debug($"OfficerUnit {CallSign} arrived on scene after {mins} game minutes");
 
             // Telll dispatch we are on scene
@@ -411,11 +420,14 @@ namespace AgencyDispatchFramework.Simulation
 
             // Do another sanity check
             SanityCheck();
-            task.LeaveVehicle(LeaveVehicleFlags.LeaveDoorOpen);
+            PoliceCar.Driver.Tasks.LeaveVehicle(LeaveVehicleFlags.LeaveDoorOpen);
+            PoliceCar.IsSirenSilent = true;
+            SetBlipColor(OfficerStatusColor.OnScene);
 
-            // Use Wait here for 1 in game hour, so when game is paused, so is timer
-            // This will be replaced with Scenario processing code eventually
-            var gameSpan = TimeSpan.FromHours(1);
+            var random = new CryptoRandom();
+            int timeToComplete = random.Next(CurrentCall.ScenarioInfo.SimulationTime);
+
+            var gameSpan = TimeSpan.FromMinutes(timeToComplete);
             var realSeconds = (int)TimeScale.ToRealTime(gameSpan).TotalSeconds;
             GameFiber.Wait(1000 * realSeconds);
 
@@ -454,6 +466,27 @@ namespace AgencyDispatchFramework.Simulation
             Status = OfficerStatus.Available;
         }
 
+        internal override void AssignToCallWithRandomCompletion(PriorityCall call)
+        {
+            // Assign ourselves
+            base.AssignToCall(call, true);
+
+            var random = new CryptoRandom();
+            var onScene = random.Next(1, 100) > 20;
+
+            if (onScene)
+            {
+                call.CallStatus = CallStatus.OnScene;
+
+                // Signal
+                NextTask = TaskSignal.DoScene;
+            }
+            else
+            {
+                NextTask = TaskSignal.DriveToCall;
+            }
+        }
+
         /// <summary>
         /// A Task enumeration used to Signal the AI's thread into the
         /// next task.
@@ -466,7 +499,9 @@ namespace AgencyDispatchFramework.Simulation
 
             Cruise,
 
-            DriveToCall
+            DriveToCall,
+
+            DoScene
         }
     }
 }

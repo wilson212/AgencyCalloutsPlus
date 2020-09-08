@@ -1,4 +1,4 @@
-﻿using AgencyDispatchFramework.Game.Location;
+﻿using AgencyDispatchFramework.Game.Locations;
 using Rage;
 using System;
 using System.Linq;

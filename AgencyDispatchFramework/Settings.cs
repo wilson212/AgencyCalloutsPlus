@@ -88,7 +88,7 @@ namespace AgencyDispatchFramework
             EnableFullSimulation = ini.ReadBoolean("SIMULATION", "EnableFullSimulation", false);
 
             // Log
-            Log.Info("Loaded AgencyCalloutsPlus config successfully!");
+            Log.Info("Loaded AgencyDispatchFramework config successfully!");
         }
 
         /// <summary>

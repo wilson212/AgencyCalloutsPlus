@@ -1,7 +1,8 @@
 ﻿using Rage;
 using System;
+using System.Text;
 
-namespace AgencyDispatchFramework.Game.Location
+namespace AgencyDispatchFramework.Game.Locations
 {
     /// <summary>
     /// Represents a <see cref="Vector3"/> position within the GTA V world
@@ -46,6 +47,16 @@ namespace AgencyDispatchFramework.Game.Location
         {
             Position = position;
             Flags = new LocationFlags();
+        }
+
+        public virtual string GetAddress()
+        {
+            StringBuilder builder = new StringBuilder();
+
+            if (!String.IsNullOrWhiteSpace(StreetName))
+                builder.Append(StreetName);
+
+            return builder.ToString();
         }
 
         /// <summary>

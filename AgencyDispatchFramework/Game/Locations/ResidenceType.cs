@@ -1,4 +1,4 @@
-﻿namespace AgencyDispatchFramework.Game.Location
+﻿namespace AgencyDispatchFramework.Game.Locations
 {
     public enum ResidenceType
     {

@@ -37,5 +37,10 @@ namespace AgencyDispatchFramework.Dispatching
         {
             return Officer.Position;
         }
+
+        internal override void AssignToCallWithRandomCompletion(PriorityCall call)
+        {
+            
+        }
     }
 }

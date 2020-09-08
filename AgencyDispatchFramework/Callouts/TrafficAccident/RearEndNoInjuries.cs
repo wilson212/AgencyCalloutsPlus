@@ -1,17 +1,17 @@
 ﻿using AgencyDispatchFramework.Conversation;
 using AgencyDispatchFramework.Extensions;
 using AgencyDispatchFramework.Game;
-using AgencyDispatchFramework.Game.Location;
+using AgencyDispatchFramework.Game.Locations;
 using AgencyDispatchFramework.NativeUI;
 using Rage;
 using System;
 using System.Collections.Generic;
 using System.Xml;
 
-namespace AgencyDispatchFramework.Callouts.Scenarios.TrafficAccident
+namespace AgencyDispatchFramework.Callouts.TrafficAccident
 {
     /// <summary>
-    /// One scenario of the <see cref="Callouts.TrafficAccident"/> callout
+    /// One scenario of the TrafficAccident callout
     /// </summary>
     /// <remarks>
     /// Victim may or may not be at fault. No injuries in this accident
@@ -21,12 +21,12 @@ namespace AgencyDispatchFramework.Callouts.Scenarios.TrafficAccident
         /// <summary>
         /// The callout that owns this instance
         /// </summary>
-        private Callouts.TrafficAccident Callout { get; set; }
+        private Controller Callout { get; set; }
 
         /// <summary>
         /// Gets the SpawnPoint location of this <see cref="CalloutScenario"/>
         /// </summary>
-        public SpawnPoint SpawnPoint { get; protected set; }
+        public RoadShoulder Location => Callout.Location;
 
         /// <summary>
         /// Contains the interaction menu for this scenario
@@ -56,11 +56,8 @@ namespace AgencyDispatchFramework.Callouts.Scenarios.TrafficAccident
         /// </summary>
         /// <param name="callout">The parent callout instance</param>
         /// <param name="scenarioNode">The <see cref="XmlNode"/> for this scenario specifically</param>
-        public RearEndNoInjuries(Callouts.TrafficAccident callout, XmlNode scenarioNode) : base(scenarioNode)
+        public RearEndNoInjuries(Controller callout, XmlNode scenarioNode) : base(scenarioNode)
         {
-            // Store spawn point
-            this.SpawnPoint = callout.SpawnPoint;
-
             // Get Victim 1 vehicle type using probability defined in the CalloutMeta.xml
             var cars = scenarioNode.SelectSingleNode("Victim1/VehicleTypes").ChildNodes;
             VictimVehicleType = GetRandomVehicleType(cars);
@@ -93,7 +90,7 @@ namespace AgencyDispatchFramework.Callouts.Scenarios.TrafficAccident
 
             // Create victim car
             var victimV = VehicleInfo.GetRandomVehicleByType(VictimVehicleType);
-            VictimVehicle = new Vehicle(victimV.ModelName, SpawnPoint.Position, SpawnPoint.Heading)
+            VictimVehicle = new Vehicle(victimV.ModelName, Location.Position, Location.Heading)
             {
                 IsPersistent = true,
                 EngineHealth = 0
@@ -107,7 +104,7 @@ namespace AgencyDispatchFramework.Callouts.Scenarios.TrafficAccident
             // Create suspect vehicle 1m behind victim vehicle
             var vector = VictimVehicle.GetOffsetPositionFront(-(VictimVehicle.Length + 1f));
             var suspectV = VehicleInfo.GetRandomVehicleByType(SuspectVehicleType);
-            SuspectVehicle = new Vehicle(suspectV.ModelName, vector, SpawnPoint.Heading)
+            SuspectVehicle = new Vehicle(suspectV.ModelName, vector, Location.Heading)
             {
                 IsPersistent = true,
                 EngineHealth = 0
@@ -171,7 +168,7 @@ namespace AgencyDispatchFramework.Callouts.Scenarios.TrafficAccident
             // Temporary
             if (Rage.Game.IsKeyDown(System.Windows.Forms.Keys.Enter))
             {
-                World.TeleportLocalPlayer(SpawnPoint.Position.Around(15f), true);
+                World.TeleportLocalPlayer(Location.Position.Around(15f), true);
             }
             
         }

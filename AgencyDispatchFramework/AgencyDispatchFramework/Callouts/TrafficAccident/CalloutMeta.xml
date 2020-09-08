@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <CalloutMeta>
   <Author>Wilson212</Author>
-  <ClassType>AgencyCalloutsPlus.Callouts.TrafficAccident</ClassType>
+  <Controller>AgencyDispatchFramework.Callouts.TrafficAccident.Controller</Controller>
   <Scenarios>
     
     <RearEndNoInjuries>
@@ -57,6 +57,9 @@
         <FlowOutcome id="mechanicalFailure" probability="2" />
         -->
       </FlowSequence>
+      <Simulation>
+        <CallTime min="30" max="60" />
+      </Simulation>
       <Victim1>
         <VehicleTypes>
           <Meta probability="5">Compact</Meta>

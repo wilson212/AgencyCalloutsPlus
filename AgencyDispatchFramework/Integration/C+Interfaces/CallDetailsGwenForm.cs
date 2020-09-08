@@ -69,7 +69,7 @@ namespace AgencyDispatchFramework.Integration
             // Set text fields
             var locationText = Call.Location.StreetName ?? World.GetStreetName(Call.Location.Position);
             text_call_id.Text = Guid.NewGuid().ToString();
-            text_agency.Text = Dispatch.PlayerAgency.ScriptName.ToUpperInvariant();
+            text_agency.Text = Dispatch.ActiveAgency.ScriptName.ToUpperInvariant();
             text_event_id.Text = Call.CallId.ToString();
             text_datetime.Text = Call.CallCreated.ToString();
             text_location.Text = locationText;

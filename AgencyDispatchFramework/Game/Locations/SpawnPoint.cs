@@ -1,6 +1,6 @@
 ﻿using Rage;
 
-namespace AgencyDispatchFramework.Game.Location
+namespace AgencyDispatchFramework.Game.Locations
 {
     /// <summary>
     /// Represents a <see cref="WorldLocation"/> with a heading, that is used for 

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace AgencyDispatchFramework.Game.Location
+namespace AgencyDispatchFramework.Game.Locations
 {
     /// <summary>
     /// A series of flags that help describe a <see cref="WorldLocation"/>. These flags can be used used

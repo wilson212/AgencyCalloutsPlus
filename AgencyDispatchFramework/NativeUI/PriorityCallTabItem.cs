@@ -60,8 +60,12 @@ namespace AgencyDispatchFramework.NativeUI
         public PriorityCallTabItem(PriorityCall call) : base(call.IncidentText)
         {
             Call = call;
-            Address = Call.Location.StreetName ?? World.GetStreetName(Call.Location.Position);
-            Description = Call.Description.Text.Replace("$Location$", Address).Replace("$LOCATION$", Address);
+            Address = Call.Location.GetAddress();
+
+            if (String.IsNullOrWhiteSpace(Address))
+                Address = World.GetStreetName(Call.Location.Position);
+
+            Description = Call.Description.Text.Replace("$Location$", Address);
         }
 
         /// <summary>
@@ -178,7 +182,7 @@ namespace AgencyDispatchFramework.NativeUI
             headerLoc = SafeSize.AddPoints(new Point(col3p, headerY));
             valueLoc = SafeSize.AddPoints(new Point(col3p, valueY));
             ResText.Draw("~y~Primary Agency", headerLoc, HeaderTextWeight, Color.FromArgb(alpha, Color.White), Common.EFont.ChaletComprimeCologne, a, true, true, new Size(250, 0));
-            ResText.Draw($"~w~{Dispatch.PlayerAgency.ScriptName.ToUpperInvariant()}", valueLoc, ValueTextWeight, Color.FromArgb(alpha, Color.White), Common.EFont.ChaletComprimeCologne, false);
+            ResText.Draw($"~w~{Dispatch.ActiveAgency.ScriptName.ToUpperInvariant()}", valueLoc, ValueTextWeight, Color.FromArgb(alpha, Color.White), Common.EFont.ChaletComprimeCologne, false);
 
             // Add callout status
             var rt = GetResponseText(Call.ResponseCode);

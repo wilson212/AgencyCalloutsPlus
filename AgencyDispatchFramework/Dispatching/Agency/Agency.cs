@@ -1,6 +1,6 @@
 ﻿using AgencyDispatchFramework.Extensions;
 using AgencyDispatchFramework.Game;
-using AgencyDispatchFramework.Game.Location;
+using AgencyDispatchFramework.Game.Locations;
 using LSPD_First_Response.Mod.API;
 using Rage;
 using System;

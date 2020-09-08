@@ -62,6 +62,9 @@ namespace AgencyDispatchFramework
         /// </summary>
         public override void Initialize()
         {
+            // Register resolve event handler
+            AppDomain.CurrentDomain.AssemblyResolve += LSPDFRResolveEventHandler;
+
             // Define our plugin version and root paths
             var assembly = Assembly.GetExecutingAssembly();
             PluginVersion = assembly.GetName().Version;
@@ -105,7 +108,6 @@ namespace AgencyDispatchFramework
             Settings.Initialize();
 
             // Register for events
-            AppDomain.CurrentDomain.AssemblyResolve += LSPDFRResolveEventHandler;
             Functions.OnOnDutyStateChanged += OnOnDutyStateChangedHandler;
             Functions.PlayerWentOnDutyFinishedSelection += PlayerWentOnDutyFinishedSelection;
 
@@ -118,7 +120,7 @@ namespace AgencyDispatchFramework
         /// Event fired when resolving assembly names in LSPDFR
         /// </summary>
         /// <returns></returns>
-        private Assembly LSPDFRResolveEventHandler(object sender, ResolveEventArgs args)
+        private static Assembly LSPDFRResolveEventHandler(object sender, ResolveEventArgs args)
         {
             foreach (Assembly assembly in Functions.GetAllUserPlugins())
             {

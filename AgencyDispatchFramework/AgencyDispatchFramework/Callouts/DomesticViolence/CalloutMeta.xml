@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <CalloutMeta>
   <Author>Wilson212</Author>
-  <ClassType>AgencyCalloutsPlus.Callouts.ReportsOfArguingThreats</ClassType>
+  <Controller>AgencyDispatchFramework.Callouts.DomesticViolence.Controller</Controller>
   <Scenarios>
 
     <ReportsOfArguingThreats>
@@ -36,6 +36,9 @@
         <Response>3</Response>
         <LocationType>Residence</LocationType>
       </Dispatch>
+      <Simulation>
+        <CallTime min="20" max="45" />
+      </Simulation>
       <FlowSequence>
         <FlowOutcome id="cheating" probability="10" />
       </FlowSequence> 

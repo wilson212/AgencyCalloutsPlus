@@ -2,7 +2,7 @@
 using AgencyDispatchFramework.Extensions;
 using AgencyDispatchFramework.NativeUI;
 using AgencyDispatchFramework.Game;
-using AgencyDispatchFramework.Game.Location;
+using AgencyDispatchFramework.Game.Locations;
 using Rage;
 using RAGENativeUI.Elements;
 using System;
@@ -10,7 +10,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Xml;
 
-namespace AgencyDispatchFramework.Callouts.Scenarios.DomesticViolence
+namespace AgencyDispatchFramework.Callouts.DomesticViolence
 {
     /// <summary>
     /// One scenario of the <see cref="Callouts.DomesticViolence"/> callout. This scenario represents
@@ -22,7 +22,7 @@ namespace AgencyDispatchFramework.Callouts.Scenarios.DomesticViolence
         /// <summary>
         /// The callout that owns this instance
         /// </summary>
-        private Callouts.DomesticViolence Callout { get; set; }
+        private Controller Callout { get; set; }
 
         /// <summary>
         /// Gets the SpawnPoint location of this <see cref="CalloutScenario"/>
@@ -54,7 +54,7 @@ namespace AgencyDispatchFramework.Callouts.Scenarios.DomesticViolence
 
         private Blip AddressBlip;
 
-        public ReportsOfArguingThreats(Callouts.DomesticViolence callout, XmlNode scenarioNode) : base(scenarioNode)
+        public ReportsOfArguingThreats(Controller callout, XmlNode scenarioNode) : base(scenarioNode)
         {
             // Store spawn point
             this.Residence = callout.Location;

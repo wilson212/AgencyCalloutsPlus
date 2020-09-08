@@ -1,4 +1,4 @@
-﻿using AgencyDispatchFramework.Game.Location;
+﻿using AgencyDispatchFramework.Game.Locations;
 using System.Reflection;
 using System.Xml;
 
@@ -64,6 +64,8 @@ namespace AgencyDispatchFramework.Dispatching
         public string SpriteName { get; internal set; }
 
         public string SpriteTextureDict { get; internal set; }
+
+        public Range<int> SimulationTime { get; internal set; }
 
         /// <summary>
         /// 

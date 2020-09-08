@@ -1,8 +1,10 @@
-﻿using AgencyDispatchFramework.Game;
-using AgencyDispatchFramework.Game.Location;
+﻿using AgencyDispatchFramework.Extensions;
+using AgencyDispatchFramework.Game;
+using AgencyDispatchFramework.Game.Locations;
 using Rage;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace AgencyDispatchFramework.Dispatching
 {
@@ -101,6 +103,9 @@ namespace AgencyDispatchFramework.Dispatching
 
             // Do initial evaluation
             EvaluateCrimeValues();
+
+            // Determine our initial Crime level during this period
+            CurrentCrimeLevel = CrimeLevelGenerator.Spawn().CrimeLevel;
         }
 
         /// <summary>
@@ -131,9 +136,6 @@ namespace AgencyDispatchFramework.Dispatching
 
                 // Register for Dispatch event
                 GameWorld.OnTimeOfDayChanged += GameWorld_OnTimeOfDayChanged;
-
-                // Determine our initial Crime level during this period
-                CurrentCrimeLevel = CrimeLevelGenerator.Spawn().CrimeLevel;
 
                 // Must be called
                 AdjustCallFrequencyTimer();
@@ -170,6 +172,21 @@ namespace AgencyDispatchFramework.Dispatching
             }
 
             return null;
+        }
+
+        internal RoadShoulder[] GetRandomShoulderLocations(int count)
+        {
+            // Get a list of all locations
+            var locs = new List<RoadShoulder>(count);
+            foreach (var zone in Zones)
+            {
+                locs.AddRange(zone.SideOfRoadLocations);
+            }
+
+            // Shuffle
+            locs.Shuffle();
+
+            return locs.Take(count).ToArray();
         }
 
         /// <summary>
@@ -529,7 +546,7 @@ namespace AgencyDispatchFramework.Dispatching
         /// Creates a new <see cref="PriorityCall"/> using <see cref="WorldStateMultipliers"/>
         /// </summary>
         /// <returns></returns>
-        protected virtual PriorityCall GenerateCall()
+        public virtual PriorityCall GenerateCall()
         {
             // Spawn a zone in our jurisdiction
             ZoneInfo zone = GetNextRandomCrimeZone();

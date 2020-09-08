@@ -1,6 +1,6 @@
 ﻿using AgencyDispatchFramework.Dispatching;
 using AgencyDispatchFramework.Extensions;
-using AgencyDispatchFramework.Game.Location;
+using AgencyDispatchFramework.Game.Locations;
 using Rage;
 using System;
 using System.Collections.Generic;
@@ -222,7 +222,6 @@ namespace AgencyDispatchFramework.Game
             if (!Int32.TryParse(subNode.Attributes["morning"]?.Value, out int m))
             {
                 Log.Error($"ZoneInfo.ctor [{subNode.GetFullPath()}]: Unable to extract 'morning' attribute on XmlNode");
-                item[TimeOfDay.Morning] = 0;
             }
             item[TimeOfDay.Morning] = m;
 
@@ -230,7 +229,6 @@ namespace AgencyDispatchFramework.Game
             if (!Int32.TryParse(subNode.Attributes["day"]?.Value, out m))
             {
                 Log.Error($"ZoneInfo.ctor [{subNode.GetFullPath()}]: Unable to extract 'day' attribute on XmlNode");
-                item[TimeOfDay.Day] = 0;
             }
             item[TimeOfDay.Day] = m;
 
@@ -238,7 +236,6 @@ namespace AgencyDispatchFramework.Game
             if (!Int32.TryParse(subNode.Attributes["evening"]?.Value, out m))
             {
                 Log.Error($"ZoneInfo.ctor [{subNode.GetFullPath()}]: Unable to extract 'evening' attribute on XmlNode");
-                item[TimeOfDay.Evening] = 0;
             }
             item[TimeOfDay.Evening] = m;
 
@@ -246,7 +243,6 @@ namespace AgencyDispatchFramework.Game
             if (!Int32.TryParse(subNode.Attributes["night"]?.Value, out m))
             {
                 Log.Error($"ZoneInfo.ctor [{subNode.GetFullPath()}]: Unable to extract 'night' attribute on XmlNode");
-                item[TimeOfDay.Night] = 0;
             }
             item[TimeOfDay.Night] = m;
 
@@ -295,17 +291,18 @@ namespace AgencyDispatchFramework.Game
         /// <param name="pool"></param>
         /// <param name="inactiveOnly">If true, will only return a <see cref="WorldLocation"/> that is not currently in use</param>
         /// <returns></returns>
-        internal WorldLocation GetRandomLocation(LocationType type, WorldLocation[] pool, bool inactiveOnly)
+        protected T GetRandomLocationFromPool<T>(T[] pool, bool inactiveOnly) where T : WorldLocation
         {
             // If we have no locations, return null
-            if (pool.Length == 0)
+            if (pool == null || pool.Length == 0)
             {
-                Log.Debug($"ZoneInfo.GetRandomLocation(): Unable to pull a {type} from zone '{ScriptName}' because the list is empty");
+                Log.Debug($"ZoneInfo.GetRandomLocation(): Unable to pull a {typeof(T).Name} from zone '{ScriptName}' because the list is empty");
                 return null;
             }
 
             // Load randomizer
             var random = new CryptoRandom();
+            var type = pool[0].LocationType;
 
             // Will any location work?
             if (!inactiveOnly) return random.PickOne(pool);
@@ -322,7 +319,7 @@ namespace AgencyDispatchFramework.Game
             }
 
             // We are good to go!
-            return random.PickOne(available);
+            return random.PickOne(available) as T;
         }
 
         /// <summary>
@@ -330,10 +327,10 @@ namespace AgencyDispatchFramework.Game
         /// </summary>
         /// <param name="inactiveOnly">If true, will only return a <see cref="WorldLocation"/> that is not currently in use</param>
         /// <returns>returns a random <see cref="SpawnPoint"/> on success, or null on failure</returns>
-        public SpawnPoint GetRandomSideOfRoadLocation(bool inactiveOnly = false)
+        public RoadShoulder GetRandomSideOfRoadLocation(bool inactiveOnly = false)
         {
             // Get random location
-            return GetRandomLocation(LocationType.SideOfRoad, SideOfRoadLocations, inactiveOnly) as SpawnPoint;
+            return GetRandomLocationFromPool(SideOfRoadLocations, inactiveOnly);
         }
 
         /// <summary>
@@ -344,7 +341,7 @@ namespace AgencyDispatchFramework.Game
         public Residence GetRandomResidence(bool inactiveOnly = false)
         {
             // Get random location
-            return GetRandomLocation(LocationType.Residence, Residences, inactiveOnly) as Residence;
+            return GetRandomLocationFromPool(Residences, inactiveOnly) as Residence;
         }
 
         /// <summary>
@@ -549,7 +546,7 @@ namespace AgencyDispatchFramework.Game
                     sp.StreetName = val;
 
                     // Try and extract heading value
-                    if (!Int32.TryParse(n.SelectSingleNode("Postal")?.Value, out int postal))
+                    if (!Int32.TryParse(n.SelectSingleNode("Postal")?.InnerText, out int postal))
                     {
                         Log.Warning($"ZoneInfo.ExtractRoadLocations(): Unable to extract Postal value for '{n.GetFullPath()}'");
                         continue;

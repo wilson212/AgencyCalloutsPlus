@@ -49,7 +49,7 @@ namespace AgencyDispatchFramework.NativeUI
             // Setup the tab view
             tabView = new TabView("~y~eForce ~w~Computer Aided Dispatch System");
             tabView.Name = PlayerPersona.FullName;
-            tabView.Money = Dispatch.PlayerAgency.FriendlyName;
+            tabView.Money = Dispatch.ActiveAgency.FriendlyName;
             tabView.OnMenuClose += (s, e) => Rage.Game.IsPaused = false;
 
             // Add active calls list
