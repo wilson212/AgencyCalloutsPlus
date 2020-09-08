@@ -1,0 +1,37 @@
+﻿AD&C+ Menu [Main Menu]
+ - Dispatch Menu
+	- Set Status -> option array
+	- Request Call
+	- End Call
+ - Patrol Menu [Callout Name]
+	- Set Role -> option[] { All, Traffic, Crime, Gang, Drugs }
+	- [HighwayPatrol Only] Region -> option[] : Sets which region to patrol in
+	- Division -> int[]
+	- UnitType -> option[]
+	- Beat
+	- Apply
+ - Mod Settings
+	- Enable HUD
+	- HUD X
+	- HUD Y
+	- HUD Scale
+	- Apply
+ - Select Emote -> option array
+ - Close
+
+
+ AISceneSimulation
+
+ALL GameFiber(s) in this Mod:
+	Always Running:
+	 - Dispatch.DispatchFiber (3000): Used to assign officer units to calls
+	 - Dispatch.AISimulationFiber (1000): Used to move around and process AI unit Logic
+	 - RegionCrimeGenerator (variable): Used to take incoming calls, and add them to Dispatch
+	 - Mod RageMenu (1): Used to handle menu processing for the RageNativeUI menu of the mod
+	Sometimes Running:
+	 - CalloutInteractionMenu (1): Used to handle menu processing for a RageNativeUI used by a Callout
+	 - SubTitleQueue (variable): Used to properly display multiple simultaneous subtitles without overlap or interuption
+ 
+ New mod names
+  - Agency Dispatch Framework
+  - Agency Dispatch & Callouts+
