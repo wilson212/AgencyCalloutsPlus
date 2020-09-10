@@ -51,7 +51,7 @@ namespace AgencyDispatchFramework.Callouts.TrafficAccident
 
             // Store data
             ActiveCall = call;
-            Location = call.Location as RoadShoulder;
+            Location = (RoadShoulder)call.Location;
             ScenarioNode = LoadScenarioNode(call.ScenarioInfo);
 
             // Create scenario class handler

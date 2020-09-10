@@ -15,7 +15,7 @@ namespace AgencyDispatchFramework.NativeUI
     /// <summary>
     /// Represents a basic <see cref="RAGENativeUI.MenuPool"/> for questioning peds during a callout
     /// </summary>
-    internal class ADACMainMenu
+    internal class PluginMenu
     {
         private UIMenu MainUIMenu;
         private UIMenu DispatchUIMenu;
@@ -66,10 +66,10 @@ namespace AgencyDispatchFramework.NativeUI
 
         #endregion Patrol Menu Buttons
 
-        public ADACMainMenu()
+        public PluginMenu()
         {
             // Create main menu
-            MainUIMenu = new UIMenu("AD&C+", "~b~Main Menu")
+            MainUIMenu = new UIMenu("ADF", "~b~Main Menu")
             {
                 MouseControlsEnabled = false,
                 AllowCameraMovement = true
@@ -101,7 +101,7 @@ namespace AgencyDispatchFramework.NativeUI
             CloseMenuButton.Activated += (s, e) => MainUIMenu.Visible = false;
 
             // Create dispatch menu
-            DispatchUIMenu = new UIMenu("AD&C+", "~b~Dispatch Menu")
+            DispatchUIMenu = new UIMenu("ADF", "~b~Dispatch Menu")
             {
                 MouseControlsEnabled = false,
                 AllowCameraMovement = true
@@ -129,7 +129,7 @@ namespace AgencyDispatchFramework.NativeUI
                 Rage.Game.DisplayNotification(
                     "3dtextures",
                     "mpgroundlogo_cops",
-                    "Agency Dispatch and Callouts+",
+                    "Agency Dispatch Framework",
                     "~b~Status Update",
                     "Status changed to: " + Enum.GetName(typeof(OfficerStatus), item)
                 );
@@ -145,7 +145,7 @@ namespace AgencyDispatchFramework.NativeUI
             DispatchUIMenu.AddItem(EndCallMenuButton);
 
             // Create patrol menu
-            PatrolUIMenu = new UIMenu("AD&C+", "~b~Patrol Settings Menu")
+            PatrolUIMenu = new UIMenu("ADF", "~b~Patrol Settings Menu")
             {
                 MouseControlsEnabled = false,
                 AllowCameraMovement = true
@@ -282,7 +282,7 @@ namespace AgencyDispatchFramework.NativeUI
             Rage.Game.DisplayNotification(
                 "3dtextures",
                 "mpgroundlogo_cops",
-                "Agency Dispatch and Callouts+",
+                "Agency Dispatch Framework",
                 "~b~Current Crime Statistics",
                 builder.ToString()
             );

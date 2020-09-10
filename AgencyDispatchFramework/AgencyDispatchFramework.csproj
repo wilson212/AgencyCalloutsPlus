@@ -123,6 +123,7 @@
     <Compile Include="Game\Locations\ResidencePosition.cs" />
     <Compile Include="Dispatching\Enums\PatrolType.cs" />
     <Compile Include="Game\Enums\ZoneType.cs" />
+    <Compile Include="ProbableItem.cs" />
     <Compile Include="Simulation\AISceneSimulation.cs" />
     <Compile Include="Game\Locations\WorldLocation.cs" />
     <Compile Include="Game\Locations\Residence.cs" />
@@ -168,7 +169,7 @@
       <DependentUpon>CADMainGwenFormTemplate.cs</DependentUpon>
     </Compile>
     <Compile Include="Log.cs" />
-    <Compile Include="Spawnable{T}.cs" />
+    <Compile Include="Spawnable.cs" />
     <Compile Include="Game\Locations\SpawnPoint.cs" />
     <Compile Include="Dispatching\Enums\StaffLevel.cs" />
     <Compile Include="Game\ZoneInfo.cs" />
@@ -201,7 +202,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="NativeUI\ADACMainMenu.cs" />
+    <Compile Include="NativeUI\PluginMenu.cs" />
     <Compile Include="NativeUI\CalloutInteractionMenu.cs" />
     <Compile Include="NativeUI\ComputerAidedDispatchMenu.cs" />
     <Compile Include="Range.cs" />

@@ -109,19 +109,22 @@ namespace AgencyDispatchFramework.Dispatching
             // Did we get called on for a more important assignment?
             if (CurrentCall != null)
             {
+                // Put this here to remove a potential null problem later
+                var currentCall = CurrentCall;
+
                 // Is this unit the primary on a lesser important call?
-                if (CurrentCall.PrimaryOfficer == this && CurrentCall.Priority > 2)
+                if (currentCall.PrimaryOfficer == this && currentCall.Priority > 2)
                 {
-                    if (CurrentCall.CallStatus == CallStatus.OnScene)
+                    if (currentCall.CallStatus == CallStatus.OnScene)
                     {
                         // @todo : If more than 50% complete, close call
-                        var flag = (call.Priority < CurrentCall.Priority) ? CallCloseFlag.Emergency : CallCloseFlag.Forced;
+                        var flag = (call.Priority < currentCall.Priority) ? CallCloseFlag.Emergency : CallCloseFlag.Forced;
                         CompleteCall(flag);
                     }
                 }
 
                 // Back out of call
-                CurrentCall.RemoveOfficer(this);
+                currentCall.RemoveOfficer(this);
             }
 
             // Set flags

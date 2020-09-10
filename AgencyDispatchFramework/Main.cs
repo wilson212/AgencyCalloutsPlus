@@ -45,7 +45,7 @@ namespace AgencyDispatchFramework
         /// <summary>
         /// Contains the <see cref="RAGENativeUI.UIMenu"/> for this plgin
         /// </summary>
-        private static ADACMainMenu PluginMenu { get; set; }
+        private static PluginMenu PluginMenu { get; set; }
 
         /// <summary>
         /// Contains a list of dynamic link libraries this Plugin depends on
@@ -210,7 +210,7 @@ namespace AgencyDispatchFramework
                     GameWorld.BeginFibers();
 
                     // Begin listening for the Plugin Menu
-                    PluginMenu = new ADACMainMenu();
+                    PluginMenu = new PluginMenu();
                     PluginMenu.BeginListening();
 
                     // Check for and initialize API classes

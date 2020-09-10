@@ -58,6 +58,9 @@ namespace AgencyDispatchFramework.Callouts.TrafficAccident
         /// <param name="scenarioNode">The <see cref="XmlNode"/> for this scenario specifically</param>
         public RearEndNoInjuries(Controller callout, XmlNode scenarioNode) : base(scenarioNode)
         {
+            // Set internals
+            Callout = callout;
+
             // Get Victim 1 vehicle type using probability defined in the CalloutMeta.xml
             var cars = scenarioNode.SelectSingleNode("Victim1/VehicleTypes").ChildNodes;
             VictimVehicleType = GetRandomVehicleType(cars);

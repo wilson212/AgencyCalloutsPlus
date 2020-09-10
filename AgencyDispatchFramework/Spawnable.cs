@@ -8,7 +8,9 @@
     public class Spawnable<T> : ISpawnable
     {
         /// <summary>
-        /// Gets the probability of the <typeparamref name="T"/> contained in this instance to be spawned
+        /// Gets the probability of the <typeparamref name="T"/> item contained in this instance 
+        /// to be spawned from a <see cref="ProbabilityGenerator{T}"/> against other items in
+        /// the item pool
         /// </summary>
         public int Probability { get; protected set; }
 

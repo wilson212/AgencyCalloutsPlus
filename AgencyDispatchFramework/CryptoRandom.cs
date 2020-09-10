@@ -4,13 +4,19 @@ using System.Security.Cryptography;
 namespace AgencyDispatchFramework
 {
     /// <summary>
-    /// A Random number generator that uses the <see cref="RNGCryptoServiceProvider"/> 
+    /// A true random number generator that uses the <see cref="RNGCryptoServiceProvider"/> 
     /// to randomize the numbers.
     /// </summary>
     public class CryptoRandom : Random
     {
+        /// <summary>
+        /// Random service provider
+        /// </summary>
         private static RNGCryptoServiceProvider RNG = new RNGCryptoServiceProvider();
 
+        /// <summary>
+        /// The Int32 byte buffer
+        /// </summary>
         private byte[] _uint32Buffer = new byte[4];
 
         public CryptoRandom() { }
@@ -18,7 +24,7 @@ namespace AgencyDispatchFramework
 
         /// <summary>
         /// Picks a random element of <typeparamref name="T"/> that is provided in
-        /// the  <paramref name="items"/> list and returns it.
+        /// the <paramref name="items"/> list and returns it.
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="items"></param>

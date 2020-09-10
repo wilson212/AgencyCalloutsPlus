@@ -263,7 +263,7 @@ namespace AgencyDispatchFramework.Dispatching
                 if (call == null)
                 {
                     // If we keep failing, then show the player a message and quit
-                    if (timesFailed > 9)
+                    if (timesFailed > 3)
                     {
                         // Display notification to the player
                         Rage.Game.DisplayNotification(
@@ -275,7 +275,7 @@ namespace AgencyDispatchFramework.Dispatching
                         );
 
                         // Log the error
-                        Log.Error("RegionCrimeGenerator.ProcessCrimeLogic(): Failed to generate a call 10 times. Please contact the developer.");
+                        Log.Error("RegionCrimeGenerator.ProcessCrimeLogic(): Failed to generate a call 3 times. Please contact the developer.");
 
                         // Turn off
                         IsRunning = false;

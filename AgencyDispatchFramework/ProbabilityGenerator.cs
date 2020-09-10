@@ -9,65 +9,98 @@ namespace AgencyDispatchFramework
     /// </summary>
     /// <remarks>P( T item ) = item.Probability / CumulativeProbability</remarks>
     /// <typeparam name="T"></typeparam>
-    public class ProbabilityGenerator<T> where T : ISpawnable
+    public sealed class ProbabilityGenerator<T> where T : ISpawnable
     {
+        /// <summary>
+        /// A true random number generator
+        /// </summary>
         private CryptoRandom Randomizer = new CryptoRandom();
-        private List<SpawnableWrapper<T>> SpawnableEntities;
-        //private bool TypeIsCloneable = false;
 
-        public int ItemCount => SpawnableEntities.Count;
+        /// <summary>
+        /// Internal list of items that can be generated using the <see cref="Spawn()"/> 
+        /// or <see cref="TrySpawn(out T)"/> methods
+        /// </summary>
+        private List<ProbableItem<T>> Items;
+
+        /// <summary>
+        /// Gets the number of items stored in this <see cref="ProbabilityGenerator{T}"/>
+        /// </summary>
+        public int ItemCount => Items.Count;
 
         /// <summary>
         /// The Cumulative Probability of all the spawnable objects
         /// </summary>
-        public int CumulativeProbability { get; protected set; }
+        public int CumulativeProbability { get; set; }
 
+        /// <summary>
+        /// Creates a new instance of <see cref="ProbabilityGenerator{T}"/>
+        /// </summary>
         public ProbabilityGenerator()
         {
-            //TypeIsCloneable = typeof(ICloneable).IsAssignableFrom(typeof(T));
-            SpawnableEntities = new List<SpawnableWrapper<T>>();
+            Items = new List<ProbableItem<T>>();
         }
 
+        /// <summary>
+        /// Creates a new instance of <see cref="ProbabilityGenerator{T}"/>, and adds
+        /// the <paramref name="objects"/> to the internal pool
+        /// </summary>
+        /// <param name="objects"></param>
         public ProbabilityGenerator(IEnumerable<T> objects)
         {
-            //TypeIsCloneable = typeof(ICloneable).IsAssignableFrom(typeof(T));
-            SpawnableEntities = new List<SpawnableWrapper<T>>();
+            Items = new List<ProbableItem<T>>();
 
             AddRange(objects);
         }
 
+        /// <summary>
+        /// Adds the item to the item pool
+        /// </summary>
+        /// <param name="obj"></param>
         public void Add(T obj)
         {
-            var spawnable = new SpawnableWrapper<T>(obj, CumulativeProbability);
+            var spawnable = new ProbableItem<T>(this, obj, CumulativeProbability);
             CumulativeProbability = spawnable.MaxThreshold;
-            SpawnableEntities.Add(spawnable);
+            Items.Add(spawnable);
         }
 
+        /// <summary>
+        /// Adds a range of items to the item pool
+        /// </summary>
+        /// <param name="objects"></param>
         public void AddRange(IEnumerable<T> objects)
         {
             foreach (var o in objects)
             {
-                var spawnable = new SpawnableWrapper<T>(o, CumulativeProbability);
+                var spawnable = new ProbableItem<T>(this, o, CumulativeProbability);
                 CumulativeProbability = spawnable.MaxThreshold;
-                SpawnableEntities.Add(spawnable);
+                Items.Add(spawnable);
             }
         }
 
         /// <summary>
-        /// Gets all items from this <see cref="SpawnGenerator{T}"/>
+        /// Gets all items from this <see cref="ProbabilityGenerator{T}"/>
+        /// </summary>
+        /// <returns></returns>
+        public ProbableItem<T>[] GetItemPool()
+        {
+            return Items.ToArray();
+        }
+
+        /// <summary>
+        /// Gets all items from this <see cref="ProbabilityGenerator{T}"/>
         /// </summary>
         /// <returns></returns>
         public T[] GetItems()
         {
-            return SpawnableEntities.Select(x => x.Spawnable).ToArray();
+            return Items.Select(x => x.Item).ToArray();
         }
 
         /// <summary>
-        /// Clears all items in this <see cref="SpawnGenerator{T}"/>
+        /// Clears all items in this <see cref="ProbabilityGenerator{T}"/>
         /// </summary>
         public void Clear()
         {
-            SpawnableEntities.Clear();
+            Items.Clear();
         }
 
         /// <summary>
@@ -78,22 +111,16 @@ namespace AgencyDispatchFramework
         public T Spawn()
         {
             // Ensure we have at least 1 object to spawn
-            if (SpawnableEntities.Count == 0)
+            if (Items.Count == 0)
                 throw new Exception("There are no spawnable entities");
 
             // If we have just 1 item, return that
-            if (SpawnableEntities.Count == 1)
-                return SpawnableEntities.First().Spawnable;
+            if (Items.Count == 1)
+                return Items.First().Item;
 
             // Generate the next random number
-            var i = Randomizer.Next(0, CumulativeProbability);
-            var retVal = (from s in this.SpawnableEntities
-                          where (s.MaxThreshold > i && s.MinThreshold <= i)
-                          select s.Spawnable).FirstOrDefault();
-
-            // Note that it can spawn null (no spawn) if probabilities dont add up to 1000
-            //return TypeIsCloneable ? (T)retVal.Clone() : retVal;
-            return retVal;
+            var i = Randomizer.Next(1, CumulativeProbability);
+            return (from s in Items where s.ContainsThreshold(i) select s.Item).First();
         }
 
         /// <summary>
@@ -107,24 +134,22 @@ namespace AgencyDispatchFramework
             retVal = default(T);
 
             // Ensure we have at least 1 object to spawn
-            if (SpawnableEntities.Count == 0)
+            if (Items.Count == 0)
             {
                 return false;
             }
-            else if (SpawnableEntities.Count == 1)
+            else if (Items.Count == 1)
             {
                 // If we have just 1 item, return that
-                retVal = SpawnableEntities.First().Spawnable;
+                retVal = Items.First().Item;
                 return true;
             }
 
             // Generate the next random number
             try
             {
-                var i = Randomizer.Next(0, CumulativeProbability);
-                retVal = (from s in SpawnableEntities
-                             where (s.MaxThreshold > i && s.MinThreshold <= i)
-                             select s.Spawnable).First();
+                var i = Randomizer.Next(1, CumulativeProbability);
+                retVal = (from s in Items where s.ContainsThreshold(i) select s.Item).First();
                 return true;
             }
             catch (Exception)
@@ -133,31 +158,17 @@ namespace AgencyDispatchFramework
             }
         }
 
+        /// <summary>
+        /// Rebuilds the internal item pool
+        /// </summary>
         internal void Rebuild()
         {
             T[] items = GetItems();
 
-            SpawnableEntities.Clear();
+            Items.Clear();
             CumulativeProbability = 0;
 
             AddRange(items);
-        }
-
-        internal class SpawnableWrapper<T> where T : ISpawnable
-        {
-            public T Spawnable { get; protected set; }
-            public int MinThreshold { get; protected set; }
-            public int MaxThreshold { get; protected set; }
-
-            public SpawnableWrapper(T spawnable, int minThreshold)
-            {
-                if (spawnable == null)
-                    throw new ArgumentNullException("spawnable");
-
-                Spawnable = spawnable;
-                MinThreshold = minThreshold;
-                MaxThreshold = MinThreshold + spawnable.Probability;
-            }
         }
     }
 }

@@ -56,6 +56,9 @@ namespace AgencyDispatchFramework.Callouts.DomesticViolence
 
         public ReportsOfArguingThreats(Controller callout, XmlNode scenarioNode) : base(scenarioNode)
         {
+            // Set internals
+            Callout = callout;
+
             // Store spawn point
             this.Residence = callout.Location;
         }
