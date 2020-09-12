@@ -1220,7 +1220,7 @@ namespace AgencyDispatchFramework
                 return null;
 
             // As call priority changes, so does the dispatching requirements of the call
-            var officers = FilterOfficers(availableOfficers, call);
+            var officers = ApplyFilterToPlayer(availableOfficers, call);
             if (officers == null)
                 return null;
 
@@ -1243,7 +1243,7 @@ namespace AgencyDispatchFramework
                 return null;
 
             // As call priority changes, so does the dispatching requirements of the call
-            var officers = FilterOfficers(availableOfficers, call);
+            var officers = ApplyFilterToPlayer(availableOfficers, call);
             if (officers == null)
                 return null;
 
@@ -1258,20 +1258,27 @@ namespace AgencyDispatchFramework
         /// <param name="availableOfficers"></param>
         /// <param name="call"></param>
         /// <returns></returns>
-        private static IEnumerable<OfficerUnit> FilterOfficers(List<OfficerUnit> availableOfficers, PriorityCall call)
+        private static IEnumerable<OfficerUnit> ApplyFilterToPlayer(List<OfficerUnit> availableOfficers, PriorityCall call)
         {
+            // Remove player if they are busy with ANY call regardless of priority!
+            if (call.Priority == 4 || call.CallDeclinedByPlayer || !CanInvokeCalloutForPlayer())
+            {
+                // Remove the player unit
+                var count = availableOfficers.RemoveAll(x => !x.IsAIUnit);
+                if (count > 0)
+                {
+                    // Play scanner audio?
+                }
+            }
+
             switch (call.Priority)
             {
                 case 1:
                 case 2:
-                    return availableOfficers;
                 case 3:
-                    if (call.CallDeclinedByPlayer)
-                        return availableOfficers.Where(x => x.IsAIUnit);
-                    else
-                        return availableOfficers;
+                    return availableOfficers;
                 default:
-                    return availableOfficers.Where(x => x.IsAIUnit);
+                    return availableOfficers;
             }
         }
 
@@ -1296,7 +1303,7 @@ namespace AgencyDispatchFramework
             var directory = new DirectoryInfo(rootPath);
             if (!directory.Exists)
             {
-                Log.Error($"Dispatch.RegisterCalloutsFromPath(): Callouts directory is missing");
+                Log.Error($"Dispatch.RegisterCalloutsFromPath(): Callouts directory is missing: {rootPath}");
                 throw new DirectoryNotFoundException("Callouts directory is missing");
             }
 

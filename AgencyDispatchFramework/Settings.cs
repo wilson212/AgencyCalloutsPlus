@@ -85,7 +85,7 @@ namespace AgencyDispatchFramework
             AudioBeat = ini.ReadInt32("GENERAL", "Beat", 18);
             TimeScale = ini.ReadInt32("GENERAL", "TimeScale", 30);
 
-            EnableFullSimulation = ini.ReadBoolean("SIMULATION", "EnableFullSimulation", false);
+            //EnableFullSimulation = ini.ReadBoolean("SIMULATION", "EnableFullSimulation", false);
 
             // Log
             Log.Info("Loaded AgencyDispatchFramework config successfully!");

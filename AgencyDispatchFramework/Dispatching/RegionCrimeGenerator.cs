@@ -57,7 +57,7 @@ namespace AgencyDispatchFramework.Dispatching
         /// <summary>
         /// Spawn generator for random crime levels
         /// </summary>
-        private static ProbabilityGenerator<CrimeLevelWrapper> CrimeLevelGenerator { get; set; }
+        private static ProbabilityGenerator<Spawnable<CrimeLevel>> CrimeLevelGenerator { get; set; }
 
         /// <summary>
         /// GameFiber containing the CallCenter functions
@@ -67,13 +67,13 @@ namespace AgencyDispatchFramework.Dispatching
         static RegionCrimeGenerator()
         {
             // Create our crime level generator
-            CrimeLevelGenerator = new ProbabilityGenerator<CrimeLevelWrapper>();
-            CrimeLevelGenerator.Add(new CrimeLevelWrapper() { CrimeLevel = CrimeLevel.None, Probability = 6 });
-            CrimeLevelGenerator.Add(new CrimeLevelWrapper() { CrimeLevel = CrimeLevel.VeryLow, Probability = 12 });
-            CrimeLevelGenerator.Add(new CrimeLevelWrapper() { CrimeLevel = CrimeLevel.Low, Probability = 20 });
-            CrimeLevelGenerator.Add(new CrimeLevelWrapper() { CrimeLevel = CrimeLevel.Moderate, Probability = 30 });
-            CrimeLevelGenerator.Add(new CrimeLevelWrapper() { CrimeLevel = CrimeLevel.High, Probability = 20 });
-            CrimeLevelGenerator.Add(new CrimeLevelWrapper() { CrimeLevel = CrimeLevel.VeryHigh, Probability = 12 });
+            CrimeLevelGenerator = new ProbabilityGenerator<Spawnable<CrimeLevel>>();
+            CrimeLevelGenerator.Add(new Spawnable<CrimeLevel>(6, CrimeLevel.None));
+            CrimeLevelGenerator.Add(new Spawnable<CrimeLevel>(12, CrimeLevel.VeryLow));
+            CrimeLevelGenerator.Add(new Spawnable<CrimeLevel>(20, CrimeLevel.Low));
+            CrimeLevelGenerator.Add(new Spawnable<CrimeLevel>(30, CrimeLevel.Moderate));
+            CrimeLevelGenerator.Add(new Spawnable<CrimeLevel>(20, CrimeLevel.High));
+            CrimeLevelGenerator.Add(new Spawnable<CrimeLevel>(12, CrimeLevel.VeryHigh));
 
             // Create next random call ID
             Randomizer = new CryptoRandom();
@@ -105,7 +105,7 @@ namespace AgencyDispatchFramework.Dispatching
             EvaluateCrimeValues();
 
             // Determine our initial Crime level during this period
-            CurrentCrimeLevel = CrimeLevelGenerator.Spawn().CrimeLevel;
+            CurrentCrimeLevel = CrimeLevelGenerator.Spawn().Value;
         }
 
         /// <summary>
@@ -269,7 +269,7 @@ namespace AgencyDispatchFramework.Dispatching
                         Rage.Game.DisplayNotification(
                             "3dtextures",
                             "mpgroundlogo_cops",
-                            "Agency Dispatch and Callouts+",
+                            "Agency Dispatch Framework",
                             "~o~Region Crime Generator.",
                             $"Failed to generate a call too many times. Disabling the crime generator. Please check your ~y~Game.log~w~ for errors"
                         );
@@ -317,7 +317,7 @@ namespace AgencyDispatchFramework.Dispatching
             var oldLevel = CurrentCrimeLevel;
 
             // Change our Crime level during this period
-            CurrentCrimeLevel = CrimeLevelGenerator.Spawn().CrimeLevel;
+            CurrentCrimeLevel = CrimeLevelGenerator.Spawn().Value;
             var name = Enum.GetName(typeof(TimeOfDay), GameWorld.CurrentTimeOfDay);
 
             // Log change
@@ -337,7 +337,7 @@ namespace AgencyDispatchFramework.Dispatching
                 Rage.Game.DisplayNotification(
                     "3dtextures",
                     "mpgroundlogo_cops",
-                    "Agency Dispatch and Callouts+",
+                    "Agency Dispatch Framework",
                     "~b~Call Center Update",
                     $"The time of day is transitioning to ~y~{name}~w~. Crime levels are starting to {text}"
                 );
@@ -348,7 +348,7 @@ namespace AgencyDispatchFramework.Dispatching
                 Rage.Game.DisplayNotification(
                     "3dtextures",
                     "mpgroundlogo_cops",
-                    "Agency Dispatch and Callouts+",
+                    "Agency Dispatch Framework",
                     "~b~Call Center Update",
                     $"The time of day is transitioning to ~y~{name}~w~. Crime levels are not expected to change"
                 );
@@ -518,7 +518,7 @@ namespace AgencyDispatchFramework.Dispatching
                     ZoneInfo zone = GetNextRandomCrimeZone();
                     if (zone == null)
                     {
-                        Log.Error($"CrimeGenerator.CreateCallFromScenario(): Attempted to pull a zone but zone is null");
+                        Log.Error($"RegionCrimeGenerator.CreateCallFromScenario(): Attempted to pull a zone but zone is null");
                         break;
                     }
 
@@ -526,7 +526,7 @@ namespace AgencyDispatchFramework.Dispatching
                     WorldLocation location = GetScenarioLocationFromZone(zone, scenario);
                     if (location == null)
                     {
-                        Log.Warning($"CrimeGenerator.CreateCallFromScenario(): Zone '{zone.FullName}' does not have any available '{scenario.LocationType}' locations");
+                        Log.Warning($"RegionCrimeGenerator.CreateCallFromScenario(): Zone '{zone.FullName}' does not have any available '{scenario.LocationType}' locations");
                         continue;
                     }
 
@@ -608,13 +608,6 @@ namespace AgencyDispatchFramework.Dispatching
             }
 
             return null;
-        }
-
-        private class CrimeLevelWrapper : ISpawnable
-        {
-            public CrimeLevel CrimeLevel { get; set; }
-
-            public int Probability { get; set; }
         }
     }
 }

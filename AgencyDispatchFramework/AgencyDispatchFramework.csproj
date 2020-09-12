@@ -230,6 +230,7 @@
     <Content Include="AgencyDispatchFramework\Agencies.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="AgencyDispatchFramework\BaseProbabilities.xml" />
     <Content Include="AgencyDispatchFramework\Callouts\DomesticViolence\CalloutMeta.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
