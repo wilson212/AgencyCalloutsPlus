@@ -40,7 +40,7 @@ namespace AgencyDispatchFramework.Game.Locations
         public string UnitId { get; internal set; } = String.Empty;
 
         /// <summary>
-        /// Gets the <see cref="AgencyDispatchFramework.API.LocationType"/> for this <see cref="WorldLocation"/>
+        /// Gets the <see cref="Locations.LocationType"/> for this <see cref="WorldLocation"/>
         /// </summary>
         public override LocationType LocationType => LocationType.Residence;
 

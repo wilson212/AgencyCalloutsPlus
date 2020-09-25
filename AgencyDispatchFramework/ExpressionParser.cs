@@ -65,12 +65,28 @@ namespace AgencyDispatchFramework
             {
                 throw new ArgumentException("expression input is null", nameof(input));
             }
-            else if (TryEvaluate(input, out T result))
+
+            // Compile the expression
+            Expression body = System.Linq.Dynamic.DynamicExpression.Parse(null, input, Symbols);
+            LambdaExpression e = Expression.Lambda(body, Parameters.Values.ToArray());
+            Delegate d = e.Compile();
+
+            // Invoke the expression to recieve the output value
+            var result = d.DynamicInvoke(Symbols.Values.ToArray());
+            var expectedType = typeof(T);
+            var resultType = result.GetType();
+
+            // Ensure our return type is expected
+            if (resultType != expectedType)
             {
-                return result;
+                Log.Error($"ExpressionParser.Evaluate(): Expression does not return the expected type:");
+                Log.Error($"\t\tExpression input: '{input}'");
+                Log.Error($"\t\tExpected return type: '{expectedType.Name}'");
+                Log.Error($"\t\tActual return type: '{resultType.Name}'");
+                throw new InvalidCastException($"Unable to cast {resultType.Name} to {expectedType.Name}");
             }
 
-            return default(T);
+            return (T)result;
         }
 
         /// <summary>
@@ -86,35 +102,16 @@ namespace AgencyDispatchFramework
             // Try and evaluate the expression
             try
             {
-                // Compile the expression
-                Expression body = System.Linq.Dynamic.DynamicExpression.Parse(null, input, Symbols);
-                LambdaExpression e = Expression.Lambda(body, Parameters.Values.ToArray());
-                Delegate d = e.Compile();
-
-                // Invoke the expression to recieve the output value
-                var result = d.DynamicInvoke(Symbols.Values.ToArray());
-                var expectedType = typeof(T);
-                var resultType = result.GetType();
-
-                // Ensure our return type is expected
-                if (resultType != expectedType)
-                {
-                    Log.Error($"ExpressionParser.Evaluate(): Expression does not return the expected type:");
-                    Log.Error($"\t\tExpression input: '{input}'");
-                    Log.Error($"\t\tExpected return type: '{expectedType.Name}'");
-                    Log.Error($"\t\tActual return type: '{resultType.Name}'");
-                    return false;
-                }
-
-                // Debugging!
-                //Log.Debug($"ExpressionParser.Evaluate(): Result for \"{input}\" was {result}");
-
-                expressionResult = (T)result;
+                expressionResult = Evaluate<T>(input);
                 return true;
+            }
+            catch (InvalidCastException x)
+            {
+                // Logging is already done in that method
+                return false;
             }
             catch (Exception e)
             {
-                Log.Error($"Exception thrown while trying to parse expression '{input}':");
                 Log.Exception(e);
                 return false;
             }

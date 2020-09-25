@@ -16,17 +16,35 @@ namespace AgencyDispatchFramework.Dispatching
         /// <summary>
         /// Gets the officer <see cref="Ped"/>
         /// </summary>
-        internal Ped Officer { get; set; }
+        internal Player Officer { get; set; }
 
         /// <summary>
         /// Creates a new instance of <see cref="OfficerUnit"/> for the player
         /// </summary>
         /// <param name="player"></param>
-        internal PlayerOfficerUnit(Player player, string unitString) : base(unitString)
+        internal PlayerOfficerUnit(Player player) : base(Settings.AudioDivision, Settings.AudioUnitType[0], Settings.AudioBeat)
         {
-            Officer = player.Character ?? throw new ArgumentNullException("player");
+            Officer = player ?? throw new ArgumentNullException("player");
             LastStatusChange = World.DateTime;
             Status = OfficerStatus.Available;
+        }
+
+        internal override void AssignToCall(PriorityCall call, bool forcePrimary = false)
+        {
+            // === DO NOT CALL BASE === //
+
+            // Set flags
+            call.AssignOfficer(this, forcePrimary);
+
+            // Is this call already dispatched?
+            if (call.PrimaryOfficer == this)
+            {
+                call.CallStatus = CallStatus.Assigned;
+            }
+
+            CurrentCall = call;
+            Status = OfficerStatus.Dispatched;
+            LastStatusChange = World.DateTime;
         }
 
         /// <summary>
@@ -35,7 +53,7 @@ namespace AgencyDispatchFramework.Dispatching
         /// <returns></returns>
         public override Vector3 GetPosition()
         {
-            return Officer.Position;
+            return Officer.Character.Position;
         }
 
         internal override void AssignToCallWithRandomCompletion(PriorityCall call)

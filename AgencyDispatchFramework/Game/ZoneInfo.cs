@@ -341,7 +341,7 @@ namespace AgencyDispatchFramework.Game
         public Residence GetRandomResidence(bool inactiveOnly = false)
         {
             // Get random location
-            return GetRandomLocationFromPool(Residences, inactiveOnly) as Residence;
+            return GetRandomLocationFromPool(Residences, inactiveOnly);
         }
 
         /// <summary>

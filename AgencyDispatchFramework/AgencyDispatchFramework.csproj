@@ -86,7 +86,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Dispatching\CallListUpdateHandler.cs" />
+    <Compile Include="Dispatching\RadioMessage.cs" />
     <Compile Include="Extensions\ListExtensions.cs" />
+    <Compile Include="Extensions\StringBuilderExtensions.cs" />
     <Compile Include="Game\Enums\PedGender.cs" />
     <Compile Include="Game\Locations\LocationFlags.cs" />
     <Compile Include="Game\Enums\PedDemeanor.cs" />
@@ -212,7 +214,7 @@
     <Compile Include="WorldStateMultipliers.cs" />
     <Compile Include="WorldStateProbabilityGenerator.cs" />
     <Compile Include="Game\TimeScale.cs" />
-    <Compile Include="XmlExtractor.cs" />
+    <Compile Include="Xml\XmlExtractor.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Integration\C+Interfaces\CallDetailsGwenFormTemplate.resx">

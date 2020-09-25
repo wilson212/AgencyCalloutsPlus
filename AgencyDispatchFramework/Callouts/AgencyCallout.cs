@@ -1,8 +1,6 @@
 ﻿using AgencyDispatchFramework.Dispatching;
 using AgencyDispatchFramework.Integration;
-using LSPD_First_Response.Mod.API;
 using LSPD_First_Response.Mod.Callouts;
-using Rage;
 using System;
 using System.IO;
 using System.Xml;
@@ -25,28 +23,6 @@ namespace AgencyDispatchFramework.Callouts
         /// Stores the current <see cref="PriorityCall"/>
         /// </summary>
         protected PriorityCall ActiveCall { get; set; }
-
-        /// <summary>
-        /// Plays the Audio scanner with the Division Unit Beat prefix
-        /// </summary>
-        /// <param name="scanner"></param>
-        public void PlayScannerAudioUsingCallsign(string scanner, bool usePosition = true)
-        {
-            // Pad zero
-            var divString = Settings.AudioDivision.ToString("D2");
-            var beatString = Settings.AudioBeat.ToString("D2");
-            var prefix = $"DISP_ATTENTION_UNIT DIV_{divString} {Settings.AudioUnitType} BEAT_{beatString} ";
-
-            // Play audio scanner
-            if (usePosition)
-            {
-                Functions.PlayScannerAudioUsingPosition(String.Concat(prefix, scanner), CalloutPosition);
-            }
-            else
-            {
-                Functions.PlayScannerAudio(String.Concat(prefix, scanner));
-            }
-        }
 
         /// <summary>
         /// Loads an xml file and returns the XML document back as an object

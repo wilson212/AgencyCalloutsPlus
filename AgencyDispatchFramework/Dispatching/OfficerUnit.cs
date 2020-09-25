@@ -20,9 +20,20 @@ namespace AgencyDispatchFramework.Dispatching
         public abstract bool IsAIUnit { get; }
 
         /// <summary>
-        /// Gets the Division-UnitType-Beat for this unit
+        /// Gets the Division-UnitType-Beat for this unit to be played over the radio
+        /// </summary>
+        public string RadioCallSign { get; internal set; }
+
+        /// <summary>
+        /// Gets the formatted Division-UnitType-Beat for this unit to be used in strings
         /// </summary>
         public string CallSign { get; internal set; }
+
+        public int Division { get; internal set; }
+
+        public string Unit { get; internal set; }
+
+        public int Beat { get; internal set; }
 
         /// <summary>
         /// Gets the officers current <see cref="OfficerStatus"/>
@@ -30,14 +41,14 @@ namespace AgencyDispatchFramework.Dispatching
         public OfficerStatus Status { get; internal set; }
 
         /// <summary>
-        /// Gets the last <see cref="Game.DateTime"/> this officer was tasked with something
+        /// Gets the last <see cref="Rage.Game.DateTime"/> this officer was tasked with something
         /// </summary>
         public DateTime LastStatusChange { get; internal set; }
 
         /// <summary>
         /// Gets the current <see cref="PriorityCall"/> if any this unit is assigned to
         /// </summary>
-        public PriorityCall CurrentCall { get; private set; }
+        public PriorityCall CurrentCall { get; protected set; }
 
         /// <summary>
         /// Temporary
@@ -52,10 +63,30 @@ namespace AgencyDispatchFramework.Dispatching
         /// <summary>
         /// Creates a new instance of <see cref="OfficerUnit"/> for an AI unit
         /// </summary>
-        /// <param name="unitString"></param>
-        internal OfficerUnit(string unitString)
+        internal OfficerUnit(int division, char unit, int beat)
         {
-            CallSign = unitString;
+            SetCallSign(division, unit, beat);
+        }
+
+        /// <summary>
+        /// Modifies the call sign for this <see cref="OfficerUnit"/>
+        /// </summary>
+        /// <param name="division"></param>
+        /// <param name="unit"></param>
+        /// <param name="beat"></param>
+        internal void SetCallSign(int division, char unit, int beat)
+        {
+            Division = division;
+            Unit = Dispatch.GetUnitStringFromChar(unit);
+            Beat = beat;
+
+            unit = char.ToUpper(unit);
+            CallSign = $"{division}{unit}-{beat}";
+
+            // Pad zero
+            var divString = Division.ToString("D2");
+            var beatString = Beat.ToString("D2");
+            RadioCallSign = $"DIV_{divString} {Unit} BEAT_{beatString}";
         }
 
         /// <summary>

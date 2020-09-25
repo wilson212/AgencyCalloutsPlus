@@ -40,7 +40,7 @@ namespace AgencyDispatchFramework.Game
     /// the actual descriptions that apply to a given Ped instance may depend based on the components, drawables
     /// and textures of that instance.
     /// </summary>
-    public class PedModelMeta
+    internal class PedModelMeta
     {
 
         /// <summary>

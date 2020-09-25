@@ -12,6 +12,8 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Xml;
+using System.Collections.Concurrent;
+using System.Text;
 
 namespace AgencyDispatchFramework
 {
@@ -106,7 +108,7 @@ namespace AgencyDispatchFramework
         /// <summary>
         /// Gets the player's <see cref="OfficerUnit"/> instance
         /// </summary>
-        private static OfficerUnit PlayerUnit { get; set; }
+        public static OfficerUnit PlayerUnit { get; private set; }
 
         /// <summary>
         /// Our call Queue, seperated into 4 priority queues
@@ -120,9 +122,19 @@ namespace AgencyDispatchFramework
         private static List<PriorityCall>[] CallQueue { get; set; }
 
         /// <summary>
+        /// Gets a queue of radio messages to transmit in game
+        /// </summary>
+        private static ConcurrentQueue<RadioMessage> RadioQueue { get; set; }
+
+        /// <summary>
         /// Contains the priority call being dispatched to the player currently
         /// </summary>
         public static PriorityCall PlayerActiveCall { get; private set; }
+
+        /// <summary>
+        /// Indicates whether the PlayerActiveCall is waiting to be dispatched for a free radio spot
+        /// </summary>
+        private static bool CalloutWaitingForRadio { get; set; } = false;
 
         /// <summary>
         /// Contains the priority call that needs to be dispatched to the player on next Tick
@@ -132,7 +144,7 @@ namespace AgencyDispatchFramework
         /// <summary>
         /// Signals that the next callout should be given to the player
         /// </summary>
-        private static bool SendNextCallToPlayer { get; set; }
+        private static bool SendNextCallToPlayer { get; set; } = false;
 
         /// <summary>
         /// Containts a list of LAPD phonetic radiotelephony alphabet spelling words
@@ -205,6 +217,24 @@ namespace AgencyDispatchFramework
         #region Public API Methods
 
         /// <summary>
+        /// Converts a latin character to the corresponding letter's unit type string
+        /// </summary>
+        /// <param name="value">An upper- or lower-case Latin character</param>
+        /// <returns></returns>
+        public static string GetUnitStringFromChar(char value)
+        {
+            // Uses the uppercase character unicode code point. 'A' = U+0042 = 65, 'Z' = U+005A = 90
+            char upper = char.ToUpper(value);
+            if (upper < 'A' || upper > 'Z')
+            {
+                throw new ArgumentOutOfRangeException("value", "This method only accepts standard Latin characters.");
+            }
+
+            int index = (int)upper - (int)'A';
+            return LAPDphonetic[index];
+        }
+
+        /// <summary>
         /// Sets the player's status
         /// </summary>
         /// <param name="status"></param>
@@ -247,9 +277,8 @@ namespace AgencyDispatchFramework
             if (!division.InRange(1, 10))
                 return;
 
-            // Set new unit string
-            Settings.AudioDivision = division;
-            PlayerUnit.CallSign = $"{Settings.AudioDivision}{Settings.AudioUnitTypeLetter}-{Settings.AudioBeat}";
+            // Set new callsign
+            PlayerUnit.SetCallSign(division, PlayerUnit.Unit[0], PlayerUnit.Beat);
         }
 
         /// <summary>
@@ -263,9 +292,8 @@ namespace AgencyDispatchFramework
             if (!phoneticId.InRange(1, 26))
                 return;
 
-            // Set new unit string
-            Settings.AudioUnitType = LAPDphonetic[phoneticId - 1];
-            PlayerUnit.CallSign = $"{Settings.AudioDivision}{Settings.AudioUnitTypeLetter}-{Settings.AudioBeat}";
+            // Set new callsign
+            PlayerUnit.SetCallSign(PlayerUnit.Division, LAPDphonetic[phoneticId - 1][0], PlayerUnit.Beat);
         }
 
         /// <summary>
@@ -278,9 +306,8 @@ namespace AgencyDispatchFramework
             if (!beat.InRange(1, 24))
                 return;
 
-            // Set new unit string
-            Settings.AudioBeat = beat;
-            PlayerUnit.CallSign = $"{Settings.AudioDivision}{Settings.AudioUnitTypeLetter}-{Settings.AudioBeat}";
+            // Set new callsign
+            PlayerUnit.SetCallSign(PlayerUnit.Division, PlayerUnit.Unit[0], beat);
         }
 
         /// <summary>
@@ -338,6 +365,43 @@ namespace AgencyDispatchFramework
         public static WorldLocation[] GetActiveCrimeLocationsByType(LocationType type)
         {
             return ActiveCrimeLocations[type].ToArray();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="message"></param>
+        /// <param name="rightNow"></param>
+        public static void PlayRadioMessage(RadioMessage message, bool rightNow = false)
+        {
+            if (rightNow)
+            {
+                // Append target of message
+                StringBuilder builder = new StringBuilder();
+                if (String.IsNullOrEmpty(message.TargetCallsign))
+                {
+                    builder.Append("ATTENTION_ALL_UNITS_02 ");
+                }
+                else
+                {
+                    builder.Append($"DISP_ATTENTION_UNIT {message.TargetCallsign}");
+                }
+
+                // Append radio message
+                builder.Append(message.Message);
+                if (message.LocationInfo != Vector3.Zero)
+                {
+                    Functions.PlayScannerAudioUsingPosition(builder.ToString(), message.LocationInfo);
+                }
+                else
+                {
+                    Functions.PlayScannerAudio(builder.ToString());
+                }
+            }
+            else
+            {
+                RadioQueue.Enqueue(message);
+            }
         }
 
         /// <summary>
@@ -709,27 +773,15 @@ namespace AgencyDispatchFramework
         /// <param name="call"></param>
         private static void DispatchUnitToCall(OfficerUnit officer, PriorityCall call)
         {
-            if (officer.IsAIUnit)
-            {
-                officer.AssignToCall(call);
-            }
-            else
-            {
-                // Is this call already dispatched?
-                if (call.PrimaryOfficer != null)
-                {
-                    // Is an AI on scene already?
-                    if (call.CallStatus == CallStatus.OnScene)
-                    {
-                        // Player is dispatched as seconary officer
-                        PlayerUnit.AssignToCall(call);
-                        return;
-                    }
-                }
+            // TODO: Secondary dispatching
+            // Assign the officer to the call
+            officer.AssignToCall(call, officer == PlayerUnit);
 
+            // If player, wait for the radio to be clear before actually dispatching the player
+            if (officer == PlayerUnit)
+            {
                 PlayerActiveCall = call;
-                PlayerActiveCall.CallStatus = CallStatus.Waiting;
-                Functions.StartCallout(call.ScenarioInfo.CalloutName);
+                CalloutWaitingForRadio = true;
             }
         }
 
@@ -842,8 +894,7 @@ namespace AgencyDispatchFramework
                 BeginAISimulation();
 
                 // Add player unit LAST!
-                string unitNum = $"{Settings.AudioDivision}{Settings.AudioUnitTypeLetter}-{Settings.AudioBeat}";
-                PlayerUnit = new PlayerOfficerUnit(Rage.Game.LocalPlayer, unitNum);
+                PlayerUnit = new PlayerOfficerUnit(Rage.Game.LocalPlayer);
                 PlayerUnit.StartDuty();
                 OfficerUnits.Add(PlayerUnit);
 
@@ -914,10 +965,11 @@ namespace AgencyDispatchFramework
                     // Create AI officer
                     var driver = car.CreateRandomDriver();
                     driver.MakeMissionPed(true);
+                    Functions.SetPedAsCop(driver);
 
                     // Create instance
                     var num = i + 10;
-                    var unit = new PersistentAIOfficerUnit(driver, car, $"1A-{num}");
+                    var unit = new PersistentAIOfficerUnit(driver, car, 1, 'A', num);
                     OfficerUnits.Add(unit);
 
                     // Start duty
@@ -935,7 +987,7 @@ namespace AgencyDispatchFramework
                     // Create instance
                     var sp = locations[i];
                     var num = i + 10;
-                    var unit = new VirtualAIOfficerUnit(sp.Position, $"1A-{num}");
+                    var unit = new VirtualAIOfficerUnit(sp.Position, 1, 'A', num);
                     OfficerUnits.Add(unit);
 
                     // Start Duty
@@ -998,13 +1050,53 @@ namespace AgencyDispatchFramework
         #region GameFiber methods
 
         /// <summary>
-        /// Processes the Logic for AI Simulation
+        /// Processes the Logic for AI Simulation as well as the dispatch radio
         /// </summary>
         private static void ProcessAISimulationLogic()
         {
             // While on duty main loop
             while (Main.OnDuty)
             {
+                // Check to see if the radio is busy
+                if (!Functions.GetIsAudioEngineBusy())
+                {
+                    // If the player is assigned to a call, but has yet to be
+                    // dispatched due to the radio being busy, dispatch it now
+                    if (CalloutWaitingForRadio && PlayerActiveCall != null)
+                    {
+                        // Play callout radio
+                        var call = PlayerActiveCall;
+                        CalloutWaitingForRadio = false;
+
+                        // Create radio message
+                        var message = new RadioMessage(call.ScenarioInfo.ScannerAudioString);
+
+                        // Are we using location?
+                        if (call.ScenarioInfo.ScannerUsePosition)
+                        {
+                            message.LocationInfo = call.Location.Position;
+                        }
+
+                        // Add callsign?
+                        if (call.ScenarioInfo.ScannerPrefixCallSign)
+                        {
+                            message.SetTarget(PlayerUnit);
+                        }
+
+                        // TODO: Make this work with secondary dispatching
+                        // Start the callout
+                        PlayerActiveCall.CallStatus = CallStatus.Waiting;
+                        Functions.StartCallout(PlayerActiveCall.ScenarioInfo.CalloutName);
+
+                        // Play callout radio
+                        PlayRadioMessage(message, true);
+                    }
+                    else if (RadioQueue.TryDequeue(out RadioMessage message))
+                    {
+                        PlayRadioMessage(message, true);
+                    }
+                }
+
                 // If simulation mode is disabled, call OnTick for
                 // the VirtualAIUnit(s)
                 if (!Settings.EnableFullSimulation)
@@ -1458,6 +1550,16 @@ namespace AgencyDispatchFramework
                         continue;
                     }
 
+                    // Grab the LocationType
+                    childNode = scenarioNode.SelectSingleNode("LocationType");
+                    if (!Enum.TryParse(childNode.InnerText, out LocationType locationType))
+                    {
+                        Log.Warning(
+                            $"Dispatch.RegisterCalloutsFromPath(): Unable to extract LocationType value for '{calloutDirName}/CalloutMeta.xml -> {scenarioNode.Name}'"
+                        );
+                        continue;
+                    }
+
                     // Get the Dispatch Node
                     XmlNode dispatchNode = scenarioNode.SelectSingleNode("Dispatch");
                     if (dispatchNode == null)
@@ -1488,23 +1590,16 @@ namespace AgencyDispatchFramework
                         continue;
                     }
 
-                    // Grab the LocationType
-                    childNode = dispatchNode.SelectSingleNode("LocationType");
-                    if (!Enum.TryParse(childNode.InnerText, out LocationType locationType))
-                    {
-                        Log.Warning(
-                            $"Dispatch.RegisterCalloutsFromPath(): Unable to extract LocationType value for '{calloutDirName}/CalloutMeta.xml -> {scenarioNode.Name}'"
-                        );
-                        continue;
-                    }
-
-                    // Grab the Scanner
+                    // Grab the Scanner data
                     string scanner = String.Empty;
-                    childNode = dispatchNode.SelectSingleNode("Scanner");
+                    bool prefix = false;
+                    bool suffix = false;
+                    var scannerNode = dispatchNode.SelectSingleNode("Scanner");
+                    childNode = scannerNode.SelectSingleNode("AudioString");
                     if (String.IsNullOrWhiteSpace(childNode.InnerText))
                     {
                         Log.Warning(
-                            $"Dispatch.RegisterCalloutsFromPath(): Unable to extract Scanner value for '{calloutDirName}/CalloutMeta.xml -> {scenarioNode.Name}'"
+                            $"Dispatch.RegisterCalloutsFromPath(): Unable to extract ScannerAudioString value for '{calloutDirName}/CalloutMeta.xml -> {scenarioNode.Name}' -> Scanner"
                         );
                         continue;
                     }
@@ -1512,6 +1607,13 @@ namespace AgencyDispatchFramework
                     {
                         scanner = childNode.InnerText;
                     }
+
+                    // Try to extract scanner prefix and suffix information
+                    childNode = scannerNode.SelectSingleNode("PrefixCallSign");
+                    bool.TryParse(childNode?.InnerText, out prefix);
+
+                    childNode = scannerNode.SelectSingleNode("UsePosition");
+                    bool.TryParse(childNode?.InnerText, out suffix);
 
                     // Try and extract descriptions
                     childNode = dispatchNode.SelectSingleNode("Descriptions");
@@ -1579,16 +1681,16 @@ namespace AgencyDispatchFramework
                         );
                         continue;
                     }
-                    else if (childNode.Attributes == null || childNode.Attributes["textureDict"]?.Value == null)
+                    else if (childNode.Attributes == null || String.IsNullOrWhiteSpace(childNode.Attributes["dictionary"]?.Value))
                     {
                         Log.Warning(
-                            $"Dispatch.RegisterCalloutsFromPath(): Unable to extract CADTexture[textureDict] attribute for '{calloutDirName}->Scenarios->{scenarioNode.Name}'"
+                            $"Dispatch.RegisterCalloutsFromPath(): Unable to extract CADTexture[dictionary] attribute for '{calloutDirName}->Scenarios->{scenarioNode.Name}'"
                         );
                         continue;
                     }
 
                     string textName = childNode.InnerText;
-                    string textDict = childNode.Attributes["textureDict"].Value;
+                    string textDict = childNode.Attributes["dictionary"].Value;
 
                     // Grab the Incident
                     childNode = dispatchNode.SelectSingleNode("IncidentType");
@@ -1620,7 +1722,9 @@ namespace AgencyDispatchFramework
                         Priority = priority,
                         ResponseCode = code,
                         LocationType = locationType,
-                        ScannerText = scanner,
+                        ScannerAudioString = scanner,
+                        ScannerPrefixCallSign = prefix,
+                        ScannerUsePosition = suffix,
                         Descriptions = descriptions,
                         IncidentText = childNode.InnerText,
                         IncidentAbbreviation = childNode.Attributes["abbreviation"].Value,

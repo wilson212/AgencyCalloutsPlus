@@ -59,7 +59,7 @@ namespace AgencyDispatchFramework.Game
         /// <summary>
         /// Lookup dictionary for <see cref="Rage.Ped"/> Model names to all possible associated Meta description properties.
         /// </summary>
-        public static Dictionary<string, PedModelMeta> PedModelMetaLookup { get; set; }
+        internal static Dictionary<string, PedModelMeta> PedModelMetaLookup { get; set; }
 
         /// <summary>
         /// Lookup dictionary for <see cref="Rage.Ped"/> Model names to all possible associated by <see cref="PedVariantGroup"/>.

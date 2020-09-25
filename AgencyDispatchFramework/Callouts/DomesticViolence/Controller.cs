@@ -62,12 +62,6 @@ namespace AgencyDispatchFramework.Callouts.DomesticViolence
             CalloutMessage = call.IncidentText;
             CalloutPosition = Location.Position;
 
-            // Play scanner audio
-            if (call.ScenarioInfo.ResponseCode == 3)
-                PlayScannerAudioUsingCallsign(String.Concat(call.ScenarioInfo.ScannerText, " UNITS_RESPOND_CODE_03_02"));
-            else
-                PlayScannerAudioUsingCallsign(call.ScenarioInfo.ScannerText);
-
             // Return base
             return base.OnBeforeCalloutDisplayed();
         }

@@ -59,7 +59,7 @@ namespace AgencyDispatchFramework.Simulation
         /// <param name="isAiUnit"></param>
         /// <param name="unitString"></param>
         /// <param name="vehicle"></param>
-        internal PersistentAIOfficerUnit(Ped officer, Vehicle vehicle, string unitString) : base(unitString)
+        internal PersistentAIOfficerUnit(Ped officer, Vehicle vehicle, int division, char unit, int beat) : base(division, unit, beat)
         {
             PoliceCar = vehicle;
             Officer = officer ?? throw new ArgumentNullException("officer");

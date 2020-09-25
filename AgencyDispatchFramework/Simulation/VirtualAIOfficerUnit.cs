@@ -6,7 +6,7 @@ namespace AgencyDispatchFramework.Simulation
 {
     /// <summary>
     /// Represents an <see cref="OfficerUnit"/> that is simulated virtually in memory
-    /// and does not actually exist in the <see cref="Game"/>
+    /// and does not actually exist in the <see cref="Game.GameWorld"/>
     /// </summary>
     public class VirtualAIOfficerUnit : OfficerUnit
     {
@@ -25,7 +25,7 @@ namespace AgencyDispatchFramework.Simulation
         /// </summary>
         /// <param name="startPosition"></param>
         /// <param name="unitString"></param>
-        public VirtualAIOfficerUnit(Vector3 startPosition, string unitString) : base(unitString)
+        public VirtualAIOfficerUnit(Vector3 startPosition, int division, char unit, int beat) : base(division, unit, beat)
         {
             Position = startPosition;
         }

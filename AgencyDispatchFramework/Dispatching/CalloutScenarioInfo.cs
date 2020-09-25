@@ -42,9 +42,19 @@ namespace AgencyDispatchFramework.Dispatching
         public LocationType LocationType { get; set; }
 
         /// <summary>
-        /// Gets the scanner text played
+        /// Gets the scanner audio to be played
         /// </summary>
-        public string ScannerText { get; set; }
+        public string ScannerAudioString { get; set; }
+
+        /// <summary>
+        /// Indicates whether prefix the ScannerAudioString with the player's CallSign
+        /// </summary>
+        public bool ScannerPrefixCallSign { get; set; }
+
+        /// <summary>
+        /// Indicates whether to suffix the ScannerAudioString with the Callout Location
+        /// </summary>
+        public bool ScannerUsePosition { get; set; }
 
         /// <summary>
         /// Gets the incident text

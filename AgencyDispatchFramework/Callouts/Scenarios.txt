@@ -37,7 +37,8 @@ Callouts:
 	- DomesticRefusingToLeave				[Disturbance]
 	- DomesticArguingThreats				[Disturbance]
 	- DomesticDenial						[Disturbance]
-	- DomesticWithAssault					[Violent]
+	- DomesticAssault						[Violent]
+	- DomesticAssaultWithKnife				[Violent]
 	- DomesticHoldUp						[Violent]
 	- AnimalAbuse							[Disturbance]
 	- AnimalNeglect							[Disturbance]
@@ -84,7 +85,7 @@ Callouts:
 	- MinorPossessionAlcohol				[Statutory]
 	- SellingAndSupplyingAlcoholToMinors	[Statutory]
 	- BuyingAlcoholFakeID					[Statutory]
-- TrafficStopBackup
+- OfficerNeedsAssistance
 	- Generic								[Traffic]
 	- SmellsDrugsOrAlchohol					[Traffic]
 	- RefusingFieldSobrietyTest				[Traffic]
@@ -119,5 +120,5 @@ Callouts:
 	- MissingPersonReport					[Other]
 	- Kidnapping							[Other]
 	- LostHiker								[Other]
- - Warrant
-	- ServingWarrant						[Other]
+	- Warrant
+	- ServingArrestWarrant					[Other]

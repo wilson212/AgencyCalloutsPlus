@@ -18,7 +18,7 @@ namespace AgencyDispatchFramework.Callouts.TrafficAccident
     internal class Controller : AgencyCallout
     {
         /// <summary>
-        /// Stores the <see cref="API.SpawnPoint"/> where the accident occured
+        /// Stores the <see cref="RoadShoulder"/> where the accident occured
         /// </summary>
         public RoadShoulder Location { get; protected set; }
 
@@ -61,12 +61,6 @@ namespace AgencyDispatchFramework.Callouts.TrafficAccident
             ShowCalloutAreaBlipBeforeAccepting(Location.Position, 40f);
             CalloutMessage = "Vehicle Accident";
             CalloutPosition = Location.Position;
-
-            // Play scanner audio
-            if (call.ScenarioInfo.ResponseCode == 3)
-                PlayScannerAudioUsingCallsign(String.Concat(call.ScenarioInfo.ScannerText, " UNITS_RESPOND_CODE_03_02"));
-            else
-                PlayScannerAudioUsingCallsign(call.ScenarioInfo.ScannerText);
 
             // Return base
             return base.OnBeforeCalloutDisplayed();

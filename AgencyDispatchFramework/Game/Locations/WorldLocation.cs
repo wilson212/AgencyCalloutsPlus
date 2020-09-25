@@ -10,7 +10,7 @@ namespace AgencyDispatchFramework.Game.Locations
     public abstract class WorldLocation : IEquatable<WorldLocation>
     {
         /// <summary>
-        /// Gets the <see cref="Vector3"/> position of this location
+        /// Gets the <see cref="Vector3"/> coordinates of this location
         /// </summary>
         public Vector3 Position { get; protected set; }
 
@@ -42,10 +42,10 @@ namespace AgencyDispatchFramework.Game.Locations
         /// <summary>
         /// Creates a new instance of <see cref="WorldLocation"/>
         /// </summary>
-        /// <param name="position"></param>
-        internal WorldLocation(Vector3 position)
+        /// <param name="coordinates"></param>
+        internal WorldLocation(Vector3 coordinates)
         {
-            Position = position;
+            Position = coordinates;
             Flags = new LocationFlags();
         }
 
