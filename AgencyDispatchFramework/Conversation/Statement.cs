@@ -8,7 +8,8 @@ namespace AgencyDispatchFramework.Conversation
     public class Statement : ISpawnable
     {
         /// <summary>
-        /// 
+        /// Gets or sets the probability of this <see cref="Statement"/> being selected against
+        /// other <see cref="Statement"/>s in the <see cref="ResponseSet"/>
         /// </summary>
         public int Probability { get; set; }
 

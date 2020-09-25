@@ -34,8 +34,8 @@ namespace AgencyDispatchFramework.Extensions
             {
                 // Use a generic next postition on the street. Then we will try and get the closest
                 // Ped entity from there, and use that as a safe Vector3
-                tempSpawn = Rage.World.GetNextPositionOnStreet(pos);
-                Entity nearbyentity = Rage.World.GetClosestEntity(tempSpawn, 25f, GetEntitiesFlags.ConsiderHumanPeds);
+                tempSpawn = World.GetNextPositionOnStreet(pos);
+                Entity nearbyentity = World.GetClosestEntity(tempSpawn, 25f, GetEntitiesFlags.ConsiderHumanPeds);
                 if (nearbyentity.Exists())
                 {
                     tempSpawn = nearbyentity.Position;
@@ -93,9 +93,9 @@ namespace AgencyDispatchFramework.Extensions
                 // If not found, or blacklisted node, attempt to grab a position manually
                 if (!found || !IsNodeSafe(tempSpawnPoint))
                 {
-                    tempSpawnPoint = Rage.World.GetNextPositionOnStreet(pos);
+                    tempSpawnPoint = World.GetNextPositionOnStreet(pos);
                     var flags = GetEntitiesFlags.ConsiderGroundVehicles | GetEntitiesFlags.ExcludeEmptyVehicles | GetEntitiesFlags.ExcludePlayerVehicle;
-                    Entity entity = Rage.World.GetClosestEntity(tempSpawnPoint, 30f, flags);
+                    Entity entity = World.GetClosestEntity(tempSpawnPoint, 30f, flags);
 
                     if (entity.Exists())
                     {
@@ -129,7 +129,7 @@ namespace AgencyDispatchFramework.Extensions
         /// <seealso cref="https://gtaforums.com/topic/843561-pathfind-node-types/"/>
         public static bool GetVehicleSpawnPointTowardsStartPoint(this Vector3 startPoint, float spawnDistance, bool useSpecialID, out SpawnPoint sp)
         {
-            Vector3 fromPoint = Rage.World.GetNextPositionOnStreet(startPoint.Around2D(spawnDistance + 5f));
+            Vector3 fromPoint = World.GetNextPositionOnStreet(startPoint.Around2D(spawnDistance + 5f));
             Vector3 spawnPoint = Vector3.Zero;
             bool specialIDused = true;
 
@@ -151,7 +151,7 @@ namespace AgencyDispatchFramework.Extensions
 
             if (!useSpecialID || !found || !IsNodeSafe(spawnPoint))
             {
-                spawnPoint = Rage.World.GetNextPositionOnStreet(startPoint.Around2D(spawnDistance + 5f));
+                spawnPoint = World.GetNextPositionOnStreet(startPoint.Around2D(spawnDistance + 5f));
                 Vector3 directionFromVehicleToPed1 = (startPoint - spawnPoint);
                 directionFromVehicleToPed1.Normalize();
                 heading = MathHelper.ConvertDirectionToHeading(directionFromVehicleToPed1);
@@ -203,7 +203,7 @@ namespace AgencyDispatchFramework.Extensions
 
         public static int GetNearestNodeType(this Vector3 pos)
         {
-            if (Natives.GET_VEHICLE_NODE_PROPERTIES<bool>(pos.X, pos.Y, pos.Z, out uint density, out int nodeType))
+            if (Natives.GetVehicleNodeProperties<bool>(pos.X, pos.Y, pos.Z, out uint density, out int nodeType))
             {
                 return nodeType;
             }
@@ -225,7 +225,7 @@ namespace AgencyDispatchFramework.Extensions
         /// <returns></returns>
         public static bool IsPointOnWater(this Vector3 pos)
         {
-            return Natives.GET_WATER_HEIGHT<bool>(pos.X, pos.Y, pos.Z, out float height);
+            return Natives.GetWaterHeight<bool>(pos.X, pos.Y, pos.Z, out float height);
         }
 
         /// <summary>

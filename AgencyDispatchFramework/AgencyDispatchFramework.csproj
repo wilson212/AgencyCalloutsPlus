@@ -155,7 +155,7 @@
     <Compile Include="Extensions\Enums\EPaint.cs" />
     <Compile Include="Extensions\GwenFormExtension.cs" />
     <Compile Include="Extensions\Vector3Extensions.cs" />
-    <Compile Include="Extensions\VehicleColor.cs" />
+    <Compile Include="Game\VehicleColor.cs" />
     <Compile Include="Integration\C+Interfaces\CallDetailsGwenFormTemplate.cs">
       <SubType>Form</SubType>
     </Compile>

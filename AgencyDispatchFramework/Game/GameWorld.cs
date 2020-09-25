@@ -428,8 +428,8 @@ namespace AgencyDispatchFramework.Game
         /// <returns></returns>
         public static Vector3 GetClosestMajorVehicleNode(Vector3 pos)
         {
-            Natives.GetClosestMajorVehicleNode<bool>(pos.X, pos.Y, pos.Z, out Vector3 node, 3.0f, 0f);
-            return node;
+            bool success = Natives.GetClosestMajorVehicleNode<bool>(pos.X, pos.Y, pos.Z, out Vector3 node, 3.0f, 0f);
+            return success ? node : Vector3.Zero;
         }
 
         /// <summary>
@@ -443,8 +443,8 @@ namespace AgencyDispatchFramework.Game
         {
             if (!Natives.GetSafeCoordForPed<bool>(pos.X, pos.Y, pos.Z, true, out Vector3 tempSpawn, 0))
             {
-                tempSpawn = Rage.World.GetNextPositionOnStreet(pos);
-                Entity nearbyentity = Rage.World.GetClosestEntity(tempSpawn, 25f, GetEntitiesFlags.ConsiderHumanPeds);
+                tempSpawn = World.GetNextPositionOnStreet(pos);
+                Entity nearbyentity = World.GetClosestEntity(tempSpawn, 25f, GetEntitiesFlags.ConsiderHumanPeds);
                 if (nearbyentity.Exists())
                 {
                     tempSpawn = nearbyentity.Position;
@@ -475,7 +475,7 @@ namespace AgencyDispatchFramework.Game
         {
             if (forceGround)
             {
-                var level = Rage.World.GetGroundZ(pos, true, false);
+                var level = World.GetGroundZ(pos, true, false);
                 if (level.HasValue)
                     pos.Z = level.Value;
             }

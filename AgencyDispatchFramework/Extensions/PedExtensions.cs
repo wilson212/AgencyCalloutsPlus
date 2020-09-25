@@ -1,6 +1,6 @@
 ﻿using Rage;
-using Rage.Native;
 using AgencyDispatchFramework.Integration;
+using static Rage.Native.NativeFunction;
 
 namespace AgencyDispatchFramework.Extensions
 {
@@ -16,7 +16,7 @@ namespace AgencyDispatchFramework.Extensions
         /// <returns></returns>
         public static bool IsFacingPed(this Ped ped, Ped otherPed, float angle)
         {
-            return NativeFunction.Natives.IS_PED_FACING_PED<bool>(ped, otherPed, angle);
+            return Natives.IsPedFacingPed<bool>(ped, otherPed, angle);
         }
 
         /// <summary>

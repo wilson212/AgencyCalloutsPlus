@@ -1,6 +1,7 @@
-﻿using Rage;
-using Rage.Native;
+﻿using AgencyDispatchFramework.Game;
+using Rage;
 using System.Drawing;
+using static Rage.Native.NativeFunction;
 
 namespace AgencyDispatchFramework.Extensions
 {
@@ -27,6 +28,12 @@ namespace AgencyDispatchFramework.Extensions
             }
         }
 
+        /// <summary>
+        /// Applies random deformity around the front of a vehicle
+        /// </summary>
+        /// <param name="vehicle"></param>
+        /// <param name="radius"></param>
+        /// <param name="amount"></param>
         public static void DeformFront(this Vehicle vehicle, float radius, float amount)
         {
             // Get dimensions we want to deform
@@ -47,6 +54,12 @@ namespace AgencyDispatchFramework.Extensions
             }
         }
 
+        /// <summary>
+        /// Applies random deformity around the rear of a vehicle
+        /// </summary>
+        /// <param name="vehicle"></param>
+        /// <param name="radius"></param>
+        /// <param name="amount"></param>
         public static void DeformRear(this Vehicle vehicle, float radius, float amount)
         {
             // Get dimensions we want to deform
@@ -75,7 +88,7 @@ namespace AgencyDispatchFramework.Extensions
         /// <returns></returns>
         public static bool DoesExtraExist(this Vehicle vehicle, int extraId)
         {
-            return NativeFunction.Natives.DOES_EXTRA_EXIST<bool>(vehicle, extraId);
+            return Natives.DoesExtraExist<bool>(vehicle, extraId);
         }
 
         /// <summary>
@@ -86,7 +99,7 @@ namespace AgencyDispatchFramework.Extensions
         /// <param name="enabled"></param>
         public static void SetExtraEnabled(this Vehicle vehicle, int extraId, bool enabled)
         {
-            NativeFunction.Natives.SET_VEHICLE_EXTRA(vehicle, extraId, !enabled);
+            Natives.SetVehicleExtra(vehicle, extraId, !enabled);
         }
 
         /// <summary>
@@ -96,7 +109,7 @@ namespace AgencyDispatchFramework.Extensions
         /// <param name="liveryIndex"></param>
         public static void SetLivery(this Vehicle vehicle, int liveryIndex)
         {
-            NativeFunction.Natives.SET_VEHICLE_LIVERY(vehicle, liveryIndex);
+            Natives.SetVehicleLivery(vehicle, liveryIndex);
         }
 
         /// <summary>
@@ -108,7 +121,7 @@ namespace AgencyDispatchFramework.Extensions
         /// <seealso cref="http://www.dev-c.com/nativedb/func/info/2aa720e4287bf269"/>
         public static void ToggleNeonLight(this Vehicle vehicle, ENeonLights neonLight, bool toggle)
         {
-            NativeFunction.Natives._SET_VEHICLE_NEON_LIGHT_ENABLED(vehicle, (int)neonLight, toggle);
+            Natives._SET_VEHICLE_NEON_LIGHT_ENABLED(vehicle, (int)neonLight, toggle);
         }
 
         /// <summary>
@@ -118,7 +131,7 @@ namespace AgencyDispatchFramework.Extensions
         /// <param name="color">Color to set</param>
         public static void SetNeonLightsColor(this Vehicle vehicle, Color color)
         {
-            NativeFunction.Natives._SET_VEHICLE_NEON_LIGHTS_COLOUR(vehicle, (int)color.R, (int)color.G, (int)color.B);
+            Natives._SET_VEHICLE_NEON_LIGHTS_COLOUR(vehicle, (int)color.R, (int)color.G, (int)color.B);
         }
 
         /// <summary>
@@ -129,7 +142,7 @@ namespace AgencyDispatchFramework.Extensions
         /// <returns>true if the neon light is enabled</returns>
         public static bool IsNeonLightEnable(this Vehicle vehicle, ENeonLights neonLight)
         {
-            return NativeFunction.Natives._IS_VEHICLE_NEON_LIGHT_ENABLED<bool>(vehicle, (int)neonLight);
+            return Natives._IS_VEHICLE_NEON_LIGHT_ENABLED<bool>(vehicle, (int)neonLight);
         }
 
         /// <summary>
@@ -140,7 +153,7 @@ namespace AgencyDispatchFramework.Extensions
         /// <param name="secondaryColor">The secondary color</param>
         public static void SetColors(this Vehicle v, EPaint primaryColor, EPaint secondaryColor)
         {
-            NativeFunction.Natives.SET_VEHICLE_COLOURS(v, (int)primaryColor, (int)secondaryColor);
+            Natives.SetVehicleColours(v, (int)primaryColor, (int)secondaryColor);
         }
 
         /// <summary>
@@ -150,7 +163,7 @@ namespace AgencyDispatchFramework.Extensions
         /// <param name="color">The color</param>
         public static void SetColors(this Vehicle v, VehicleColor color)
         {
-            NativeFunction.Natives.SET_VEHICLE_COLOURS(v, (int)color.PrimaryColor, (int)color.SecondaryColor);
+            Natives.SetVehicleColours(v, (int)color.PrimaryColor, (int)color.SecondaryColor);
         }
 
         /// <summary>
@@ -160,12 +173,8 @@ namespace AgencyDispatchFramework.Extensions
         /// <returns></returns>
         public static VehicleColor GetColors(this Vehicle v)
         {
-            NativeFunction.Natives.GET_VEHICLE_COLOURS(v, out int colorPrimaryInt, out int colorSecondaryInt);
-            return new VehicleColor
-            {
-                PrimaryColor = (EPaint)colorPrimaryInt,
-                SecondaryColor = (EPaint)colorSecondaryInt
-            };
+            Natives.GetVehicleColours(v, out int colorPrimaryInt, out int colorSecondaryInt);
+            return new VehicleColor((EPaint)colorPrimaryInt, (EPaint)colorSecondaryInt);
         }
     }
 }

@@ -7,24 +7,6 @@ namespace AgencyDispatchFramework.Game
     /// </summary>
     public class WeatherInfo
     {
-        internal static readonly string[] weatherNames = {
-            "EXTRASUNNY",
-            "CLEAR",
-            "CLOUDS",
-            "SMOG",
-            "FOGGY",
-            "OVERCAST",
-            "RAIN",
-            "THUNDER",
-            "CLEARING",
-            "NEUTRAL",
-            "SNOW",
-            "BLIZZARD",
-            "SNOWLIGHT",
-            "XMAS",
-            "HALLOWEEN"
-        };
-
         /// <summary>
         /// Indicates whether the roads in game are wet
         /// </summary>
