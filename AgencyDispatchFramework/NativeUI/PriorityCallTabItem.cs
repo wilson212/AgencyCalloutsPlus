@@ -95,7 +95,7 @@ namespace AgencyDispatchFramework.NativeUI
 
             // Draw 911 icon
             ResRectangle.Draw(this.SafeSize.AddPoints(new Point(col1p, headerY)), new Size(148, 148), Color.FromArgb(150, Color.Black));
-            Sprite.Draw(Call.ScenarioInfo.SpriteName, Call.ScenarioInfo.SpriteTextureDict, this.SafeSize.AddPoints(new Point(col1p + 10, headerY + 10)), new Size(128, 128), 0.0f, Color.White, true);
+            Sprite.Draw(Call.ScenarioInfo.CADSpriteName, Call.ScenarioInfo.CADSpriteTextureDict, this.SafeSize.AddPoints(new Point(col1p + 10, headerY + 10)), new Size(128, 128), 0.0f, Color.White, true);
 
             // Add callout call ID
             var headerLoc = SafeSize.AddPoints(new Point(col2p, headerY));

@@ -198,6 +198,18 @@ namespace AgencyDispatchFramework.Callouts.TrafficAccident
 
             SuspectVehicle?.Cleanup();
             SuspectVehicle = null;
+
+            if (VictimBlip.Exists() && VictimBlip.IsValid())
+            {
+                VictimBlip.Delete();
+                //VictimBlip = null;
+            }
+
+            if (SuspectBlip.Exists() && SuspectBlip.IsValid())
+            {
+                SuspectBlip.Delete();
+                //SuspectBlip = null;
+            }
         }
     }
 }

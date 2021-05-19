@@ -6,7 +6,7 @@ namespace AgencyDispatchFramework.Simulation
 {
     /// <summary>
     /// Represents an <see cref="OfficerUnit"/> that is simulated virtually in memory
-    /// and does not actually exist in the <see cref="Game.GameWorld"/>
+    /// and does not actually exist in the <see cref="Rage.World"/>
     /// </summary>
     public class VirtualAIOfficerUnit : OfficerUnit
     {
@@ -30,6 +30,10 @@ namespace AgencyDispatchFramework.Simulation
             Position = startPosition;
         }
 
+        /// <summary>
+        /// Method to be called on every tick of the <see cref="Dispatch.AISimulationFiber"/>
+        /// </summary>
+        /// <param name="gameTime">The current game <see cref="World.DateTime"/></param>
         internal override void OnTick(DateTime gameTime)
         {
             // Time for a new task?

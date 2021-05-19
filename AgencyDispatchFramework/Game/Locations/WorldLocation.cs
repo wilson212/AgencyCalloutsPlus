@@ -1,5 +1,6 @@
 ﻿using Rage;
 using System;
+using System.Linq;
 using System.Text;
 
 namespace AgencyDispatchFramework.Game.Locations
@@ -30,14 +31,11 @@ namespace AgencyDispatchFramework.Game.Locations
         public int Postal { get; internal set; }
 
         /// <summary>
-        /// Gets the <see cref="LocationFlags"/> for this <see cref="WorldLocation"/>
+        /// Gets the <see cref="LocationType"/> for this <see cref="WorldLocation"/>
         /// </summary>
-        public LocationFlags Flags { get; internal set; }
+        public abstract LocationTypeCode LocationType { get; }
 
-        /// <summary>
-        /// Gets the <see cref="AgencyDispatchFramework.API.LocationType"/> for this <see cref="WorldLocation"/>
-        /// </summary>
-        public abstract LocationType LocationType { get; }
+        public int[] Flags { get; internal set; }
 
         /// <summary>
         /// Creates a new instance of <see cref="WorldLocation"/>
@@ -46,7 +44,6 @@ namespace AgencyDispatchFramework.Game.Locations
         internal WorldLocation(Vector3 coordinates)
         {
             Position = coordinates;
-            Flags = new LocationFlags();
         }
 
         public virtual string GetAddress()
@@ -57,6 +54,28 @@ namespace AgencyDispatchFramework.Game.Locations
                 builder.Append(StreetName);
 
             return builder.ToString();
+        }
+
+        /// <summary>
+        /// Determines whether this <see cref="WorldLocation"/> instance contains all the specified flags.
+        /// This method is used for filtering locations based on Callout location requirements.
+        /// </summary>
+        /// <param name="requiredFlags"></param>
+        /// <returns></returns>
+        public bool HasAllFlags(int[] requiredFlags)
+        {
+            return requiredFlags.All(i => Flags.Contains(i));
+        }
+
+        /// <summary>
+        /// Determines whether this <see cref="WorldLocation"/> instance contains any of the specified flags.
+        /// This method is used for filtering locations based on Callout location requirements.
+        /// </summary>
+        /// <param name="flags"></param>
+        /// <returns></returns>
+        public bool HasAnyFlag(int[] flags)
+        {
+            return flags.Any(i => Flags.Contains(i));
         }
 
         /// <summary>

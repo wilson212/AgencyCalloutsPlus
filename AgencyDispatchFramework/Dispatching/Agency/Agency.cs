@@ -157,8 +157,16 @@ namespace AgencyDispatchFramework.Dispatching
                     zones.Add(zNode.InnerText);
                 }
 
-                // add
-                AgencyZones.Add(agency, zones);
+                // Add or Update
+                if (AgencyZones.ContainsKey(agency))
+                {
+                    AgencyZones[agency].AddRange(zones);
+                }
+                else
+                {
+                    AgencyZones.Add(agency, zones);
+                }
+                
                 ZoneInfo.AddRegion(name, zones);
             }
 

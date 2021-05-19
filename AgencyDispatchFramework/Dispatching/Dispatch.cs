@@ -1,18 +1,15 @@
 ﻿using AgencyDispatchFramework.Dispatching;
 using AgencyDispatchFramework.Extensions;
-using AgencyDispatchFramework.Simulation;
 using AgencyDispatchFramework.Game;
 using AgencyDispatchFramework.Game.Locations;
+using AgencyDispatchFramework.Simulation;
 using LSPD_First_Response.Mod.API;
 using LSPD_First_Response.Mod.Callouts;
 using Rage;
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Xml;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace AgencyDispatchFramework
@@ -29,25 +26,9 @@ namespace AgencyDispatchFramework
         private static System.Object _lock = new System.Object();
 
         /// <summary>
-        /// Contains a list Scenarios by name
-        /// </summary>
-        internal static Dictionary<string, CalloutScenarioInfo> ScenariosByName { get; set; }
-
-        /// <summary>
-        /// Contains a list Scenarios seperated by CalloutType that will be used
-        /// to populate the calls board
-        /// </summary>
-        internal static Dictionary<CalloutType, WorldStateProbabilityGenerator<CalloutScenarioInfo>> ScenariosByCalloutType { get; set; }
-
-        /// <summary>
-        /// Contains a list of scenario's by callout name
-        /// </summary>
-        internal static Dictionary<string, WorldStateProbabilityGenerator<CalloutScenarioInfo>> ScenariosByCalloutName { get; set; }
-
-        /// <summary>
         /// Contains a hash table of <see cref="WorldLocation"/>s that are currently in use by the Call Queue
         /// </summary>
-        internal static Dictionary<LocationType, List<WorldLocation>> ActiveCrimeLocations { get; set; }
+        internal static Dictionary<LocationTypeCode, List<WorldLocation>> ActiveCrimeLocations { get; set; }
 
         /// <summary>
         /// Randomizer method used to randomize callouts and locations
@@ -142,7 +123,8 @@ namespace AgencyDispatchFramework
         private static PriorityCall InvokeForPlayer { get; set; }
 
         /// <summary>
-        /// Signals that the next callout should be given to the player
+        /// Signals that the next callout should be given to the player, regardless of distance
+        /// or player availability.
         /// </summary>
         private static bool SendNextCallToPlayer { get; set; } = false;
 
@@ -184,18 +166,9 @@ namespace AgencyDispatchFramework
         /// </summary>
         static Dispatch()
         {
-            // Initialize callout types
-            ScenariosByName = new Dictionary<string, CalloutScenarioInfo>();
-            ScenariosByCalloutName = new Dictionary<string, WorldStateProbabilityGenerator<CalloutScenarioInfo>>();
-            ScenariosByCalloutType = new Dictionary<CalloutType, WorldStateProbabilityGenerator<CalloutScenarioInfo>>();
-            foreach (CalloutType type in Enum.GetValues(typeof(CalloutType)))
-            {
-                ScenariosByCalloutType.Add(type, new WorldStateProbabilityGenerator<CalloutScenarioInfo>());
-            }
-
             // Intialize a hash table of active crime locations
-            ActiveCrimeLocations = new Dictionary<LocationType, List<WorldLocation>>();
-            foreach (LocationType type in Enum.GetValues(typeof(LocationType)))
+            ActiveCrimeLocations = new Dictionary<LocationTypeCode, List<WorldLocation>>();
+            foreach (LocationTypeCode type in Enum.GetValues(typeof(LocationTypeCode)))
             {
                 ActiveCrimeLocations.Add(type, new List<WorldLocation>(10));
             }
@@ -209,6 +182,9 @@ namespace AgencyDispatchFramework
                 new List<PriorityCall>(12), // EXPEDITED RESPONSE
                 new List<PriorityCall>(20), // ROUTINE RESPONSE
             };
+
+            // Create Radio Queue
+            RadioQueue = new ConcurrentQueue<RadioMessage>();
 
             // Create next random call ID
             Randomizer = new CryptoRandom();
@@ -244,7 +220,7 @@ namespace AgencyDispatchFramework
 
             // Update player status
             PlayerUnit.Status = status;
-            PlayerUnit.LastStatusChange = Rage.World.DateTime;
+            PlayerUnit.LastStatusChange = World.DateTime;
 
             // Tell LSPDFR whats going on
             if (status != OfficerStatus.Available)
@@ -358,13 +334,15 @@ namespace AgencyDispatchFramework
 
         /// <summary>
         /// Gets an array of <see cref="WorldLocation"/>s currently in use based
-        /// on the specified <see cref="LocationType"/>
+        /// on the specified <see cref="LocationTypeCode"/>
         /// </summary>
         /// <param name="type"></param>
+        /// <exception cref="InvalidCastException">thrown if the <paramref name="type"/> does not match the <typeparamref name="T"/></exception>
+        /// <typeparam name="T">A type that inherits from <see cref="WorldLocation"/></typeparam>
         /// <returns></returns>
-        public static WorldLocation[] GetActiveCrimeLocationsByType(LocationType type)
+        public static T[] GetActiveCrimeLocationsByType<T>(LocationTypeCode type) where T : WorldLocation
         {
-            return ActiveCrimeLocations[type].ToArray();
+            return ActiveCrimeLocations[type].Cast<T>().ToArray();
         }
 
         /// <summary>
@@ -536,7 +514,7 @@ namespace AgencyDispatchFramework
 
             // If we are here, maybe the player used a console command to start the callout.
             // At this point, see if we have anything in the call Queue
-            if (ScenariosByCalloutName.ContainsKey(calloutName))
+            if (ScenarioPool.ScenariosByCalloutName.ContainsKey(calloutName))
             {
                 CallStatus[] status = { CallStatus.Created, CallStatus.Waiting, CallStatus.Dispatched };
                 var playerPosition = Rage.Game.LocalPlayer.Character.Position;
@@ -560,7 +538,7 @@ namespace AgencyDispatchFramework
                 }
 
                 // Still here? Maybe we can create a call?
-                if (ScenariosByCalloutName[calloutName].TrySpawn(out CalloutScenarioInfo scenarioInfo))
+                if (ScenarioPool.ScenariosByCalloutName[calloutName].TrySpawn(out CalloutScenarioInfo scenarioInfo))
                 {
                     // Log
                     Log.Info($"Dispatch.RequestPlayerCallInfo: It appears that the player requested a callout of type '{calloutName}' using an outside source. Creating a call out of thin air");
@@ -807,6 +785,8 @@ namespace AgencyDispatchFramework
                     "~g~An Officer has Died.",
                     $"Unit ~g~{officer.CallSign}~s~ is no longer with us"
                 );
+
+                //@todo Spawn new officer unit?
             }
         }
 
@@ -838,12 +818,12 @@ namespace AgencyDispatchFramework
                 // Did we change agency type?
                 if (oldAgency == null || ActiveAgency.AgencyType != oldAgency.AgencyType)
                 {
-                    // Reload scenarios for updated probabilities
-                    RegisterCalloutsFromPath(Path.Combine(Main.ThisPluginFolderPath, "Callouts"), typeof(Dispatch).Assembly);
-
                     // Clear AI units
                     DisposeAIUnits();
                     OfficerUnits = new List<OfficerUnit>(ActiveAgency.ActualPatrols);
+
+                    // Fire event
+                    //OnAgencyChanged?.Invoke(oldAgency, ActiveAgency);
                 }
 
                 // Did we change Agencies?
@@ -940,7 +920,7 @@ namespace AgencyDispatchFramework
             StopAISimulation();
 
             // Get total ai patrols to spawn
-            int aiPatrolCount = Math.Max(0, ActiveAgency.ActualPatrols - 1);
+            int aiPatrolCount = Math.Max(0, ActiveAgency.ActualPatrols);
             var locations = CrimeGenerator.GetRandomShoulderLocations(aiPatrolCount);
 
             // Ensure we have enough locations to spawn patrols at
@@ -1387,374 +1367,6 @@ namespace AgencyDispatchFramework
                 foreach (var officer in OfficerUnits)
                     officer.Dispose();
             }
-        }
-
-        public static int RegisterCalloutsFromPath(string rootPath, Assembly assembly)
-        {
-            // Load directory
-            var directory = new DirectoryInfo(rootPath);
-            if (!directory.Exists)
-            {
-                Log.Error($"Dispatch.RegisterCalloutsFromPath(): Callouts directory is missing: {rootPath}");
-                throw new DirectoryNotFoundException("Callouts directory is missing");
-            }
-
-            // Initialize vars
-            int itemsAdded = 0;
-            XmlDocument document = new XmlDocument();
-            var agencyProbabilites = new Dictionary<AgencyType, int>(10);
-            var agencies = new List<AgencyType>(6);
-            Agency agency = Agency.GetCurrentPlayerAgency();
-            ProbabilityGenerator<PriorityCallDescription> descriptions = null;
-
-            // Load callout scripts
-            foreach (var calloutDirectory in directory.GetDirectories())
-            {
-                // Get callout name and type
-                string calloutDirName = calloutDirectory.Name;
-
-                // ensure CalloutMeta.xml exists
-                string path = Path.Combine(calloutDirectory.FullName, "CalloutMeta.xml");
-                if (!File.Exists(path))
-                {
-                    Log.Error($"Dispatch.RegisterCalloutsFromPath(): Missing CalloutMeta.xml in directory '{calloutDirName}' for Assembly: '{assembly.FullName}'");
-                    continue;
-                }
-
-                // Load XML document
-                document = new XmlDocument();
-                using (var file = new FileStream(path, FileMode.Open))
-                {
-                    document.Load(file);
-                }
-
-                // Ensure proper format at the top
-                var rootElement = document.SelectSingleNode("CalloutMeta");
-                if (rootElement == null)
-                {
-                    Log.Error($"Dispatch.RegisterCalloutsFromPath(): Unable to load CalloutMeta data in directory '{calloutDirName}' for Assembly: '{assembly.FullName}'");
-                    continue;
-                }
-
-                // Get callout type name
-                var typeName = rootElement.SelectSingleNode("Controller")?.InnerText;
-                if (String.IsNullOrWhiteSpace(typeName))
-                {
-                    Log.Error($"Dispatch.RegisterCalloutsFromPath(): Unable to extract Controller value in CalloutMeta.xml in directory '{calloutDirName}' for Assembly: '{assembly.FullName}'");
-                    continue;
-                }
-
-                // Get callout type name
-                Type calloutType = assembly.GetType(typeName);
-                if (calloutType == null)
-                {
-                    Log.Error($"Dispatch.RegisterCalloutsFromPath(): Unable to find Callout class '{typeName}' in Assembly '{assembly.FullName}'");
-                    continue;
-                }
-
-                // Get official callout name
-                string calloutName = calloutType.GetAttributeValue((CalloutInfoAttribute attr) => attr.Name);
-                if (String.IsNullOrWhiteSpace(calloutName))
-                {
-                    Log.Error($"Dispatch.RegisterCalloutsFromPath(): Callout class '{typeName}' in Assembly '{assembly.FullName}' is missing the CalloutInfoAttribute!");
-                    continue;
-                }
-
-                // Process the XML scenarios
-                foreach (XmlNode scenarioNode in rootElement.SelectSingleNode("Scenarios")?.ChildNodes)
-                {
-                    // Skip all but elements
-                    if (scenarioNode.NodeType == XmlNodeType.Comment) continue;
-
-                    // Grab the CalloutType
-                    XmlNode catagoryNode = scenarioNode.SelectSingleNode("Catagory");
-                    if (!Enum.TryParse(catagoryNode.InnerText, out CalloutType crimeType))
-                    {
-                        Log.Warning(
-                            $"Dispatch.RegisterCalloutsFromPath(): Unable to extract CalloutType value for '{calloutDirName}/CalloutMeta.xml -> '{scenarioNode.Name}'"
-                        );
-                        continue;
-                    }
-
-                    // Grab agency list
-                    XmlNode agenciesNode = scenarioNode.SelectSingleNode("Agencies");
-                    if (agenciesNode == null)
-                    {
-                        Log.Error($"Dispatch.RegisterCalloutsFromPath(): Unable to load agency data in CalloutMeta for '{calloutDirectory.Name}'");
-                        continue;
-                    }
-
-                    // No data?
-                    if (!agenciesNode.HasChildNodes) continue;
-
-                    // Itterate through items
-                    agencies.Clear();
-                    foreach (XmlNode n in agenciesNode.SelectNodes("Agency"))
-                    {
-                        // Try and extract type value
-                        if (!Enum.TryParse(n.InnerText, out AgencyType agencyType))
-                        {
-                            Log.Warning(
-                                $"Dispatch.RegisterCalloutsFromPath(): Unable to parse AgencyType value for '{calloutDirName}/CalloutMeta.xml -> '{scenarioNode.Name}'"
-                            );
-                            continue;
-                        }
-
-                        agencies.Add(agencyType);
-                    }
-
-                    // If player agency is not included
-                    if (!agencies.Contains(agency.AgencyType))
-                    {
-                        // Skip
-                        continue;
-                    }
-
-                    // Extract simulation time
-                    int min = 0, max = 0;
-                    XmlNode childNode = scenarioNode.SelectSingleNode("Simulation")?.SelectSingleNode("CallTime");
-                    if (childNode == null)
-                    {
-                        Log.Warning(
-                            $"Dispatch.RegisterCalloutsFromPath(): Unable to extract Simulation->CallTime element for '{calloutDirName}->Scenarios->{scenarioNode.Name}'"
-                        );
-                        continue;
-                    }
-                    else if (childNode.Attributes == null || !Int32.TryParse(childNode.Attributes["min"]?.Value, out min) || !Int32.TryParse(childNode.Attributes["max"]?.Value, out max))
-                    {
-                        Log.Warning(
-                            $"Dispatch.RegisterCalloutsFromPath(): Unable to extract CallTime[min] or CallTime[max] attribute for '{calloutDirName}->Scenarios->{scenarioNode.Name}'"
-                        );
-                        continue;
-                    }
-
-                    // ============================================== //
-                    // Grab probabilities
-                    // ============================================== //
-                    XmlNode probNode = scenarioNode.SelectSingleNode("Probabilities");
-                    if (probNode == null || !probNode.HasChildNodes)
-                    {
-                        Log.Error($"Dispatch.RegisterCalloutsFromPath(): Unable to load probabilities in CalloutMeta for '{calloutDirectory.Name}'");
-                        continue;
-                    }
-
-                    // Create world state probabilities
-                    WorldStateMultipliers multipliers = null;
-                    try
-                    {
-                        multipliers = XmlExtractor.GetWorldStateMultipliers(probNode);
-                    }
-                    catch (Exception e)
-                    {
-                        Log.Warning("Dispatch.RegisterCalloutsFromPath(): " + e.Message);
-                        continue;
-                    }
-
-                    // Grab the LocationType
-                    childNode = scenarioNode.SelectSingleNode("LocationType");
-                    if (!Enum.TryParse(childNode.InnerText, out LocationType locationType))
-                    {
-                        Log.Warning(
-                            $"Dispatch.RegisterCalloutsFromPath(): Unable to extract LocationType value for '{calloutDirName}/CalloutMeta.xml -> {scenarioNode.Name}'"
-                        );
-                        continue;
-                    }
-
-                    // Get the Dispatch Node
-                    XmlNode dispatchNode = scenarioNode.SelectSingleNode("Dispatch");
-                    if (dispatchNode == null)
-                    {
-                        Log.Warning(
-                            $"Dispatch.RegisterCalloutsFromPath(): Unable to extract scenario Dispatch node for '{calloutDirName}/CalloutMeta.xml -> {scenarioNode.Name}'"
-                        );
-                        continue;
-                    }
-
-                    // Try and extract probability value
-                    childNode = dispatchNode.SelectSingleNode("Priority");
-                    if (!int.TryParse(childNode.InnerText, out int priority))
-                    {
-                        Log.Warning(
-                            $"Dispatch.RegisterCalloutsFromPath(): Unable to extract scenario priority value for '{calloutDirName}/CalloutMeta.xml -> {scenarioNode.Name}'"
-                        );
-                        continue;
-                    }
-
-                    // Try and extract Code value
-                    childNode = dispatchNode.SelectSingleNode("Response");
-                    if (!Int32.TryParse(childNode.InnerText, out int code) || !code.InRange(1, 3))
-                    {
-                        Log.Warning(
-                            $"Dispatch.RegisterCalloutsFromPath(): Unable to extract scenario respond value for '{calloutDirName}/CalloutMeta.xml -> {scenarioNode.Name}'"
-                        );
-                        continue;
-                    }
-
-                    // Grab the Scanner data
-                    string scanner = String.Empty;
-                    bool prefix = false;
-                    bool suffix = false;
-                    var scannerNode = dispatchNode.SelectSingleNode("Scanner");
-                    childNode = scannerNode.SelectSingleNode("AudioString");
-                    if (String.IsNullOrWhiteSpace(childNode.InnerText))
-                    {
-                        Log.Warning(
-                            $"Dispatch.RegisterCalloutsFromPath(): Unable to extract ScannerAudioString value for '{calloutDirName}/CalloutMeta.xml -> {scenarioNode.Name}' -> Scanner"
-                        );
-                        continue;
-                    }
-                    else
-                    {
-                        scanner = childNode.InnerText;
-                    }
-
-                    // Try to extract scanner prefix and suffix information
-                    childNode = scannerNode.SelectSingleNode("PrefixCallSign");
-                    bool.TryParse(childNode?.InnerText, out prefix);
-
-                    childNode = scannerNode.SelectSingleNode("UsePosition");
-                    bool.TryParse(childNode?.InnerText, out suffix);
-
-                    // Try and extract descriptions
-                    childNode = dispatchNode.SelectSingleNode("Descriptions");
-                    if (childNode == null || !childNode.HasChildNodes)
-                    {
-                        Log.Warning(
-                            $"Dispatch.RegisterCalloutsFromPath(): Unable to extract scenario descriptions values for '{calloutDirName}/CalloutMeta.xml -> {scenarioNode.Name}'"
-                        );
-                        continue;
-                    }
-                    else
-                    {
-                        // Clear old descriptions
-                        descriptions = new ProbabilityGenerator<PriorityCallDescription>();
-                        foreach (XmlNode descNode in childNode.SelectNodes("Description"))
-                        {
-                            // Ensure we have attributes
-                            if (descNode.Attributes == null || !int.TryParse(descNode.Attributes["probability"]?.Value, out int prob))
-                            {
-                                Log.Warning(
-                                    $"Dispatch.RegisterCalloutsFromPath(): Unable to extract probability value for Description in '{calloutDirName}->Scenarios->{scenarioNode.Name}'->Dispatch->Descriptions"
-                                );
-                                continue;
-                            }
-
-                            // Extract call source value
-                            var srcNode = descNode.SelectSingleNode("Source");
-                            if (srcNode == null)
-                            {
-                                Log.Warning(
-                                    $"Dispatch.RegisterCalloutsFromPath(): Unable to extract Source value for Description in '{calloutDirName}->Scenarios->{scenarioNode.Name}'->Dispatch->Descriptions"
-                                );
-                                continue;
-                            }
-
-                            // Extract desc text value
-                            var descTextNode = descNode.SelectSingleNode("Text");
-                            if (descTextNode == null)
-                            {
-                                Log.Warning(
-                                    $"Dispatch.RegisterCalloutsFromPath(): Unable to extract Text value for Description in '{calloutDirName}->Scenarios->{scenarioNode.Name}'->Dispatch->Descriptions"
-                                );
-                                continue;
-                            }
-
-                            descriptions.Add(new PriorityCallDescription(prob, descTextNode.InnerText, srcNode.InnerText));
-                        }
-
-                        // If we have no descriptions, we failed
-                        if (descriptions.ItemCount == 0)
-                        {
-                            Log.Warning(
-                                $"Dispatch.RegisterCalloutsFromPath(): Scenario has no Descriptions '{calloutDirName}->Scenarios->{scenarioNode.Name}'->Dispatch"
-                            );
-                            continue;
-                        }
-                    }
-
-                    // Grab the CAD Texture
-                    childNode = dispatchNode.SelectSingleNode("CADTexture");
-                    if (String.IsNullOrWhiteSpace(childNode.InnerText))
-                    {
-                        Log.Warning(
-                            $"Dispatch.RegisterCalloutsFromPath(): Unable to extract CADTexture value for '{calloutDirName}->Scenarios->{scenarioNode.Name}'"
-                        );
-                        continue;
-                    }
-                    else if (childNode.Attributes == null || String.IsNullOrWhiteSpace(childNode.Attributes["dictionary"]?.Value))
-                    {
-                        Log.Warning(
-                            $"Dispatch.RegisterCalloutsFromPath(): Unable to extract CADTexture[dictionary] attribute for '{calloutDirName}->Scenarios->{scenarioNode.Name}'"
-                        );
-                        continue;
-                    }
-
-                    string textName = childNode.InnerText;
-                    string textDict = childNode.Attributes["dictionary"].Value;
-
-                    // Grab the Incident
-                    childNode = dispatchNode.SelectSingleNode("IncidentType");
-                    if (String.IsNullOrWhiteSpace(childNode.InnerText))
-                    {
-                        Log.Warning(
-                            $"Dispatch.RegisterCalloutsFromPath(): Unable to extract IncidentType value for '{calloutDirName}->Scenarios->{scenarioNode.Name}'"
-                        );
-                        continue;
-                    }
-                    else if (childNode.Attributes == null || childNode.Attributes["abbreviation"]?.Value == null)
-                    {
-                        Log.Warning(
-                            $"Dispatch.RegisterCalloutsFromPath(): Unable to extract Incident abbreviation attribute for '{calloutDirName}->Scenarios->{scenarioNode.Name}'"
-                        );
-                        continue;
-                    }
-
-                    // Get agency probability
-                    int baseProbability = 1; // agencyProbabilites[agency.AgencyType];
-
-                    // Create scenario
-                    var scene = new CalloutScenarioInfo()
-                    {
-                        Name = scenarioNode.Name,
-                        CalloutName = calloutName,
-                        Probability = baseProbability,
-                        ProbabilityMultipliers = multipliers,
-                        Priority = priority,
-                        ResponseCode = code,
-                        LocationType = locationType,
-                        ScannerAudioString = scanner,
-                        ScannerPrefixCallSign = prefix,
-                        ScannerUsePosition = suffix,
-                        Descriptions = descriptions,
-                        IncidentText = childNode.InnerText,
-                        IncidentAbbreviation = childNode.Attributes["abbreviation"].Value,
-                        SpriteName = textName,
-                        SpriteTextureDict = textDict,
-                        SimulationTime = new Range<int>(min, max)
-                    };
-
-                    // Create entry if not already
-                    if (!ScenariosByCalloutName.ContainsKey(calloutName))
-                    {
-                        ScenariosByCalloutName.Add(calloutName, new WorldStateProbabilityGenerator<CalloutScenarioInfo>());
-                    }
-
-                    // Add scenario to the pools
-                    ScenariosByName.Add(scenarioNode.Name, scene);
-                    ScenariosByCalloutName[calloutName].Add(scene, multipliers);
-                    ScenariosByCalloutType[crimeType].Add(scene, multipliers);
-
-                    // Statistics trackins
-                    itemsAdded++;
-                }
-
-                Functions.RegisterCallout(calloutType);
-            }
-
-            // Cleanup
-            document = null;
-
-            return itemsAdded;
         }
     }
 }

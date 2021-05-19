@@ -377,6 +377,14 @@ namespace AgencyDispatchFramework.NativeUI
                         MainUIMenu.Visible = true;
                     }
 
+                    // Enable/Disable buttons if not/on duty
+                    if (MainUIMenu.Visible)
+                    {
+                        DispatchMenuButton.Enabled = Main.OnDuty;
+                        PatrolSettingsMenuButton.Enabled = Main.OnDuty;
+                        ModSettingsMenuButton.Enabled = Main.OnDuty;
+                    }
+
                     // Disable patrol area selection if not highway patrol
                     if (DispatchUIMenu.Visible)
                     {

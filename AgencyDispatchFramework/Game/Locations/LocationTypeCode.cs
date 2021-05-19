@@ -1,9 +1,10 @@
 ﻿namespace AgencyDispatchFramework.Game.Locations
 {
-    public enum LocationType
+    public enum LocationTypeCode
     {
         SpawnPoint,
-        SideOfRoad,
+        RoadShoulder,
+        Intersection,
         Residence,
         Store
     }

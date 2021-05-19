@@ -16,6 +16,16 @@ namespace AgencyDispatchFramework.NativeUI
     internal class OpenCallListTabPage : TabItem // TabSubmenuItem
     {
         /// <summary>
+        /// Gets the message to display when the player is not on a <see cref="AgencyCallout"/>
+        /// </summary>
+        public static readonly string NoAssingnmentMessage = "There are currently no open calls";
+
+        /// <summary>
+        /// Sets the bounds for the "no assignment" message
+        /// </summary>
+        public int WordWrap { get; set; }
+
+        /// <summary>
         /// Defines the maximum calls to display in the list at once before needing to scroll
         /// to see further items
         /// </summary>
@@ -196,42 +206,58 @@ namespace AgencyDispatchFramework.NativeUI
 
             var res = UIMenu.GetScreenResolutionMantainRatio();
 
-            var blackAlpha = Focused ? 200 : 100;
-            var fullAlpha = Focused ? 255 : 150;
-
-            var activeWidth = res.Width - SafeSize.X * 2;
-            var submenuWidth = (int)(activeWidth * 0.6818f);
-            var statusSize = new Size(10, 40);
-            var itemSize = new Size(((int)activeWidth - (submenuWidth + 3)) - statusSize.Width, 40);
-
-            // Draw each call in the list within the index range
-            for (int i = IndexesInView.Minimum; i < IndexesInView.Maximum; i++)
+            if (Items.Count > 0)
             {
-                // If we are at our item count, exit
-                if (Items.Count <= i) break;
+                DrawBg = false;
 
-                // Draw call status color box
-                ResRectangle.Draw(SafeSize.AddPoints(new Point(0, (itemSize.Height + 3) * i)), statusSize, GetCallItemColor(Items[i]));
-                
-                // Draw item outline box
-                ResRectangle.Draw(SafeSize.AddPoints(new Point(10, (itemSize.Height + 3) * i)), itemSize, (Index == i && Focused) ? Color.FromArgb(fullAlpha, Color.White) : Color.FromArgb(blackAlpha, Color.Black));
+                var blackAlpha = Focused ? 200 : 100;
+                var fullAlpha = Focused ? 255 : 150;
+                var activeWidth = res.Width - SafeSize.X * 2;
+                var submenuWidth = (int)(activeWidth * 0.6818f);
+                var statusSize = new Size(10, 40);
+                var itemSize = new Size(((int)activeWidth - (submenuWidth + 3)) - statusSize.Width, 40);
 
-                // Draw item title in the box
-                ResText.Draw(Items[i].Title, SafeSize.AddPoints(new Point(16, 5 + (itemSize.Height + 3) * i)), 0.35f, Color.FromArgb(fullAlpha, (Index == i && Focused) ? Color.Black : Color.White), Common.EFont.ChaletLondon, false);
+                // Draw each call in the list within the index range
+                for (int i = IndexesInView.Minimum; i < IndexesInView.Maximum; i++)
+                {
+                    // If we are at our item count, exit
+                    if (Items.Count <= i) break;
+
+                    // Draw call status color box
+                    ResRectangle.Draw(SafeSize.AddPoints(new Point(0, (itemSize.Height + 3) * i)), statusSize, GetCallItemColor(Items[i]));
+
+                    // Draw item outline box
+                    ResRectangle.Draw(SafeSize.AddPoints(new Point(10, (itemSize.Height + 3) * i)), itemSize, (Index == i && Focused) ? Color.FromArgb(fullAlpha, Color.White) : Color.FromArgb(blackAlpha, Color.Black));
+
+                    // Draw item title in the box
+                    ResText.Draw(Items[i].Title, SafeSize.AddPoints(new Point(16, 5 + (itemSize.Height + 3) * i)), 0.35f, Color.FromArgb(fullAlpha, (Index == i && Focused) ? Color.Black : Color.White), Common.EFont.ChaletLondon, false);
+                }
+
+                // Draw only if in range
+                if (Items.Count > 0 && Index.InRange(0, Items.Count - 1))
+                {
+                    var focusedItem = Items[Index];
+                    focusedItem.Visible = true;
+                    //focusedItem.FadeInWhenFocused = true;
+                    focusedItem.UseDynamicPositionment = false;
+                    focusedItem.SafeSize = SafeSize.AddPoints(new Point((int)activeWidth - submenuWidth, 0));
+                    focusedItem.TopLeft = SafeSize.AddPoints(new Point((int)activeWidth - submenuWidth, 0));
+                    focusedItem.BottomRight = new Point((int)res.Width - SafeSize.X, (int)res.Height - SafeSize.Y);
+                    focusedItem.Dimensions = new Size(focusedItem.BottomRight.SubtractPoints(focusedItem.TopLeft));
+                    focusedItem.Draw();
+                }
             }
-
-            // Draw only if in range
-            if (Items.Count > 0 && Index.InRange(0, Items.Count - 1))
+            else
             {
-                var focusedItem = Items[Index];
-                focusedItem.Visible = true;
-                //focusedItem.FadeInWhenFocused = true;
-                focusedItem.UseDynamicPositionment = false;
-                focusedItem.SafeSize = SafeSize.AddPoints(new Point((int)activeWidth - submenuWidth, 0));
-                focusedItem.TopLeft = SafeSize.AddPoints(new Point((int)activeWidth - submenuWidth, 0));
-                focusedItem.BottomRight = new Point((int)res.Width - SafeSize.X, (int)res.Height - SafeSize.Y);
-                focusedItem.Dimensions = new Size(focusedItem.BottomRight.SubtractPoints(focusedItem.TopLeft));
-                focusedItem.Draw();
+                DrawBg = true;
+
+                // Alpha of the entire tab's contents
+                var alpha = (Focused || !CanBeFocused) ? 255 : 200;
+                var dimmensions = new Size(BottomRight.SubtractPoints(TopLeft));
+                var center = dimmensions.Width / 2;
+
+                var ww = WordWrap == 0 ? BottomRight.X - TopLeft.X - 40 : WordWrap;
+                ResText.Draw(NoAssingnmentMessage, SafeSize.AddPoints(new Point(center, 150)), 0.6f, Color.FromArgb(alpha, Color.White), Common.EFont.ChaletLondon, ResText.Alignment.Centered, true, true, new Size((int)ww, 0));
             }
         }
 

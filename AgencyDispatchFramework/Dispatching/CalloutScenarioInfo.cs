@@ -1,6 +1,4 @@
 ﻿using AgencyDispatchFramework.Game.Locations;
-using System.Reflection;
-using System.Xml;
 
 namespace AgencyDispatchFramework.Dispatching
 {
@@ -14,6 +12,9 @@ namespace AgencyDispatchFramework.Dispatching
         /// </summary>
         public int Probability { get; set; }
 
+        /// <summary>
+        /// Gets the <see cref="WorldStateMultipliers"/> for this scenario
+        /// </summary>
         public WorldStateMultipliers  ProbabilityMultipliers { get; set; }
 
         /// <summary>
@@ -39,7 +40,12 @@ namespace AgencyDispatchFramework.Dispatching
         /// <summary>
         /// Defines the location type of this call
         /// </summary>
-        public LocationType LocationType { get; set; }
+        public LocationTypeCode LocationTypeCode { get; set; }
+
+        /// <summary>
+        /// Indicates the location flags required for this scenario, if any
+        /// </summary>
+        public FlagFilterGroup LocationFilters { get; set; }
 
         /// <summary>
         /// Gets the scanner audio to be played
@@ -71,18 +77,29 @@ namespace AgencyDispatchFramework.Dispatching
         /// </summary>
         public ProbabilityGenerator<PriorityCallDescription> Descriptions { get; set; }
 
-        public string SpriteName { get; internal set; }
+        /// <summary>
+        /// Gets the texture sprite name to display in the CAD
+        /// </summary>
+        public string CADSpriteName { get; internal set; }
 
-        public string SpriteTextureDict { get; internal set; }
+        /// <summary>
+        /// Gets the texture sprite dictionary name to display in the CAD
+        /// </summary>
+        public string CADSpriteTextureDict { get; internal set; }
 
+        /// <summary>
+        /// Contains a time range of how long this scenario could take when the AI is on scene
+        /// </summary>
         public Range<int> SimulationTime { get; internal set; }
 
         /// <summary>
-        /// 
+        /// Gets the <see cref="CalloutType"/> of this scenario
         /// </summary>
-        public static void FromXml(XmlNode element, Assembly assembly)
-        {
+        public CalloutType CrimeType { get; internal set; }
 
-        }
+        /// <summary>
+        /// Contains an array of <see cref="Agency"/>s that can handle this scenario
+        /// </summary>
+        public AgencyType[] AgencyTypes { get; internal set; }
     }
 }

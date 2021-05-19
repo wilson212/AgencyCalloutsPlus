@@ -13,7 +13,7 @@ using System.Xml;
 namespace AgencyDispatchFramework.Callouts.DomesticViolence
 {
     /// <summary>
-    /// One scenario of the <see cref="Callouts.DomesticViolence"/> callout. This scenario represents
+    /// One scenario of the <see cref="DomesticViolence"/> callout. This scenario represents
     /// a concerned person has called in stating that there here a couple fighting, with a suspect
     /// claiming they are going to inflict harm to the victim.
     /// </summary>
@@ -187,7 +187,7 @@ namespace AgencyDispatchFramework.Callouts.DomesticViolence
             switch (SceneProgress)
             {
                 case ScenarioProgress.BeforeArrival:
-                    if (player.DistanceTo(CheckpointPosition) < 2f)
+                    if (player.DistanceTo(CheckpointPosition) < 3f)
                     {
                         // Alert player to knock on the door
                         Menu.DisplayMenuHelpMessage();
@@ -252,6 +252,18 @@ namespace AgencyDispatchFramework.Callouts.DomesticViolence
 
             Suspect?.Cleanup();
             Suspect = null;
+
+            if (VictimBlip.Exists() && VictimBlip.IsValid())
+            {
+                VictimBlip.Delete();
+                //VictimBlip = null;
+            }
+
+            if (SuspectBlip.Exists() && SuspectBlip.IsValid())
+            {
+                SuspectBlip.Delete();
+                //SuspectBlip = null;
+            }
 
             // Erase the checkpoint if it exists
             if (SceneProgress == ScenarioProgress.BeforeArrival)

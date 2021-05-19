@@ -1,6 +1,4 @@
-﻿using Rage;
-
-namespace AgencyDispatchFramework.Conversation
+﻿namespace AgencyDispatchFramework.Conversation
 {
     /// <summary>
     /// Represents a series of lines to display in a Subtitle

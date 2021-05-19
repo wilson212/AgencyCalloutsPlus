@@ -49,15 +49,23 @@ namespace AgencyDispatchFramework.Game
             set => Ped.SetIsUnderDrugInfluence(value);
         }
 
+        /// <summary>
+        /// Creates a new instance of <see cref="GamePed"/>
+        /// </summary>
+        /// <param name="ped"></param>
         public GamePed(Ped ped)
         {
             Ped = ped ?? throw new ArgumentNullException(nameof(ped));
             Persona = Functions.GetPersonaForPed(ped);
         }
 
+        /// <summary>
+        /// Gets a valid indicating whether a <see cref="Rage.Ped"/> is valid in the <see cref="Rage.World"/>
+        /// </summary>
+        /// <returns></returns>
         public bool IsValid()
         {
-            return (Ped != null && Ped.Exists() && Ped.IsValid());
+            return Ped != null && Ped.Exists() && Ped.IsValid();
         }
 
         public override string ToString()

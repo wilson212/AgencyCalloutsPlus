@@ -6,34 +6,74 @@
   <Type>Commercial</Type>
   <Class>LowerMiddle</Class>
   <Population>Dense</Population>
-  <CrimeLevel>Moderate</CrimeLevel>
   <Crime>
     <AverageCalls morning="0" day="0" evening="0" night="0" />
     <Probabilities>
-      <Robbery morning="0" day="0" evening="0" night="0" />
-      <Property morning="0" day="0" evening="0" night="0" />
-      <Drugs morning="0" day="0" evening="0" night="0" />
-      <Gang morning="0" day="0" evening="0" night="0" />
-      <Disturbance morning="0" day="0" evening="0" night="0" />
-      <Statutory morning="0" day="0" evening="0" night="0" />
-      <Traffic morning="5" day="3" evening="5" night="2" />
-      <Violent morning="0" day="0" evening="0" night="0" />
-      <Other morning="0" day="0" evening="0" night="0" />
+      <Robbery possible="false">
+        <Morning clear="10" overcast="10" rain="10" snow="10" storm="10" />
+        <Day clear="10" overcast="10" rain="10" snow="10" storm="10" />
+        <Evening clear="10" overcast="10" rain="10" snow="10" storm="10" />
+        <Night clear="10" overcast="10" rain="10" snow="10" storm="10" />
+      </Robbery>
+      <Property possible="false">
+        <Morning clear="10" overcast="10" rain="10" snow="10" storm="10" />
+        <Day clear="10" overcast="10" rain="10" snow="10" storm="10" />
+        <Evening clear="10" overcast="10" rain="10" snow="10" storm="10" />
+        <Night clear="10" overcast="10" rain="10" snow="10" storm="10" />
+      </Property>
+      <Drugs possible="false">
+        <Morning clear="10" overcast="10" rain="10" snow="10" storm="10" />
+        <Day clear="10" overcast="10" rain="10" snow="10" storm="10" />
+        <Evening clear="10" overcast="10" rain="10" snow="10" storm="10" />
+        <Night clear="10" overcast="10" rain="10" snow="10" storm="10" />
+      </Drugs>
+      <Gang possible="false">
+        <Morning clear="10" overcast="10" rain="10" snow="10" storm="10" />
+        <Day clear="10" overcast="10" rain="10" snow="10" storm="10" />
+        <Evening clear="10" overcast="10" rain="10" snow="10" storm="10" />
+        <Night clear="10" overcast="10" rain="10" snow="10" storm="10" />
+      </Gang>
+      <Disturbance possible="false">
+        <Morning clear="10" overcast="10" rain="10" snow="10" storm="10" />
+        <Day clear="10" overcast="10" rain="10" snow="10" storm="10" />
+        <Evening clear="10" overcast="10" rain="10" snow="10" storm="10" />
+        <Night clear="10" overcast="10" rain="10" snow="10" storm="10" />
+      </Disturbance>
+      <Statutory possible="false">
+        <Morning clear="10" overcast="10" rain="10" snow="10" storm="10" />
+        <Day clear="10" overcast="10" rain="10" snow="10" storm="10" />
+        <Evening clear="10" overcast="10" rain="10" snow="10" storm="10" />
+        <Night clear="10" overcast="10" rain="10" snow="10" storm="10" />
+      </Statutory>
+      <Traffic possible="false">
+        <Morning clear="10" overcast="10" rain="15" snow="18" storm="12" />
+        <Day clear="10" overcast="10" rain="15" snow="18" storm="12" />
+        <Evening clear="10" overcast="10" rain="15" snow="18" storm="12" />
+        <Night clear="10" overcast="10" rain="15" snow="18" storm="12" />
+      </Traffic>
+      <Violent possible="false">
+        <Morning clear="10" overcast="10" rain="10" snow="10" storm="10" />
+        <Day clear="10" overcast="10" rain="10" snow="10" storm="10" />
+        <Evening clear="10" overcast="10" rain="10" snow="10" storm="10" />
+        <Night clear="10" overcast="10" rain="10" snow="10" storm="10" />
+      </Violent>
+      <Other possible="false">
+        <Morning clear="10" overcast="10" rain="10" snow="10" storm="10" />
+        <Day clear="10" overcast="10" rain="10" snow="10" storm="10" />
+        <Evening clear="10" overcast="10" rain="10" snow="10" storm="10" />
+        <Night clear="10" overcast="10" rain="10" snow="10" storm="10" />
+      </Other>
     </Probabilities>
   </Crime>
   <Locations>
-    <Homes>
-    </Homes>
+    <Residences>
+
+    </Residences>
     <Stores>
+
     </Stores>
-    <SideOfRoad>
-      <SpawnPoint X="-76.74903" Y="-1106.13" Z="25.66922" heading="340.7221" />
-      <SpawnPoint X="-43.9413" Y="-1016.342" Z="28.56779" heading="340.5232" />
-      <SpawnPoint X="26.28559" Y="-812.0501" Z="30.85511" heading="326.5526" />
-      <SpawnPoint X="68.91693" Y="-794.0045" Z="31.27548" heading="248.6751" />
-      <SpawnPoint X="74.5505" Y="-770.8582" Z="31.34095" heading="74.34708" />
-      <SpawnPoint X="82.09867" Y="-676.7922" Z="31.28652" heading="340.5499" />
-      <SpawnPoint X="144.9332" Y="-587.3853" Z="30.72762" heading="251.8666" />
-    </SideOfRoad>
+    <RoadShoulders>
+
+    </RoadShoulders>
   </Locations>
 </PBOX>

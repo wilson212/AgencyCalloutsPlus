@@ -57,11 +57,6 @@ namespace AgencyDispatchFramework.Game
         public SocialClass SocialClass { get; protected set; }
 
         /// <summary>
-        /// Contains a dictionary of how often specific crimes happen in this zone
-        /// </summary>
-        //public IReadOnlyDictionary<CalloutType, WorldStateMultipliers> CrimeTypeProbabilities { get; protected set; }
-
-        /// <summary>
         /// Contains a dictionary of the average number of calls per time of day in this zone
         /// </summary>
         public IReadOnlyDictionary<TimeOfDay, int> AverageCalls { get; protected set; }
@@ -72,19 +67,19 @@ namespace AgencyDispatchFramework.Game
         public Residence[] Residences { get; protected set; }
 
         /// <summary>
-        /// Containts an array of SideOfRoad locations
+        /// Containts an array of Road Shoulder locations
         /// </summary>
-        public RoadShoulder[] SideOfRoadLocations { get; protected set; }
+        public RoadShoulder[] RoadShoulders { get; protected set; }
 
         /// <summary>
-        /// Gets the crime level probability of this zone
+        /// Gets the crime level probability of this zone based on current time of day
         /// </summary>
         public int Probability => AverageCalls[GameWorld.CurrentTimeOfDay];
 
         /// <summary>
-        /// Spawns a <see cref="CalloutType"/> based on the <see cref="CrimeTypeProbabilities"/> probabilites set
+        /// Spawns a <see cref="CalloutType"/> based on the <see cref="WorldStateMultipliers"/> probabilites set
         /// </summary>
-        private WorldStateProbabilityGenerator<CalloutType> CrimeGenerator { get; set; }
+        private WorldStateProbabilityGenerator<CalloutType> CrimeTypeGenerator { get; set; }
 
         /// <summary>
         /// Creates a new instance of <see cref="ZoneInfo"/>
@@ -137,8 +132,7 @@ namespace AgencyDispatchFramework.Game
             }
 
             // Load crime probabilites
-            //var crimeTypeProbabilities = new Dictionary<CalloutType, WorldStateMultipliers>(10);
-            CrimeGenerator = new WorldStateProbabilityGenerator<CalloutType>();
+            CrimeTypeGenerator = new WorldStateProbabilityGenerator<CalloutType>();
 
             // Get average calls by time of day
             var subNode = catagoryNode.SelectSingleNode("AverageCalls");
@@ -175,10 +169,7 @@ namespace AgencyDispatchFramework.Game
 
                     // Try and parse the probability levels by Time of Day
                     var multipliers = XmlExtractor.GetWorldStateMultipliers(n);
-                    CrimeGenerator.Add(calloutType, multipliers);
-
-                    // Add
-                    //crimeTypeProbabilities.Add(calloutType, multipliers);
+                    CrimeTypeGenerator.Add(calloutType, multipliers);
                 }
             }
 
@@ -191,16 +182,18 @@ namespace AgencyDispatchFramework.Game
 
             // Load Side Of Road locations
             catagoryNode = node.SelectSingleNode("RoadShoulders");
-            SideOfRoadLocations = ExtractRoadLocations(catagoryNode);
+            RoadShoulders = ExtractRoadLocations(catagoryNode);
 
             // Load Home locations
             catagoryNode = node.SelectSingleNode("Residences");
             Residences = ExtractHomes(catagoryNode);
-
-            // Internal vars
-            //CrimeTypeProbabilities = new ReadOnlyDictionary<CalloutType, WorldStateMultipliers>(crimeTypeProbabilities);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="subNode"></param>
+        /// <returns></returns>
         private Dictionary<TimeOfDay, int> GetTimeOfDayProbabilities(XmlNode subNode)
         {
             // If attributes is null, we know... we know...
@@ -258,16 +251,17 @@ namespace AgencyDispatchFramework.Game
             var count = 0;
 
             // Do we have SideOfRoad locations? If so, add em
-            if (SideOfRoadLocations != null)
-                count += SideOfRoadLocations.Length;
+            if (RoadShoulders != null)
+                count += RoadShoulders.Length;
 
+            // Final count
             count += Residences.Length;
 
             return count;
         }
 
         /// <summary>
-        /// Spawns the next <see cref="CalloutType"/> that will happen in zone,
+        /// Spawns the next <see cref="CalloutType"/> that will happen in this zone
         /// based on the crime probabilities set
         /// </summary>
         /// <returns>
@@ -276,7 +270,7 @@ namespace AgencyDispatchFramework.Game
         /// </returns>
         public CalloutType GetNextRandomCrimeType()
         {
-            if (CrimeGenerator.TrySpawn(out CalloutType calloutType))
+            if (CrimeTypeGenerator.TrySpawn(out CalloutType calloutType))
             {
                 return calloutType;
             }
@@ -285,41 +279,65 @@ namespace AgencyDispatchFramework.Game
         }
 
         /// <summary>
-        /// Gets a random <see cref="WorldLocation"/>
+        /// This is where the magic happens. This method Gets a random <see cref="WorldLocation"/> from a pool
+        /// of locations, applying filters and checking to see if the location is already in use
         /// </summary>
         /// <param name="type"></param>
-        /// <param name="pool"></param>
+        /// <param name="locationPool"></param>
         /// <param name="inactiveOnly">If true, will only return a <see cref="WorldLocation"/> that is not currently in use</param>
         /// <returns></returns>
-        protected T GetRandomLocationFromPool<T>(T[] pool, bool inactiveOnly) where T : WorldLocation
+        private T GetRandomLocationFromPool<T>(T[] locationPool, FlagFilterGroup filters, bool inactiveOnly) where T : WorldLocation
         {
             // If we have no locations, return null
-            if (pool == null || pool.Length == 0)
+            if (locationPool == null || locationPool.Length == 0)
             {
-                Log.Debug($"ZoneInfo.GetRandomLocation(): Unable to pull a {typeof(T).Name} from zone '{ScriptName}' because the list is empty");
+                Log.Debug($"ZoneInfo.GetRandomLocationFromPool<T>(): Unable to pull a {typeof(T).Name} from zone '{ScriptName}' because no locations were provided in the list");
+                return null;
+            }
+
+            var type = locationPool[0].LocationType;
+
+            // Filtering by flags? Do this first so we can log debugging info if there are no available locations with these required flags in this zone
+            if (filters != null && filters.Requirements.Count > 0)
+            {
+                locationPool = locationPool.Filter(filters).ToArray();
+                if (locationPool.Length == 0)
+                {
+                    Log.Warning($"ZoneInfo.GetRandomLocationFromPool<T>(): There are no locations of type '{type}' in zone '{ScriptName}' using the following flags:");
+                    Log.Warning($"\t{filters}");
+                    return null;
+                }
+            }
+
+            // Will any location work?
+            if (inactiveOnly)
+            {
+                try
+                {
+                    // Find all locations not in use
+                    var active = Dispatch.GetActiveCrimeLocationsByType<T>(type);
+                    locationPool = locationPool.Except(active).ToArray();
+                }
+                catch (InvalidCastException ex)
+                {
+                    Log.Error($"ZoneInfo.GetRandomLocationFromPool<T>(): Cast exception to {typeof(T).Name} from location pool. Logging exception data");
+                    Log.Exception(ex);
+                    return null;
+                }
+            }
+
+            // If no locations are available
+            if (locationPool.Length == 0)
+            {
+                Log.Debug($"ZoneInfo.GetRandomLocationFromPool<T>(): Unable to pull an available '{type}' location from zone '{ScriptName}' because they are all in use");
                 return null;
             }
 
             // Load randomizer
             var random = new CryptoRandom();
-            var type = pool[0].LocationType;
-
-            // Will any location work?
-            if (!inactiveOnly) return random.PickOne(pool);
-
-            // Find all locations not in use
-            var active = Dispatch.GetActiveCrimeLocationsByType(type);
-            var available = pool.Except(active).ToArray();
-
-            // If no locations are available
-            if (available.Length == 0)
-            {
-                Log.Debug($"ZoneInfo.GetRandomLocation(): Unable to pull an available '{type}' location from zone '{ScriptName}' because the list is empty");
-                return null;
-            }
 
             // We are good to go!
-            return random.PickOne(available) as T;
+            return random.PickOne(locationPool);
         }
 
         /// <summary>
@@ -327,10 +345,10 @@ namespace AgencyDispatchFramework.Game
         /// </summary>
         /// <param name="inactiveOnly">If true, will only return a <see cref="WorldLocation"/> that is not currently in use</param>
         /// <returns>returns a random <see cref="SpawnPoint"/> on success, or null on failure</returns>
-        public RoadShoulder GetRandomSideOfRoadLocation(bool inactiveOnly = false)
+        public RoadShoulder GetRandomSideOfRoadLocation(FlagFilterGroup filters, bool inactiveOnly = false)
         {
             // Get random location
-            return GetRandomLocationFromPool(SideOfRoadLocations, inactiveOnly);
+            return GetRandomLocationFromPool(RoadShoulders, filters, inactiveOnly);
         }
 
         /// <summary>
@@ -338,10 +356,10 @@ namespace AgencyDispatchFramework.Game
         /// </summary>
         /// <param name="inactiveOnly">If true, will only return a <see cref="WorldLocation"/> that is not currently in use</param>
         /// <returns>returns a random <see cref="Residence"/> on success, or null on failure</returns>
-        public Residence GetRandomResidence(bool inactiveOnly = false)
+        public Residence GetRandomResidence(FlagFilterGroup filters, bool inactiveOnly = false)
         {
             // Get random location
-            return GetRandomLocationFromPool(Residences, inactiveOnly);
+            return GetRandomLocationFromPool(Residences, filters, inactiveOnly);
         }
 
         /// <summary>
@@ -423,7 +441,8 @@ namespace AgencyDispatchFramework.Game
                     val = homeNode.SelectSingleNode("Flags")?.InnerText;
                     if (!String.IsNullOrEmpty(val))
                     {
-                        AddLocationFlagsFromCSV(val, home);
+                        home.ResidenceFlags = val.CSVToEnumArray<ResidenceFlags>();
+                        home.Flags = home.ResidenceFlags.Cast<int>().ToArray();
                     }
                 }
                 catch (ArgumentException e)
@@ -443,7 +462,7 @@ namespace AgencyDispatchFramework.Game
                 // Parse spawn points
                 foreach (XmlNode sp in pointsNode.SelectNodes("SpawnPoint"))
                 {
-                    var item = ParseSpawnPoint(LocationType.Residence, sp);
+                    var item = ParseSpawnPoint(LocationTypeCode.Residence, sp);
                     if (item == null)
                         continue;
 
@@ -478,27 +497,6 @@ namespace AgencyDispatchFramework.Game
         }
 
         /// <summary>
-        /// Extracts and add the <see cref="LocationFlags"/> from a comma seperated string
-        /// to a <see cref="WorldLocation"/>
-        /// </summary>
-        /// <param name="csv">Comma seperated values</param>
-        /// <param name="location"></param>
-        private void AddLocationFlagsFromCSV(string csv, WorldLocation location)
-        {
-            if (!String.IsNullOrWhiteSpace(csv))
-            {
-                string[] vals = csv.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
-                foreach (string val in vals)
-                {
-                    if (Enum.TryParse(val.Trim(), out LocationFlags flag))
-                    {
-                        location.Flags |= flag;
-                    }
-                }
-            }
-        }
-
-        /// <summary>
         /// Extracts all SpawnPoint xml nodes from a parent node
         /// </summary>
         /// <param name="type"></param>
@@ -509,8 +507,9 @@ namespace AgencyDispatchFramework.Game
             if (catagoryNode != null && catagoryNode.HasChildNodes)
             {
                 // Extract attributes
-                var spawnPoints = new List<RoadShoulder>(catagoryNode.ChildNodes.Count);
-                foreach (XmlNode n in catagoryNode.SelectNodes("Location"))
+                var locations = catagoryNode.SelectNodes("Location");
+                var shoulders = new List<RoadShoulder>(locations.Count);
+                foreach (XmlNode n in locations)
                 {
                     // Ensure we have attributes
                     if (n.Attributes == null)
@@ -527,7 +526,7 @@ namespace AgencyDispatchFramework.Game
                     }
 
                     // Try and extract heading value
-                    if (!float.TryParse(n.Attributes["heading"]?.Value, out float heading))
+                    if (!n.TryGetAttribute("heading", out float heading))
                     {
                         Log.Warning($"ZoneInfo.ExtractRoadLocations(): Unable to extract Location[heading] value for '{n.GetFullPath()}'");
                         continue;
@@ -561,23 +560,71 @@ namespace AgencyDispatchFramework.Game
                     }
 
                     // Try and extract spawn point flags
-                    if (!String.IsNullOrEmpty(n.Attributes["flags"]?.Value))
-                        AddLocationFlagsFromCSV(n.Attributes["flags"].Value, sp);
+                    var subNode = n.SelectSingleNode("Flags");
+                    if (subNode == null || !subNode.HasChildNodes)
+                    {
+                        Log.Warning($"ZoneInfo.ExtractRoadLocations(): Unable to extract Flags for '{n.GetFullPath()}'");
+                        continue;
+                    }
+
+                    // Extract RoadFlags
+                    val = subNode.SelectSingleNode("Road")?.InnerText;
+                    if (String.IsNullOrWhiteSpace(val))
+                    {
+                        Log.Warning($"ZoneInfo.ExtractRoadLocations(): Unable to extract Road value for '{subNode.GetFullPath()}'");
+                        continue;
+                    }
+                    sp.RoadFlags = val.CSVToEnumArray<RoadFlags>();
+                    sp.Flags = sp.RoadFlags.Cast<int>().ToArray();
+
+                    // Extract IntersectionFlags
+                    sp.BeforeIntersectionFlags = ParseIntersectionFlags(subNode.SelectSingleNode("BeforeIntersection"), out RelativeDirection bdir);
+                    sp.AfterIntersectionFlags = ParseIntersectionFlags(subNode.SelectSingleNode("AfterIntersection"), out RelativeDirection adir);
+                    sp.BeforeIntersectionDirection = bdir;
+                    sp.AfterIntersectionDirection = adir;
 
                     // Add spawnpoint to list
-                    spawnPoints.Add(sp);
+                    shoulders.Add(sp);
                 }
 
-                return spawnPoints.ToArray();
+                return shoulders.ToArray();
             }
 
             return new RoadShoulder[0];
         }
 
         /// <summary>
+        /// Reads and parses an <see cref="XmlNode"/> containing <see cref="IntersectionFlags"/>
+        /// </summary>
+        /// <param name="node"></param>
+        /// <param name="dir"></param>
+        /// <returns></returns>
+        private static IntersectionFlags[] ParseIntersectionFlags(XmlNode node, out RelativeDirection dir)
+        {
+            // Default return value
+            dir = RelativeDirection.None;
+            string val = node?.InnerText;
+
+            // Check for empty strings
+            if (String.IsNullOrWhiteSpace(val))
+            {
+                return new IntersectionFlags[0];
+            }
+
+            // Do we have a direction?
+            if (node.HasAttribute("direction"))
+            {
+                Enum.TryParse(node.GetAttribute("direction"), out dir);
+            }
+
+            // Parse comma seperated values
+            return val.CSVToEnumArray<IntersectionFlags>();
+        }
+
+        /// <summary>
         /// Parses SpawnPoint xml nodes into a <see cref="SpawnPoint"/>
         /// </summary>
-        private SpawnPoint ParseSpawnPoint(LocationType type, XmlNode n)
+        private SpawnPoint ParseSpawnPoint(LocationTypeCode type, XmlNode n)
         {
             // Ensure we have attributes
             if (n.Attributes == null)
@@ -602,11 +649,6 @@ namespace AgencyDispatchFramework.Game
 
             // Create the Vector3
             var sp = new SpawnPoint(vector, heading);
-
-            // Try and extract spawn point flags
-            if (n.Attributes["flags"]?.Value != null)
-                AddLocationFlagsFromCSV(n.Attributes["flags"].Value, sp);
-
             return sp;
         }
 
@@ -645,7 +687,7 @@ namespace AgencyDispatchFramework.Game
                 XmlNode root = document.DocumentElement;
                 if (root == null)
                 {
-                    Log.Error($"ZoneInfo.ParseSpawnPoint(): Missing location data for zone '{zoneName}'");
+                    Log.Error($"ZoneInfo.LoadZones(): Missing location data for zone '{zoneName}'");
                     continue;
                 }
 
@@ -664,7 +706,7 @@ namespace AgencyDispatchFramework.Game
                 }
                 catch (ArgumentNullException e)
                 {
-                    Log.Error($"ZoneInfo.ParseSpawnPoint(): Unable to load location data for zone '{zoneName}'. Missing node '{e.ParamName}'");
+                    Log.Error($"ZoneInfo.LoadZones(): Unable to load location data for zone '{zoneName}'. Missing node '{e.ParamName}'");
                     continue;
                 }
 

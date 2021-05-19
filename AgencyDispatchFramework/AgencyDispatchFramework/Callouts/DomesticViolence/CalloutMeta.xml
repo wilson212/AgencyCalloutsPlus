@@ -5,7 +5,7 @@
   <Scenarios>
 
     <ReportsOfArguingThreats>
-      <!-- Agencies that handle this callout scenario -->
+      <!-- Agencies that handle this callout scenario, in order -->
       <Agencies>
         <Agency>CityPolice</Agency>
         <Agency>CountySheriff</Agency>
@@ -18,8 +18,13 @@
         <Evening clear="10" overcast="10" rain="10" snow="10" storm="10" />
         <Night clear="10" overcast="10" rain="10" snow="10" storm="10" />
       </Probabilities>
-      <Catagory>Disturbance</Catagory>
-      <LocationType>Residence</LocationType>
+      <Category>Disturbance</Category>
+      <Location>
+        <Type>Residence</Type>
+        <RequiredFlags mode="Any">
+          <!-- <Requirement mode="All" inverse="false"></Requirement> -->
+        </RequiredFlags>
+      </Location>
       <Dispatch>
         <!-- Scanner Audio data for call -->
         <Scanner>
@@ -27,14 +32,14 @@
           <PrefixCallSign>False</PrefixCallSign>
           <UsePosition>True</UsePosition>
         </Scanner>
-        <!-- Callout Details are for ComputerPlus / CAD -->
+        <!-- Callout Details are for CAD -->
         <Descriptions>
           <Description probability="10">
             <Source>Citizen</Source>
             <Text>
               RP SAYS THEY HEARD THIER NEIGHBORS VERBALLY FIGHTING AND LOUD CRASHING NOISES COMING FROM INSIDE THE HOME AT $LOCATION$. 
               RP STATED ONE OF THE SCREAMS WAS SOMEONE STATING THEY WERE GOING TO KILL SOMEONE. RESPOND CODE 3
-          </Text>
+            </Text>
           </Description>
         </Descriptions>
         <!-- CAD texture for this call in call details -->
@@ -45,6 +50,7 @@
       </Dispatch>
       <Simulation>
         <CallTime min="20" max="45" />
+        <Arrest chance="80">Suspect</Arrest>
       </Simulation>
       <FlowSequence>
         <FlowOutcome id="cheating" probability="10" />

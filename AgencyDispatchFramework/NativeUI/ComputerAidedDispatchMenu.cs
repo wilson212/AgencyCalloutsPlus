@@ -10,14 +10,24 @@ using System.Collections.Generic;
 namespace AgencyDispatchFramework.NativeUI
 {
     /// <summary>
-    /// This class handles the Agency Dispatch and Callouts+ Computer Aided Dispatch UI menu
+    /// This class handles the AgencyDispatchFramework Computer Aided Dispatch UI menu
     /// </summary>
     public static class ComputerAidedDispatchMenu
     {
         /// <summary>
+        /// Indicates whether this CAD has been initialized this session
+        /// </summary>
+        private static bool Initialized { get; set; }
+
+        /// <summary>
+        /// Indicates whether this CAD is currently running
+        /// </summary>
+        private static bool IsRunning { get; set; }
+
+        /// <summary>
         /// Contains the main <see cref="TabView"/>
         /// </summary>
-        private static TabView tabView;
+        private static TabView DispatchWindow;
 
         /// <summary>
         /// Contains the current call tab
@@ -29,6 +39,10 @@ namespace AgencyDispatchFramework.NativeUI
         /// </summary>
         private static OpenCallListTabPage CallListTab { get; set; }
 
+        /// <summary>
+        /// Contains the scenario list tab
+        /// </summary>
+        private static TabInteractiveListItem ScenarioListTab { get; set; }
 
         /// <summary>
         /// Containts the players <see cref="Persona"/>
@@ -40,27 +54,80 @@ namespace AgencyDispatchFramework.NativeUI
         /// </summary>
         public static void Initialize()
         {
+            // Exit if already running
+            if (IsRunning) return;
+            IsRunning = true;
+
             // Tell the game to process this menu every game tick
             Rage.Game.FrameRender += Process;
 
-            // Grab player Persona
-            PlayerPersona = Functions.GetPersonaForPed(Rage.Game.LocalPlayer.Character);
-                     
-            // Setup the tab view
-            tabView = new TabView("~y~eForce ~w~Computer Aided Dispatch System");
-            tabView.Name = PlayerPersona.FullName;
-            tabView.Money = Dispatch.ActiveAgency.FriendlyName;
-            tabView.OnMenuClose += (s, e) => Rage.Game.IsPaused = false;
+            // Is this the first time this session the player has gone on duty?
+            if (!Initialized)
+            {
+                // Grab player Persona
+                PlayerPersona = Functions.GetPersonaForPed(Rage.Game.LocalPlayer.Character);
 
-            // Add active calls list
-            tabView.AddTab(CallListTab = new OpenCallListTabPage("Open Calls"));
+                // Setup the tab view
+                DispatchWindow = new TabView("~y~eForce ~w~Computer Aided Dispatch System");
+                DispatchWindow.Name = PlayerPersona.FullName;
+                DispatchWindow.Money = Dispatch.ActiveAgency.FriendlyName;
+                DispatchWindow.OnMenuClose += (s, e) => Rage.Game.IsPaused = false;
 
-            // Add Current Call tab
-            tabView.AddTab(CurrentCallTab = new CurrentCallTabPage("Assigned Call"));
+                // Add active calls list
+                DispatchWindow.AddTab(CallListTab = new OpenCallListTabPage("Open Calls"));
+
+                // Add Current Call tab
+                DispatchWindow.AddTab(CurrentCallTab = new CurrentCallTabPage("Assigned Call"));
+
+                // Build initial scnario page
+                BuildScenarioPage();
+
+                // Register for events to add scenarios
+                ScenarioPool.OnCalloutPackLoaded += (path, assembly, items) => BuildScenarioPage();
+
+                // Flag
+                Initialized = true;
+            }
+            else
+            {
+                // Grab player Persona
+                PlayerPersona = Functions.GetPersonaForPed(Rage.Game.LocalPlayer.Character);
+
+                // Setup the tab view
+                DispatchWindow.Name = PlayerPersona.FullName;
+                DispatchWindow.Money = Dispatch.ActiveAgency.FriendlyName;
+
+                // Build initial scnario page
+                BuildScenarioPage();
+            }
+        }
+
+        internal static void Dispose()
+        {
+            // Remove the process this menu every game tick
+            Rage.Game.FrameRender -= Process;
+
+            // Indicate we are not running
+            IsRunning = false;
+        }
+
+        /// <summary>
+        /// Method called everytime a callout pack is added to the <see cref="ScenarioPool"/>.
+        /// </summary>
+        /// <param name="path"></param>
+        /// <param name="assembly"></param>
+        /// <param name="items"></param>
+        private static void BuildScenarioPage() // (string path, Assembly assembly, int items)
+        {
+            // If a page exists already, remove it!
+            if (ScenarioListTab != null)
+            {
+                DispatchWindow.Tabs.Remove(ScenarioListTab);
+            }
 
             // Add each registered callout scenario to the list
             var menuItems = new List<MyUIMenuItem<CalloutScenarioInfo>>();
-            foreach (var scenes in Dispatch.ScenariosByName)
+            foreach (var scenes in ScenarioPool.ScenariosByName)
             {
                 var item = new MyUIMenuItem<CalloutScenarioInfo>(scenes.Key)
                 {
@@ -71,11 +138,11 @@ namespace AgencyDispatchFramework.NativeUI
             }
 
             // Add scenario list tab page
-            TabInteractiveListItem interactiveListItem = new TabInteractiveListItem("Scenario List", menuItems);
-            tabView.AddTab(interactiveListItem);
+            ScenarioListTab = new TabInteractiveListItem("Scenario List", menuItems);
+            DispatchWindow.AddTab(ScenarioListTab);
 
             // Always refresh index after adding or removing items
-            tabView.RefreshIndex();
+            DispatchWindow.RefreshIndex();
         }
 
         /// <summary>
@@ -111,20 +178,23 @@ namespace AgencyDispatchFramework.NativeUI
         /// <param name="e"></param>
         public static void Process(object sender, GraphicsEventArgs e)
         {
+            // Ignore if we are not on duty
+            if (!IsRunning) return;
+
             // Our menu toggle key switch.
             if (Keyboard.IsKeyDownWithModifier(Settings.OpenCADMenuKey, Settings.OpenCADMenuModifierKey))
             {
-                tabView.Visible = !tabView.Visible;
+                DispatchWindow.Visible = !DispatchWindow.Visible;
 
                 // Always refresh index after opening the menu again
-                if (tabView.Visible)
+                if (DispatchWindow.Visible)
                 {
-                    tabView.RefreshIndex();
+                    DispatchWindow.RefreshIndex();
                 }
             }
             
             // Update
-            if (tabView.Visible)
+            if (DispatchWindow.Visible)
             {
                 // Ensure game is paused
                 Rage.Game.IsPaused = true;
@@ -132,11 +202,11 @@ namespace AgencyDispatchFramework.NativeUI
                 // Update player status text
                 var status = Dispatch.GetPlayerStatus();
                 string statusName = Enum.GetName(typeof(OfficerStatus), status);
-                tabView.MoneySubtitle = String.Concat("Status: 10-", (int)status, " (", statusName, ")");
+                DispatchWindow.MoneySubtitle = String.Concat("Status: 10-", (int)status, " (", statusName, ")");
 
                 // Update tabview
-                tabView.Update();
-                tabView.DrawTextures(e.Graphics);
+                DispatchWindow.Update();
+                DispatchWindow.DrawTextures(e.Graphics);
             }
         }
     }

@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <!-- 
-  Reference: https://gta.fandom.com/wiki/Sandy_Shores  SkullWasIt
+  Reference: https://gta.fandom.com/wiki/Sandy_Shores
   
   Sandy Shores does not have many house numbers, so many addresses only have street names!
 -->
@@ -11,7 +11,7 @@
   <Class>Lower</Class>
   <Population>Moderate</Population>
   <Crime>
-    <AverageCalls morning="6" day="15" evening="21" night="6" />
+    <AverageCalls morning="4" day="8" evening="12" night="3" />
     <Probabilities>
       <Robbery possible="false">
         <Morning clear="10" overcast="10" rain="10" snow="10" storm="10" />
@@ -106,7 +106,204 @@
         <Street>East Joshua Road</Street>
         <Postal>818</Postal>
         <Hint>near Panorama Dr</Hint>
-        <Flags>Along2LaneRoad, After4wayIntersectionNoStop</Flags>
+        <Speed>50</Speed>
+        <Flags>
+          <Road>TwoLaneRoad, AfterNoStopIntersection</Road>
+          <BeforeIntersection>None</BeforeIntersection>
+          <AfterIntersection>CrossIntersection, TwoWayStop</AfterIntersection>
+        </Flags>
+      </Location>
+      <Location coordinates="1659.529, 3585.022, 35.24927" heading="28.27908">
+        <Street>Panorama Dr</Street>
+        <Postal>818</Postal>
+        <Hint>near Zancudo Ave</Hint>
+        <Speed>25</Speed>
+        <Flags>
+          <Road>TwoLaneRoad, BeforeNoStopIntersection, AfterNoStopIntersection</Road>
+          <BeforeIntersection direction="Right">ThreeWayIntersection, OneWayStop</BeforeIntersection>
+          <AfterIntersection direction="Right">ThreeWayIntersection, OneWayStop</AfterIntersection>
+        </Flags>
+      </Location>
+      <Location coordinates="1682.301, 3620.803, 35.17736" heading="300.1324">
+        <Street>Zancudo Ave</Street>
+        <Postal>818</Postal>
+        <Hint>near Panorama Dr</Hint>
+        <Speed>25</Speed>
+        <Flags>
+          <!-- Use "AfterNoStopIntersection" to indicate that this vehicle did not have the stop sign -->
+          <Road>TwoLaneRoad, AfterNoStopIntersection</Road>
+          <BeforeIntersection>None</BeforeIntersection>
+          <!-- Indicate the direction as "Back" to tell the program we had to turn to get to this position -->
+          <AfterIntersection direction="Behind">ThreeWayIntersection, OneWayStop</AfterIntersection>
+        </Flags>
+      </Location>
+      <Location coordinates="1699.293, 3683.165, 34.47552" heading="28.74282">
+        <Street>Lolita Ave</Street>
+        <Postal>818</Postal>
+        <Hint>near Zancudo Ave</Hint>
+        <Speed>25</Speed>
+        <Flags>
+          <!-- Use "AfterNoStopIntersection" to indicate that this vehicle did not have the stop sign -->
+          <Road>TwoLaneRoad, BeforeStopIntersection, AfterNoStopIntersection</Road>
+          <!-- Indicate the direction as "Front" to tell the program we have to turn, and cannot go straight -->
+          <BeforeIntersection direction="Front">ThreeWayIntersection, OneWayStop</BeforeIntersection>
+          <!-- Indicate the direction as "Behind" to tell the program we had to turn to get to this position -->
+          <AfterIntersection direction="Behind">ThreeWayIntersection, OneWayStop</AfterIntersection>
+        </Flags>
+      </Location>
+      <Location coordinates="1722.224, 3733.64, 33.55905" heading="300.1952">
+        <Street>Algonquin Boulevard</Street>
+        <Postal>818</Postal>
+        <Hint>near Mountain View Dr</Hint>
+        <Speed>25</Speed>
+        <Flags>
+          <Road>TwoLaneRoad, BeforeNoStopIntersection, AfterNoStopIntersection</Road>
+          <BeforeIntersection>CrossIntersection, TwoWayStop</BeforeIntersection>
+          <AfterIntersection direction="Right">ThreeWayIntersection, OneWayStop</AfterIntersection>
+        </Flags>
+      </Location>
+      <Location coordinates="1760.485, 3720.321, 33.87332" heading="210.4125">
+        <Street>Mountain View Dr</Street>
+        <Postal>818</Postal>
+        <Hint>near Zancudo Ave</Hint>
+        <Speed>25</Speed>
+        <Flags>
+          <Road>TwoLaneRoad, BeforeNoStopIntersection, AfterStopIntersection</Road>
+          <BeforeIntersection>CrossIntersection, RightOfWayYield</BeforeIntersection>
+          <AfterIntersection>CrossIntersection, TwoWayStop</AfterIntersection>
+        </Flags>
+      </Location>
+      <Location coordinates="1831.231, 3707.381, 33.27387" heading="299.6535">
+        <Street>Zancudo Ave</Street>
+        <Postal>818</Postal>
+        <Hint>near Amadillo Ave</Hint>
+        <Speed>25</Speed>
+        <Flags>
+          <Road>TwoLaneRoad, BeforeNoStopIntersection, AfterNoStopIntersection</Road>
+          <BeforeIntersection direction="Left">ThreeWayIntersection, OneWayStop</BeforeIntersection>
+          <AfterIntersection>CrossIntersection, RightOfWayYield</AfterIntersection>
+        </Flags>
+      </Location>
+      <Location coordinates="1909.011, 3810.531, 32.07688" heading="28.60104">
+        <Street>Niland Ave</Street>
+        <Postal>818</Postal>
+        <Hint>near Zancudo Ave</Hint>
+        <Speed>25</Speed>
+        <Flags>
+          <Road>TwoLaneRoad, BeforeStopIntersection, AfterNoStopIntersection</Road>
+          <BeforeIntersection>CrossIntersection, TwoWayStop</BeforeIntersection>
+          <AfterIntersection>CrossIntersection, RightOfWayYield</AfterIntersection>
+        </Flags>
+      </Location>
+      <Location coordinates="1944.645, 3861.011, 32.02096" heading="296.6556">
+        <Street>Algonquin Ave</Street>
+        <Postal>818</Postal>
+        <Hint>near Marina Dr</Hint>
+        <Speed>50</Speed>
+        <Flags>
+          <Road>TwoLaneRoad, BeforeStopIntersection</Road>
+          <BeforeIntersection direction="front">ThreeWayIntersection, OneWayStop</BeforeIntersection>
+          <AfterIntersection>None</AfterIntersection><!-- Slightly too far away -->
+        </Flags>
+      </Location>
+      <Location coordinates="1877.381, 3954.861, 32.72955" heading="93.55849">
+        <Street>Marina Dr</Street>
+        <Postal>818</Postal>
+        <Hint>near Niland Ave</Hint>
+        <Speed>35</Speed>
+        <Flags>
+          <Road>TwoLaneRoad, BeforeNoStopIntersection</Road>
+          <BeforeIntersection direction="Left">ThreeWayIntersection, OneWayStop</BeforeIntersection>
+          <AfterIntersection>None</AfterIntersection>
+        </Flags>
+      </Location>
+      <Location coordinates="1855.537, 3930.493, 32.76587" heading="195.1366">
+        <Street>Niland Ave</Street>
+        <Postal>818</Postal>
+        <Hint>near Marina Dr</Hint>
+        <Speed>25</Speed>
+        <Flags>
+          <Road>TwoLaneRoad, BeforeNoStopIntersection, AfterNoStopIntersection</Road>
+          <BeforeIntersection direction="Right">ThreeWayIntersection, OneWayStop</BeforeIntersection>
+          <AfterIntersection direction="Behind">ThreeWayIntersection, OneWayStop</AfterIntersection>
+        </Flags>
+      </Location>
+      <Location coordinates="1833.641, 3890.632, 33.27746" heading="109.56159">
+        <Street>Cholla Springs Ave</Street>
+        <Postal>818</Postal>
+        <Hint>near Niland Ave</Hint>
+        <Speed>25</Speed>
+        <Flags>
+          <Road>TwoLaneRoad, BeforeNoStopIntersection, AfterNoStopIntersection</Road>
+          <BeforeIntersection>CrossIntersection, RightOfWayYield</BeforeIntersection>
+          <AfterIntersection direction="Behind">ThreeWayIntersection, OneWayStop</AfterIntersection>
+        </Flags>
+      </Location>
+      <Location coordinates="1855.537, 3930.493, 32.76587" heading="195.1366">
+        <Street>Niland Ave</Street>
+        <Postal>818</Postal>
+        <Hint>near Marina Dr</Hint>
+        <Speed>25</Speed>
+        <Flags>
+          <Road>TwoLaneRoad, BeforeNoStopIntersection, AfterNoStopIntersection</Road>
+          <BeforeIntersection direction="Right">ThreeWayIntersection, OneWayStop</BeforeIntersection>
+          <AfterIntersection direction="Behind">ThreeWayIntersection, OneWayStop</AfterIntersection>
+        </Flags>
+      </Location>
+      <Location coordinates="1755.292, 3851.148, 34.21868" heading="119.3669">
+        <Street>Cholla Springs Ave</Street>
+        <Postal>818</Postal>
+        <Hint>near Mountain View Dr</Hint>
+        <Speed>25</Speed>
+        <Flags>
+          <Road>TwoLaneRoad, BeforeNoStopIntersection, AfterNoStopIntersection</Road>
+          <BeforeIntersection>CrossIntersection, RightOfWayYield</BeforeIntersection>
+          <AfterIntersection>CrossIntersection, RightOfWayYield</AfterIntersection>
+        </Flags>
+      </Location>
+      <Location coordinates="1624.4, 3826.876, 34.66964" heading="128.7986">
+        <Street>Marina Dr</Street>
+        <Postal>818</Postal>
+        <Hint>near Mountain View Dr</Hint>
+        <Speed>35</Speed>
+        <Flags>
+          <Road>TwoLaneRoad, AfterNoStopIntersection</Road>
+          <BeforeIntersection>None</BeforeIntersection>
+          <AfterIntersection>CrossIntersection, TwoWayStop</AfterIntersection>
+        </Flags>
+      </Location>
+      <Location coordinates="1512.538, 3740.263, 34.21819" heading="118.2286">
+        <Street>Marina Dr</Street>
+        <Postal>818</Postal>
+        <Hint>in front of The Boat House</Hint>
+        <Speed>35</Speed>
+        <Flags>
+          <Road>TwoLaneRoad, AfterNoStopIntersection</Road>
+          <BeforeIntersection>None</BeforeIntersection>
+          <AfterIntersection>CrossIntersection, TwoWayStop</AfterIntersection>
+        </Flags>
+      </Location>
+      <Location coordinates="1367.141, 3679.198, 33.23569" heading="109.7738">
+        <Street>Marina Dr</Street>
+        <Postal>818</Postal>
+        <Hint>near Panorama Dr</Hint>
+        <Speed>35</Speed>
+        <Flags>
+          <Road>TwoLaneRoad</Road>
+          <BeforeIntersection>None</BeforeIntersection>
+          <AfterIntersection>None</AfterIntersection>
+        </Flags>
+      </Location>
+      <Location coordinates="1243.861, 3639.192, 33.1542" heading="102.6745">
+        <Street>Marina Dr</Street>
+        <Postal>818</Postal>
+        <Hint>near Meringue Lane</Hint>
+        <Speed>35</Speed>
+        <Flags>
+          <Road>TwoLaneRoad, AfterNoStopIntersection</Road>
+          <BeforeIntersection>None</BeforeIntersection>
+          <AfterIntersection direction="Left">ThreeWayIntersection, OneWayStop</AfterIntersection>
+        </Flags>
       </Location>
     </RoadShoulders>
   </Locations>

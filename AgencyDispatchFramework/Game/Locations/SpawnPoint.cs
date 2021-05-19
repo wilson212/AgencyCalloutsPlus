@@ -16,7 +16,7 @@ namespace AgencyDispatchFramework.Game.Locations
         /// <summary>
         /// Gets the <see cref="AgencyDispatchFramework.API.LocationType"/>
         /// </summary>
-        public override LocationType LocationType => LocationType.SpawnPoint;
+        public override LocationTypeCode LocationType => LocationTypeCode.SpawnPoint;
 
         /// <summary>
         /// Creates a new instance of <see cref="SpawnPoint"/>

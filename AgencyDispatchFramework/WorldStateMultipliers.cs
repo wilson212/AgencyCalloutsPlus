@@ -4,6 +4,9 @@ using System.Collections.Generic;
 
 namespace AgencyDispatchFramework
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class WorldStateMultipliers
     {
         /// <summary>
@@ -12,7 +15,7 @@ namespace AgencyDispatchFramework
         public int BaseProbability { get; set; }
 
         /// <summary>
-        /// 
+        /// Gets the probabilities for each time of day and weather category
         /// </summary>
         private Dictionary<Tuple<TimeOfDay, WeatherCatagory>, int> Probabilities { get; set; }
 

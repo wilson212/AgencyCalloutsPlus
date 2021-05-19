@@ -73,6 +73,7 @@ Callouts:
 	- StoreSilentAlarmTriggered				[Property]
 	- ShopLifting							[Property]
 	- VehicleStolen							[Property]
+	- VehicleBrokeInto						[Property]
 - Vandalism 
 	- VandalisedVehicle						[Property]
 	- VandalisedHome						[Property]
@@ -101,11 +102,11 @@ Callouts:
 - SexualAssault
 	- Rape									[Other]
 	- AttemptedRape							[Other]
-	- StatutoryRape							[Other]
 	- UnWelcomeGroping						[Other]
 - Homocide
 	- DeadBodyFound							[Violent]
 	- DriveByShooting						[Violent]
+	- HitAndRun								[Violent]
 - SuspiciousActivity
 	- Tresspassing							[Disturbance]
 	- Loitering								[Disturbance]
@@ -120,5 +121,7 @@ Callouts:
 	- MissingPersonReport					[Other]
 	- Kidnapping							[Other]
 	- LostHiker								[Other]
+- Routine
 	- Warrant
 	- ServingArrestWarrant					[Other]
+	- WelfareCheck							[Other]

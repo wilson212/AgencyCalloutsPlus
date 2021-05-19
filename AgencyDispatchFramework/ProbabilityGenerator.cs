@@ -152,8 +152,9 @@ namespace AgencyDispatchFramework
                 retVal = (from s in Items where s.ContainsThreshold(i) select s.Item).First();
                 return true;
             }
-            catch (Exception)
+            catch (Exception e)
             {
+                Log.Exception(e);
                 return false;
             }
         }

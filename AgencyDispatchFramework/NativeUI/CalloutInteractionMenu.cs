@@ -16,7 +16,21 @@ namespace AgencyDispatchFramework.NativeUI
     {
         private UIMenu MainUIMenu;
         private MenuPool AllMenus;
-        private bool HasModifier;
+        
+        /// <summary>
+        /// 
+        /// </summary>
+        public bool HasModifier { get; private set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public string OpenMenuKeyString { get; private set; } 
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public string OpenMenuModifierKeyString { get; private set; }
 
         /// <summary>
         /// Speak with Subject button
@@ -57,7 +71,7 @@ namespace AgencyDispatchFramework.NativeUI
         protected FlowSequence CurrentSequence { get; set; }
 
         /// <summary>
-        /// 
+        /// Indicates whether a menu is open
         /// </summary>
         public bool IsMenuVisible
         {
@@ -101,6 +115,8 @@ namespace AgencyDispatchFramework.NativeUI
             Conversations = new Dictionary<Ped, FlowSequence>();
             ConversationsById = new Dictionary<string, FlowSequence>();
             HasModifier = (Settings.OpenCalloutMenuModifierKey != Keys.None);
+            OpenMenuKeyString = $"~{Settings.OpenCalloutMenuKey.GetInstructionalId()}~";
+            OpenMenuModifierKeyString = $"~{Settings.OpenCalloutMenuModifierKey.GetInstructionalId()}~";
         }
 
         /// <summary>
@@ -122,6 +138,19 @@ namespace AgencyDispatchFramework.NativeUI
                     CurrentSequence.Process(player);
                     return;
                 }
+            }
+
+            // See if we have a ped we can speak with
+            if (TryGetPedForConversation(player, out Ped ped))
+            {
+                // Set current ped
+                CurrentPed = ped;
+                SpeakWithButton.Enabled = true;
+            }
+            else
+            {
+                // Disable the speak with button
+                SpeakWithButton.Enabled = false;
             }
 
             // If player is close to and facing another ped, show press Y to open menu
@@ -152,21 +181,13 @@ namespace AgencyDispatchFramework.NativeUI
                 // If menu key is pressed, hide menu
                 if (Keyboard.IsKeyDownWithModifier(Settings.OpenCalloutMenuKey, Settings.OpenCalloutMenuModifierKey))
                 {
+                    SpeakWithButton.Enabled = false;
                     MainUIMenu.Visible = false;
                 }
 
                 // See if we have a ped we can speak with
-                if (TryGetPedForConversation(player, out Ped ped))
+                if (SpeakWithButton.Enabled == false)
                 {
-                    // Set current ped
-                    CurrentPed = ped;
-                    SpeakWithButton.Enabled = true;
-                }
-                else
-                {
-                    // Disable the speak with button
-                    SpeakWithButton.Enabled = false;
-
                     // If a FlowSequence is open, close it
                     if (CurrentSequence != null && CurrentSequence.AllMenus.IsAnyMenuOpen())
                     {
@@ -177,18 +198,19 @@ namespace AgencyDispatchFramework.NativeUI
             }
         }
 
+        /// <summary>
+        /// Displays a help message to the player specifying which keys to press to open the menu
+        /// </summary>
         public void DisplayMenuHelpMessage()
         {
             // Let player know they can open the menu
-            var k1 = Settings.OpenCalloutMenuModifierKey.ToString("F");
-            var k2 = Settings.OpenCalloutMenuKey.ToString("F");
             if (HasModifier)
             {
-                Rage.Game.DisplayHelp($"Press the ~y~{k1}~s~ + ~y~{k2}~s~ keys to open the interaction menu.", false);
+                Rage.Game.DisplayHelp($"Press the {OpenMenuModifierKeyString} ~+~ {OpenMenuKeyString} keys to open the interaction menu.", false);
             }
             else
             {
-                Rage.Game.DisplayHelp($"Press the ~y~{k2}~s~ key to open the interaction menu.", false);
+                Rage.Game.DisplayHelp($"Press the {OpenMenuKeyString} key to open the interaction menu.", false);
             }
         }
 

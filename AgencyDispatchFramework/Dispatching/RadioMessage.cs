@@ -29,7 +29,7 @@ namespace AgencyDispatchFramework.Dispatching
         /// <param name="message"></param>
         public RadioMessage(string message)
         {
-            if (string.IsNullOrWhiteSpace(message))
+            if (String.IsNullOrWhiteSpace(message))
             {
                 throw new ArgumentException("message", nameof(message));
             }
@@ -43,7 +43,7 @@ namespace AgencyDispatchFramework.Dispatching
         /// <param name="message"></param>
         public RadioMessage(string message, OfficerUnit officerUnit)
         {
-            if (string.IsNullOrWhiteSpace(message))
+            if (String.IsNullOrWhiteSpace(message))
             {
                 throw new ArgumentException("message", nameof(message));
             }

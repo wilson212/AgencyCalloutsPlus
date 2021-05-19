@@ -30,7 +30,7 @@ namespace AgencyDispatchFramework.Game.Locations
         public SocialClass Class { get; internal set; }
 
         /// <summary>
-        /// Gets the <see cref="API.ResidenceType"/> of this home
+        /// Gets the <see cref="Game.Locations.ResidenceType"/> of this home
         /// </summary>
         public ResidenceType BuildingType { get; internal set; }
 
@@ -40,9 +40,14 @@ namespace AgencyDispatchFramework.Game.Locations
         public string UnitId { get; internal set; } = String.Empty;
 
         /// <summary>
-        /// Gets the <see cref="Locations.LocationType"/> for this <see cref="WorldLocation"/>
+        /// Gets the <see cref="Locations.LocationTypeCode"/> for this <see cref="WorldLocation"/>
         /// </summary>
-        public override LocationType LocationType => LocationType.Residence;
+        public override LocationTypeCode LocationType => LocationTypeCode.Residence;
+
+        /// <summary>
+        /// Gets an array of Flags that describe this <see cref="Residence"/>
+        /// </summary>
+        public ResidenceFlags[] ResidenceFlags { get; internal set; }
 
         /// <summary>
         /// Creates a new instance of <see cref="Residence"/>

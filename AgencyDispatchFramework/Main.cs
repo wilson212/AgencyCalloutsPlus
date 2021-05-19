@@ -4,8 +4,8 @@ using AgencyDispatchFramework.Integration;
 using AgencyDispatchFramework.NativeUI;
 using LSPD_First_Response.Mod.API;
 using Rage;
+using RAGENativeUI;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
@@ -48,13 +48,17 @@ namespace AgencyDispatchFramework
         private static PluginMenu PluginMenu { get; set; }
 
         /// <summary>
+        /// Gets whether the player is currently on duty
+        /// </summary>
+        private static bool HasBeenOnDuty { get; set; } = false;
+
+        /// <summary>
         /// Contains a list of dynamic link libraries this Plugin depends on
         /// </summary>
-        private static readonly List<Dependancy> Dependencies = new List<Dependancy>
+        private static readonly Dependancy[] Dependencies = new []
         {
-            new Dependancy("Plugins/LSPD First Response.dll", new Version("0.4.6")),
-            //new Dependancy("Plugins/LSPDFR/Traffic Policer.dll",  new Version("6.16.0.0")),
-            new Dependancy("RAGENativeUI.dll", new Version("1.6.3.0")),
+            new Dependancy("Plugins/LSPD First Response.dll", new Version("0.4.8")),
+            new Dependancy("RAGENativeUI.dll", new Version("1.7.0.0"))
         };
 
         /// <summary>
@@ -107,6 +111,10 @@ namespace AgencyDispatchFramework
             // Load settings
             Settings.Initialize();
 
+            // Begin listening for the Plugin Menu
+            PluginMenu = new PluginMenu();
+            PluginMenu.BeginListening();
+
             // Register for events
             Functions.OnOnDutyStateChanged += OnOnDutyStateChangedHandler;
             Functions.PlayerWentOnDutyFinishedSelection += PlayerWentOnDutyFinishedSelection;
@@ -152,16 +160,16 @@ namespace AgencyDispatchFramework
             {
                 // Stop generating calls
                 Dispatch.StopDuty();
+
+                // Cancel CAD
+                ComputerAidedDispatchMenu.Dispose();
             }
         }
 
         /// <summary>
         /// Event fired when the Locker room menu is closed when going on duty
         /// </summary>
-        private void PlayerWentOnDutyFinishedSelection()
-        {
-            PlayerWentOnDutyFinishedSelection(false);
-        }
+        private void PlayerWentOnDutyFinishedSelection() => PlayerWentOnDutyFinishedSelection(false);
 
         /// <summary>
         /// Event fired when the Locker room menu is closed when going on duty
@@ -169,6 +177,10 @@ namespace AgencyDispatchFramework
         /// <param name="spawnedOnDuty">Indicates whether the player spawned on duty when the game loaded</param>
         private void PlayerWentOnDutyFinishedSelection(bool spawnedOnDuty)
         {
+            // Display notification to the player
+            var loadingSpinner = InstructionalKey.SymbolBusySpinner.GetId();
+            Rage.Game.DisplayHelp($"~{loadingSpinner}~ AgencyDispatchFramework is loading");
+
             // Run this in a new thread, since this will block the main thread for awhile
             GameFiber.StartNew(delegate
             {
@@ -178,14 +190,33 @@ namespace AgencyDispatchFramework
                 // Initialize GameWorld FIRST!!! Important!
                 GameWorld.Initialize();
 
-                // Load our agencies and such (this will only initialize once per game session)
-                Agency.Initialize();
+                // Only initialize these classes once!
+                if (!HasBeenOnDuty)
+                {
+                    // Load our agencies and such (this will only initialize once per game session)
+                    Agency.Initialize();
 
-                // Load vehicles (this will only initialize once per game session)
-                VehicleInfo.Initialize();
+                    // Load vehicles (this will only initialize once per game session)
+                    VehicleInfo.Initialize();
 
-                // Load peds (this will only initialize once per game session)
-                PedInfo.Initialize();
+                    // Load peds (this will only initialize once per game session)
+                    PedInfo.Initialize();
+
+                    // Check for and initialize API classes
+                    ComputerPlusAPI.Initialize();
+                    StopThePedAPI.Initialize();
+
+                    // Flag
+                    HasBeenOnDuty = true;
+                }
+                else
+                {
+                    // Clear scenario pool
+                    ScenarioPool.Reset();
+                }
+
+                // Load scenarios for updated probabilities
+                ScenarioPool.RegisterCalloutsFromPath(Path.Combine(ThisPluginFolderPath, "Callouts"), typeof(Main).Assembly);
 
                 // Load locations based on current agency jurisdiction.
                 // This method needs called everytime the player Agency is changed
@@ -203,21 +234,14 @@ namespace AgencyDispatchFramework
                         $"~y~Selected Agency does not have any zones in it's jurisdiction."
                     );
                 }
+
                 // Finally, start dispatch call center
                 else if (Dispatch.StartDuty())
                 {
-                    // Tell GameWorld to begin listening
+                    // Tell GameWorld to begin listening. Stops automatically when player goes off duty
                     GameWorld.BeginFibers();
 
-                    // Begin listening for the Plugin Menu
-                    PluginMenu = new PluginMenu();
-                    PluginMenu.BeginListening();
-
-                    // Check for and initialize API classes
-                    ComputerPlusAPI.Initialize();
-                    StopThePedAPI.Initialize();
-
-                    // Initialize CAD
+                    // Initialize CAD. This needs called everytime we go on duty
                     ComputerAidedDispatchMenu.Initialize();
 
                     // Display notification to the player
@@ -240,6 +264,9 @@ namespace AgencyDispatchFramework
                         $"~y~Please check your Game.log for errors."
                     );
                 }
+
+                // Close loading spinner
+                Rage.Game.HideHelp();
             });
         }
 

@@ -8,6 +8,6 @@ namespace AgencyDispatchFramework.Extensions
 {
     public static class EnumExtensions
     {
-        
+
     }
 }

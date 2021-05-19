@@ -5,7 +5,7 @@ namespace AgencyDispatchFramework
 {
     /// <summary>
     /// A wrapper class for a <see cref="ProbabilityGenerator{T}"/> where the <see cref="ISpawnable.Probability"/>
-    /// of <see cref="T"/> changes based on the in game <see cref="Weather"/> and <see cref="Mod.TimeOfDay"/>.
+    /// of <see cref="T"/> changes based on the in game <see cref="Weather"/> and <see cref="Game.TimeOfDay"/>.
     /// </summary>
     /// <typeparam name="T"></typeparam>
     public class WorldStateProbabilityGenerator<T> : IDisposable

@@ -105,7 +105,7 @@ namespace AgencyDispatchFramework
                 expressionResult = Evaluate<T>(input);
                 return true;
             }
-            catch (InvalidCastException x)
+            catch (InvalidCastException)
             {
                 // Logging is already done in that method
                 return false;

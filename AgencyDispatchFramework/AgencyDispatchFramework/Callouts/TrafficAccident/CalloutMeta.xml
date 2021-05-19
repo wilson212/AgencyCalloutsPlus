@@ -18,8 +18,13 @@
         <Evening clear="10" overcast="10" rain="15" snow="18" storm="12" />
         <Night clear="10" overcast="10" rain="15" snow="18" storm="12" />
       </Probabilities>
-      <Catagory>Traffic</Catagory>
-      <LocationType>SideOfRoad</LocationType>
+      <Category>Traffic</Category>
+      <Location>
+        <Type>RoadShoulder</Type>
+        <RequiredFlags mode="Any">
+          <!-- <Requirement mode="All" inverse="false"></Requirement> -->
+        </RequiredFlags>
+      </Location>
       <Dispatch>
         <!-- Scanner Audio data for call -->
         <Scanner>
@@ -37,7 +42,7 @@
           </Description>
         </Descriptions>
         <IncidentType abbreviation="MVA">Motor Vehicle Accident</IncidentType>
-        <Priority>4</Priority>
+        <Priority>3</Priority>
         <Response>2</Response>
       </Dispatch>
       <FlowSequence>

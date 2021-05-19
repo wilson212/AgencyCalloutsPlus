@@ -1,6 +1,21 @@
-﻿ToDO:
+﻿What is this going to be?
+	- A callout pack
+	- A callout CAD included with callout details
+	- Custom dispatch script
+		- Dynamic crime levels based on TimeOfDay and weather
+	- An API of sorts for other callout packs including:
+		- Includes a dynamic Callout interaction menu to be used with callout conversations
+			- Conversation handler for callout peds, with dynamic string replacements and conditions	
+		- A location generator within the player's agency jurisdiction
+			- Queryable locations based on LocationFlags
+		- A ped generator based on age group, sex and variant groups.
+
+
+ToDO:
 	- AISceneSimulation
-	- 
+	- Figure out how to handle callouts outside this mod (since we cannot have extranal classes extend the AgencyCallout class)
+	- Create a location type (Intersection) that can be used to setup various crash scenes within an intersection
+		- IntersectionFlag.(2WayStop, 4WayStop, Lighted, 4WayYield, 2Lane, 4Lane, 6Lane, WithTurnLeftLane, WithTurnRightLane)
 
 
 AD&C+ Menu [Main Menu] Setup
@@ -10,7 +25,7 @@ AD&C+ Menu [Main Menu] Setup
 	- End Call
  - Patrol Menu [Callout Name]
 	- Set Role -> option[] { All, Traffic, Crime, Gang, Drugs }
-	- [HighwayPatrol Only] Region -> option[] : Sets which region to patrol in
+	- Patrol Area -> option[] : Sets which region to patrol in
 	- Division -> int[]
 	- UnitType -> option[]
 	- Beat
@@ -30,3 +45,13 @@ General Information:
 		Sometimes Running:
 			- CalloutInteractionMenu (1): Used to handle menu processing for a RageNativeUI used by a Callout
 			- SubTitleQueue (variable): Used to properly display multiple simultaneous subtitles without overlap or interuption
+
+
+Radio traffic with Dispatch and AI (handshake for accepting calls):
+	- Dispatch assigns a primary officers
+	- Radio message is queued to call for officers ("Attention unit A 1 18")
+	- An event is fired on the primary officer unit to asnwer the dispatcher
+	- Radio message is queued by the primary officer with a response ("Dispatch this is A 1 18")
+	- Radio message is played by the dispatcher with the call details ("We have a... on... Please respond code..")
+	- An event is fired on the primary officer, call assigned awaiting confirmation
+	- The AI accepts or denies the call, and queues a radio message (signals back to the Dispatch class)

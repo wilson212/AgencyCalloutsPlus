@@ -43,7 +43,7 @@ namespace AgencyDispatchFramework.NativeUI
         /// <param name="call"></param>
         private void Dispatch_OnPlayerCallCompleted(PriorityCall call)
         {
-            Call = call;
+            Call = null;
         }
 
         /// <summary>
@@ -52,7 +52,7 @@ namespace AgencyDispatchFramework.NativeUI
         /// <param name="call"></param>
         private void Dispatch_OnPlayerCallAccepted(PriorityCall call)
         {
-            Call = null;
+            Call = call;
         }
 
         /// <summary>
