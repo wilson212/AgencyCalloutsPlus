@@ -332,7 +332,7 @@ namespace AgencyDispatchFramework.Integration
 
             // Fill details
             int status = (int)Dispatch.GetPlayerStatus();
-            lbl_officers.Text = $"{Dispatch.GetAvailableUnits()} / {Dispatch.ActiveAgency.ActualPatrols}";
+            lbl_officers.Text = $"0 / 0";
             lbl_available.Text = Functions.IsPlayerAvailableForCalls() ? "Yes" : "No";
             lbl_status.Text = $"10-{status}";
         }

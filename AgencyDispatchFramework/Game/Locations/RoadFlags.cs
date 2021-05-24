@@ -61,10 +61,33 @@ namespace AgencyDispatchFramework.Game.Locations
         AlongInterstate,
 
         /// <summary>
-        /// Describes the location as being on the side of a interstate freeway after an onramp
+        /// Describes the location as being on the side of a interstate freeway just before an on ramp
         /// </summary>
         /// <remarks>Intended location types: SideOfRoad</remarks>
-        AlongInterstateAfterRamp,
+        BeforeInterstateOnRamp,
+
+        /// <summary>
+        /// Describes the location as being on the side of a interstate freeway after an on ramp
+        /// </summary>
+        /// <remarks>Intended location types: SideOfRoad</remarks>
+        AfterInterstateOnRamp,
+
+        /// <summary>
+        /// Describes the location as being on the side of a interstate freeway just before an off ramp
+        /// </summary>
+        /// <remarks>Intended location types: SideOfRoad</remarks>
+        BeforeInterstateOffRamp,
+
+        /// <summary>
+        /// Describes the location as being on the side of a interstate freeway after an off ramp
+        /// </summary>
+        /// <remarks>Intended location types: SideOfRoad</remarks>
+        AfterInterstateOffRamp,
+
+        /// <summary>
+        /// Describes the location as being on the an interstate freeway ramp
+        /// </summary>
+        OnInterstateRamp,
 
         /// <summary>
         /// Describes the location as being along a 2 lane road
@@ -77,6 +100,12 @@ namespace AgencyDispatchFramework.Game.Locations
         /// </summary>
         /// <remarks>Intended location types: SideOfRoadResidence, Store</remarks>
         ThreeLaneCenterTurnRoad,
+
+        /// <summary>
+        /// Describes the location as being along a 3 lane road
+        /// </summary>
+        /// <remarks>Intended location types: SideOfRoadResidence, Store</remarks>
+        ThreeLaneRoad,
 
         /// <summary>
         /// Describes the location as being along a 4 lane road
@@ -101,5 +130,20 @@ namespace AgencyDispatchFramework.Game.Locations
         /// </summary>
         /// <remarks>Intended location types: SideOfRoad, Residence, Store</remarks>
         OneWayRoad,
+
+        /// <summary>
+        /// Describes a location as being along a road with driveways
+        /// </summary>
+        DrivewaysLeft,
+
+        /// <summary>
+        /// Describes a location as being along a road with driveways
+        /// </summary>
+        DrivewaysRight,
+
+        /// <summary>
+        /// Describes a location as being a Gas station along the freeway
+        /// </summary>
+        FreewayGasStation
     }
 }

@@ -40,7 +40,7 @@ namespace AgencyDispatchFramework
         /// <summary>
         /// Gets the root folder path to the AgencyDispatchFramework plugin folder
         /// </summary>
-        public static string ThisPluginFolderPath { get; internal set; }
+        public static string FrameworkFolderPath { get; internal set; }
 
         /// <summary>
         /// Contains the <see cref="RAGENativeUI.UIMenu"/> for this plgin
@@ -77,7 +77,7 @@ namespace AgencyDispatchFramework
             // Get GTA 5 root directory path
             GTARootPath = Path.GetDirectoryName(Uri.UnescapeDataString(uri.Path));
             LSPDFRPluginPath = Path.Combine(GTARootPath, "Plugins", "lspdfr");
-            ThisPluginFolderPath = Path.Combine(GTARootPath, "Plugins", "lspdfr", "AgencyDispatchFramework");
+            FrameworkFolderPath = Path.Combine(GTARootPath, "Plugins", "lspdfr", "AgencyDispatchFramework");
 
             // Dependency checks
             foreach (var dep in Dependencies)
@@ -106,7 +106,7 @@ namespace AgencyDispatchFramework
             }
 
             // Initialize log file
-            Log.Initialize(Path.Combine(ThisPluginFolderPath, "Game.log"));
+            Log.Initialize(Path.Combine(FrameworkFolderPath, "Game.log"));
 
             // Load settings
             Settings.Initialize();
@@ -216,27 +216,10 @@ namespace AgencyDispatchFramework
                 }
 
                 // Load scenarios for updated probabilities
-                ScenarioPool.RegisterCalloutsFromPath(Path.Combine(ThisPluginFolderPath, "Callouts"), typeof(Main).Assembly);
-
-                // Load locations based on current agency jurisdiction.
-                // This method needs called everytime the player Agency is changed
-                var numZonesLoaded = ZoneInfo.LoadZones(Agency.GetCurrentAgencyZoneNames());
-
-                // If no zones are loaded, we cannot continue
-                if (numZonesLoaded == 0)
-                {
-                    // Display notification to the player
-                    Rage.Game.DisplayNotification(
-                        "3dtextures",
-                        "mpgroundlogo_cops",
-                        "Agency Dispatch Framework",
-                        "~o~Initialization Failed.",
-                        $"~y~Selected Agency does not have any zones in it's jurisdiction."
-                    );
-                }
+                ScenarioPool.RegisterCalloutsFromPath(Path.Combine(FrameworkFolderPath, "Callouts"), typeof(Main).Assembly);
 
                 // Finally, start dispatch call center
-                else if (Dispatch.StartDuty())
+                if (Dispatch.StartDuty())
                 {
                     // Tell GameWorld to begin listening. Stops automatically when player goes off duty
                     GameWorld.BeginFibers();
@@ -250,7 +233,7 @@ namespace AgencyDispatchFramework
                         "mpgroundlogo_cops",
                         "Agency Dispatch Framework",
                         "~g~Plugin is Now Active.",
-                        $"Now on duty serving ~g~{Dispatch.ZoneCount}~s~ zone(s)"
+                        $"Now on duty serving ~g~{Dispatch.PlayerAgency.Zones.Length}~s~ zone(s)"
                     );
                 }
                 else

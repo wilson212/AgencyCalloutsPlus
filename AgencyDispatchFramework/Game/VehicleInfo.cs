@@ -41,7 +41,7 @@ namespace AgencyDispatchFramework.Game
             }
 
             // Load XML document
-            string path = Path.Combine(Main.ThisPluginFolderPath, "Vehicles.xml");
+            string path = Path.Combine(Main.FrameworkFolderPath, "Vehicles.xml");
             XmlDocument document = new XmlDocument();
             using (var file = new FileStream(path, FileMode.Open))
             {

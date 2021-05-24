@@ -73,7 +73,105 @@
 
     </Stores>
     <RoadShoulders>
-
+      <Location coordinates="-879.0662,239.9437,72.22186" heading="64.38356">
+        <Street>West Eclipse Boulevard</Street>
+        <Postal>818</Postal>
+        <Hint>near Portola Dr</Hint>
+        <Speed>40</Speed>
+        <Flags>
+          <Road>FourLaneRoad, AfterStopIntersection</Road>
+          <BeforeIntersection>None</BeforeIntersection>
+          <AfterIntersection direction="Left">ThreeWayIntersection, Lighted</AfterIntersection>
+        </Flags>
+      </Location>
+      <Location coordinates="-834.8604,204.1598,73.7544" heading="265.1725">
+        <Street>West Eclipse Boulevard</Street>
+        <Postal>818</Postal>
+        <Hint>near Portola Dr</Hint>
+        <Speed>40</Speed>
+        <Flags>
+          <Road>FourLaneRoad, AfterStopIntersection</Road>
+          <BeforeIntersection>None</BeforeIntersection>
+          <AfterIntersection direction="Right">ThreeWayIntersection, Lighted</AfterIntersection>
+        </Flags>
+      </Location>
+      <Location coordinates="-755.9545,155.7549,64.3354" heading="187.7457">
+        <Street>Rockford Drive</Street>
+        <Postal>818</Postal>
+        <Hint>near West Eclipse Boulevard</Hint>
+        <Speed>30</Speed>
+        <Flags>
+          <Road>TwoLaneRoad, AfterStopIntersection</Road>
+          <BeforeIntersection>None</BeforeIntersection>
+          <AfterIntersection direction="Behind">ThreeWayIntersection, Lighted</AfterIntersection>
+        </Flags>
+      </Location>
+      <Location coordinates="-827.7767,-9.064098,40.30524" heading="212.4566">
+        <Street>Portola Drive</Street>
+        <Postal>818</Postal>
+        <Hint>near Ceasars Place</Hint>
+        <Speed>30</Speed>
+        <Flags>
+          <Road>TwoLaneRoad, AfterStopIntersection</Road>
+          <BeforeIntersection>CrossIntersection, Lighted</BeforeIntersection>
+          <AfterIntersection>CrossIntersection, RightOfWayStop</AfterIntersection>
+        </Flags>
+      </Location>
+      <Location coordinates="-831.7559,-76.78371,37.33385" heading="117.9508">
+        <Street>Boulevard Del Perro</Street>
+        <Postal>818</Postal>
+        <Hint>near Portola Dr</Hint>
+        <Speed>40</Speed>
+        <Flags>
+          <Road>FourLaneRoad, AfterStopIntersection</Road>
+          <BeforeIntersection>CrossIntersection, Lighted</BeforeIntersection>
+          <AfterIntersection>CrossIntersection, Lighted</AfterIntersection>
+        </Flags>
+      </Location>
+      <Location coordinates="-918.3644,-33.06431,40.35612" heading="39.54237">
+        <Street>Mad Wayne Thunder Drive</Street>
+        <Postal>818</Postal>
+        <Hint>near Boulevard Del Perro</Hint>
+        <Speed>30</Speed>
+        <Flags>
+          <Road>ThreeLaneRoad, AfterStopIntersection</Road>
+          <BeforeIntersection>None</BeforeIntersection>
+          <AfterIntersection>CrossIntersection, Lighted</AfterIntersection>
+        </Flags>
+      </Location>
+      <Location coordinates="-1043.305,162.4217,57.30809,31" heading="31.22434">
+        <Street>Mad Wayne Thunder Drive</Street>
+        <Postal>818</Postal>
+        <Hint>near West Eclipse Boulevard</Hint>
+        <Speed>30</Speed>
+        <Flags>
+          <Road>ThreeLaneRoad</Road>
+          <BeforeIntersection>None</BeforeIntersection>
+          <AfterIntersection>None</AfterIntersection>
+        </Flags>
+      </Location>
+      <Location coordinates="-1036.512,250.366,64.46606" heading="270.4566">
+        <Street>West Eclipse Boulevard</Street>
+        <Postal>818</Postal>
+        <Hint>near Mad Wayne Thunder Drive</Hint>
+        <Speed>40</Speed>
+        <Flags>
+          <Road>FiveLaneCenterTurnRoad, AfterStopIntersection</Road>
+          <BeforeIntersection>None</BeforeIntersection>
+          <AfterIntersection>CrossIntersection, Lighted</AfterIntersection>
+        </Flags>
+      </Location>
+      <Location coordinates="-860.7089,357.527,86.6208" heading="185.4379">
+        <Street>South MO Milton Drive</Street>
+        <Postal>818</Postal>
+        <Hint>near Picture Perfect Dr</Hint>
+        <Speed>30</Speed>
+        <Flags>
+          <Road>TwoLaneRoad, AfterNoStopIntersection</Road>
+          <BeforeIntersection>None</BeforeIntersection>
+          <AfterIntersection direction="Right">ThreeWayIntersection, OneWayStop</AfterIntersection>
+        </Flags>
+      </Location>
     </RoadShoulders>
   </Locations>
 </ROCKF>

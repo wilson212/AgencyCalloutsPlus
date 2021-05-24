@@ -14,11 +14,6 @@ namespace AgencyDispatchFramework.Game.Locations
         public override LocationTypeCode LocationType => LocationTypeCode.RoadShoulder;
 
         /// <summary>
-        /// Gets the <see cref="ZoneInfo"/> this home belongs in
-        /// </summary>
-        public ZoneInfo Zone { get; protected set; }
-
-        /// <summary>
         /// Gets the heading of an object <see cref="Entity"/> at this location, if any
         /// </summary>
         public float Heading { get; protected set; }

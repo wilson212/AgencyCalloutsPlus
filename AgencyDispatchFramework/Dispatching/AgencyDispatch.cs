@@ -1,14 +1,13 @@
-﻿using Rage;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace AgencyDispatchFramework.Game
+namespace AgencyDispatchFramework.Dispatching
 {
-    public static class PedCache
+    public sealed class AgencyDispatch
     {
-        
+
     }
 }

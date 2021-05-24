@@ -32,7 +32,7 @@ namespace AgencyDispatchFramework.Callouts
         protected static XmlDocument LoadScenarioFile(params string[] paths)
         {
             // Create file path
-            string path = Main.ThisPluginFolderPath;
+            string path = Main.FrameworkFolderPath;
             foreach (string p in paths)
                 path = Path.Combine(path, p);
 

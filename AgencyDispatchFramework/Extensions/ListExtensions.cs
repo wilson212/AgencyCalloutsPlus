@@ -4,6 +4,11 @@ namespace AgencyDispatchFramework.Extensions
 {
     public static class ListExtensions
     {
+        /// <summary>
+        /// Shuffles the elements within this <see cref="IList{T}"/>
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="list"></param>
         public static void Shuffle<T>(this IList<T> list)
         {
             var rng = new CryptoRandom();

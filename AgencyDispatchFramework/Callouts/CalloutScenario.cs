@@ -63,7 +63,7 @@ namespace AgencyDispatchFramework.Callouts
         protected static XmlDocument LoadFlowSequenceFile(params string[] paths)
         {
             // Create file path
-            string path = Path.Combine(Main.ThisPluginFolderPath, "Callouts");
+            string path = Path.Combine(Main.FrameworkFolderPath, "Callouts");
             foreach (string p in paths)
                 path = Path.Combine(path, p);
 

@@ -70,7 +70,7 @@ namespace AgencyDispatchFramework.NativeUI
                 // Setup the tab view
                 DispatchWindow = new TabView("~y~eForce ~w~Computer Aided Dispatch System");
                 DispatchWindow.Name = PlayerPersona.FullName;
-                DispatchWindow.Money = Dispatch.ActiveAgency.FriendlyName;
+                DispatchWindow.Money = Dispatch.PlayerAgency.FriendlyName;
                 DispatchWindow.OnMenuClose += (s, e) => Rage.Game.IsPaused = false;
 
                 // Add active calls list
@@ -95,7 +95,7 @@ namespace AgencyDispatchFramework.NativeUI
 
                 // Setup the tab view
                 DispatchWindow.Name = PlayerPersona.FullName;
-                DispatchWindow.Money = Dispatch.ActiveAgency.FriendlyName;
+                DispatchWindow.Money = Dispatch.PlayerAgency.FriendlyName;
 
                 // Build initial scnario page
                 BuildScenarioPage();

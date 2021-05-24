@@ -85,7 +85,7 @@ namespace AgencyDispatchFramework.Dispatching
         /// </summary>
         /// <param name="agency"></param>
         /// <param name="zones"></param>
-        public RegionCrimeGenerator(Agency agency, ZoneInfo[] zones)
+        public RegionCrimeGenerator(ZoneInfo[] zones)
         {
             // Create instance variables
             RegionCrimeInfoByTimeOfDay = new Dictionary<TimeOfDay, RegionCrimeInfo>();
@@ -98,7 +98,7 @@ namespace AgencyDispatchFramework.Dispatching
             }
             else
             {
-                Log.Warning($"RegionCrimeGenerator.ctor: Agency with name {agency} has no zones!");
+                throw new ArgumentNullException(nameof(zones));
             }
 
             // Do initial evaluation
@@ -174,6 +174,7 @@ namespace AgencyDispatchFramework.Dispatching
             return null;
         }
 
+        [Obsolete]
         internal RoadShoulder[] GetRandomShoulderLocations(int count)
         {
             // Get a list of all locations
@@ -464,7 +465,7 @@ namespace AgencyDispatchFramework.Dispatching
         /// <param name="Size"></param>
         /// <param name="Population"></param>
         /// <returns></returns>
-        private static double GetOptimumPatrolCountForZone(int averageCalls, ZoneSize Size, Population Population)
+        internal static double GetOptimumPatrolCountForZone(int averageCalls, ZoneSize Size, Population Population)
         {
             double baseCount = Math.Max(1, averageCalls / 4d);
 

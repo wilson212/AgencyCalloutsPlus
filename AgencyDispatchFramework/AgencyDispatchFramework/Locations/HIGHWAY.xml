@@ -45,7 +45,7 @@
         <Evening clear="10" overcast="10" rain="10" snow="10" storm="10" />
         <Night clear="10" overcast="10" rain="10" snow="10" storm="10" />
       </Statutory>
-      <Traffic possible="false">
+      <Traffic possible="true">
         <Morning clear="10" overcast="10" rain="15" snow="18" storm="12" />
         <Day clear="10" overcast="10" rain="15" snow="18" storm="12" />
         <Evening clear="10" overcast="10" rain="15" snow="18" storm="12" />
@@ -73,7 +73,204 @@
 
     </Stores>
     <RoadShoulders>
-
+      <Location coordinates="1374.229,682.4608,79.23694" heading="138.1848">
+        <Street>Los Santos Freeway</Street>
+        <Postal>818</Postal>
+        <Hint>near Exit 1C</Hint>
+        <Speed>55</Speed>
+        <Flags>
+          <Road>FourLaneRoad, AlongInterstate</Road>
+          <BeforeIntersection>None</BeforeIntersection>
+          <AfterIntersection>None</AfterIntersection>
+        </Flags>
+      </Location>
+      <Location coordinates="1341.927,611.697,80.06128" heading="310.6091">
+        <Street>Los Santos Freeway</Street>
+        <Postal>818</Postal>
+        <Hint>near Exit 1C</Hint>
+        <Speed>55</Speed>
+        <Flags>
+          <Road>FourLaneRoad, AlongInterstate, AfterInterstateOffRamp</Road>
+          <BeforeIntersection>None</BeforeIntersection>
+          <AfterIntersection>None</AfterIntersection>
+        </Flags>
+      </Location>
+      <Location coordinates="1543.265,853.7671,77.20865" heading="334.3522">
+        <Street>Los Santos Freeway</Street>
+        <Postal>818</Postal>
+        <Hint>Exit 1C</Hint>
+        <Speed>35</Speed>
+        <Flags>
+          <Road>OneWayRoad, AlongInterstate, OnInterstateRamp</Road>
+          <BeforeIntersection>None</BeforeIntersection>
+          <AfterIntersection>None</AfterIntersection>
+        </Flags>
+      </Location>
+      <Location coordinates="1653.714,1174.292,84.08136" heading="344.168">
+        <Street>Los Santos Freeway</Street>
+        <Postal>818</Postal>
+        <Hint>before Exit 1</Hint>
+        <Speed>55</Speed>
+        <Flags>
+          <Road>FourLaneRoad, AlongInterstate, BeforeInterstateOnRamp</Road>
+          <BeforeIntersection>None</BeforeIntersection>
+          <AfterIntersection>None</AfterIntersection>
+        </Flags>
+      </Location>
+      <Location coordinates="1710.493,1439.671,85.1928" heading="347.8249">
+        <Street>Los Santos Freeway</Street>
+        <Postal>818</Postal>
+        <Hint>before Exit 1</Hint>
+        <Speed>55</Speed>
+        <Flags>
+          <Road>FourLaneRoad, AlongInterstate, AfterInterstateOnRamp</Road>
+          <BeforeIntersection>None</BeforeIntersection>
+          <AfterIntersection>None</AfterIntersection>
+        </Flags>
+      </Location>
+      <Location coordinates="1889.301,1627.032,80.87594" heading="256.4026">
+        <Street>Los Santos Freeway</Street>
+        <Postal>818</Postal>
+        <Hint>Exit 1</Hint>
+        <Speed>55</Speed>
+        <Flags>
+          <Road>OneWayRoad, AlongInterstate, OnInterstateRamp</Road>
+          <BeforeIntersection>None</BeforeIntersection>
+          <AfterIntersection>None</AfterIntersection>
+        </Flags>
+      </Location>
+      <Location coordinates="2161.595,1269.753,75.61858" heading="209.0838">
+        <Street>Palomino Freeway</Street>
+        <Postal>818</Postal>
+        <Hint>Exit 1</Hint>
+        <Speed>55</Speed>
+        <Flags>
+          <Road>FourLaneRoad, AlongInterstate, BeforeInterstateOnRamp</Road>
+          <BeforeIntersection>None</BeforeIntersection>
+          <AfterIntersection>None</AfterIntersection>
+        </Flags>
+      </Location>
+      <Location coordinates="2597.98,401.2059,108.2211" heading="323.9391">
+        <Street>Palomino Freeway</Street>
+        <Postal>818</Postal>
+        <Hint>Gas Station</Hint>
+        <Speed>25</Speed>
+        <Flags>
+          <Road>OneWayRoad, AlongInterstate, AfterInterstateOnRamp, BeforeInterstateOffRamp, FreewayGasStation</Road>
+          <BeforeIntersection>None</BeforeIntersection>
+          <AfterIntersection>None</AfterIntersection>
+        </Flags>
+      </Location>
+      <Location coordinates="2476.985,1296.132,48.83939" heading="329.646">
+        <Street>Senora Way</Street>
+        <Postal>818</Postal>
+        <Hint>off of Palomino Freeway</Hint>
+        <Speed>35</Speed>
+        <Flags>
+          <Road>TwoLaneRoad, AfterInterstateOffRamp</Road>
+          <BeforeIntersection>None</BeforeIntersection>
+          <AfterIntersection>None</AfterIntersection>
+        </Flags>
+      </Location>
+      <Location coordinates="2668.935,3129.403,50.35906" heading="322.6464">
+        <Street>Senora Freeway</Street>
+        <Postal>818</Postal>
+        <Hint>after Exit 3A</Hint>
+        <Speed>55</Speed>
+        <Flags>
+          <Road>FourLaneRoad, AfterInterstateOffRamp</Road>
+          <BeforeIntersection>None</BeforeIntersection>
+          <AfterIntersection>None</AfterIntersection>
+        </Flags>
+      </Location>
+      <Location coordinates="2866.91,4425.019,48.54592" heading="289.1848">
+        <Street>Union Road</Street>
+        <Postal>818</Postal>
+        <Hint>off of Senora Freeway</Hint>
+        <Speed>25</Speed>
+        <Flags>
+          <Road>TwoLaneRoad</Road>
+          <BeforeIntersection>CrossIntersection, TwoWayStop</BeforeIntersection>
+          <AfterIntersection>CrossIntersection, TwoWayStop</AfterIntersection>
+        </Flags>
+      </Location>
+      <Location coordinates="2743.588,4691.754,44.06121" heading="12.73393">
+        <Street>Senora Freeway</Street>
+        <Postal>818</Postal>
+        <Hint>near Grapeseed</Hint>
+        <Speed>55</Speed>
+        <Flags>
+          <Road>FourLaneRoad</Road>
+          <BeforeIntersection>None</BeforeIntersection>
+          <AfterIntersection>None</AfterIntersection>
+        </Flags>
+      </Location>
+      <Location coordinates="2516.152,5553.152,44.50331" heading="21.36839">
+        <Street>Senora Freeway</Street>
+        <Postal>818</Postal>
+        <Hint>near Bradock Pass</Hint>
+        <Speed>55</Speed>
+        <Flags>
+          <Road>FourLaneRoad</Road>
+          <BeforeIntersection>None</BeforeIntersection>
+          <AfterIntersection>None</AfterIntersection>
+        </Flags>
+      </Location>
+      <Location coordinates="2177.697,6065.309,51.7413" heading="66.28397">
+        <Street>Senora Freeway</Street>
+        <Postal>818</Postal>
+        <Hint>near Bradock Pass</Hint>
+        <Speed>55</Speed>
+        <Flags>
+          <Road>TwoLaneRoad, OneWayRoad</Road>
+          <BeforeIntersection>None</BeforeIntersection>
+          <AfterIntersection>None</AfterIntersection>
+        </Flags>
+      </Location>
+      <Location coordinates="1661.087,6412.976,29.40466" heading="70.84875">
+        <Street>Great Ocean Highway</Street>
+        <Postal>818</Postal>
+        <Hint>Gas Station</Hint>
+        <Speed>25</Speed>
+        <Flags>
+          <Road>OneWayRoad, AlongInterstate, AfterInterstateOnRamp, BeforeInterstateOffRamp, FreewayGasStation</Road>
+          <BeforeIntersection>None</BeforeIntersection>
+          <AfterIntersection>None</AfterIntersection>
+        </Flags>
+      </Location>
+      <Location coordinates="1235.415,6501.709,20.5242" heading="89.03062">
+        <Street>Great Ocean Highway</Street>
+        <Postal>818</Postal>
+        <Hint>near Paleto Bay</Hint>
+        <Speed>55</Speed>
+        <Flags>
+          <Road>TwoLaneRoad, AfterInterstateOnRamp</Road>
+          <BeforeIntersection>None</BeforeIntersection>
+          <AfterIntersection>None</AfterIntersection>
+        </Flags>
+      </Location>
+      <Location coordinates="762.86,6515.305,25.46921" heading="78.15271">
+        <Street>Great Ocean Highway</Street>
+        <Postal>818</Postal>
+        <Hint>near Paleto Bay</Hint>
+        <Speed>55</Speed>
+        <Flags>
+          <Road>TwoLaneRoad</Road>
+          <BeforeIntersection>None</BeforeIntersection>
+          <AfterIntersection>None</AfterIntersection>
+        </Flags>
+      </Location>
+      <Location coordinates="184.4049,6574.211,31.60049" heading="110.5664">
+        <Street>Great Ocean Highway</Street>
+        <Postal>818</Postal>
+        <Hint>Paleto Gas Station</Hint>
+        <Speed>35</Speed>
+        <Flags>
+          <Road>FourWayRoad</Road>
+          <BeforeIntersection>None</BeforeIntersection>
+          <AfterIntersection>None</AfterIntersection>
+        </Flags>
+      </Location>
     </RoadShoulders>
   </Locations>
 </HIGHWAY>

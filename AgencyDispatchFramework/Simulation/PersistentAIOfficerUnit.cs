@@ -59,7 +59,7 @@ namespace AgencyDispatchFramework.Simulation
         /// <param name="isAiUnit"></param>
         /// <param name="unitString"></param>
         /// <param name="vehicle"></param>
-        internal PersistentAIOfficerUnit(Ped officer, Vehicle vehicle, int division, char unit, int beat) : base(division, unit, beat)
+        internal PersistentAIOfficerUnit(Agency agency, Ped officer, Vehicle vehicle, int division, char unit, int beat) : base(agency, division, unit, beat)
         {
             PoliceCar = vehicle;
             Officer = officer ?? throw new ArgumentNullException("officer");
@@ -67,12 +67,21 @@ namespace AgencyDispatchFramework.Simulation
         }
 
         /// <summary>
+        /// Creates a new instance of <see cref="PersistentAIOfficerUnit"/> from a <see cref="VirtualAIOfficerUnit"/>
+        /// </summary>
+        /// <param name="virtualAI"></param>
+        internal PersistentAIOfficerUnit(VirtualAIOfficerUnit virtualAI) : base(virtualAI.Agency, virtualAI.Division, virtualAI.Unit[0], virtualAI.Beat)
+        {
+            // @todo
+        }
+
+        /// <summary>
         /// Starts the Task unit fiber for this AI Unit
         /// </summary>
-        internal override void StartDuty()
+        internal override void StartDuty(Vector3 startPosition)
         {
             // Call base
-            base.StartDuty();
+            base.StartDuty(startPosition);
 
             // Create AI thread
             AILogicFiber = GameFiber.ExecuteNewWhile(delegate
@@ -102,7 +111,7 @@ namespace AgencyDispatchFramework.Simulation
                             break;
                     }
                 }
-            }, $"AgencyCallouts+ Unit {CallSign} AI Thread", () => !IsDisposed);
+            }, $"AgencyCallouts+ Unit {CallSign} of {Agency.FriendlyName} AI Thread", () => !IsDisposed);
 
             // Set blip
             SetBlipColor(OfficerStatusColor.Available);
@@ -166,7 +175,7 @@ namespace AgencyDispatchFramework.Simulation
 
             // Tell dispatch we are done here
             Dispatch.RegisterCallComplete(CurrentCall);
-            Log.Debug($"OfficerUnit {CallSign} completed call with flag: {flag}");
+            Log.Debug($"OfficerUnit {CallSign} of {Agency.FriendlyName} completed call with flag: {flag}");
 
             // Call base
             base.CompleteCall(flag);
@@ -260,7 +269,7 @@ namespace AgencyDispatchFramework.Simulation
                 else
                 {
                     // Log
-                    Log.Debug($"PoliceCar is invalid for unit {CallSign}... Creating a new one");
+                    Log.Debug($"PoliceCar is invalid for unit {CallSign} of {Agency.FriendlyName}... Creating a new one");
 
                     // Determine spawn point
                     var oldCar = PoliceCar;
@@ -268,7 +277,7 @@ namespace AgencyDispatchFramework.Simulation
                     var sp = new SpawnPoint(location);
 
                     // Create car
-                    PoliceCar = Dispatch.ActiveAgency.GetRandomPoliceVehicle(PatrolType.Marked, sp);
+                    PoliceCar = Dispatch.PlayerAgency.GetRandomPoliceVehicle(PatrolType.Marked, sp);
                     PoliceCar.Model.LoadAndWait();
                     PoliceCar.MakePersistent();
 
@@ -293,7 +302,7 @@ namespace AgencyDispatchFramework.Simulation
                 if (!Officer.Exists())
                 {
                     // Log
-                    Log.Debug($"Officer is invalid for unit {CallSign}... Creating a new one");
+                    Log.Debug($"Officer is invalid for unit {CallSign} of {Agency.FriendlyName}... Creating a new one");
 
                     // Tell the old Ped to piss off
                     Officer.Dismiss();
@@ -332,7 +341,7 @@ namespace AgencyDispatchFramework.Simulation
         {
             // Close this task
             NextTask = TaskSignal.None;
-            Log.Debug($"OfficerUnit {CallSign} driving to call");
+            Log.Debug($"OfficerUnit {CallSign} of {Agency.FriendlyName} driving to call");
 
             // Ensure officer is in police cruiser
             EnsureInPoliceCar();
@@ -408,7 +417,7 @@ namespace AgencyDispatchFramework.Simulation
             // Debug
             var span = World.DateTime - LastStatusChange;
             var mins = Math.Round(span.TotalMinutes, 0);
-            Log.Debug($"OfficerUnit {CallSign} arrived on scene after {mins} game minutes");
+            Log.Debug($"OfficerUnit {CallSign} of {Agency.FriendlyName} arrived on scene after {mins} game minutes");
 
             // Telll dispatch we are on scene
             Dispatch.RegisterOnScene(this, CurrentCall);

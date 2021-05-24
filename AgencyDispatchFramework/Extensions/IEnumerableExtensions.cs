@@ -13,6 +13,25 @@ namespace AgencyDispatchFramework.Extensions
     /// <seealso cref="https://blogs.msdn.microsoft.com/mitsu/2007/12/21/playing-with-linq-grouping-groupbymany/"/>
     public static class IEnumerableExtensions
     {
+        /// <summary>
+        /// Converts an enumeration of groupings into a Dictionary of those groupings.
+        /// </summary>
+        /// <typeparam name="TKey">Key type of the grouping and dictionary.</typeparam>
+        /// <typeparam name="TValue">Element type of the grouping and dictionary list.</typeparam>
+        /// <param name="groupings">The enumeration of groupings from a GroupBy() clause.</param>
+        /// <returns>A dictionary of groupings such that the key of the dictionary is TKey type and the value is List of TValue type.</returns>
+        public static Dictionary<TKey, List<TValue>> ToDictionary<TKey, TValue>(this IEnumerable<IGrouping<TKey, TValue>> groupings)
+        {
+            return groupings.ToDictionary(group => group.Key, group => group.ToList());
+        }
+
+        /// <summary>
+        /// Groups by more than 1 selector at once
+        /// </summary>
+        /// <typeparam name="TElement"></typeparam>
+        /// <param name="elements"></param>
+        /// <param name="groupSelectors"></param>
+        /// <returns></returns>
         public static IEnumerable<GroupResult> GroupByMany<TElement>(
             this IEnumerable<TElement> elements,
             params Func<TElement, object>[] groupSelectors)

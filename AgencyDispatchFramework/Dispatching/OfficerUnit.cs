@@ -1,4 +1,5 @@
-﻿using Rage;
+﻿using AgencyDispatchFramework.Dispatching.Assignments;
+using Rage;
 using System;
 
 namespace AgencyDispatchFramework.Dispatching
@@ -20,6 +21,11 @@ namespace AgencyDispatchFramework.Dispatching
         public abstract bool IsAIUnit { get; }
 
         /// <summary>
+        /// Gets the <see cref="Agency"/> of this <see cref="OfficerUnit"/>
+        /// </summary>
+        internal Agency Agency { get; set; }
+
+        /// <summary>
         /// Gets the Division-UnitType-Beat for this unit to be played over the radio
         /// </summary>
         public string RadioCallSign { get; internal set; }
@@ -29,16 +35,30 @@ namespace AgencyDispatchFramework.Dispatching
         /// </summary>
         public string CallSign { get; internal set; }
 
+        /// <summary>
+        /// Gets the division this <see cref="OfficerUnit"/> is assigned to
+        /// </summary>
         public int Division { get; internal set; }
 
+        /// <summary>
+        /// Gets the unit this <see cref="OfficerUnit"/> is assigned to
+        /// </summary>
         public string Unit { get; internal set; }
 
+        /// <summary>
+        /// Gets the beat this <see cref="OfficerUnit"/> is assigned to
+        /// </summary>
         public int Beat { get; internal set; }
 
         /// <summary>
         /// Gets the officers current <see cref="OfficerStatus"/>
         /// </summary>
         public OfficerStatus Status { get; internal set; }
+
+        /// <summary>
+        /// Gets or sets the current assignment this <see cref="OfficerUnit"/>
+        /// </summary>
+        public BaseAssignment Assignment { get; internal set; }
 
         /// <summary>
         /// Gets the last <see cref="Rage.Game.DateTime"/> this officer was tasked with something
@@ -56,15 +76,27 @@ namespace AgencyDispatchFramework.Dispatching
         internal DateTime NextStatusChange { get; set; }
 
         /// <summary>
+        /// Used internally by Dispatch when deciding to pull officer units
+        /// from thier current assignments to send to higher priorty calls
+        /// </summary>
+        internal DispatchPriority Priority { get; set; }
+
+        /// <summary>
         /// Contains the Shift hours for this unit
         /// </summary>
-        internal TimeSpan ShiftHours { get; set; }
+        protected bool EndingDuty { get; set; } = false;
+
+        /// <summary>
+        /// Gets the position of this <see cref="OfficerUnit"/>
+        /// </summary>
+        protected Vector3 Position { get; set; }
 
         /// <summary>
         /// Creates a new instance of <see cref="OfficerUnit"/> for an AI unit
         /// </summary>
-        internal OfficerUnit(int division, char unit, int beat)
+        internal OfficerUnit(Agency agency, int division, char unit, int beat)
         {
+            Agency = agency;
             SetCallSign(division, unit, beat);
         }
 
@@ -92,15 +124,28 @@ namespace AgencyDispatchFramework.Dispatching
         /// <summary>
         /// Gets the position of this <see cref="OfficerUnit"/>
         /// </summary>
-        public abstract Vector3 GetPosition();
+        public virtual Vector3 GetPosition()
+        {
+            return Position;
+        }
 
         /// <summary>
         /// Starts the Task unit fiber for this AI Unit
         /// </summary>
-        internal virtual void StartDuty()
+        internal virtual void StartDuty(Vector3 startPosition)
         {
+            EndingDuty = false;
+            Position = startPosition;
             LastStatusChange = World.DateTime;
             Status = OfficerStatus.Available;
+        }
+
+        /// <summary>
+        /// Ends duty for this officer unit
+        /// </summary>
+        internal virtual void EndDuty()
+        {
+            EndingDuty = true;
         }
 
         /// <summary>
@@ -162,6 +207,7 @@ namespace AgencyDispatchFramework.Dispatching
             call.AssignOfficer(this, forcePrimary);
             call.CallStatus = CallStatus.Dispatched;
 
+            Assignment = new AssignedToCall(call);
             CurrentCall = call;
             Status = OfficerStatus.Dispatched;
             LastStatusChange = World.DateTime;

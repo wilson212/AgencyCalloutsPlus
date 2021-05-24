@@ -45,6 +45,7 @@
     <ScriptName>lspd</ScriptName>
     <AgencyType>CityPolice</AgencyType>
     <StaffLevel>Fair</StaffLevel>
+    <BackingAgency>lssd</BackingAgency>
     <Vehicles>
       <Marked>
         <Vehicle probability="5">POLICE</Vehicle>
@@ -61,6 +62,7 @@
     <ScriptName>dppd</ScriptName>
     <AgencyType>CityPolice</AgencyType>
     <StaffLevel>Fair</StaffLevel>
+    <BackingAgency>lssd</BackingAgency>
     <Vehicles>
       <Marked>
         <Vehicle probability="5">POLICE</Vehicle>
@@ -77,6 +79,7 @@
     <ScriptName>vppd</ScriptName>
     <AgencyType>CityPolice</AgencyType>
     <StaffLevel>High</StaffLevel>
+    <BackingAgency>lssd</BackingAgency>
     <Vehicles>
       <Marked>
         <Vehicle probability="5">POLICE</Vehicle>
@@ -93,6 +96,7 @@
     <ScriptName>vwpd</ScriptName>
     <AgencyType>CityPolice</AgencyType>
     <StaffLevel>High</StaffLevel>
+    <BackingAgency>lssd</BackingAgency>
     <Vehicles>
       <Marked>
         <Vehicle probability="5">POLICE</Vehicle>
@@ -109,6 +113,7 @@
     <ScriptName>lmpd</ScriptName>
     <AgencyType>CityPolice</AgencyType>
     <StaffLevel>Fair</StaffLevel>
+    <BackingAgency>lssd</BackingAgency>
     <Vehicles>
       <Marked>
         <Vehicle probability="5">POLICE</Vehicle>
@@ -125,6 +130,7 @@
     <ScriptName>rhpd</ScriptName>
     <AgencyType>CityPolice</AgencyType>
     <StaffLevel>High</StaffLevel>
+    <BackingAgency>lssd</BackingAgency>
     <Vehicles>
       <Marked>
         <Vehicle probability="5">POLICE</Vehicle>
@@ -141,6 +147,7 @@
     <ScriptName>pap</ScriptName>
     <AgencyType>CityPolice</AgencyType>
     <StaffLevel>Fair</StaffLevel>
+    <BackingAgency>lssd</BackingAgency>
     <Vehicles>
       <Marked>
         <Vehicle probability="5">POLICE</Vehicle>
@@ -157,6 +164,7 @@
     <ScriptName>gspd</ScriptName>
     <AgencyType>CityPolice</AgencyType>
     <StaffLevel>Low</StaffLevel>
+    <BackingAgency>bcso</BackingAgency>
     <Vehicles>
       <Marked>
         <Vehicle probability="5">SHERIFF</Vehicle>
@@ -172,6 +180,7 @@
     <ScriptName>sspd</ScriptName>
     <AgencyType>CityPolice</AgencyType>
     <StaffLevel>Low</StaffLevel>
+    <BackingAgency>bcso</BackingAgency>
     <Vehicles>
       <Marked>
         <Vehicle probability="5">SHERIFF</Vehicle>
@@ -187,6 +196,7 @@
     <ScriptName>pbpd</ScriptName>
     <AgencyType>CityPolice</AgencyType>
     <StaffLevel>Fair</StaffLevel>
+    <BackingAgency>bcso</BackingAgency>
     <Vehicles>
       <Marked>
         <Vehicle probability="5">SHERIFF</Vehicle>
@@ -204,6 +214,7 @@
     <ScriptName>lssd</ScriptName>
     <AgencyType>CountySheriff</AgencyType>
     <StaffLevel>Fair</StaffLevel>
+    <BackingAgency>sahp</BackingAgency>
     <Vehicles>
       <Marked>
         <Vehicle probability="5">SHERIFF</Vehicle>
@@ -219,6 +230,7 @@
     <ScriptName>bcso</ScriptName>
     <AgencyType>CountySheriff</AgencyType>
     <StaffLevel>Low</StaffLevel>
+    <BackingAgency>sahp</BackingAgency>
     <Vehicles>
       <Marked>
         <Vehicle probability="5">SHERIFF</Vehicle>
@@ -236,6 +248,7 @@
     <ScriptName>sahp</ScriptName>
     <AgencyType>HighwayPatrol</AgencyType>
     <StaffLevel>Fair</StaffLevel>
+    <BackingAgency />
     <Vehicles>
       <Marked>
         <Vehicle probability="5">policeb</Vehicle>
@@ -261,6 +274,7 @@
     <ScriptName>fib</ScriptName>
     <AgencyType>SpecialAgent</AgencyType>
     <StaffLevel>VeryHigh</StaffLevel>
+    <BackingAgency />
     <Vehicles>
       <Marked>
         <Vehicle probability="5">FBI</Vehicle>
@@ -287,6 +301,7 @@
     <ScriptName>sapr</ScriptName>
     <AgencyType>ParkRanger</AgencyType>
     <StaffLevel>Low</StaffLevel>
+    <BackingAgency />
     <Vehicles>
       <Marked>
         <Vehicle probability="5">FBI</Vehicle>

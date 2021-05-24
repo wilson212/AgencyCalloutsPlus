@@ -306,7 +306,7 @@ namespace AgencyDispatchFramework.Game
             int pedsLoaded = 0;
 
             // Ensure file exists
-            var filePath = Path.Combine(Main.ThisPluginFolderPath, "PedModelMeta.xml");
+            var filePath = Path.Combine(Main.FrameworkFolderPath, "PedModelMeta.xml");
             if (!File.Exists(filePath))
             {
                 throw new FileNotFoundException($"PedModelMeta.xml does not exist on the filesystem.");
@@ -358,7 +358,7 @@ namespace AgencyDispatchFramework.Game
             Log.Info($"Loaded {metasLoaded} PedModelMeta elements into memory");
 
             // Load the peds.xml
-            filePath = Path.Combine(Main.ThisPluginFolderPath, "Peds.xml");
+            filePath = Path.Combine(Main.FrameworkFolderPath, "Peds.xml");
             if (!File.Exists(filePath))
             {
                 throw new FileNotFoundException($"Peds.xml does not exist on the filesystem.");

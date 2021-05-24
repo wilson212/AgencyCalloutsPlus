@@ -16,18 +16,13 @@ namespace AgencyDispatchFramework.Simulation
         public override bool IsAIUnit => true;
 
         /// <summary>
-        /// Gets the position of this <see cref="OfficerUnit"/>
-        /// </summary>
-        protected Vector3 Position { get; set; }
-
-        /// <summary>
         /// Creates a new instance of <see cref="VirtualAIOfficerUnit"/>
         /// </summary>
         /// <param name="startPosition"></param>
         /// <param name="unitString"></param>
-        public VirtualAIOfficerUnit(Vector3 startPosition, int division, char unit, int beat) : base(division, unit, beat)
+        public VirtualAIOfficerUnit(Agency agency, int division, char unit, int beat) : base(agency, division, unit, beat)
         {
-            Position = startPosition;
+
         }
 
         /// <summary>
@@ -78,7 +73,7 @@ namespace AgencyDispatchFramework.Simulation
         {
             // Tell dispatch we are done here
             Dispatch.RegisterCallComplete(CurrentCall);
-            Log.Debug($"OfficerUnit {CallSign} completed call with flag: {flag}");
+            Log.Debug($"OfficerUnit {CallSign} of {Agency.FriendlyName} completed call with flag: {flag}");
 
             // Call base
             base.CompleteCall(flag);
@@ -101,7 +96,7 @@ namespace AgencyDispatchFramework.Simulation
         private void DriveToCall()
         {
             // Close this task
-            Log.Debug($"OfficerUnit {CallSign} driving to call");
+            Log.Debug($"OfficerUnit {CallSign} of {Agency.FriendlyName} driving to call");
             int mins = 30;
 
             // Repond code 3?
@@ -126,7 +121,7 @@ namespace AgencyDispatchFramework.Simulation
         private void OnScene()
         {
             // Debug
-            Log.Debug($"OfficerUnit {CallSign} arrived on scene");
+            Log.Debug($"OfficerUnit {CallSign} of {Agency.FriendlyName} arrived on scene");
 
             // Telll dispatch we are on scene
             Dispatch.RegisterOnScene(this, CurrentCall);
@@ -163,15 +158,6 @@ namespace AgencyDispatchFramework.Simulation
             Status = OfficerStatus.MealBreak;
             LastStatusChange = World.DateTime;
             NextStatusChange = LastStatusChange.AddMinutes(30);
-        }
-
-        /// <summary>
-        /// Gets the last known position of this <see cref="OfficerUnit"/>
-        /// </summary>
-        /// <returns></returns>
-        public override Vector3 GetPosition()
-        {
-            return Position;
         }
 
         internal override void AssignToCallWithRandomCompletion(PriorityCall call)

@@ -20,11 +20,6 @@ namespace AgencyDispatchFramework.Game.Locations
         public string BuildingNumber { get; internal set; } = String.Empty;
 
         /// <summary>
-        /// Gets the <see cref="ZoneInfo"/> this home belongs in
-        /// </summary>
-        public ZoneInfo Zone { get; protected set; }
-
-        /// <summary>
         /// Gets the <see cref="SocialClass"/> of this home
         /// </summary>
         public SocialClass Class { get; internal set; }

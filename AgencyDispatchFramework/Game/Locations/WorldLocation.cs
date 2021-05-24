@@ -31,6 +31,11 @@ namespace AgencyDispatchFramework.Game.Locations
         public int Postal { get; internal set; }
 
         /// <summary>
+        /// Gets the zone of this location, if known
+        /// </summary>
+        public ZoneInfo Zone { get; internal set; }
+
+        /// <summary>
         /// Gets the <see cref="LocationType"/> for this <see cref="WorldLocation"/>
         /// </summary>
         public abstract LocationTypeCode LocationType { get; }

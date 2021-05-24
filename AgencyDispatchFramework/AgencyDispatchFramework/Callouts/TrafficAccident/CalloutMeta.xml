@@ -48,7 +48,7 @@
       <FlowSequence>
         <FlowOutcome id="distracted" probability="10" />
         <FlowOutcome id="eating" probability="3" />
-        <FlowOutcome id="tailgating" probability="5000" />
+        <FlowOutcome id="tailgating" probability="5" />
         <FlowOutcome id="wetRoads" probability="7" if="Weather.RoadsAreWet == true and Weather.IsSnowing == false"/>
         <FlowOutcome id="snowing" probability="15" if="Weather.IsSnowing == true"/>
         <!-- 

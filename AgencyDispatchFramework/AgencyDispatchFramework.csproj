@@ -87,17 +87,33 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Dispatching\AgencyDispatch.cs" />
+    <Compile Include="Dispatching\Assignments\FelonyTrafficStop.cs" />
+    <Compile Include="Dispatching\Assignments\PrisonerTransport.cs" />
+    <Compile Include="Dispatching\Assignments\TrafficEnforcement.cs" />
     <Compile Include="Dispatching\Delegates\CallListUpdateHandler.cs" />
     <Compile Include="Dispatching\Delegates\CalloutListUpdateHandler.cs" />
     <Compile Include="Dispatching\Delegates\CalloutPackLoadedHandler.cs" />
+    <Compile Include="Dispatching\Enums\DispatchPriority.cs" />
     <Compile Include="Dispatching\RadioMessage.cs" />
     <Compile Include="Dispatching\Delegates\ScenarioListUpdateHandler.cs" />
     <Compile Include="Dispatching\ScenarioPool.cs" />
+    <Compile Include="Dispatching\Assignments\AssignedToCall.cs" />
+    <Compile Include="Dispatching\Assignments\CivilDisturbance.cs" />
+    <Compile Include="Dispatching\Assignments\CrimeInProgress.cs" />
+    <Compile Include="Dispatching\Assignments\InvestigatingCrime.cs" />
+    <Compile Include="Dispatching\Assignments\OutOfService.cs" />
+    <Compile Include="Dispatching\Assignments\BaseAssignment.cs" />
+    <Compile Include="Dispatching\Assignments\Pursuit.cs" />
+    <Compile Include="Dispatching\Assignments\TrafficAccident.cs" />
+    <Compile Include="Dispatching\Assignments\StandardTrafficStop.cs" />
+    <Compile Include="Events\AmbientEvent.cs" />
     <Compile Include="Extensions\Enums\LogicOperator.cs" />
     <Compile Include="Extensions\Enums\SelectionOperator.cs" />
     <Compile Include="Extensions\IEnumerableExtensions.cs" />
     <Compile Include="Extensions\ListExtensions.cs" />
     <Compile Include="Extensions\StringBuilderExtensions.cs" />
+    <Compile Include="Game\Enums\County.cs" />
     <Compile Include="Game\Enums\RelativeDirection.cs" />
     <Compile Include="Game\Enums\PedGender.cs" />
     <Compile Include="Game\Locations\IntersectionFlags.cs" />

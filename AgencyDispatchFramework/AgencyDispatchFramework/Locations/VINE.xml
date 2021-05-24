@@ -73,7 +73,182 @@
 
     </Stores>
     <RoadShoulders>
-
+      <Location coordinates="-792.9432,438.9984,92.48638" heading="278.3127">
+        <Street>Picture Perfect Drive</Street>
+        <Postal>818</Postal>
+        <Hint>near South MO Milton Drive</Hint>
+        <Speed>25</Speed>
+        <Flags>
+          <Road>TwoLaneRoad, DrivewaysRight</Road>
+          <BeforeIntersection>None</BeforeIntersection>
+          <AfterIntersection>None</AfterIntersection>
+        </Flags>
+      </Location>
+      <Location coordinates="-639.832,496.3271,108.3503" heading="281.5251">
+        <Street>Picture Perfect Drive</Street>
+        <Postal>818</Postal>
+        <Hint>near Milton Road</Hint>
+        <Speed>25</Speed>
+        <Flags>
+          <Road>TwoLaneRoad, DrivewaysRight, DrivewaysLeft</Road>
+          <BeforeIntersection>None</BeforeIntersection>
+          <AfterIntersection>None</AfterIntersection>
+        </Flags>
+      </Location>
+      <Location coordinates="-464.9353,767.3813,171.0595" heading="358.8197">
+        <Street>Milton Road</Street>
+        <Postal>818</Postal>
+        <Hint></Hint>
+        <Speed>25</Speed>
+        <Flags>
+          <Road>TwoLaneRoad, DrivewaysLeft</Road>
+          <BeforeIntersection>None</BeforeIntersection>
+          <AfterIntersection>None</AfterIntersection>
+        </Flags>
+      </Location>
+      <Location coordinates="-661.0579,921.9384,229.3689" heading="66.88421">
+        <Street>Milton Road</Street>
+        <Postal>818</Postal>
+        <Hint>near North Sheldon Ave</Hint>
+        <Speed>25</Speed>
+        <Flags>
+          <Road>TwoLaneRoad, DrivewaysLeft</Road>
+          <BeforeIntersection>None</BeforeIntersection>
+          <AfterIntersection>None</AfterIntersection>
+        </Flags>
+      </Location>
+      <Location coordinates="-710.9297,1051.119,246.2212" heading="342.989">
+        <Street>Mount Vinewood Drive</Street>
+        <Postal>818</Postal>
+        <Hint>near Marlow Dr</Hint>
+        <Speed>50</Speed>
+        <Flags>
+          <Road>TwoLaneRoad</Road>
+          <BeforeIntersection>None</BeforeIntersection>
+          <AfterIntersection>CrossIntersection, TwoWayStop</AfterIntersection>
+        </Flags>
+      </Location>
+      <Location coordinates="-698.3875,1181.562,265.1107" heading="310.2824">
+        <Street>West Galileo Avenue</Street>
+        <Postal>818</Postal>
+        <Hint>near Mount Vinewood Drive</Hint>
+        <Speed>50</Speed>
+        <Flags>
+          <Road>TwoLaneRoad</Road>
+          <BeforeIntersection>None</BeforeIntersection>
+          <AfterIntersection direction="Behind">ThreeWayIntersection, OneWayStop</AfterIntersection>
+        </Flags>
+      </Location>
+      <Location coordinates="-665.4635,1303.299,281.8141" heading="343.3069">
+        <Street>West Galileo Avenue</Street>
+        <Postal>818</Postal>
+        <Hint></Hint>
+        <Speed>50</Speed>
+        <Flags>
+          <Road>TwoLaneRoad</Road>
+          <BeforeIntersection>None</BeforeIntersection>
+          <AfterIntersection>None</AfterIntersection>
+        </Flags>
+      </Location>
+      <Location coordinates="-427.7723,1407.998,292.7688" heading="317.8205">
+        <Street>West Galileo Avenue</Street>
+        <Postal>818</Postal>
+        <Hint></Hint>
+        <Speed>50</Speed>
+        <Flags>
+          <Road>TwoLaneRoad</Road>
+          <BeforeIntersection>None</BeforeIntersection>
+          <AfterIntersection direction="Left">ThreeWayIntersection, OneWayStop</AfterIntersection>
+        </Flags>
+      </Location>
+      <Location coordinates="-87.9101,1501.719,282.9984" heading="250.5602">
+        <Street>West Galileo Avenue</Street>
+        <Postal>818</Postal>
+        <Hint></Hint>
+        <Speed>50</Speed>
+        <Flags>
+          <Road>TwoLaneRoad</Road>
+          <BeforeIntersection>None</BeforeIntersection>
+          <AfterIntersection direction="Right">ThreeWayIntersection, OneWayStop</AfterIntersection>
+        </Flags>
+      </Location>
+      <Location coordinates="93.38171,1385.054,259.5159" heading="267.1825">
+        <Street>West Galileo Avenue</Street>
+        <Postal>818</Postal>
+        <Hint></Hint>
+        <Speed>50</Speed>
+        <Flags>
+          <Road>TwoLaneRoad</Road>
+          <BeforeIntersection>None</BeforeIntersection>
+          <AfterIntersection>None</AfterIntersection>
+        </Flags>
+      </Location>
+      <Location coordinates="193.3249,1445.987,239.6637" heading="42.75747">
+        <Street>Baytree Canyon Road</Street>
+        <Postal>818</Postal>
+        <Hint></Hint>
+        <Speed>50</Speed>
+        <Flags>
+          <Road>TwoLaneRoad</Road>
+          <BeforeIntersection>None</BeforeIntersection>
+          <AfterIntersection>None</AfterIntersection>
+        </Flags>
+      </Location>
+      <Location coordinates="374.1024,1732.583,239.4723" heading="131.1164">
+        <Street>Mount Haan Road</Street>
+        <Postal>818</Postal>
+        <Hint></Hint>
+        <Speed>50</Speed>
+        <Flags>
+          <Road>TwoLaneRoad</Road>
+          <BeforeIntersection>None</BeforeIntersection>
+          <AfterIntersection>None</AfterIntersection>
+        </Flags>
+      </Location>
+      <Location coordinates="1024.931,1576.71,170.1391" heading="169.2246">
+        <Street>Mount Haan Road</Street>
+        <Postal>818</Postal>
+        <Hint></Hint>
+        <Speed>50</Speed>
+        <Flags>
+          <Road>TwoLaneRoad</Road>
+          <BeforeIntersection>None</BeforeIntersection>
+          <AfterIntersection>None</AfterIntersection>
+        </Flags>
+      </Location>
+      <Location coordinates="1116.184,832.7426,152.1875" heading="329.595">
+        <Street>Mount Haan Road</Street>
+        <Postal>818</Postal>
+        <Hint>near Marlowe Dr</Hint>
+        <Speed>50</Speed>
+        <Flags>
+          <Road>TwoLaneRoad</Road>
+          <BeforeIntersection>None</BeforeIntersection>
+          <AfterIntersection>None</AfterIntersection>
+        </Flags>
+      </Location>
+      <Location coordinates="1136.974,665.885,123.035" heading="146.651">
+        <Street>Marlowe Drive</Street>
+        <Postal>818</Postal>
+        <Hint>near Mount Haan Road</Hint>
+        <Speed>30</Speed>
+        <Flags>
+          <Road>TwoLaneRoad</Road>
+          <BeforeIntersection>None</BeforeIntersection>
+          <AfterIntersection>None</AfterIntersection>
+        </Flags>
+      </Location>
+      <Location coordinates="1203.84,643.5349,99.16676" heading="325.7043">
+        <Street>Senora Road</Street>
+        <Postal>818</Postal>
+        <Hint>near Marlowe Drive</Hint>
+        <Speed>45</Speed>
+        <Flags>
+          <Road>TwoLaneRoad</Road>
+          <BeforeIntersection>None</BeforeIntersection>
+          <AfterIntersection>None</AfterIntersection>
+        </Flags>
+      </Location>
     </RoadShoulders>
   </Locations>
 </VINE>

@@ -55,3 +55,28 @@ Radio traffic with Dispatch and AI (handshake for accepting calls):
 	- Radio message is played by the dispatcher with the call details ("We have a... on... Please respond code..")
 	- An event is fired on the primary officer, call assigned awaiting confirmation
 	- The AI accepts or denies the call, and queues a radio message (signals back to the Dispatch class)
+
+
+New Dispatch Script Ideas
+	- Dispatch now generates crimes over an entire county (Not including Parks, unless the player specifically choses Park Rangers, and City Agencies the player is not active in)
+	- 3 or 2 agencies active at once
+	- If player choses a CityPolice agency, than 3 agencies are active (Player's City, County and SAHP), 2 if player chooses county or SAHP (County and SAHP)
+		- If the players agency is too full with crimes, then the next higher layer will take the call to help out (if not too busy), up to SAHP
+		- Player can only see calls sent to his Agency in the CAD (Maybe see others grayed out?)
+	- OfficerUnit's are now stored in each "Agency" instance, not the Dispatch script as current
+		- On TimeOfDay change, each Agency instance will add on-coming duty officers and remove officers leaving shift as they complete calls
+	- When a call comes in, the Dispatch script will pull officers from the primary agency of that zone.
+		- If all officers are busy, and cannot be pulled from thier current assignments, OR all officers are queued with an addition call already,
+			then the dispatcher will go UP (if not SAHP) or DOWN (if player is SAHP) a level to pull an available officer there.
+
+	** From a top down view:
+		- the RegionCrimeGenerator class is responsible for generating incoming calls. 
+		- The Dispatch class is responsible for:
+			- Proccessing the logic of assigning OfficerUnits to those calls based on:
+				- Distance from the call
+				- The call's priority level
+				- The type of accident it is
+			- Keeping track of all the calls in the county
+				- Firing events as calls are added and removed
+		- The Agency class is responsible for handling shift changes, adding and removing OfficerUnits as crime levels change
+			- AGENCIES do NOT have thier own dispatching script

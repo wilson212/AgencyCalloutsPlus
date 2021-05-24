@@ -45,7 +45,7 @@
         <Evening clear="10" overcast="10" rain="10" snow="10" storm="10" />
         <Night clear="10" overcast="10" rain="10" snow="10" storm="10" />
       </Statutory>
-      <Traffic possible="false">
+      <Traffic possible="true">
         <Morning clear="10" overcast="10" rain="15" snow="18" storm="12" />
         <Day clear="10" overcast="10" rain="15" snow="18" storm="12" />
         <Evening clear="10" overcast="10" rain="15" snow="18" storm="12" />
@@ -73,7 +73,17 @@
 
     </Stores>
     <RoadShoulders>
-
+      <Location coordinates="2579.974,2623.6,36.76326" heading="20.09404">
+        <Street>Senora Way</Street>
+        <Postal>818</Postal>
+        <Hint>near Davis Quarry</Hint>
+        <Speed>35</Speed>
+        <Flags>
+          <Road>TwoLaneRoad</Road>
+          <BeforeIntersection direction="Right">ThreeWayIntersection, OneWayStop</BeforeIntersection>
+          <AfterIntersection>None</AfterIntersection>
+        </Flags>
+      </Location>
     </RoadShoulders>
   </Locations>
 </ZQ_UAR>

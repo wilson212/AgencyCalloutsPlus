@@ -82,6 +82,11 @@ namespace AgencyDispatchFramework.Game
         private WorldStateProbabilityGenerator<CalloutType> CrimeTypeGenerator { get; set; }
 
         /// <summary>
+        /// Gets the primary police agency for this zone
+        /// </summary>
+        public Agency PrimaryAgency { get; internal set; }
+
+        /// <summary>
         /// Creates a new instance of <see cref="ZoneInfo"/>
         /// </summary>
         /// <param name="node">The XML node for this zone from the Locations.xml</param>
@@ -658,7 +663,7 @@ namespace AgencyDispatchFramework.Game
         /// </summary>
         /// <param name="names">An array of zones to load (should be all uppercase)</param>
         /// <returns>returns the number of locations loaded</returns>
-        public static int LoadZones(string[] names)
+        public static ZoneInfo[] GetZonesByName(string[] names, bool load, out int loaded)
         {
             // Create instance of not already!
             if (ZoneCache == null)
@@ -666,17 +671,26 @@ namespace AgencyDispatchFramework.Game
                 ZoneCache = new Dictionary<string, ZoneInfo>();
             }
 
-            int itemsAdded = 0;
+            int totalLocations = 0;
             int zonesAdded = 0;
+            List<ZoneInfo> zones = new List<ZoneInfo>();
 
             // Cycle through each child node (Zone)
             foreach (string zoneName in names)
             {
                 // If we have loaded this zone already, skip it
-                if (ZoneCache.ContainsKey(zoneName)) continue;
+                if (ZoneCache.ContainsKey(zoneName))
+                {
+                    zones.Add(ZoneCache[zoneName]);
+                    continue;
+                }
+                else if (!load)
+                {
+                    continue;
+                }
 
                 // Load XML document
-                string path = Path.Combine(Main.ThisPluginFolderPath, "Locations", $"{zoneName}.xml");
+                string path = Path.Combine(Main.FrameworkFolderPath, "Locations", $"{zoneName}.xml");
                 XmlDocument document = new XmlDocument();
                 using (var file = new FileStream(path, FileMode.Open))
                 {
@@ -698,10 +712,11 @@ namespace AgencyDispatchFramework.Game
                 try
                 {
                     var zone = new ZoneInfo(root);
+                    zones.Add(zone);
 
                     // Save
                     ZoneCache.Add(zoneName, zone);
-                    itemsAdded += zone.GetTotalNumberOfLocations();
+                    totalLocations += zone.GetTotalNumberOfLocations();
                     zonesAdded++;
                 }
                 catch (ArgumentNullException e)
@@ -715,8 +730,10 @@ namespace AgencyDispatchFramework.Game
             }
 
             // Log and return
-            Log.Info($"Loaded {zonesAdded} zones with {itemsAdded} locations into memory'");
-            return itemsAdded;
+            Log.Info($"Loaded {zonesAdded} zones with {totalLocations} locations into memory'");
+
+            loaded = zonesAdded;
+            return zones.ToArray();
         }
 
         /// <summary>

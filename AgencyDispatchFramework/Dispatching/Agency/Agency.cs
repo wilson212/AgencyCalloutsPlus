@@ -1,6 +1,7 @@
 ﻿using AgencyDispatchFramework.Extensions;
 using AgencyDispatchFramework.Game;
 using AgencyDispatchFramework.Game.Locations;
+using AgencyDispatchFramework.Simulation;
 using LSPD_First_Response.Mod.API;
 using Rage;
 using System;
@@ -8,6 +9,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Xml;
 
 namespace AgencyDispatchFramework.Dispatching
@@ -58,7 +60,7 @@ namespace AgencyDispatchFramework.Dispatching
         public string ScriptName { get; private set; }
 
         /// <summary>
-        /// Gets the <see cref="API.AgencyType"/> for this <see cref="Agency"/>
+        /// Gets the <see cref="Dispatching.AgencyType"/> for this <see cref="Agency"/>
         /// </summary>
         public AgencyType AgencyType => AgencyTypes[ScriptName];
 
@@ -69,14 +71,39 @@ namespace AgencyDispatchFramework.Dispatching
         public StaffLevel StaffLevel { get; protected set; }
 
         /// <summary>
-        /// Gets the number of patrol units for this agency
+        /// Gets the full script name of the backing agency for this department
         /// </summary>
-        public int ActualPatrols { get; protected set; }
+        public string BackingAgencyScriptName { get; private set; }
+
+        /// <summary>
+        /// Gets the optimum patrol count based on <see cref="TimeOfDay" />
+        /// </summary>
+        internal Dictionary<TimeOfDay, int> OptimumPatrols { get; set; }
+
+        /// <summary>
+        /// Contains a list of zones in this jurisdiction
+        /// </summary>
+        internal ZoneInfo[] Zones { get; set; }
 
         /// <summary>
         /// Containts a <see cref="SpawnGenerator{T}"/> list of vehicles for this agency
         /// </summary>
         private Dictionary<PatrolType, ProbabilityGenerator<PoliceVehicleInfo>> Vehicles { get; set; }
+
+        /// <summary>
+        /// Contains a list of all active on duty officers
+        /// </summary>
+        public OfficerUnit[] OnDutyOfficers => OfficersByShift[GameWorld.CurrentTimeOfDay].ToArray();
+
+        /// <summary>
+        /// 
+        /// </summary>
+        internal Dictionary<TimeOfDay, List<OfficerUnit>> OfficersByShift { get; set; }
+
+        /// <summary>
+        /// Indicates whether this agency is active in game at the moment
+        /// </summary>
+        public bool IsActive { get; internal set; }
 
         #endregion
 
@@ -98,7 +125,9 @@ namespace AgencyDispatchFramework.Dispatching
             AgencyZones = new Dictionary<string, List<string>>();
             var mapping = new Dictionary<string, string>();
 
+            // *******************************************
             // Load backup.xml for agency backup mapping
+            // *******************************************
             string rootPath = Path.Combine(Main.GTARootPath, "lspdfr", "data");
             string path = Path.Combine(rootPath, "backup.xml");
 
@@ -112,7 +141,7 @@ namespace AgencyDispatchFramework.Dispatching
             // Allow other plugins time to do whatever
             GameFiber.Yield();
 
-            // cycle through each child noed 
+            // cycle through each child node 
             foreach (XmlNode node in document.DocumentElement.SelectSingleNode("LocalPatrol").ChildNodes)
             {
                 // Skip errors
@@ -126,7 +155,9 @@ namespace AgencyDispatchFramework.Dispatching
                 mapping.Add(nodeName, agency);
             }
 
+            // *******************************************
             // Load regions.xml for agency jurisdiction zones
+            // *******************************************
             path = Path.Combine(rootPath, "regions.xml");
             document = new XmlDocument();
             using (var file = new FileStream(path, FileMode.Open))
@@ -184,8 +215,10 @@ namespace AgencyDispatchFramework.Dispatching
             // Load each custom agency XML to get police car names!
             GameFiber.Yield();
 
+            // *******************************************
             // Load Agencies.xml for agency types
-            path = Path.Combine(Main.ThisPluginFolderPath, "Agencies.xml");
+            // *******************************************
+            path = Path.Combine(Main.FrameworkFolderPath, "Agencies.xml");
             document = new XmlDocument();
             using (var file = new FileStream(path, FileMode.Open))
             {
@@ -207,6 +240,7 @@ namespace AgencyDispatchFramework.Dispatching
                 string sname = n.SelectSingleNode("ScriptName")?.InnerText;
                 string atype = n.SelectSingleNode("AgencyType")?.InnerText;
                 string ftype = n.SelectSingleNode("StaffLevel")?.InnerText;
+                string btype = n.SelectSingleNode("BackingAgency")?.InnerText;
                 XmlNode vehicleNode = n.SelectSingleNode("Vehicles");
 
                 // Check name
@@ -286,6 +320,8 @@ namespace AgencyDispatchFramework.Dispatching
                         // Add vehicle to agency
                         agency.AddVehicle((PatrolType)Enum.Parse(typeof(PatrolType), ename), info);
                     }
+
+                    agency.BackingAgencyScriptName = btype;
                 }
 
                 Agencies.Add(sname, agency);
@@ -393,6 +429,213 @@ namespace AgencyDispatchFramework.Dispatching
         }
 
         /// <summary>
+        /// 
+        /// </summary>
+        internal virtual void Enable()
+        {
+            // Saftey
+            if (IsActive) return;
+
+            // Get our zones of jurisdiction, and ensure each zone has the primary agency set
+            Zones = Zones ?? GetZoneNamesByAgencyName(ScriptName).Select(x => ZoneInfo.GetZoneByName(x)).ToArray();
+            foreach (var zone in Zones)
+            {
+                zone.PrimaryAgency = this;
+            }
+
+            // Load officers
+            if (OfficersByShift == null)
+            {
+                OfficersByShift = new Dictionary<TimeOfDay, List<OfficerUnit>>();
+            }
+
+            // Get our patrol counts
+            OptimumPatrols = GetOptimumPatrols(Zones);
+
+            // Loop through each time period and cache crime numbers
+            foreach (TimeOfDay period in Enum.GetValues(typeof(TimeOfDay)))
+            {
+                // Spawn
+                int aiPatrolCount = OptimumPatrols[period];
+                OfficersByShift.Add(period, new List<OfficerUnit>());
+                var periodName = Enum.GetName(typeof(TimeOfDay), period);
+
+                // Ensure we have enough locations to spawn patrols at
+                var locations = GetRandomShoulderLocations(aiPatrolCount);
+                if (locations.Length < aiPatrolCount)
+                {
+                    StringBuilder b = new StringBuilder("The number of RoadShoulders available (");
+                    b.Append(locations.Length);
+                    b.Append(") to spawn AI officer units is less than the number of total AI officers (");
+                    b.Append(aiPatrolCount);
+                    b.Append(") for '");
+                    b.Append(FriendlyName);
+                    b.Append("' on ");
+                    b.Append(periodName);
+                    b.Append(" shift.");
+                    Log.Warning(b.ToString());
+
+                    // Adjust count
+                    aiPatrolCount = locations.Length;
+                }
+
+                // Create officer units
+                for (int i = 0; i < aiPatrolCount; i++)
+                {
+                    // Create instance
+                    var num = i + 10;
+                    var unit = new VirtualAIOfficerUnit(this, 1, 'A', num);
+                    OfficersByShift[period].Add(unit);
+
+                    // Start Duty
+                    if (period == GameWorld.CurrentTimeOfDay)
+                    {
+                        var sp = locations[i];
+                        unit.StartDuty(sp);
+                    }
+                }
+
+                // Log for debugging
+                Log.Debug($"Loaded {aiPatrolCount} Virtual AI officer units for agency '{FriendlyName}' on {periodName} shift");
+            }
+
+            // Register for TimeOfDay changes!
+            GameWorld.OnTimeOfDayChanged += GameWorld_OnTimeOfDayChanged;
+
+            // Finally, flag
+            IsActive = true;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        internal virtual void Disable()
+        {
+            // Un-Register for TimeOfDay changes!
+            GameWorld.OnTimeOfDayChanged -= GameWorld_OnTimeOfDayChanged;
+
+            // Dispose officer units
+            DisposeAIUnits();
+
+            // flag
+            IsActive = false;
+        }
+
+        /// <summary>
+        /// Disposes and clears all AI units
+        /// </summary>
+        private void DisposeAIUnits()
+        {
+            // Clear old police units
+            if (OnDutyOfficers != null)
+            {
+                foreach (var officerUnits in OfficersByShift.Values)
+                foreach (var officer in officerUnits)
+                    officer.Dispose();
+            }
+        }
+
+        /// <summary>
+        /// Method called when <see cref="GameWorld.OnTimeOfDayChanged"/> is called. Manages the
+        /// shifts of all the <see cref="OfficerUnit"/>s
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        protected void GameWorld_OnTimeOfDayChanged(object sender, EventArgs e)
+        {
+            // Ensure we have enough locations to spawn patrols at
+            var period = GameWorld.CurrentTimeOfDay;
+            int aiPatrolCount = OfficersByShift[period].Count;
+            var locations = GetRandomShoulderLocations(aiPatrolCount);
+            if (locations.Length < aiPatrolCount)
+            {
+                StringBuilder b = new StringBuilder("The number of RoadShoulders available (");
+                b.Append(locations.Length);
+                b.Append(") to spawn AI officer units is less than the number of total AI officers (");
+                b.Append(aiPatrolCount);
+                b.Append(") for '");
+                b.Append(FriendlyName);
+                b.Append("' on ");
+                b.Append(Enum.GetName(typeof(TimeOfDay), period));
+                b.Append(" shift.");
+                Log.Warning(b.ToString());
+
+                // Adjust count
+                aiPatrolCount = locations.Length;
+            }
+
+            // Tell new units they are on duty
+            int i = 0;
+            foreach (var unit in OfficersByShift[period])
+            {
+                unit.StartDuty(locations[i]);
+                i++;
+            }
+
+            // Tell old units they are off duty last!
+            period = GameWorld.GetPreviousTimeOfDay();
+            foreach (var unit in OfficersByShift[period])
+            {
+                unit.EndDuty();
+            }
+        }
+
+        /// <summary>
+        /// Gets a number of random <see cref="RoadShoulder"/> locations within
+        /// this <see cref="Agency" /> jurisdiction
+        /// </summary>
+        /// <param name="desiredCount">The desired amount</param>
+        /// <returns></returns>
+        protected RoadShoulder[] GetRandomShoulderLocations(int desiredCount)
+        {
+            // Get a list of all locations
+            var locs = new List<RoadShoulder>(desiredCount);
+            foreach (var zone in Zones)
+            {
+                locs.AddRange(zone.RoadShoulders);
+            }
+
+            // Shuffle
+            locs.Shuffle();
+
+            return locs.Take(desiredCount).ToArray();
+        }
+
+        /// <summary>
+        /// Calculates the optimum patrols for this agencies jurisdiction
+        /// </summary>
+        /// <param name="zoneNames"></param>
+        /// <returns></returns>
+        protected Dictionary<TimeOfDay, int> GetOptimumPatrols(ZoneInfo[] zones)
+        {
+            var patrols = new Dictionary<TimeOfDay, int>();
+
+            // Loop through each time period and cache crime numbers
+            foreach (TimeOfDay period in Enum.GetValues(typeof(TimeOfDay)))
+            {
+                // Create info struct
+                double optimumPatrols = 0;
+
+                // Determine our overall crime numbers by adding each zones
+                // individual crime statistics
+                if (zones.Length > 0)
+                {
+                    foreach (var zone in zones)
+                    {
+                        // Get average calls per period
+                        var calls = zone.AverageCalls[period];
+                        optimumPatrols += RegionCrimeGenerator.GetOptimumPatrolCountForZone(calls, zone.Size, zone.Population);
+                    }
+                }
+
+                // Set numbers
+                patrols.Add(period, (int)Math.Ceiling(optimumPatrols));
+            }
+
+            return patrols;
+        }
+
+        /// <summary>
         /// Adds a vehicle to the list of vehicles that can be spawned from this agency
         /// </summary>
         /// <param name="type"></param>
@@ -459,20 +702,6 @@ namespace AgencyDispatchFramework.Dispatching
             }
 
             return vehicle;
-        }
-
-        internal virtual RegionCrimeGenerator CreateCrimeGenerator()
-        {
-            var zones = GetZoneNamesByAgencyName(ScriptName).Select(x => ZoneInfo.GetZoneByName(x)).ToArray();
-            var crimeGenerator = new RegionCrimeGenerator(this, zones ?? new ZoneInfo[0]);
-            var tod = GameWorld.CurrentTimeOfDay;
-
-            // Deterime our patrol count
-            var crimeInfo = crimeGenerator.RegionCrimeInfoByTimeOfDay[tod];
-            int staffLevel = (int)StaffLevel;
-            ActualPatrols = (int)(crimeInfo.OptimumPatrols * (staffLevel / 100d));
-
-            return crimeGenerator;
         }
 
         /// <summary>

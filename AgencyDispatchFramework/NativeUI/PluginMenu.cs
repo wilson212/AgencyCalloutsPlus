@@ -394,7 +394,7 @@ namespace AgencyDispatchFramework.NativeUI
                     }
                     else if (PatrolUIMenu.Visible)
                     {
-                        PatrolAreaMenuButton.Enabled = (Dispatch.ActiveAgency.AgencyType == AgencyType.HighwayPatrol);
+                        PatrolAreaMenuButton.Enabled = (Dispatch.PlayerAgency.AgencyType == AgencyType.HighwayPatrol);
                     }
                 }
             });
