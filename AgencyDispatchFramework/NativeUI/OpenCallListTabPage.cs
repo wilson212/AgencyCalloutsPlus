@@ -29,7 +29,7 @@ namespace AgencyDispatchFramework.NativeUI
         /// Defines the maximum calls to display in the list at once before needing to scroll
         /// to see further items
         /// </summary>
-        const int MaxItemsToDisplay = 16;
+        const int MaxItemsToDisplay = 12;
 
         /// <summary>
         /// Contains a list of sub menu Tab items
@@ -64,6 +64,7 @@ namespace AgencyDispatchFramework.NativeUI
             // Register for dispatching events
             Dispatch.OnCallAdded += Dispatch_OnCallAdded;
             Dispatch.OnCallCompleted += Dispatch_OnCallCompleted;
+            Dispatch.OnCallExpired += Dispatch_OnCallCompleted;
         }
 
         public void RefreshIndex()
@@ -75,13 +76,13 @@ namespace AgencyDispatchFramework.NativeUI
                 item.Visible = false;
             }
 
-            Index = (Items.Count == 0) ? 0 : ((1000 - (1000 % Items.Count)) % Items.Count);
+            Index = 0;
         }
 
         private void MoveListItemsUp()
         {
-            // Set new index
-            Index = (1000 - (1000 % Items.Count) + Index - 1) % Items.Count;
+            // Keep index in range
+            Index = CorrectIndex(Index - 1);
 
             // If we can't fill the entire list, then we are fine
             if (Items.Count < MaxItemsToDisplay) return;
@@ -89,22 +90,15 @@ namespace AgencyDispatchFramework.NativeUI
             // If we are out of range, increase the range
             if (Index < IndexesInView.Minimum)
             {
-                IndexesInView.Maximum--;
-                IndexesInView.Minimum--;
+                IndexesInView.Minimum = Index;
+                IndexesInView.Maximum = Index + MaxItemsToDisplay;
             }
-
-            // If we are not yet at maximum
-            if (Index != Items.Count - 1)
-                return;
-
-            IndexesInView.Minimum = Items.Count - MaxItemsToDisplay;
-            IndexesInView.Maximum = Items.Count - 1;
         }
 
         private void MoveListItemsDown()
         {
-            // Set new index
-            Index = (1000 - (1000 % Items.Count) + Index + 1) % Items.Count;
+            // Keep index in range
+            Index = CorrectIndex(Index + 1);
 
             // If we can't fill the entire list, then we are fine
             if (Items.Count < MaxItemsToDisplay) return;
@@ -112,15 +106,20 @@ namespace AgencyDispatchFramework.NativeUI
             // If we are out of range, increase the range
             if (Index > IndexesInView.Maximum)
             {
-                IndexesInView.Minimum = Index - (MaxItemsToDisplay - 1);
+                IndexesInView.Minimum = Index - MaxItemsToDisplay;
                 IndexesInView.Maximum = Index;
             }
+        }
 
-            if (Index == 0)
-            {
-                IndexesInView.Minimum = 0;
-                IndexesInView.Maximum = (MaxItemsToDisplay - 1);
-            }
+        /// <summary>
+        /// Keeps the index in range of the collection
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
+        private int CorrectIndex(int index)
+        {
+            if (index < 0) return 0;
+            return (index >= Items.Count) ? Items.Count - 1 : index;
         }
 
         /// <summary>
@@ -218,19 +217,30 @@ namespace AgencyDispatchFramework.NativeUI
                 var itemSize = new Size(((int)activeWidth - (submenuWidth + 3)) - statusSize.Width, 40);
 
                 // Draw each call in the list within the index range
-                for (int i = IndexesInView.Minimum; i < IndexesInView.Maximum; i++)
+                int j = 0;
+                for (int i = IndexesInView.Minimum; i <= IndexesInView.Maximum; i++)
                 {
                     // If we are at our item count, exit
                     if (Items.Count <= i) break;
 
                     // Draw call status color box
-                    ResRectangle.Draw(SafeSize.AddPoints(new Point(0, (itemSize.Height + 3) * i)), statusSize, GetCallItemColor(Items[i]));
+                    ResRectangle.Draw(SafeSize.AddPoints(new Point(0, (itemSize.Height + 3) * j)), statusSize, GetCallItemColor(Items[i]));
 
                     // Draw item outline box
-                    ResRectangle.Draw(SafeSize.AddPoints(new Point(10, (itemSize.Height + 3) * i)), itemSize, (Index == i && Focused) ? Color.FromArgb(fullAlpha, Color.White) : Color.FromArgb(blackAlpha, Color.Black));
+                    if (Dispatch.CanAssignAgencyToCall(Dispatch.PlayerAgency, Items[i].Call))
+                    {
+                        ResRectangle.Draw(SafeSize.AddPoints(new Point(10, (itemSize.Height + 3) * j)), itemSize, (Index == i && Focused) ? Color.FromArgb(fullAlpha, Color.White) : Color.FromArgb(blackAlpha, Color.Black));
+                    }
+                    else
+                    {
+                        ResRectangle.Draw(SafeSize.AddPoints(new Point(10, (itemSize.Height + 3) * j)), itemSize, (Index == i && Focused) ? Color.FromArgb(150, Color.White) : Color.FromArgb(100, Color.Red));
+                    }
 
                     // Draw item title in the box
-                    ResText.Draw(Items[i].Title, SafeSize.AddPoints(new Point(16, 5 + (itemSize.Height + 3) * i)), 0.35f, Color.FromArgb(fullAlpha, (Index == i && Focused) ? Color.Black : Color.White), Common.EFont.ChaletLondon, false);
+                    ResText.Draw(Items[i].Title, SafeSize.AddPoints(new Point(16, 5 + (itemSize.Height + 3) * j)), 0.35f, Color.FromArgb(fullAlpha, (Index == i && Focused) ? Color.Black : Color.White), Common.EFont.ChaletLondon, false);
+
+                    // Increase draw index 
+                    j++;
                 }
 
                 // Draw only if in range
@@ -292,7 +302,9 @@ namespace AgencyDispatchFramework.NativeUI
             Items.Add(tItem);
 
             // Apply ordering
-            Items = Items.OrderBy(x => x.Call.Priority).ThenBy(x => x.Call.CallCreated).ToList();
+            Items = Items.OrderBy(x => Dispatch.CanAssignAgencyToCall(Dispatch.PlayerAgency, x.Call))
+                .ThenBy(x => x.Call.Priority)
+                .ThenBy(x => x.Call.CallCreated).ToList();
 
             // Always refresh
             RefreshIndex();
@@ -301,13 +313,19 @@ namespace AgencyDispatchFramework.NativeUI
         private void CallListItem_Activated(object sender, EventArgs e)
         {
             var call = Items[Index].Call;
-            if (Dispatch.InvokeCalloutForPlayer(call))
+
+            // Check agency
+            if (!Dispatch.CanAssignAgencyToCall(Dispatch.PlayerAgency, call))
+            {
+                Rage.Game.DisplaySubtitle("~o~This call is outside your Agency's Jurisdiction", 5000);
+            }
+            else if (Dispatch.InvokeCalloutForPlayer(call))
             {
                 Rage.Game.DisplaySubtitle("~b~You will be dispatched to this call once you exit the menu", 5000);
             }
             else
             {
-                Rage.Game.DisplaySubtitle("~o~You are already on an active callout", 5000);
+                Rage.Game.DisplaySubtitle("~o~You are already on an active Callout or Assignment", 5000);
             }
         }
 

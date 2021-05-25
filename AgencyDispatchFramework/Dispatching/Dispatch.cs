@@ -51,6 +51,11 @@ namespace AgencyDispatchFramework
         public static event CallListUpdateHandler OnCallCompleted;
 
         /// <summary>
+        /// Event called when a call is removed from the call list due to expiration
+        /// </summary>
+        public static event CallListUpdateHandler OnCallExpired;
+
+        /// <summary>
         /// Event called when a call is accepted by the player
         /// </summary>
         public static event CallListUpdateHandler OnPlayerCallAccepted;
@@ -328,6 +333,34 @@ namespace AgencyDispatchFramework
         }
 
         /// <summary>
+        /// Determines if the specified <see cref="Agency"/> can be dispatched to a call.
+        /// </summary>
+        /// <param name="agency"></param>
+        /// <param name="call"></param>
+        /// <returns></returns>
+        public static bool CanAssignAgencyToCall(Agency agency, PriorityCall call)
+        {
+            // If this is the primary agency, then DUH!
+            if (agency == call.Zone.PrimaryAgency) return true;
+
+            // Check
+            switch (agency.AgencyType)
+            {
+                case AgencyType.CountySheriff:
+                    // Sheriffs can take this call IF not assigned already, or the
+                    // primary agency was dispatched already but needs support
+                    return (call.Priority == CallPriority.Immediate || call.PrimaryOfficer == null || call.NeedsMoreOfficers);
+                case AgencyType.CityPolice:
+                    // City police can only take calls in their primary jurisdiction
+                    return false;
+                case AgencyType.HighwayPatrol:
+                    return call.ScenarioInfo.CrimeType == CalloutType.Traffic;
+                default:
+                    return call.ScenarioInfo.AgencyTypes.Contains(agency.AgencyType);
+            }
+        }
+
+        /// <summary>
         /// Gets an array of <see cref="WorldLocation"/>s currently in use based
         /// on the specified <see cref="LocationTypeCode"/>
         /// </summary>
@@ -549,7 +582,8 @@ namespace AgencyDispatchFramework
                     // Add call to priority Queue
                     lock (_lock)
                     {
-                        CallQueue[call.Priority - 1].Add(call);
+                        var index = ((int)call.Priority) - 1;
+                        CallQueue[index].Add(call);
                         Log.Debug($"Dispatch: Added Call to Queue '{call.ScenarioInfo.Name}' in zone '{call.Zone.FullName}'");
 
                         // Invoke the next callout for player
@@ -580,7 +614,7 @@ namespace AgencyDispatchFramework
             }
 
             // Remove call
-            var priority = call.Priority - 1;
+            var priority = ((int)call.Priority) - 1;
             lock (_lock)
             {
                 CallQueue[priority].Remove(call);
@@ -711,7 +745,8 @@ namespace AgencyDispatchFramework
             // Add call to priority Queue
             lock (_lock)
             {
-                CallQueue[call.Priority - 1].Add(call);
+                var index = ((int)call.Priority) - 1;
+                CallQueue[index].Add(call);
                 ActiveCrimeLocations[call.Location.LocationType].Add(call.Location);
                 Log.Debug($"Dispatch.AddIncomingCall(): Added Call to Queue '{call.ScenarioInfo.Name}' in zone '{call.Zone.FullName}'");
 
@@ -808,8 +843,7 @@ namespace AgencyDispatchFramework
                 }
 
                 // End current crime generation if running
-                if (CrimeGenerator?.IsRunning ?? false)
-                    CrimeGenerator.End();
+                CrimeGenerator?.End();
 
                 // Did we change Agencies?
                 if (oldAgency != null && !PlayerAgency.ScriptName.Equals(oldAgency.ScriptName))
@@ -1330,9 +1364,15 @@ namespace AgencyDispatchFramework
                 {
                     foreach (var call in expiredCalls)
                     {
-                        var priority = call.Priority - 1;
+                        // Remove call
+                        var priority = ((int)call.Priority) - 1;
                         CallQueue[priority].Remove(call);
+
+                        // Free location
                         ActiveCrimeLocations[call.Location.LocationType].Remove(call.Location);
+
+                        // Call events
+                        OnCallExpired?.Invoke(call);
                     }
                 }
             }
@@ -1371,7 +1411,7 @@ namespace AgencyDispatchFramework
                 // If the officer is on a call, lets determine if our currrent call is more important
                 if (officer.CurrentCall != null)
                 {
-                    currentPriority = officer.CurrentCall.Priority;
+                    currentPriority = (int)officer.CurrentCall.Priority;
                     isOnScene = officer.Status != OfficerStatus.Dispatched;
                 }
                 else if (officer.Assignment != null)
@@ -1380,7 +1420,7 @@ namespace AgencyDispatchFramework
                 }
 
                 // Easy, if the call is less priority than what we are doing, forget it
-                if (call.Priority >= currentPriority)
+                if ((int)call.Priority >= currentPriority)
                 {
                     continue;
                 }
@@ -1392,7 +1432,7 @@ namespace AgencyDispatchFramework
                     case 2: // Already on an Emergency assignment
                         break;
                     case 3: // On Expdited assignment
-                        if (call.Priority == 1)
+                        if (call.Priority == CallPriority.Immediate)
                         {
                             officer.Priority = (isOnScene) ? DispatchPriority.Moderate : DispatchPriority.High;
                         }
@@ -1403,7 +1443,7 @@ namespace AgencyDispatchFramework
                         availableOfficers.Add(officer);
                         break;
                     case 4: // On routine assignment
-                        if (call.Priority == 3)
+                        if (call.Priority == CallPriority.Expedited)
                         {
                             // Do not pull someone off a routine call to preform a expedited call
                             if (isOnScene) break;
@@ -1414,7 +1454,7 @@ namespace AgencyDispatchFramework
                         else
                         {
                             // Pull this officer off
-                            officer.Priority = (call.Priority == 1) ? DispatchPriority.High : DispatchPriority.Moderate;
+                            officer.Priority = (call.Priority == CallPriority.Immediate) ? DispatchPriority.High : DispatchPriority.Moderate;
                             availableOfficers.Add(officer);
                         }
                         break;

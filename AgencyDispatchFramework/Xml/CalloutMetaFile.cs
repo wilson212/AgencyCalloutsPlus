@@ -233,7 +233,7 @@ namespace AgencyDispatchFramework.Xml
 
                 // Try and extract probability value
                 childNode = dispatchNode.SelectSingleNode("Priority");
-                if (!int.TryParse(childNode.InnerText, out int priority))
+                if (!Enum.TryParse(childNode.InnerText, out CallPriority priority))
                 {
                     Log.Warning(
                         $"CalloutMetaFile.Parse(): Unable to extract scenario priority value for '{calloutDirName}/CalloutMeta.xml -> {scenarioNode.Name}'"

@@ -172,17 +172,18 @@ namespace AgencyDispatchFramework.NativeUI
             ResText.Draw("~y~Call Status", headerLoc, HeaderTextWeight, Color.FromArgb(alpha, Color.White), Common.EFont.ChaletComprimeCologne, a, true, true, new Size(250, 0));
             ResText.Draw($"~w~{Call.CallStatus}", valueLoc, ValueTextWeight, Color.FromArgb(alpha, Color.White), Common.EFont.ChaletComprimeCologne, false);
 
-            // add Agency
+            // add Officer
             headerLoc = SafeSize.AddPoints(new Point(col2p, headerY));
             valueLoc = SafeSize.AddPoints(new Point(col2p, valueY));
             ResText.Draw("~y~Primary Officer", headerLoc, HeaderTextWeight, Color.FromArgb(alpha, Color.White), Common.EFont.ChaletComprimeCologne, a, true, true, new Size(250, 0));
             ResText.Draw($"~w~{Call.PrimaryOfficer?.CallSign ?? "None"}", valueLoc, ValueTextWeight, Color.FromArgb(alpha, Color.White), Common.EFont.ChaletComprimeCologne, false);
 
             // add Agency
+            var agency = Call.PrimaryOfficer != null ? Call.PrimaryOfficer.Agency.ScriptName : Call.Zone.PrimaryAgency.ScriptName;
             headerLoc = SafeSize.AddPoints(new Point(col3p, headerY));
             valueLoc = SafeSize.AddPoints(new Point(col3p, valueY));
             ResText.Draw("~y~Primary Agency", headerLoc, HeaderTextWeight, Color.FromArgb(alpha, Color.White), Common.EFont.ChaletComprimeCologne, a, true, true, new Size(250, 0));
-            ResText.Draw($"~w~{Dispatch.PlayerAgency.ScriptName.ToUpperInvariant()}", valueLoc, ValueTextWeight, Color.FromArgb(alpha, Color.White), Common.EFont.ChaletComprimeCologne, false);
+            ResText.Draw($"~w~{agency.ToUpperInvariant()}", valueLoc, ValueTextWeight, Color.FromArgb(alpha, Color.White), Common.EFont.ChaletComprimeCologne, false);
 
             // Add callout status
             var rt = GetResponseText(Call.ResponseCode);
@@ -210,9 +211,9 @@ namespace AgencyDispatchFramework.NativeUI
         /// </summary>
         /// <param name="priority"></param>
         /// <returns></returns>-
-        private static string GetPriorityText(int priority)
+        private static string GetPriorityText(CallPriority priority)
         {
-            switch (priority)
+            switch ((int)priority)
             {
                 case 1: return "1 - IMMEDIATE";
                 case 2: return "2 - EMERGENCY";

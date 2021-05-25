@@ -244,7 +244,7 @@
   
   <!-- State Troopers -->
   <Agency>
-    <Name>San Andreas Highway Partol</Name>
+    <Name>San Andreas Highway Patrol</Name>
     <ScriptName>sahp</ScriptName>
     <AgencyType>HighwayPatrol</AgencyType>
     <StaffLevel>Fair</StaffLevel>

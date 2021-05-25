@@ -189,7 +189,7 @@ namespace AgencyDispatchFramework.Dispatching
                 var currentCall = CurrentCall;
 
                 // Is this unit the primary on a lesser important call?
-                if (currentCall.PrimaryOfficer == this && currentCall.Priority > 2)
+                if (currentCall.PrimaryOfficer == this && (int)currentCall.Priority > 2)
                 {
                     if (currentCall.CallStatus == CallStatus.OnScene)
                     {

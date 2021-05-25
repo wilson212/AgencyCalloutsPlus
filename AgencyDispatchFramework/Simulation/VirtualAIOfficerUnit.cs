@@ -73,7 +73,7 @@ namespace AgencyDispatchFramework.Simulation
         {
             // Tell dispatch we are done here
             Dispatch.RegisterCallComplete(CurrentCall);
-            Log.Debug($"OfficerUnit {CallSign} of {Agency.FriendlyName} completed call with flag: {flag}");
+            Log.Debug($"OfficerUnit {CallSign} of {Agency.FriendlyName} completed call '{CurrentCall.ScenarioInfo.Name}' with flag: {flag}");
 
             // Call base
             base.CompleteCall(flag);
@@ -96,7 +96,7 @@ namespace AgencyDispatchFramework.Simulation
         private void DriveToCall()
         {
             // Close this task
-            Log.Debug($"OfficerUnit {CallSign} of {Agency.FriendlyName} driving to call");
+            Log.Debug($"OfficerUnit {CallSign} of {Agency.FriendlyName} responding to call '{CurrentCall.ScenarioInfo.Name}'");
             int mins = 30;
 
             // Repond code 3?

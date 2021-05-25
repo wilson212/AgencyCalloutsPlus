@@ -32,7 +32,7 @@ namespace AgencyDispatchFramework.Dispatching
         /// <summary>
         /// The <see cref="CallPriority"/>
         /// </summary>
-        public int Priority => ScenarioInfo.Priority;
+        public CallPriority Priority => ScenarioInfo.Priority;
 
         /// <summary>
         /// Gets the <see cref="Game.DateTime"/> when this call was created
@@ -71,8 +71,8 @@ namespace AgencyDispatchFramework.Dispatching
             {
                 switch (Priority)
                 {
-                    case 1: return AttachedOfficers.Count < 3;
-                    case 2: return AttachedOfficers.Count < 2;
+                    case CallPriority.Immediate: return AttachedOfficers.Count < 4;
+                    case CallPriority.Emergency: return AttachedOfficers.Count < 3;
                     default: return AttachedOfficers.Count == 0;
                 }
             }

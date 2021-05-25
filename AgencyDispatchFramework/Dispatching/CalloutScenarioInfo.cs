@@ -35,7 +35,7 @@ namespace AgencyDispatchFramework.Dispatching
         /// <summary>
         /// Gets the priority level of the call
         /// </summary>
-        public int Priority { get; set; }
+        public CallPriority Priority { get; set; }
 
         /// <summary>
         /// Defines the location type of this call
