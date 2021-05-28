@@ -33,7 +33,7 @@ namespace AgencyDispatchFramework.Game.Locations
         /// <summary>
         /// Gets the zone of this location, if known
         /// </summary>
-        public ZoneInfo Zone { get; internal set; }
+        public WorldZone Zone { get; internal set; }
 
         /// <summary>
         /// Gets the <see cref="LocationType"/> for this <see cref="WorldLocation"/>

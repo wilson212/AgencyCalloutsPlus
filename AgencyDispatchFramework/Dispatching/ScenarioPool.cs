@@ -21,7 +21,7 @@ namespace AgencyDispatchFramework.Dispatching
         /// Contains a list Scenarios seperated by CalloutType that will be used
         /// to populate the calls board
         /// </summary>
-        internal static Dictionary<CalloutType, WorldStateProbabilityGenerator<CalloutScenarioInfo>> ScenariosByCalloutType { get; set; }
+        internal static Dictionary<CallCategory, WorldStateProbabilityGenerator<CalloutScenarioInfo>> ScenariosByCalloutType { get; set; }
 
         /// <summary>
         /// Contains a list of scenario's by callout name
@@ -52,8 +52,8 @@ namespace AgencyDispatchFramework.Dispatching
             // Initialize callout types
             ScenariosByName = new Dictionary<string, CalloutScenarioInfo>();
             ScenariosByCalloutName = new Dictionary<string, WorldStateProbabilityGenerator<CalloutScenarioInfo>>();
-            ScenariosByCalloutType = new Dictionary<CalloutType, WorldStateProbabilityGenerator<CalloutScenarioInfo>>();
-            foreach (CalloutType type in Enum.GetValues(typeof(CalloutType)))
+            ScenariosByCalloutType = new Dictionary<CallCategory, WorldStateProbabilityGenerator<CalloutScenarioInfo>>();
+            foreach (CallCategory type in Enum.GetValues(typeof(CallCategory)))
             {
                 ScenariosByCalloutType.Add(type, new WorldStateProbabilityGenerator<CalloutScenarioInfo>());
             }
@@ -113,7 +113,7 @@ namespace AgencyDispatchFramework.Dispatching
                             // Add scenario to the pools
                             ScenariosByName.Add(scenario.Name, scenario);
                             ScenariosByCalloutName[scenario.CalloutName].Add(scenario, scenario.ProbabilityMultipliers);
-                            ScenariosByCalloutType[scenario.CrimeType].Add(scenario, scenario.ProbabilityMultipliers);
+                            ScenariosByCalloutType[scenario.Category].Add(scenario, scenario.ProbabilityMultipliers);
 
                             // Statistics trackins
                             itemsAdded++;
@@ -155,7 +155,7 @@ namespace AgencyDispatchFramework.Dispatching
         {
             ScenariosByName.Clear();
             ScenariosByCalloutName.Clear();
-            foreach (CalloutType type in Enum.GetValues(typeof(CalloutType)))
+            foreach (CallCategory type in Enum.GetValues(typeof(CallCategory)))
             {
                 ScenariosByCalloutType[type].Clear();
             }

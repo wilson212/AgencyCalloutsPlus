@@ -5,8 +5,9 @@
   <Scenarios>
     
     <RearEndNoInjuries>
+      <Category>Traffic</Category>
       <!-- Agencies that handle this callout scenario -->
-      <Agencies>
+      <Agencies target="Police">
         <Agency>CityPolice</Agency>
         <Agency>CountySheriff</Agency>
         <Agency>HighwayPatrol</Agency>
@@ -18,7 +19,6 @@
         <Evening clear="10" overcast="10" rain="15" snow="18" storm="12" />
         <Night clear="10" overcast="10" rain="15" snow="18" storm="12" />
       </Probabilities>
-      <Category>Traffic</Category>
       <Location>
         <Type>RoadShoulder</Type>
         <RequiredFlags mode="Any">
@@ -42,7 +42,7 @@
           </Description>
         </Descriptions>
         <IncidentType abbreviation="MVA">Motor Vehicle Accident</IncidentType>
-        <Priority>3</Priority>
+        <Priority>Expedited</Priority>
         <Response>2</Response>
       </Dispatch>
       <FlowSequence>

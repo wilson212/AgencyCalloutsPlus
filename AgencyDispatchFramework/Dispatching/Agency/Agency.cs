@@ -71,11 +71,6 @@ namespace AgencyDispatchFramework.Dispatching
         public StaffLevel StaffLevel { get; protected set; }
 
         /// <summary>
-        /// Gets the full script name of the backing agency for this department
-        /// </summary>
-        public string BackingAgencyScriptName { get; private set; }
-
-        /// <summary>
         /// Gets the optimum patrol count based on <see cref="TimeOfDay" />
         /// </summary>
         internal Dictionary<TimeOfDay, int> OptimumPatrols { get; set; }
@@ -83,12 +78,12 @@ namespace AgencyDispatchFramework.Dispatching
         /// <summary>
         /// Contains a list of zones in this jurisdiction
         /// </summary>
-        internal ZoneInfo[] Zones { get; set; }
+        internal WorldZone[] Zones { get; set; }
 
         /// <summary>
-        /// Containts a <see cref="SpawnGenerator{T}"/> list of vehicles for this agency
+        /// Containts a <see cref="ProbabilityGenerator{T}"/> list of vehicles for this agency
         /// </summary>
-        private Dictionary<PatrolType, ProbabilityGenerator<PoliceVehicleInfo>> Vehicles { get; set; }
+        private Dictionary<PatrolVehicleType, ProbabilityGenerator<PoliceVehicleInfo>> Vehicles { get; set; }
 
         /// <summary>
         /// Contains a list of all active on duty officers
@@ -101,9 +96,55 @@ namespace AgencyDispatchFramework.Dispatching
         internal Dictionary<TimeOfDay, List<OfficerUnit>> OfficersByShift { get; set; }
 
         /// <summary>
+        /// Gets or sets the <see cref="Dispatcher"/> for this <see cref="Agency"/>
+        /// </summary>
+        internal Dispatcher Dispatcher { get; set; }
+
+        /// <summary>
         /// Indicates whether this agency is active in game at the moment
         /// </summary>
         public bool IsActive { get; internal set; }
+
+        /// <summary>
+        /// Indicates whether this agency is a State wide agency (jurisdiction wise).
+        /// </summary>
+        /// <remarks>
+        /// This being true changes the way the program handles calling for backup units when on duty
+        /// </remarks>
+        public bool IsStateAgency
+        {
+            get
+            {
+                var type = AgencyTypes[ScriptName];
+                return (type == AgencyType.HighwayPatrol || type == AgencyType.StateParks || type == AgencyType.StatePolice);
+            }
+        }
+
+        /// <summary>
+        /// Indicates whether this agency is a law enforcement agency
+        /// </summary>
+        /// <remarks>
+        /// This being true changes the way the program handles calling for backup units when on duty
+        /// </remarks>
+        public bool IsLawEnforcementAgency
+        {
+            get
+            {
+                var type = AgencyTypes[ScriptName];
+                return (
+                    type == AgencyType.HighwayPatrol
+                    || type == AgencyType.StateParks
+                    || type == AgencyType.StatePolice
+                    || type == AgencyType.CountySheriff
+                    || type == AgencyType.CityPolice
+                );
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the backing county of this <see cref="Agency"/>
+        /// </summary>
+        public County BackingCounty { get; internal set; }
 
         #endregion
 
@@ -198,7 +239,7 @@ namespace AgencyDispatchFramework.Dispatching
                     AgencyZones.Add(agency, zones);
                 }
                 
-                ZoneInfo.AddRegion(name, zones);
+                WorldZone.AddRegion(name, zones);
             }
 
             // Add Highway to highway patrol
@@ -226,7 +267,7 @@ namespace AgencyDispatchFramework.Dispatching
             }
 
             // Get names
-            string[] enumNames = Enum.GetNames(typeof(PatrolType));
+            string[] enumNames = Enum.GetNames(typeof(PatrolVehicleType));
 
             // cycle though agencies
             foreach (XmlNode n in document.DocumentElement.ChildNodes)
@@ -239,8 +280,9 @@ namespace AgencyDispatchFramework.Dispatching
                 string name = n.SelectSingleNode("Name")?.InnerText;
                 string sname = n.SelectSingleNode("ScriptName")?.InnerText;
                 string atype = n.SelectSingleNode("AgencyType")?.InnerText;
-                string ftype = n.SelectSingleNode("StaffLevel")?.InnerText;
-                string btype = n.SelectSingleNode("BackingAgency")?.InnerText;
+                string sLevel = n.SelectSingleNode("StaffLevel")?.InnerText;
+                string county = n.SelectSingleNode("County")?.InnerText;
+                string customBackAgency = n.SelectSingleNode("CustomBackingAgency")?.InnerText;
                 XmlNode vehicleNode = n.SelectSingleNode("Vehicles");
 
                 // Check name
@@ -258,7 +300,7 @@ namespace AgencyDispatchFramework.Dispatching
                 }
 
                 // Try and parse funding level
-                if (String.IsNullOrWhiteSpace(ftype) || !Enum.TryParse(ftype, out StaffLevel staffing))
+                if (String.IsNullOrWhiteSpace(sLevel) || !Enum.TryParse(sLevel, out StaffLevel staffing))
                 {
                     Log.Warning($"Agency.Initialize(): Unable to extract StaffLevel value for '{sname}' in Agencies.xml");
                     continue;
@@ -318,10 +360,14 @@ namespace AgencyDispatchFramework.Dispatching
                         }
 
                         // Add vehicle to agency
-                        agency.AddVehicle((PatrolType)Enum.Parse(typeof(PatrolType), ename), info);
+                        agency.AddVehicle((PatrolVehicleType)Enum.Parse(typeof(PatrolVehicleType), ename), info);
                     }
+                }
 
-                    agency.BackingAgencyScriptName = btype;
+                // Try and parse funding level
+                if (!String.IsNullOrWhiteSpace(county) && Enum.TryParse(county, out County c))
+                {
+                    agency.BackingCounty = c;
                 }
 
                 Agencies.Add(sname, agency);
@@ -333,18 +379,28 @@ namespace AgencyDispatchFramework.Dispatching
             document = null;
         }
 
+        /// <summary>
+        /// Creates and returns an <see cref="Agency"/> instance based on <see cref="AgencyType"/>
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name="sname"></param>
+        /// <param name="name"></param>
+        /// <param name="staffing"></param>
+        /// <returns></returns>
         private static Agency CreateAgency(AgencyType type, string sname, string name, StaffLevel staffing)
         {
             switch (type)
             {
                 case AgencyType.CityPolice:
-                case AgencyType.CountySheriff:
                     return new CityPoliceAgency(sname, name, staffing);
+                case AgencyType.CountySheriff:
+                case AgencyType.StateParks:
+                    return new SheriffAgency(sname, name, staffing);
+                case AgencyType.StatePolice:
                 case AgencyType.HighwayPatrol:
                     return new HighwayPatrolAgency(sname, name, staffing);
                 default:
-                    return new CityPoliceAgency(sname, name, staffing);
-                    //throw new NotImplementedException($"The AgencyType '{type}' is yet supported");
+                    throw new NotImplementedException($"The AgencyType '{type}' is yet supported");
             }
         }
 
@@ -379,21 +435,6 @@ namespace AgencyDispatchFramework.Dispatching
         }
 
         /// <summary>
-        /// Gets the <see cref="AgencyType"/> based on the script name of the Agency
-        /// </summary>
-        /// <param name="scriptName"></param>
-        /// <returns></returns>
-        public static AgencyType GetAgencyTypeByName(string scriptName)
-        {
-            if (AgencyTypes.TryGetValue(scriptName, out AgencyType type))
-            {
-                return type;
-            }
-
-            return AgencyType.NotSupported;
-        }
-
-        /// <summary>
         /// Gets the players current police agency
         /// </summary>
         /// <returns></returns>
@@ -425,11 +466,24 @@ namespace AgencyDispatchFramework.Dispatching
             StaffLevel = staffLevel;
 
             // Initiate vars
-            Vehicles = new Dictionary<PatrolType, ProbabilityGenerator<PoliceVehicleInfo>>();
+            Vehicles = new Dictionary<PatrolVehicleType, ProbabilityGenerator<PoliceVehicleInfo>>();
         }
 
         /// <summary>
-        /// 
+        /// Creates the dispatcher for this agency type
+        /// </summary>
+        /// <returns></returns>
+        internal abstract Dispatcher CreateDispatcher();
+
+        /// <summary>
+        /// Calculates the optimum patrols for this agencies jurisdiction
+        /// </summary>
+        /// <param name="zoneNames"></param>
+        /// <returns></returns>
+        protected abstract Dictionary<TimeOfDay, int> GetOptimumUnitCounts(WorldZone[] zones);
+
+        /// <summary>
+        /// Enables simulation on this <see cref="Agency"/> in the game
         /// </summary>
         internal virtual void Enable()
         {
@@ -437,67 +491,16 @@ namespace AgencyDispatchFramework.Dispatching
             if (IsActive) return;
 
             // Get our zones of jurisdiction, and ensure each zone has the primary agency set
-            Zones = Zones ?? GetZoneNamesByAgencyName(ScriptName).Select(x => ZoneInfo.GetZoneByName(x)).ToArray();
-            foreach (var zone in Zones)
-            {
-                zone.PrimaryAgency = this;
-            }
+            Zones = GetZoneNamesByAgencyName(ScriptName).Select(x => WorldZone.GetZoneByName(x)).ToArray();
 
             // Load officers
-            if (OfficersByShift == null)
-            {
-                OfficersByShift = new Dictionary<TimeOfDay, List<OfficerUnit>>();
-            }
+            OfficersByShift = new Dictionary<TimeOfDay, List<OfficerUnit>>();
+
+            // Create dispatcher
+            Dispatcher = CreateDispatcher();
 
             // Get our patrol counts
-            OptimumPatrols = GetOptimumPatrols(Zones);
-
-            // Loop through each time period and cache crime numbers
-            foreach (TimeOfDay period in Enum.GetValues(typeof(TimeOfDay)))
-            {
-                // Spawn
-                int aiPatrolCount = OptimumPatrols[period];
-                OfficersByShift.Add(period, new List<OfficerUnit>());
-                var periodName = Enum.GetName(typeof(TimeOfDay), period);
-
-                // Ensure we have enough locations to spawn patrols at
-                var locations = GetRandomShoulderLocations(aiPatrolCount);
-                if (locations.Length < aiPatrolCount)
-                {
-                    StringBuilder b = new StringBuilder("The number of RoadShoulders available (");
-                    b.Append(locations.Length);
-                    b.Append(") to spawn AI officer units is less than the number of total AI officers (");
-                    b.Append(aiPatrolCount);
-                    b.Append(") for '");
-                    b.Append(FriendlyName);
-                    b.Append("' on ");
-                    b.Append(periodName);
-                    b.Append(" shift.");
-                    Log.Warning(b.ToString());
-
-                    // Adjust count
-                    aiPatrolCount = locations.Length;
-                }
-
-                // Create officer units
-                for (int i = 0; i < aiPatrolCount; i++)
-                {
-                    // Create instance
-                    var num = i + 10;
-                    var unit = new VirtualAIOfficerUnit(this, 1, 'A', num);
-                    OfficersByShift[period].Add(unit);
-
-                    // Start Duty
-                    if (period == GameWorld.CurrentTimeOfDay)
-                    {
-                        var sp = locations[i];
-                        unit.StartDuty(sp);
-                    }
-                }
-
-                // Log for debugging
-                Log.Debug($"Loaded {aiPatrolCount} Virtual AI officer units for agency '{FriendlyName}' on {periodName} shift");
-            }
+            OptimumPatrols = GetOptimumUnitCounts(Zones);
 
             // Register for TimeOfDay changes!
             GameWorld.OnTimeOfDayChanged += GameWorld_OnTimeOfDayChanged;
@@ -507,12 +510,15 @@ namespace AgencyDispatchFramework.Dispatching
         }
 
         /// <summary>
-        /// 
+        /// Disables simulation on this <see cref="Agency"/> in the game
         /// </summary>
         internal virtual void Disable()
         {
             // Un-Register for TimeOfDay changes!
             GameWorld.OnTimeOfDayChanged -= GameWorld_OnTimeOfDayChanged;
+
+            // Dispose the dispatcher
+            Dispatcher?.Dispose();
 
             // Dispose officer units
             DisposeAIUnits();
@@ -602,45 +608,11 @@ namespace AgencyDispatchFramework.Dispatching
         }
 
         /// <summary>
-        /// Calculates the optimum patrols for this agencies jurisdiction
-        /// </summary>
-        /// <param name="zoneNames"></param>
-        /// <returns></returns>
-        protected Dictionary<TimeOfDay, int> GetOptimumPatrols(ZoneInfo[] zones)
-        {
-            var patrols = new Dictionary<TimeOfDay, int>();
-
-            // Loop through each time period and cache crime numbers
-            foreach (TimeOfDay period in Enum.GetValues(typeof(TimeOfDay)))
-            {
-                // Create info struct
-                double optimumPatrols = 0;
-
-                // Determine our overall crime numbers by adding each zones
-                // individual crime statistics
-                if (zones.Length > 0)
-                {
-                    foreach (var zone in zones)
-                    {
-                        // Get average calls per period
-                        var calls = zone.AverageCalls[period];
-                        optimumPatrols += RegionCrimeGenerator.GetOptimumPatrolCountForZone(calls, zone.Size, zone.Population);
-                    }
-                }
-
-                // Set numbers
-                patrols.Add(period, (int)Math.Ceiling(optimumPatrols));
-            }
-
-            return patrols;
-        }
-
-        /// <summary>
         /// Adds a vehicle to the list of vehicles that can be spawned from this agency
         /// </summary>
         /// <param name="type"></param>
         /// <param name="info"></param>
-        internal void AddVehicle(PatrolType type, PoliceVehicleInfo info)
+        internal void AddVehicle(PatrolVehicleType type, PoliceVehicleInfo info)
         {
             if (!Vehicles.ContainsKey(type))
             {
@@ -657,7 +629,7 @@ namespace AgencyDispatchFramework.Dispatching
         /// <param name="type"></param>
         /// <param name="spawnPoint"></param>
         /// <returns></returns>
-        public Vehicle GetRandomPoliceVehicle(PatrolType type, SpawnPoint spawnPoint)
+        public Vehicle GetRandomPoliceVehicle(PatrolVehicleType type, SpawnPoint spawnPoint)
         {
             // Does this agency contain a patrol car of this type?
             if (!Vehicles.ContainsKey(type))

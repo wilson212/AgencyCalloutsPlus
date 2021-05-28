@@ -5,8 +5,9 @@
   <Scenarios>
 
     <ReportsOfArguingThreats>
-      <!-- Agencies that handle this callout scenario, in order -->
-      <Agencies>
+      <Category>Disturbance</Category>
+      <!-- Agencies that handle this callout scenario -->
+      <Agencies target="Police">
         <Agency>CityPolice</Agency>
         <Agency>CountySheriff</Agency>
         <Agency>HighwayPatrol</Agency>
@@ -18,7 +19,6 @@
         <Evening clear="10" overcast="10" rain="10" snow="10" storm="10" />
         <Night clear="10" overcast="10" rain="10" snow="10" storm="10" />
       </Probabilities>
-      <Category>Disturbance</Category>
       <Location>
         <Type>Residence</Type>
         <RequiredFlags mode="Any">
@@ -37,15 +37,15 @@
           <Description probability="10">
             <Source>Citizen</Source>
             <Text>
-              RP SAYS THEY HEARD THIER NEIGHBORS VERBALLY FIGHTING AND LOUD CRASHING NOISES COMING FROM INSIDE THE HOME AT $LOCATION$. 
-              RP STATED ONE OF THE SCREAMS WAS SOMEONE STATING THEY WERE GOING TO KILL SOMEONE. RESPOND CODE 3
+RP SAYS THEY HEARD THIER NEIGHBORS VERBALLY FIGHTING AND LOUD CRASHING NOISES COMING FROM INSIDE THE HOME AT $LOCATION$. 
+RP STATED ONE OF THE SCREAMS WAS SOMEONE STATING THEY WERE GOING TO KILL SOMEONE. RESPOND CODE 3
             </Text>
           </Description>
         </Descriptions>
         <!-- CAD texture for this call in call details -->
         <CADTexture dictionary="char_chat_call">char_chat_call</CADTexture>
         <IncidentType abbreviation="DIST">Domestic Disturbance</IncidentType>
-        <Priority>1</Priority>
+        <Priority>Emergency</Priority>
         <Response>3</Response>
       </Dispatch>
       <Simulation>

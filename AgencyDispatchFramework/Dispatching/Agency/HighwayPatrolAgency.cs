@@ -2,12 +2,13 @@
 using AgencyDispatchFramework.Simulation;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace AgencyDispatchFramework.Dispatching
 {
+    /// <summary>
+    /// Represents a policing agency that is statewide
+    /// </summary>
     public class HighwayPatrolAgency : Agency
     {
         internal HighwayPatrolAgency(string scriptName, string friendlyName, StaffLevel staffLevel) 
@@ -15,35 +16,25 @@ namespace AgencyDispatchFramework.Dispatching
         {
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
         internal override void Enable()
         {
             // Saftey
             if (IsActive) return;
+            base.Enable();
 
             // Get our zones of jurisdiction, and ensure each zone has the primary agency set
-            Zones = Zones ?? GetZoneNamesByAgencyName(ScriptName).Select(x => ZoneInfo.GetZoneByName(x)).ToArray();
             foreach (var zone in Zones)
             {
-                zone.PrimaryAgency = this;
-            }
+                // Grab county
+                var name = zone.County == County.Blaine ? "bcso" : "lssd";
 
-            // Load officers
-            if (OfficersByShift == null)
-            {
-                OfficersByShift = new Dictionary<TimeOfDay, List<OfficerUnit>>();
+                // Set agencies. Order is important here!
+                zone.PoliceAgencies = new List<Agency>()
+                {
+                    this,
+                    GetAgencyByName(name)
+                };
             }
-
-            // Get our patrol counts
-            OptimumPatrols = new Dictionary<TimeOfDay, int>()
-            {
-                { TimeOfDay.Day, 10 },
-                { TimeOfDay.Evening, 12 },
-                { TimeOfDay.Night, 8 },
-                { TimeOfDay.Morning, 12 }
-            };
 
             // Loop through each time period and cache crime numbers
             foreach (TimeOfDay period in Enum.GetValues(typeof(TimeOfDay)))
@@ -91,27 +82,44 @@ namespace AgencyDispatchFramework.Dispatching
                 // Log for debugging
                 Log.Debug($"Loaded {aiPatrolCount} Virtual AI officer units for agency '{FriendlyName}' on {periodName} shift");
             }
-
-            // Register for TimeOfDay changes!
-            GameWorld.OnTimeOfDayChanged += GameWorld_OnTimeOfDayChanged;
-
-            // Finally, flag
-            IsActive = true;
         }
 
-        public override bool Equals(object obj)
+        /// <summary>
+        /// Calculates the optimum patrols for this agencies jurisdiction
+        /// </summary>
+        /// <param name="zones"></param>
+        /// <returns></returns>-
+        protected override Dictionary<TimeOfDay, int> GetOptimumUnitCounts(WorldZone[] zones)
         {
-            return base.Equals(obj);
+            if (Dispatch.PlayerAgency.IsStateAgency)
+            {
+                return new Dictionary<TimeOfDay, int>()
+                {
+                    { TimeOfDay.Day, 20 },
+                    { TimeOfDay.Evening, 24 },
+                    { TimeOfDay.Night, 16 },
+                    { TimeOfDay.Morning, 24 }
+                };
+            }
+            else
+            {
+                return new Dictionary<TimeOfDay, int>()
+                {
+                    { TimeOfDay.Day, 10 },
+                    { TimeOfDay.Evening, 12 },
+                    { TimeOfDay.Night, 8 },
+                    { TimeOfDay.Morning, 12 }
+                };
+            }
         }
 
-        public override int GetHashCode()
+        /// <summary>
+        /// Creates the dispatcher for this agency type
+        /// </summary>
+        /// <returns></returns>
+        internal override Dispatcher CreateDispatcher()
         {
-            return base.GetHashCode();
-        }
-
-        public override string ToString()
-        {
-            return base.ToString();
+            return new PoliceDispatcher(this);
         }
     }
 }

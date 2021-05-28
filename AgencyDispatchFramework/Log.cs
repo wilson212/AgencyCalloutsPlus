@@ -70,13 +70,15 @@ namespace AgencyDispatchFramework
             Write(message, LogLevel.DEBUG);
         }
 
-        public static void Exception(Exception exception)
+        public static void Exception(Exception exception, string optionMessage = null)
         {
             // Only allow 1 thread at a time do these operations
             lock (_sync)
             {
                 // Write the header data
                 LogStream.WriteLine("-------- AgencyDispatchFramework Exception Trace Entry --------");
+                if (!String.IsNullOrEmpty(optionMessage))
+                    LogStream.WriteLine("Message: " + optionMessage);
                 LogStream.WriteLine("Exception Date: " + DateTime.Now.ToString());
                 LogStream.WriteLine("Os Version: " + Environment.OSVersion.VersionString);
                 LogStream.WriteLine("Architecture: " + ((Environment.Is64BitOperatingSystem) ? "x64" : "x86"));

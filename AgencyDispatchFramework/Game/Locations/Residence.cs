@@ -48,7 +48,7 @@ namespace AgencyDispatchFramework.Game.Locations
         /// Creates a new instance of <see cref="Residence"/>
         /// </summary>
         /// <param name="position"></param>
-        internal Residence(ZoneInfo zone, Vector3 position) : base(position)
+        internal Residence(WorldZone zone, Vector3 position) : base(position)
         {
             // @todo
             Zone = zone;

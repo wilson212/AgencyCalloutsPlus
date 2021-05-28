@@ -87,14 +87,20 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Dispatching\AgencyDispatch.cs" />
+    <Compile Include="Dispatching\Agency\SheriffAgency.cs" />
     <Compile Include="Dispatching\Assignments\FelonyTrafficStop.cs" />
     <Compile Include="Dispatching\Assignments\PrisonerTransport.cs" />
     <Compile Include="Dispatching\Assignments\TrafficEnforcement.cs" />
+    <Compile Include="Dispatching\Delegates\CallEndedHandler.cs" />
     <Compile Include="Dispatching\Delegates\CallListUpdateHandler.cs" />
     <Compile Include="Dispatching\Delegates\CalloutListUpdateHandler.cs" />
     <Compile Include="Dispatching\Delegates\CalloutPackLoadedHandler.cs" />
+    <Compile Include="Dispatching\Delegates\CallRaisedHandler.cs" />
+    <Compile Include="Dispatching\Dispatchers\Dispatcher.cs" />
+    <Compile Include="Dispatching\Enums\CallTarget.cs" />
     <Compile Include="Dispatching\Enums\DispatchPriority.cs" />
+    <Compile Include="Dispatching\Enums\UnitType.cs" />
+    <Compile Include="Dispatching\Dispatchers\PoliceDispatcher.cs" />
     <Compile Include="Dispatching\RadioMessage.cs" />
     <Compile Include="Dispatching\Delegates\ScenarioListUpdateHandler.cs" />
     <Compile Include="Dispatching\ScenarioPool.cs" />
@@ -108,6 +114,7 @@
     <Compile Include="Dispatching\Assignments\TrafficAccident.cs" />
     <Compile Include="Dispatching\Assignments\StandardTrafficStop.cs" />
     <Compile Include="Events\AmbientEvent.cs" />
+    <Compile Include="Extensions\CharExtensions.cs" />
     <Compile Include="Extensions\Enums\LogicOperator.cs" />
     <Compile Include="Extensions\Enums\SelectionOperator.cs" />
     <Compile Include="Extensions\IEnumerableExtensions.cs" />
@@ -150,7 +157,7 @@
     <Compile Include="Dispatching\PriorityCallDescription.cs" />
     <Compile Include="Dispatching\Enums\CallCloseFlag.cs" />
     <Compile Include="Dispatching\Enums\CallStatus.cs" />
-    <Compile Include="Dispatching\Enums\CalloutType.cs" />
+    <Compile Include="Dispatching\Enums\CallCategory.cs" />
     <Compile Include="Dispatching\Enums\CrimeLevel.cs" />
     <Compile Include="Dispatching\Enums\AgencyType.cs" />
     <Compile Include="Game\Locations\ResidencePosition.cs" />
@@ -205,7 +212,7 @@
     <Compile Include="Spawnable.cs" />
     <Compile Include="Game\Locations\SpawnPoint.cs" />
     <Compile Include="Dispatching\Enums\StaffLevel.cs" />
-    <Compile Include="Game\ZoneInfo.cs" />
+    <Compile Include="Game\WorldZone.cs" />
     <Compile Include="Game\VehicleInfo.cs" />
     <Compile Include="Game\Enums\ZoneSize.cs" />
     <Compile Include="Dispatching\CalloutScenarioInfo.cs" />
@@ -246,6 +253,7 @@
     <Compile Include="WorldStateProbabilityGenerator.cs" />
     <Compile Include="Game\TimeScale.cs" />
     <Compile Include="Xml\CalloutMetaFile.cs" />
+    <Compile Include="Xml\WorldZoneFile.cs" />
     <Compile Include="Xml\XmlExtractor.cs" />
     <Compile Include="Xml\XmlFileBase.cs" />
   </ItemGroup>
@@ -303,6 +311,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="AgencyDispatchFramework\Locations\BANNING.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AgencyDispatchFramework\Locations\BAYTRE.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="AgencyDispatchFramework\Locations\BEACH.xml">

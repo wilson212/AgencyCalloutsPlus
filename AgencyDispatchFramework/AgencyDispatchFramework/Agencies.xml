@@ -9,14 +9,11 @@
     # on duty. These are supported values (case sensitive):
       - CityPolice
       - CountySheriff
-      - DrugUnit
       - EMS
-      - FireDepartment
-      - GangUnit
+      - Fire
       - HighwayPatrol
       - ParkRanger
       - SpecialAgent
-      - SWAT
       
     # The "StaffLevel" entry determines the number of officers the department has, relative to the Optimum amount
     # of officers it should have to police thier jurisdiction. The lower the staffing level, the more callouts
@@ -45,7 +42,8 @@
     <ScriptName>lspd</ScriptName>
     <AgencyType>CityPolice</AgencyType>
     <StaffLevel>Fair</StaffLevel>
-    <BackingAgency>lssd</BackingAgency>
+    <County>LosSantos</County>
+    <CustomBackingAgency />
     <Vehicles>
       <Marked>
         <Vehicle probability="5">POLICE</Vehicle>
@@ -62,7 +60,8 @@
     <ScriptName>dppd</ScriptName>
     <AgencyType>CityPolice</AgencyType>
     <StaffLevel>Fair</StaffLevel>
-    <BackingAgency>lssd</BackingAgency>
+    <County>LosSantos</County>
+    <CustomBackingAgency />
     <Vehicles>
       <Marked>
         <Vehicle probability="5">POLICE</Vehicle>
@@ -79,7 +78,8 @@
     <ScriptName>vppd</ScriptName>
     <AgencyType>CityPolice</AgencyType>
     <StaffLevel>High</StaffLevel>
-    <BackingAgency>lssd</BackingAgency>
+    <County>LosSantos</County>
+    <CustomBackingAgency />
     <Vehicles>
       <Marked>
         <Vehicle probability="5">POLICE</Vehicle>
@@ -96,7 +96,8 @@
     <ScriptName>vwpd</ScriptName>
     <AgencyType>CityPolice</AgencyType>
     <StaffLevel>High</StaffLevel>
-    <BackingAgency>lssd</BackingAgency>
+    <County>LosSantos</County>
+    <CustomBackingAgency />
     <Vehicles>
       <Marked>
         <Vehicle probability="5">POLICE</Vehicle>
@@ -113,7 +114,8 @@
     <ScriptName>lmpd</ScriptName>
     <AgencyType>CityPolice</AgencyType>
     <StaffLevel>Fair</StaffLevel>
-    <BackingAgency>lssd</BackingAgency>
+    <County>LosSantos</County>
+    <CustomBackingAgency />
     <Vehicles>
       <Marked>
         <Vehicle probability="5">POLICE</Vehicle>
@@ -130,7 +132,8 @@
     <ScriptName>rhpd</ScriptName>
     <AgencyType>CityPolice</AgencyType>
     <StaffLevel>High</StaffLevel>
-    <BackingAgency>lssd</BackingAgency>
+    <County>LosSantos</County>
+    <CustomBackingAgency />
     <Vehicles>
       <Marked>
         <Vehicle probability="5">POLICE</Vehicle>
@@ -147,7 +150,8 @@
     <ScriptName>pap</ScriptName>
     <AgencyType>CityPolice</AgencyType>
     <StaffLevel>Fair</StaffLevel>
-    <BackingAgency>lssd</BackingAgency>
+    <County>LosSantos</County>
+    <CustomBackingAgency>lspd</CustomBackingAgency>
     <Vehicles>
       <Marked>
         <Vehicle probability="5">POLICE</Vehicle>
@@ -164,7 +168,8 @@
     <ScriptName>gspd</ScriptName>
     <AgencyType>CityPolice</AgencyType>
     <StaffLevel>Low</StaffLevel>
-    <BackingAgency>bcso</BackingAgency>
+    <County>Blaine</County>
+    <CustomBackingAgency />
     <Vehicles>
       <Marked>
         <Vehicle probability="5">SHERIFF</Vehicle>
@@ -180,7 +185,8 @@
     <ScriptName>sspd</ScriptName>
     <AgencyType>CityPolice</AgencyType>
     <StaffLevel>Low</StaffLevel>
-    <BackingAgency>bcso</BackingAgency>
+    <County>Blaine</County>
+    <CustomBackingAgency />
     <Vehicles>
       <Marked>
         <Vehicle probability="5">SHERIFF</Vehicle>
@@ -196,7 +202,8 @@
     <ScriptName>pbpd</ScriptName>
     <AgencyType>CityPolice</AgencyType>
     <StaffLevel>Fair</StaffLevel>
-    <BackingAgency>bcso</BackingAgency>
+    <County>Blaine</County>
+    <CustomBackingAgency />
     <Vehicles>
       <Marked>
         <Vehicle probability="5">SHERIFF</Vehicle>
@@ -214,7 +221,8 @@
     <ScriptName>lssd</ScriptName>
     <AgencyType>CountySheriff</AgencyType>
     <StaffLevel>Fair</StaffLevel>
-    <BackingAgency>sahp</BackingAgency>
+    <County>LosSantos</County>
+    <CustomBackingAgency />
     <Vehicles>
       <Marked>
         <Vehicle probability="5">SHERIFF</Vehicle>
@@ -230,7 +238,8 @@
     <ScriptName>bcso</ScriptName>
     <AgencyType>CountySheriff</AgencyType>
     <StaffLevel>Low</StaffLevel>
-    <BackingAgency>sahp</BackingAgency>
+    <County>Blaine</County>
+    <CustomBackingAgency />
     <Vehicles>
       <Marked>
         <Vehicle probability="5">SHERIFF</Vehicle>
@@ -248,7 +257,8 @@
     <ScriptName>sahp</ScriptName>
     <AgencyType>HighwayPatrol</AgencyType>
     <StaffLevel>Fair</StaffLevel>
-    <BackingAgency />
+    <County />
+    <CustomBackingAgency />
     <Vehicles>
       <Marked>
         <Vehicle probability="5">policeb</Vehicle>
@@ -260,6 +270,8 @@
     <ScriptName>nysp</ScriptName>
     <AgencyType>HighwayPatrol</AgencyType>
     <StaffLevel>Fair</StaffLevel>
+    <County />
+    <CustomBackingAgency />
     <Vehicles>
       <Marked>
         <Vehicle probability="5">policeold1</Vehicle>
@@ -274,7 +286,8 @@
     <ScriptName>fib</ScriptName>
     <AgencyType>SpecialAgent</AgencyType>
     <StaffLevel>VeryHigh</StaffLevel>
-    <BackingAgency />
+    <County />
+    <CustomBackingAgency />
     <Vehicles>
       <Marked>
         <Vehicle probability="5">FBI</Vehicle>
@@ -287,6 +300,8 @@
     <ScriptName>noose</ScriptName>
     <AgencyType>SpecialAgent</AgencyType>
     <StaffLevel>High</StaffLevel>
+    <County />
+    <CustomBackingAgency />
     <Vehicles>
       <Marked>
         <Vehicle probability="5">FBI</Vehicle>
@@ -301,7 +316,8 @@
     <ScriptName>sapr</ScriptName>
     <AgencyType>ParkRanger</AgencyType>
     <StaffLevel>Low</StaffLevel>
-    <BackingAgency />
+    <County />
+    <CustomBackingAgency />
     <Vehicles>
       <Marked>
         <Vehicle probability="5">FBI</Vehicle>

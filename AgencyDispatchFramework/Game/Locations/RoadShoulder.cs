@@ -43,7 +43,7 @@ namespace AgencyDispatchFramework.Game.Locations
         /// <param name="zone"></param>
         /// <param name="vector"></param>
         /// <param name="heading"></param>
-        public RoadShoulder(ZoneInfo zone, Vector3 vector, float heading) : base(vector)
+        public RoadShoulder(WorldZone zone, Vector3 vector, float heading) : base(vector)
         {
             Zone = zone;
             Heading = heading;

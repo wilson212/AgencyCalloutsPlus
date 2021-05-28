@@ -30,9 +30,14 @@ namespace AgencyDispatchFramework.Dispatching
         internal Callout Callout { get; set; }
 
         /// <summary>
-        /// The <see cref="CallPriority"/>
+        /// The current <see cref="CallPriority"/>
         /// </summary>
-        public CallPriority Priority => ScenarioInfo.Priority;
+        public CallPriority Priority { get; internal set; }
+
+        /// <summary>
+        /// The <see cref="CallPriority"/> when it was created
+        /// </summary>
+        public CallPriority OriginalPriority => ScenarioInfo.Priority;
 
         /// <summary>
         /// Gets the <see cref="Game.DateTime"/> when this call was created
@@ -69,7 +74,7 @@ namespace AgencyDispatchFramework.Dispatching
         {
             get
             {
-                switch (Priority)
+                switch (OriginalPriority)
                 {
                     case CallPriority.Immediate: return AttachedOfficers.Count < 4;
                     case CallPriority.Emergency: return AttachedOfficers.Count < 3;
@@ -84,10 +89,10 @@ namespace AgencyDispatchFramework.Dispatching
         public bool CallDeclinedByPlayer { get; internal set; }
 
         /// <summary>
-        /// Gets the <see cref="ZoneInfo"/> this <see cref="PriorityCall"/>
+        /// Gets the <see cref="WorldZone"/> this <see cref="PriorityCall"/>
         /// takes place in
         /// </summary>
-        public ZoneInfo Zone { get; internal set; }
+        public WorldZone Zone { get; internal set; }
 
         /// <summary>
         /// Indicates wether the OfficerUnit should repsond code 3
@@ -110,11 +115,17 @@ namespace AgencyDispatchFramework.Dispatching
         public PriorityCallDescription Description { get; internal set; }
 
         /// <summary>
+        /// An event fired when this call is closed. This event is used to remove the call from
+        /// ever <see cref="Dispatcher"/> that has added this call to its <see cref="Dispatcher.CallQueue" />
+        /// </summary>
+        internal event CallEndedHandler OnCallEnded;
+
+        /// <summary>
         /// Creates a new instance of <see cref="PriorityCall"/>
         /// </summary>
         /// <param name="id"></param>
         /// <param name="scenarioInfo"></param>
-        internal PriorityCall(int id, CalloutScenarioInfo scenarioInfo, ZoneInfo zone, WorldLocation location)
+        internal PriorityCall(int id, CalloutScenarioInfo scenarioInfo, WorldZone zone, WorldLocation location)
         {
             CallId = id;
             CallCreated = Rage.World.DateTime;
@@ -124,6 +135,7 @@ namespace AgencyDispatchFramework.Dispatching
             CallStatus = CallStatus.Created;
             Zone = zone;
             Location = location;
+            Priority = scenarioInfo.Priority;
 
             // Temp
             AISimulation = new AISceneSimulation(this);
@@ -177,6 +189,11 @@ namespace AgencyDispatchFramework.Dispatching
         }
 
         internal void OnTick()
+        {
+
+        }
+
+        internal void End(CallCloseFlag flag)
         {
 
         }

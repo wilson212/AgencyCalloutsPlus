@@ -11,7 +11,7 @@
   <Class>Lower</Class>
   <Population>Moderate</Population>
   <Crime>
-    <AverageCalls morning="4" day="8" evening="12" night="3" />
+    <AverageCalls morning="4" day="6" evening="10" night="5" />
     <Probabilities>
       <Robbery possible="false">
         <Morning clear="10" overcast="10" rain="10" snow="10" storm="10" />

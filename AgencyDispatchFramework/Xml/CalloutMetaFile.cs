@@ -85,9 +85,9 @@ namespace AgencyDispatchFramework.Xml
                 // Skip all but elements
                 if (scenarioNode.NodeType == XmlNodeType.Comment) continue;
 
-                // Grab the CalloutType
+                // Grab the Callout Catagory
                 XmlNode catagoryNode = scenarioNode.SelectSingleNode("Category");
-                if (!Enum.TryParse(catagoryNode?.InnerText, out CalloutType crimeType))
+                if (!Enum.TryParse(catagoryNode?.InnerText, out CallCategory crimeType))
                 {
                     Log.Warning(
                         $"CalloutMetaFile.Parse(): Unable to extract Callout Category value for '{calloutDirName}/CalloutMeta.xml -> '{scenarioNode.Name}'"
@@ -97,14 +97,25 @@ namespace AgencyDispatchFramework.Xml
 
                 // Grab agency list
                 XmlNode agenciesNode = scenarioNode.SelectSingleNode("Agencies");
-                if (agenciesNode == null)
+                if (agenciesNode == null || !agenciesNode.HasAttribute("target"))
                 {
                     Log.Error($"CalloutMetaFile.Parse(): Unable to load agency data in CalloutMeta for '{calloutDirName}'");
                     continue;
                 }
 
                 // No data?
-                if (!agenciesNode.HasChildNodes) continue;
+                if (!agenciesNode.HasChildNodes)
+                {
+                    Log.Error($"CalloutMetaFile.Parse(): Unable to load any agencies data in CalloutMeta for '{calloutDirName}'");
+                    continue;
+                }
+
+                // Parse the "target"
+                if (!Enum.TryParse(agenciesNode.GetAttribute("target"), out CallTarget callTarget))
+                {
+                    Log.Error($"CalloutMetaFile.Parse(): Unable to load agency target attrtibute in CalloutMeta for '{calloutDirName}'");
+                    continue;
+                }
 
                 // Itterate through items
                 agencies.Clear();
@@ -318,7 +329,7 @@ namespace AgencyDispatchFramework.Xml
                             continue;
                         }
 
-                        descriptions.Add(new PriorityCallDescription(prob, descTextNode.InnerText, srcNode.InnerText));
+                        descriptions.Add(new PriorityCallDescription(prob, descTextNode.InnerText.Trim(), srcNode.InnerText));
                     }
 
                     // If we have no descriptions, we failed
@@ -376,7 +387,8 @@ namespace AgencyDispatchFramework.Xml
                 {
                     Name = scenarioNode.Name,
                     CalloutName = calloutName,
-                    CrimeType = crimeType,
+                    Category = crimeType,
+                    Targets = callTarget,
                     Probability = baseProbability,
                     ProbabilityMultipliers = multipliers,
                     Priority = priority,

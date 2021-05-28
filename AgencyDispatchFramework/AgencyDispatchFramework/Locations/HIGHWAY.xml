@@ -7,7 +7,8 @@
   <Class>Working</Class>
   <Population>Moderate</Population>
   <Crime>
-    <AverageCalls morning="0" day="0" evening="0" night="0" />
+    <!-- Remember, AverageCalls is PER COUNTY -->
+    <AverageCalls morning="10" day="8" evening="10" night="6" />
     <Probabilities>
       <Robbery possible="false">
         <Morning clear="10" overcast="10" rain="10" snow="10" storm="10" />

@@ -10,7 +10,7 @@ namespace AgencyDispatchFramework.Dispatching.Assignments
     {
         public AssignedToCall(PriorityCall call)
         {
-            Priority = (CallPriority)call.Priority;
+            Priority = (CallPriority)call.OriginalPriority;
         }
     }
 }

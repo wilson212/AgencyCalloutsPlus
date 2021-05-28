@@ -9,8 +9,7 @@ using System.Linq;
 namespace AgencyDispatchFramework.Dispatching
 {
     /// <summary>
-    /// This class is responsible for generating <see cref="PriorityCall"/>s that
-    /// happen within the players current jurisdiction.
+    /// This class is responsible for generating crime related <see cref="PriorityCall"/>s.
     /// </summary>
     internal class RegionCrimeGenerator
     {
@@ -47,12 +46,12 @@ namespace AgencyDispatchFramework.Dispatching
         /// <summary>
         /// Gets a list of zones in this region
         /// </summary>
-        public ZoneInfo[] Zones => CrimeZoneGenerator.GetItems();
+        public WorldZone[] Zones => CrimeZoneGenerator.GetItems();
 
         /// <summary>
         /// Gets a list of zones in this jurisdiction
         /// </summary>
-        protected ProbabilityGenerator<ZoneInfo> CrimeZoneGenerator { get; set; }
+        protected ProbabilityGenerator<WorldZone> CrimeZoneGenerator { get; set; }
 
         /// <summary>
         /// Spawn generator for random crime levels
@@ -85,11 +84,11 @@ namespace AgencyDispatchFramework.Dispatching
         /// </summary>
         /// <param name="agency"></param>
         /// <param name="zones"></param>
-        public RegionCrimeGenerator(ZoneInfo[] zones)
+        public RegionCrimeGenerator(WorldZone[] zones)
         {
             // Create instance variables
             RegionCrimeInfoByTimeOfDay = new Dictionary<TimeOfDay, RegionCrimeInfo>();
-            CrimeZoneGenerator = new ProbabilityGenerator<ZoneInfo>();
+            CrimeZoneGenerator = new ProbabilityGenerator<WorldZone>();
 
             // Only attempt to add if we have zones
             if (zones.Length > 0)
@@ -112,7 +111,7 @@ namespace AgencyDispatchFramework.Dispatching
         /// Adds a zone to the <see cref="RegionCrimeGenerator"/>
         /// </summary>
         /// <param name="zone"></param>
-        public void AddZone(ZoneInfo zone)
+        public void AddZone(WorldZone zone)
         {
             // Add zone
             CrimeZoneGenerator.Add(zone);
@@ -163,10 +162,10 @@ namespace AgencyDispatchFramework.Dispatching
         /// Uses the <see cref="ProbabilityGenerator{T}"/> to spawn which zone the next crime
         /// will be commited in
         /// </summary>
-        /// <returns>returns a <see cref="ZoneInfo"/>, or null on failure</returns>
-        public ZoneInfo GetNextRandomCrimeZone()
+        /// <returns>returns a <see cref="WorldZone"/>, or null on failure</returns>
+        public WorldZone GetNextRandomCrimeZone()
         {
-            if (CrimeZoneGenerator.TrySpawn(out ZoneInfo zone))
+            if (CrimeZoneGenerator.TrySpawn(out WorldZone zone))
             {
                 return zone;
             }
@@ -516,7 +515,7 @@ namespace AgencyDispatchFramework.Dispatching
                 try
                 {
                     // Spawn a zone in our jurisdiction
-                    ZoneInfo zone = GetNextRandomCrimeZone();
+                    WorldZone zone = GetNextRandomCrimeZone();
                     if (zone == null)
                     {
                         Log.Error($"RegionCrimeGenerator.CreateCallFromScenario(): Attempted to pull a zone but zone is null");
@@ -550,7 +549,7 @@ namespace AgencyDispatchFramework.Dispatching
         public virtual PriorityCall GenerateCall()
         {
             // Spawn a zone in our jurisdiction
-            ZoneInfo zone = GetNextRandomCrimeZone();
+            WorldZone zone = GetNextRandomCrimeZone();
             if (zone == null)
             {
                 Log.Error($"RegionCrimeGenerator.GenerateCall(): Attempted to pull a random zone but zone is null");
@@ -563,7 +562,7 @@ namespace AgencyDispatchFramework.Dispatching
                 try
                 {
                     // Spawn crime type from our spawned zone
-                    CalloutType type = zone.GetNextRandomCrimeType();
+                    CallCategory type = zone.GetNextRandomCrimeType();
                     if (!ScenarioPool.ScenariosByCalloutType[type].TrySpawn(out CalloutScenarioInfo scenario))
                     {
                         Log.Warning($"RegionCrimeGenerator.GenerateCall(): Unable to find a CalloutScenario of CalloutType '{type}' in '{zone.FullName}'");
@@ -593,12 +592,12 @@ namespace AgencyDispatchFramework.Dispatching
         }
 
         /// <summary>
-        /// Returns a <see cref="WorldLocation"/> from a <see cref="ZoneInfo"/> for a <see cref="CalloutScenarioInfo"/>
+        /// Returns a <see cref="WorldLocation"/> from a <see cref="WorldZone"/> for a <see cref="CalloutScenarioInfo"/>
         /// </summary>
         /// <param name="zone"></param>
         /// <param name="scenario"></param>
         /// <returns></returns>
-        protected virtual WorldLocation GetScenarioLocationFromZone(ZoneInfo zone, CalloutScenarioInfo scenario)
+        protected virtual WorldLocation GetScenarioLocationFromZone(WorldZone zone, CalloutScenarioInfo scenario)
         {
             switch (scenario.LocationTypeCode)
             {

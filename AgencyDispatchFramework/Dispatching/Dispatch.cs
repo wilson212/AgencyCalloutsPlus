@@ -2,7 +2,6 @@
 using AgencyDispatchFramework.Extensions;
 using AgencyDispatchFramework.Game;
 using AgencyDispatchFramework.Game.Locations;
-using AgencyDispatchFramework.Simulation;
 using LSPD_First_Response.Mod.API;
 using LSPD_First_Response.Mod.Callouts;
 using Rage;
@@ -29,11 +28,6 @@ namespace AgencyDispatchFramework
         /// Contains a hash table of <see cref="WorldLocation"/>s that are currently in use by the Call Queue
         /// </summary>
         internal static Dictionary<LocationTypeCode, List<WorldLocation>> ActiveCrimeLocations { get; set; }
-
-        /// <summary>
-        /// Randomizer method used to randomize callouts and locations
-        /// </summary>
-        private static CryptoRandom Randomizer { get; set; }
 
         /// <summary>
         /// Gets the player's current selected <see cref="Agency"/>
@@ -74,12 +68,7 @@ namespace AgencyDispatchFramework
         /// <summary>
         /// 
         /// </summary>
-        internal static List<ZoneInfo> Zones { get; set; }
-
-        /// <summary>
-        /// Gets the number of zones under the player's <see cref="Agency"/> jurisdiction
-        /// </summary>
-        public static int ZoneCount => Zones.Count;
+        internal static List<WorldZone> Zones { get; set; }
 
         /// <summary>
         /// Gets the overall crime level definition for the current <see cref="Agency"/>
@@ -92,14 +81,9 @@ namespace AgencyDispatchFramework
         private static GameFiber AISimulationFiber { get; set; }
 
         /// <summary>
-        /// Temporary: Containts a list of police vehicles
-        /// </summary>
-        private static List<OfficerUnit> OfficerUnits { get; set; }
-
-        /// <summary>
         /// Contains the active agencies by type
         /// </summary>
-        private static Dictionary<string, Agency> Agencies { get; set; }
+        private static Dictionary<string, Agency> AgenciesByName { get; set; }
 
         /// <summary>
         /// Gets the player's <see cref="OfficerUnit"/> instance
@@ -201,32 +185,11 @@ namespace AgencyDispatchFramework
             // Create Radio Queue
             RadioQueue = new ConcurrentQueue<RadioMessage>();
 
-            // Create next random call ID
-            Randomizer = new CryptoRandom();
-
             // Create agency lookup
-            Agencies = new Dictionary<string, Agency>();
+            AgenciesByName = new Dictionary<string, Agency>();
         }
 
         #region Public API Methods
-
-        /// <summary>
-        /// Converts a latin character to the corresponding letter's unit type string
-        /// </summary>
-        /// <param name="value">An upper- or lower-case Latin character</param>
-        /// <returns></returns>
-        public static string GetUnitStringFromChar(char value)
-        {
-            // Uses the uppercase character unicode code point. 'A' = U+0042 = 65, 'Z' = U+005A = 90
-            char upper = char.ToUpper(value);
-            if (upper < 'A' || upper > 'Z')
-            {
-                throw new ArgumentOutOfRangeException("value", "This method only accepts standard Latin characters.");
-            }
-
-            int index = (int)upper - (int)'A';
-            return LAPDphonetic[index];
-        }
 
         /// <summary>
         /// Sets the player's status
@@ -340,9 +303,6 @@ namespace AgencyDispatchFramework
         /// <returns></returns>
         public static bool CanAssignAgencyToCall(Agency agency, PriorityCall call)
         {
-            // If this is the primary agency, then DUH!
-            if (agency == call.Zone.PrimaryAgency) return true;
-
             // Check
             switch (agency.AgencyType)
             {
@@ -352,9 +312,9 @@ namespace AgencyDispatchFramework
                     return (call.Priority == CallPriority.Immediate || call.PrimaryOfficer == null || call.NeedsMoreOfficers);
                 case AgencyType.CityPolice:
                     // City police can only take calls in their primary jurisdiction
-                    return false;
+                    return agency.Zones.Contains(call.Zone);
                 case AgencyType.HighwayPatrol:
-                    return call.ScenarioInfo.CrimeType == CalloutType.Traffic;
+                    return call.ScenarioInfo.Category == CallCategory.Traffic;
                 default:
                     return call.ScenarioInfo.AgencyTypes.Contains(agency.AgencyType);
             }
@@ -578,11 +538,10 @@ namespace AgencyDispatchFramework
                         return null;
                     }
 
-                    // Add call
                     // Add call to priority Queue
                     lock (_lock)
                     {
-                        var index = ((int)call.Priority) - 1;
+                        var index = ((int)call.OriginalPriority) - 1;
                         CallQueue[index].Add(call);
                         Log.Debug($"Dispatch: Added Call to Queue '{call.ScenarioInfo.Name}' in zone '{call.Zone.FullName}'");
 
@@ -614,7 +573,7 @@ namespace AgencyDispatchFramework
             }
 
             // Remove call
-            var priority = ((int)call.Priority) - 1;
+            var priority = ((int)call.OriginalPriority) - 1;
             lock (_lock)
             {
                 CallQueue[priority].Remove(call);
@@ -636,6 +595,9 @@ namespace AgencyDispatchFramework
 
             // Call event
             OnCallCompleted?.Invoke(call);
+
+            // Alert dispatcher instances
+            call.End(CallCloseFlag.Completed);
         }
 
         /// <summary>
@@ -691,6 +653,9 @@ namespace AgencyDispatchFramework
                 call.CallDeclinedByPlayer = true;
                 SetPlayerStatus(OfficerStatus.Available);
 
+                // Remove player
+                call.RemoveOfficer(PlayerUnit);
+
                 // Ensure this is null
                 PlayerActiveCall = null;
                 Log.Info($"Dispatch: Player declined callout scenario {call.ScenarioInfo.Name}");
@@ -728,6 +693,10 @@ namespace AgencyDispatchFramework
             }
         }
 
+        #endregion Public API Callout Methods
+
+        #region Internal Callout Methods
+
         /// <summary>
         /// Adds the specified <see cref="PriorityCall"/> to the Dispatch Queue
         /// </summary>
@@ -745,53 +714,93 @@ namespace AgencyDispatchFramework
             // Add call to priority Queue
             lock (_lock)
             {
-                var index = ((int)call.Priority) - 1;
+                var index = ((int)call.OriginalPriority) - 1;
                 CallQueue[index].Add(call);
                 ActiveCrimeLocations[call.Location.LocationType].Add(call.Location);
                 Log.Debug($"Dispatch.AddIncomingCall(): Added Call to Queue '{call.ScenarioInfo.Name}' in zone '{call.Zone.FullName}'");
+            }
 
-                // Invoke the next callout for player?
-                if (SendNextCallToPlayer)
+            // Decide which agency gets this call
+            switch (call.ScenarioInfo.Targets)
+            {
+                case CallTarget.Police:
+                    call.Zone.PoliceAgencies[0].Dispatcher.AddCall(call);
+                    break;
+                case CallTarget.Fire:
+                case CallTarget.Medical:
+                    throw new NotSupportedException();
+            }
+
+            // Call event
+            OnCallAdded?.Invoke(call);
+
+            // Invoke the next callout for player?
+            if (SendNextCallToPlayer)
+            {
+                // Check jurisdiction
+                if (!call.Zone.AgencyHasJurisdiction(PlayerAgency))
                 {
-                    // Unflag
-                    SendNextCallToPlayer = false;
+                    return;
 
-                    // Ensure player isnt in a callout already!
-                    if (PlayerActiveCall == null)
-                    {
-                        // Set call to invoke
-                        InvokeForPlayer = call;
-                    }
+                }
+                // Check call type
+                if (!call.ScenarioInfo.AgencyTypes.Contains(PlayerAgency.AgencyType))
+                {
+                    return;
                 }
 
-                // Call event
-                OnCallAdded?.Invoke(call);
+                // Unflag
+                SendNextCallToPlayer = false;
+
+                // Ensure player isnt in a callout already!
+                if (PlayerActiveCall == null)
+                {
+                    // Set call to invoke
+                    InvokeForPlayer = call;
+                }
             }
         }
 
-        #endregion Public API Callout Methods
+        /// <summary>
+        /// Ends a call
+        /// </summary>
+        /// <param name="call"></param>
+        /// <param name="flag"></param>
+        internal static void EndCall(PriorityCall call, CallCloseFlag flag)
+        {
+            switch (flag)
+            {
+                case CallCloseFlag.Completed:
+                    RegisterCallComplete(call);
+                    break;
+                case CallCloseFlag.Expired:
+                    OnCallExpired?.Invoke(call);
+                    break;
+            }
 
-        #region Internal Callout Methods
+
+            // Remove call
+            var priority = ((int)call.OriginalPriority) - 1;
+            lock (_lock)
+            {
+                CallQueue[priority].Remove(call);
+                ActiveCrimeLocations[call.Location.LocationType].Remove(call.Location);
+            }
+
+            // Tell the call its done
+            call.End(flag);
+        }
 
         /// <summary>
-        /// Dispatches the provided <see cref="OfficerUnit"/> to the provided
-        /// <see cref="PriorityCall"/>. If the <paramref name="officer"/> is
-        /// the Player, then the callout is started
+        /// Internally used as part of a handshake with a <see cref="Dispatcher"/> when
+        /// sending the player to a callout
         /// </summary>
-        /// <param name="officer"></param>
         /// <param name="call"></param>
-        private static void DispatchUnitToCall(OfficerUnit officer, PriorityCall call)
+        internal static void DispatchedPlayerToCall(PriorityCall call)
         {
-            // TODO: Secondary dispatching
-            // Assign the officer to the call
-            officer.AssignToCall(call, officer == PlayerUnit);
-
-            // If player, wait for the radio to be clear before actually dispatching the player
-            if (officer == PlayerUnit)
-            {
-                PlayerActiveCall = call;
-                CalloutWaitingForRadio = true;
-            }
+            // wait for the radio to be clear before actually dispatching the player
+            PlayerActiveCall = call;
+            CalloutWaitingForRadio = true;
         }
 
         /// <summary>
@@ -802,9 +811,6 @@ namespace AgencyDispatchFramework
         {
             if (officer.IsAIUnit)
             {
-                // Remove officer
-                OfficerUnits.Remove(officer);
-
                 // Dispose
                 officer.Dispose();
 
@@ -812,7 +818,7 @@ namespace AgencyDispatchFramework
                 Rage.Game.DisplayNotification(
                     "3dtextures",
                     "mpgroundlogo_cops",
-                    "Agency Dispatch and Callouts+",
+                    "Agency Dispatch Framework",
                     "~g~An Officer has Died.",
                     $"Unit ~g~{officer.CallSign}~s~ is no longer with us"
                 );
@@ -849,8 +855,10 @@ namespace AgencyDispatchFramework
                 if (oldAgency != null && !PlayerAgency.ScriptName.Equals(oldAgency.ScriptName))
                 {
                     // Clear agency data
-                    foreach (var ag in Agencies)
+                    foreach (var ag in AgenciesByName)
                         ag.Value.Disable();
+
+                    AgenciesByName.Clear();
 
                     // Clear calls
                     foreach (var callList in CallQueue)
@@ -875,29 +883,47 @@ namespace AgencyDispatchFramework
                     return false;
                 }
 
-                // Add player agency
-                var agency = PlayerAgency;
-                Agencies.Add(agency.ScriptName, agency);
+                // ********************************************
+                // Load all agencies that need to be loaded
+                // ********************************************
+                AgenciesByName.Add(PlayerAgency.ScriptName, PlayerAgency);
 
-                // Load all backing agency zones also
-                while (!String.IsNullOrEmpty(agency.BackingAgencyScriptName))
+                // Next we need to determine which agencies to load alongside the players agency
+                switch (PlayerAgency.AgencyType)
                 {
-                    string name = agency.BackingAgencyScriptName;
-                    agency = Agency.GetAgencyByName(name);
-                    if (agency == null)
-                    {
-                        Agencies.Clear();
-                        throw new Exception($"Unknown agency with scriptname '{agency.BackingAgencyScriptName}'");
-                    }
+                    case AgencyType.CityPolice:
+                        // Add county
+                        var name = (PlayerAgency.BackingCounty == County.Blaine) ? "bcso" : "lssd";
+                        AgenciesByName.Add(name, Agency.GetAgencyByName(name));
+                        zonesToLoad.UnionWith(Agency.GetZoneNamesByAgencyName(name));
 
-                    // Add agency
-                    Agencies.Add(agency.ScriptName, agency);
-                    zonesToLoad.UnionWith(Agency.GetZoneNamesByAgencyName(agency.ScriptName));
+                        // Add state
+                        AgenciesByName.Add("sahp", Agency.GetAgencyByName("sahp"));
+                        zonesToLoad.UnionWith(Agency.GetZoneNamesByAgencyName("sahp"));
+                        break;
+                    case AgencyType.CountySheriff:
+                    case AgencyType.StateParks:
+                        // Add state
+                        AgenciesByName.Add("sahp", Agency.GetAgencyByName("sahp"));
+                        zonesToLoad.UnionWith(Agency.GetZoneNamesByAgencyName("sahp"));
+                        break;
+                    case AgencyType.StatePolice:
+                    case AgencyType.HighwayPatrol:
+                        // Add both counties
+                        AgenciesByName.Add("bcso", Agency.GetAgencyByName("bcso"));
+                        AgenciesByName.Add("lssd", Agency.GetAgencyByName("lssd"));
+
+                        // Load both counties zones
+                        zonesToLoad.UnionWith(Agency.GetZoneNamesByAgencyName("bcso"));
+                        zonesToLoad.UnionWith(Agency.GetZoneNamesByAgencyName("lssd"));
+                        break;
                 }
 
+                // ********************************************
                 // Load locations based on current agency jurisdiction.
                 // This method needs called everytime the player Agency is changed
-                Zones = ZoneInfo.GetZonesByName(zonesToLoad.ToArray(), true, out int numZonesLoaded).ToList();
+                // ********************************************
+                Zones = WorldZone.GetZonesByName(zonesToLoad.ToArray(), out int numZonesLoaded).ToList();
                 if (Zones.Count == 0)
                 {
                     // Display notification to the player
@@ -914,7 +940,7 @@ namespace AgencyDispatchFramework
 
                 // Create player, and initialize all agencies
                 PlayerUnit = new PlayerOfficerUnit(Rage.Game.LocalPlayer, PlayerAgency);
-                foreach (var a in Agencies.Values)
+                foreach (var a in AgenciesByName.Values)
                 {
                     a.Enable();
                 }
@@ -949,7 +975,7 @@ namespace AgencyDispatchFramework
 
                     // Get total officer counts by agency
                     StringBuilder b = new StringBuilder();
-                    foreach (var a in Agencies)
+                    foreach (var a in AgenciesByName)
                     {
                         b.Append($"{a.Key} => {a.Value.OfficersByShift[period].Count}, ");
                     }
@@ -981,7 +1007,7 @@ namespace AgencyDispatchFramework
             StopAISimulation();
 
             // Deactivate all agencies
-            foreach (var a in Agencies.Values)
+            foreach (var a in AgenciesByName.Values)
             {
                 a.Disable();
             }
@@ -1120,7 +1146,7 @@ namespace AgencyDispatchFramework
                     var tod = GameWorld.CurrentTimeOfDay;
 
                     // Start duty for each officer
-                    foreach (var agency in Agencies.Values)
+                    foreach (var agency in AgenciesByName.Values)
                     foreach (var officer in agency.OnDutyOfficers)
                     {
                         officer.OnTick(date);
@@ -1186,338 +1212,20 @@ namespace AgencyDispatchFramework
             // Are we invoking a call to the player?
             if (InvokeForPlayer != null)
             {
-                DispatchUnitToCall(PlayerUnit, InvokeForPlayer);
+                // Tell the players dispatcher they are about to get a call
+                PlayerAgency.Dispatcher.AssignUnitToCall(PlayerUnit, InvokeForPlayer);
                 InvokeForPlayer = null;
             }
 
-            // Don't dispatch low priority calls if shift changes in less than 20 minutes!
-            bool shiftChangesSoon = GameWorld.GetTimeUntilNextTimeOfDay() < TimeSpan.FromMinutes(20);
-            var currentTime = World.DateTime;
-            var expiredCalls = new List<PriorityCall>();
-
-            // Stop calls from coming in for right now
-            lock (_lock)
+            // Process each agency
+            var orderedAgencies = AgenciesByName.Values.OrderBy(x => x.AgencyType);
+            foreach (var agency in orderedAgencies)
             {
-                // Itterate through each call priority Queue
-                for (int priorityIndex = 0; priorityIndex < 4; priorityIndex++)
-                {
-                    // If we have no calls
-                    if (CallQueue[priorityIndex].Count == 0)
-                        continue;
-
-                    // Grab open calls
-                    var calls = (
-                            from call in CallQueue[priorityIndex]
-                            where call.NeedsMoreOfficers
-                            orderby call.Priority ascending, call.CallCreated ascending // Oldest first
-                            select call
-                        );
-
-                    // Define vars
-                    OfficerUnit[] agencyOfficers = null;
-
-                    /******************************************************
-                     * Immediate Emergency Calls
-                     * 
-                     * Pull the closest available officers from ALL agencies until we have 
-                     * enough officers, regarldess of agency. Need to get onsite ASAP
-                     */
-                    if (priorityIndex == 0)
-                    {
-                        var temp = new List<OfficerUnit>();
-
-                        // Add officers from all agencies into the pool for this one
-                        foreach (var age in Agencies.Values)
-                        {
-                            temp.AddRange(Agencies[age.ScriptName].OnDutyOfficers);
-                        }
-
-                        agencyOfficers = temp.ToArray();
-                    }
-
-                    // Check priority 1 and 2 calls first and dispatch accordingly
-                    foreach (var call in calls)
-                    {
-                        // Get the primary agency and its officers
-                        var primaryAgency = call.Location.Zone.PrimaryAgency;
-                        if (agencyOfficers == null)
-                        {
-                            agencyOfficers = Agencies[primaryAgency.ScriptName].OnDutyOfficers;
-                        }
-
-                        // Create officer pool, grouped by dispatching priority
-                        var officerPool = CreateOfficerPriorityPool(agencyOfficers, call);
-
-                        /******************************************************
-                         * All Emergency Calls
-                         * 
-                         * Pull available officers from all agencies until we have enough officers,
-                         * prioritizing the primary agency
-                         */
-                        if (priorityIndex < 2)
-                        {
-                            // Select closest available officer
-                            int officersNeeded = (priorityIndex == 0) ? 4 : 3;
-                            var availableOfficers = GetClosestOfficersByPriority(officerPool, officersNeeded, call.Location.Position);
-
-                            // If we have not officers, stop here
-                            if (availableOfficers.Count == 0)
-                            {
-                                break;
-                            }
-
-                            // Is player in this list?
-                            var player = availableOfficers.Where(x => !x.IsAIUnit).FirstOrDefault();
-                            if (player != null)
-                            {
-                                // Attempt to Dispatch player as primary to this call
-                                DispatchUnitToCall(player, call);
-                            }
-                            else
-                            {
-                                // Dispatch primary AI officer
-                                DispatchUnitToCall(availableOfficers[0], call);
-
-                                // Add other units to the call
-                                for (int i = 1; i < availableOfficers.Count - 1; i++)
-                                {
-                                    // Dispatch
-                                    var officer = availableOfficers[i];
-                                    DispatchUnitToCall(officer, call);
-                                }
-                            }
-                        }
-
-                        /******************************************************
-                         * Expedited Calls
-                         * 
-                         * These calls must be taken care of in a timely manner,
-                         * Pull officers in higher agencies after 15 minutes
-                         */
-                        else if (priorityIndex == 2)
-                        {
-                            // Select closest available officer
-                            var officer = GetClosestOfficersByPriority(officerPool, 1, call.Location.Position).FirstOrDefault();
-
-                            // If we have not officers, stop here
-                            if (officer != null)
-                            {
-                                DispatchUnitToCall(officer, call);
-                                continue;
-                            }
-
-                            // If after 20 minutes, we still have no officers to send from the
-                            // primary agency, pull officers from higher agencies
-                            if (currentTime - call.CallCreated > TimeSpan.FromMinutes(20))
-                            {
-                                var agency = primaryAgency;
-                                while (!String.IsNullOrEmpty(agency.BackingAgencyScriptName))
-                                {
-                                    // Grab officers
-                                    agencyOfficers = Agencies[agency.BackingAgencyScriptName].OnDutyOfficers;
-                                    officerPool = CreateOfficerPriorityPool(agencyOfficers, call);
-
-                                    officer = GetClosestOfficersByPriority(officerPool, 1, call.Location.Position).FirstOrDefault();
-                                    if (officer != null)
-                                    {
-                                        DispatchUnitToCall(officer, call);
-                                        break;
-                                    }
-                                    else
-                                    {
-                                        // Look to the next agency
-                                        agency = Agency.GetAgencyByName(agency.BackingAgencyScriptName);
-                                    }
-                                }
-                            }
-                        }
-
-                        /******************************************************
-                         * Routine Calls
-                         * 
-                         * We don't really care about these. They will expire and
-                         * removed from the call list after 12 hours
-                         */
-                        else
-                        {
-                            // If shifts end soon, do not dispatch
-                            if (shiftChangesSoon) break;
-
-                            // Select closest available officer
-                            var officer = GetClosestOfficersByPriority(officerPool, 1, call.Location.Position).FirstOrDefault();
-                            if (officer != null)
-                            {
-                                DispatchUnitToCall(officer, call);
-                            }
-
-                            // Remove
-                            if (currentTime - call.CallCreated > TimeSpan.FromHours(12))
-                            {
-                                expiredCalls.Add(call);
-                            }
-                        }
-                    }
-                }
-
-                // Remove expire calls
-                if (expiredCalls.Count > 0)
-                {
-                    foreach (var call in expiredCalls)
-                    {
-                        // Remove call
-                        var priority = ((int)call.Priority) - 1;
-                        CallQueue[priority].Remove(call);
-
-                        // Free location
-                        ActiveCrimeLocations[call.Location.LocationType].Remove(call.Location);
-
-                        // Call events
-                        OnCallExpired?.Invoke(call);
-                    }
-                }
+                agency.Dispatcher.Process();
+                GameFiber.Yield();
             }
         }
 
         #endregion GameFiber methods
-
-        #region Filter and Order methods
-
-        /// <summary>
-        /// Groups <see cref="OfficerUnit"/>s for a call based on availability and <see cref="DispatchPriority"/>. Officers
-        /// that are busy or not a priority for the call are no included in the list.
-        /// </summary>
-        /// <param name="priority"></param>
-        /// <returns></returns>
-        private static Dictionary<DispatchPriority, List<OfficerUnit>> CreateOfficerPriorityPool(OfficerUnit[] officers, PriorityCall call)
-        {
-            // Create a new list
-            var availableOfficers = new List<OfficerUnit>();
-            foreach (var officer in officers)
-            {
-                // Special checks for the player
-                if (!officer.IsAIUnit)
-                {
-                    // Do not add player if they are busy, declined the call already
-                    if (call.CallDeclinedByPlayer || !CanInvokeCalloutForPlayer())
-                    {
-                        continue;
-                    }
-                }
-
-                // Set default
-                var currentPriority = 5;
-                bool isOnScene = false;
-
-                // If the officer is on a call, lets determine if our currrent call is more important
-                if (officer.CurrentCall != null)
-                {
-                    currentPriority = (int)officer.CurrentCall.Priority;
-                    isOnScene = officer.Status != OfficerStatus.Dispatched;
-                }
-                else if (officer.Assignment != null)
-                {
-                    currentPriority = (int)officer.Assignment.Priority;
-                }
-
-                // Easy, if the call is less priority than what we are doing, forget it
-                if ((int)call.Priority >= currentPriority)
-                {
-                    continue;
-                }
-
-                // Lets do some dispatch logic and assign priorities
-                switch (currentPriority)
-                {
-                    case 1: // Already on an Immediate Emergency assignment
-                    case 2: // Already on an Emergency assignment
-                        break;
-                    case 3: // On Expdited assignment
-                        if (call.Priority == CallPriority.Immediate)
-                        {
-                            officer.Priority = (isOnScene) ? DispatchPriority.Moderate : DispatchPriority.High;
-                        }
-                        else
-                        {
-                            officer.Priority = (isOnScene) ? DispatchPriority.Low : DispatchPriority.Moderate;
-                        }
-                        availableOfficers.Add(officer);
-                        break;
-                    case 4: // On routine assignment
-                        if (call.Priority == CallPriority.Expedited)
-                        {
-                            // Do not pull someone off a routine call to preform a expedited call
-                            if (isOnScene) break;
-
-                            officer.Priority = DispatchPriority.Low;
-                            availableOfficers.Add(officer);
-                        }
-                        else
-                        {
-                            // Pull this officer off
-                            officer.Priority = (call.Priority == CallPriority.Immediate) ? DispatchPriority.High : DispatchPriority.Moderate;
-                            availableOfficers.Add(officer);
-                        }
-                        break;
-                    default: // Not busy at all
-                        officer.Priority = DispatchPriority.VeryHigh;
-                        availableOfficers.Add(officer);
-                        break;
-                }
-            }
-
-            return availableOfficers.GroupBy(x => x.Priority).ToDictionary();
-        }
-
-        /// <summary>
-        /// Gets the closest available officers to a call based on priority dispatching
-        /// </summary>
-        /// <param name="officers">All available officers that can be dispatched to the call</param>
-        /// <param name="count">The desired number of officers to fetch</param>
-        /// <param name="location">The location of the call</param>
-        /// <returns></returns>
-        private static List<OfficerUnit> GetClosestOfficersByPriority(Dictionary<DispatchPriority, List<OfficerUnit>> officers, int count, Vector3 location)
-        {
-            var list = new List<OfficerUnit>();
-            for (int i = 1; i < 5; i++)
-            {
-                // Since we are grouping by priority, we may be missing some
-                if (officers.TryGetValue((DispatchPriority)i, out List<OfficerUnit> units))
-                {
-                    // Double check that we have units
-                    if (units.Count == 0)
-                        continue;
-
-                    // Add officers, sorting first by distance to the call
-                    list.AddRange(GetClosestOfficers(units, location, count));
-                    count -= units.Count;
-
-                    // If we are at length, quit here
-                    if (count <= 0)
-                        break;
-                }
-            }
-
-            return list;
-        }
-
-        /// <summary>
-        /// Gets the closest available officers to a location
-        /// </summary>
-        /// <param name="availableOfficers">All available officers that can be dispatched to the call</param>
-        /// <param name="location">The location of the call</param>
-        /// <param name="count">The desired number of officers to fetch</param>
-        /// <returns></returns>
-        private static List<OfficerUnit> GetClosestOfficers(List<OfficerUnit> availableOfficers, Vector3 location, int count)
-        {
-            // Stop if we have no available officers
-            if (availableOfficers.Count == 0)
-                return availableOfficers;
-
-            // Order officers by distance to the call
-            var ordered = availableOfficers.OrderBy(x => x.GetPosition().DistanceTo(location));
-            return ordered.Take(count).ToList();
-        }
-
-        #endregion Filter and Order methods
     }
 }

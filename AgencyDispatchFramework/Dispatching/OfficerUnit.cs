@@ -1,4 +1,5 @@
 ﻿using AgencyDispatchFramework.Dispatching.Assignments;
+using AgencyDispatchFramework.Extensions;
 using Rage;
 using System;
 
@@ -109,7 +110,7 @@ namespace AgencyDispatchFramework.Dispatching
         internal void SetCallSign(int division, char unit, int beat)
         {
             Division = division;
-            Unit = Dispatch.GetUnitStringFromChar(unit);
+            Unit = unit.GetUnitStringFromChar();
             Beat = beat;
 
             unit = char.ToUpper(unit);

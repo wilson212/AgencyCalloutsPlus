@@ -77,6 +77,7 @@ namespace AgencyDispatchFramework.Simulation
 
             // Call base
             base.CompleteCall(flag);
+            Assignment = null;
 
             // Next task
             if (flag == CallCloseFlag.Completed)

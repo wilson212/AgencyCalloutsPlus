@@ -1,6 +1,6 @@
 ﻿namespace AgencyDispatchFramework.Dispatching
 {
-    public enum CalloutType
+    public enum CallCategory
     {
         Robbery,
 

@@ -93,9 +93,14 @@ namespace AgencyDispatchFramework.Dispatching
         public Range<int> SimulationTime { get; internal set; }
 
         /// <summary>
-        /// Gets the <see cref="CalloutType"/> of this scenario
+        /// Gets the <see cref="Dispatching.CallCategory"/> of this scenario
         /// </summary>
-        public CalloutType CrimeType { get; internal set; }
+        public CallCategory Category { get; internal set; }
+
+        /// <summary>
+        /// Gets the <see cref="Dispatching.CallTarget"/> of this scenario
+        /// </summary>
+        public CallTarget Targets { get; internal set; }
 
         /// <summary>
         /// Contains an array of <see cref="Agency"/>s that can handle this scenario

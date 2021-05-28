@@ -29,7 +29,7 @@ namespace AgencyDispatchFramework.NativeUI
         /// Defines the maximum calls to display in the list at once before needing to scroll
         /// to see further items
         /// </summary>
-        const int MaxItemsToDisplay = 12;
+        const int MaxItemsToDisplay = 14;
 
         /// <summary>
         /// Contains a list of sub menu Tab items
@@ -67,6 +67,9 @@ namespace AgencyDispatchFramework.NativeUI
             Dispatch.OnCallExpired += Dispatch_OnCallCompleted;
         }
 
+        /// <summary>
+        /// Resets the screen and index
+        /// </summary>
         public void RefreshIndex()
         {
             foreach (TabItem item in Items)
@@ -79,34 +82,42 @@ namespace AgencyDispatchFramework.NativeUI
             Index = 0;
         }
 
+        /// <summary>
+        /// Moves the list of calls UP one space if
+        /// the player is the the BOTTOM of the list
+        /// </summary>
         private void MoveListItemsUp()
         {
             // Keep index in range
             Index = CorrectIndex(Index - 1);
 
             // If we can't fill the entire list, then we are fine
-            if (Items.Count < MaxItemsToDisplay) return;
+            if (Items.Count <= MaxItemsToDisplay) return;
 
             // If we are out of range, increase the range
             if (Index < IndexesInView.Minimum)
             {
                 IndexesInView.Minimum = Index;
-                IndexesInView.Maximum = Index + MaxItemsToDisplay;
+                IndexesInView.Maximum = Index + (MaxItemsToDisplay - 1);
             }
         }
 
+        /// <summary>
+        /// Moves the list of calls DOWN one space if
+        /// the player is the the TOP of the list
+        /// </summary>
         private void MoveListItemsDown()
         {
             // Keep index in range
             Index = CorrectIndex(Index + 1);
 
             // If we can't fill the entire list, then we are fine
-            if (Items.Count < MaxItemsToDisplay) return;
+            if (Items.Count <= MaxItemsToDisplay) return;
 
             // If we are out of range, increase the range
             if (Index > IndexesInView.Maximum)
             {
-                IndexesInView.Minimum = Index - MaxItemsToDisplay;
+                IndexesInView.Minimum = Index - (MaxItemsToDisplay - 1);
                 IndexesInView.Maximum = Index;
             }
         }
@@ -138,7 +149,7 @@ namespace AgencyDispatchFramework.NativeUI
 
             // Reset index if out of range
             if (Items.Count > 0 && !Index.InRange(0, Items.Count - 1))
-                Index = 0;
+                Index = CorrectIndex(Index);
 
             // Do we have an actual sub menu item focused within index range?
             if (Items.Count > 0 && Items[Index].Focused)
@@ -211,6 +222,7 @@ namespace AgencyDispatchFramework.NativeUI
 
                 var blackAlpha = Focused ? 200 : 100;
                 var fullAlpha = Focused ? 255 : 150;
+                var redAlpha = Focused ? 100 : 50;
                 var activeWidth = res.Width - SafeSize.X * 2;
                 var submenuWidth = (int)(activeWidth * 0.6818f);
                 var statusSize = new Size(10, 40);
@@ -233,7 +245,7 @@ namespace AgencyDispatchFramework.NativeUI
                     }
                     else
                     {
-                        ResRectangle.Draw(SafeSize.AddPoints(new Point(10, (itemSize.Height + 3) * j)), itemSize, (Index == i && Focused) ? Color.FromArgb(150, Color.White) : Color.FromArgb(100, Color.Red));
+                        ResRectangle.Draw(SafeSize.AddPoints(new Point(10, (itemSize.Height + 3) * j)), itemSize, (Index == i && Focused) ? Color.FromArgb(fullAlpha, Color.White) : Color.FromArgb(redAlpha, Color.Crimson));
                     }
 
                     // Draw item title in the box
@@ -271,6 +283,11 @@ namespace AgencyDispatchFramework.NativeUI
             }
         }
 
+        /// <summary>
+        /// Fills the small rectangle with a color depending on the call status
+        /// </summary>
+        /// <param name="priorityCallTabItem"></param>
+        /// <returns></returns>
         private Color GetCallItemColor(PriorityCallTabItem priorityCallTabItem)
         {
             PriorityCall call = priorityCallTabItem.Call;
@@ -302,7 +319,7 @@ namespace AgencyDispatchFramework.NativeUI
             Items.Add(tItem);
 
             // Apply ordering
-            Items = Items.OrderBy(x => Dispatch.CanAssignAgencyToCall(Dispatch.PlayerAgency, x.Call))
+            Items = Items.OrderByDescending(x => Dispatch.CanAssignAgencyToCall(Dispatch.PlayerAgency, x.Call))
                 .ThenBy(x => x.Call.Priority)
                 .ThenBy(x => x.Call.CallCreated).ToList();
 

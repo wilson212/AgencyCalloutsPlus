@@ -6,6 +6,8 @@
 
         Emergency,
 
-        Forced
+        Forced,
+
+        Expired
     }
 }

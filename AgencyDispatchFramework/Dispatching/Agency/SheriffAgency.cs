@@ -1,18 +1,19 @@
-﻿using System;
+﻿using AgencyDispatchFramework.Game;
+using AgencyDispatchFramework.Simulation;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using AgencyDispatchFramework.Game;
-using AgencyDispatchFramework.Simulation;
+using System.Threading.Tasks;
 
 namespace AgencyDispatchFramework.Dispatching
 {
-    public class CityPoliceAgency : Agency
+    class SheriffAgency : Agency
     {
-        internal CityPoliceAgency(string scriptName, string friendlyName, StaffLevel staffLevel) 
+        internal SheriffAgency(string scriptName, string friendlyName, StaffLevel staffLevel)
             : base(scriptName, friendlyName, staffLevel)
         {
-            
+
         }
 
         internal override void Enable()
@@ -31,7 +32,6 @@ namespace AgencyDispatchFramework.Dispatching
                 zone.PoliceAgencies = new List<Agency>()
                 {
                     this,
-                    GetAgencyByName(name),
                     GetAgencyByName("sahp")
                 };
             }

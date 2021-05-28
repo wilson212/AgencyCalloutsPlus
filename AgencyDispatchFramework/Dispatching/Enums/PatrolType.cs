@@ -1,6 +1,6 @@
 ﻿namespace AgencyDispatchFramework.Dispatching
 {
-    public enum PatrolType
+    public enum PatrolVehicleType
     {
         Marked,
 

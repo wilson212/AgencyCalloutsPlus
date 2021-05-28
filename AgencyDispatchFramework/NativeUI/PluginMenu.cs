@@ -160,7 +160,7 @@ namespace AgencyDispatchFramework.NativeUI
             }
 
             PatrolAreaMenuButton = new UIMenuListItem("Patrol Area", "Sets your patrol area. Click to set.");
-            foreach (string value in ZoneInfo.GetRegions())
+            foreach (string value in WorldZone.GetRegions())
             {
                 PatrolAreaMenuButton.Collection.Add(value, value);
             }

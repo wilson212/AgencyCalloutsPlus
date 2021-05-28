@@ -172,6 +172,7 @@ namespace AgencyDispatchFramework.Simulation
 
             // Ensure siren is off
             PoliceCar.IsSirenOn = false;
+            Assignment = null;
 
             // Tell dispatch we are done here
             Dispatch.RegisterCallComplete(CurrentCall);
@@ -277,7 +278,7 @@ namespace AgencyDispatchFramework.Simulation
                     var sp = new SpawnPoint(location);
 
                     // Create car
-                    PoliceCar = Dispatch.PlayerAgency.GetRandomPoliceVehicle(PatrolType.Marked, sp);
+                    PoliceCar = Dispatch.PlayerAgency.GetRandomPoliceVehicle(PatrolVehicleType.Marked, sp);
                     PoliceCar.Model.LoadAndWait();
                     PoliceCar.MakePersistent();
 

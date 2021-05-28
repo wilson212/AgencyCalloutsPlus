@@ -1,17 +1,15 @@
 ﻿namespace AgencyDispatchFramework.Dispatching
 {
-    public enum AgencyType
+    public enum AgencyType : int
     {
-        NotSupported,
         CityPolice,
+
         CountySheriff,
-        DrugUnit,
-        EMS,
-        FireDepartment,
-        GangUnit,
-        HighwayPatrol,
-        ParkRanger,
-        SpecialAgent,
-        SWAT
+
+        StateParks,
+
+        HighwayPatrol, 
+        
+        StatePolice,
     }
 }
