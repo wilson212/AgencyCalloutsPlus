@@ -187,6 +187,9 @@ namespace AgencyDispatchFramework
 
             // Create agency lookup
             AgenciesByName = new Dictionary<string, Agency>();
+
+            // Register for event
+            Dispatcher.OnCallRaised += Dispatcher_OnCallRaised;
         }
 
         #region Public API Methods
@@ -824,6 +827,70 @@ namespace AgencyDispatchFramework
                 );
 
                 //@todo Spawn new officer unit?
+            }
+        }
+
+        /// <summary>
+        /// Method called when a <see cref="Dispatcher"/> raises a call. This method analyzes
+        /// what additional resources are needed for the call, and assigns the appropriate agencies 
+        /// to assist.
+        /// </summary>
+        /// <remarks>
+        /// Each <see cref="Dispatcher"/> instance is responsible for keeping track of which calls have
+        /// been raised in the <see cref="Dispatcher.RaisedCalls"/> HashSet
+        /// </remarks>
+        /// <param name="agency">The agency that raised the call</param>
+        /// <param name="call">The call that requires additional resources</param>
+        /// <param name="args">Container that directs the dispatch of what resoures are being requested</param>
+        private static void Dispatcher_OnCallRaised(Agency agency, PriorityCall call, CallRaisedEventArgs args)
+        {
+            // Of we are not on duty, then wth
+            if (!Main.OnDuty) return;
+
+            // @todo finish
+            Agency newAgency = null;
+
+            // So far this is all we support
+            if (args.NeedsPolice)
+            {
+                switch (agency.AgencyType)
+                {
+                    case AgencyType.CityPolice:
+                        // Grab county agency
+                        newAgency = call.Zone.PoliceAgencies.Where(x => x.AgencyType == AgencyType.CountySheriff).FirstOrDefault();
+                        break;
+                    case AgencyType.StateParks:
+                    case AgencyType.CountySheriff:
+                        // Grab state agency
+                        newAgency = call.Zone.PoliceAgencies.Where(x => x.IsStateAgency && x.AgencyType != AgencyType.StateParks).FirstOrDefault();
+                        break;
+                    case AgencyType.HighwayPatrol:
+                    case AgencyType.StatePolice:
+                        // We need to grab the county that has jurisdiction here
+                        newAgency = call.Zone.PoliceAgencies.Where(x => x.AgencyType == AgencyType.CountySheriff).FirstOrDefault();
+                        break;
+                    default:
+                        throw new NotSupportedException();
+                }
+            }
+            else
+            {
+                throw new NotSupportedException();
+            }
+
+            // Add the call to the dispatcher of the next tier.
+            // Both agencies should now be tracking the call.
+            if (newAgency != null)
+            {
+                // Only log if the call was added successfully
+                if (newAgency.Dispatcher.AddCall(call))
+                {
+                    Log.Debug($"{agency.ScriptName.ToUpper()} Dispatcher: Raised call '{call.ScenarioInfo.Name}' up to {newAgency.ScriptName.ToUpper()}");
+                }
+            }
+            else
+            {
+                Log.Debug($"{agency.ScriptName.ToUpper()} Dispatcher: Attemtped to raise call '{call.ScenarioInfo.Name}', but there is no higher agency.");
             }
         }
 

@@ -13,8 +13,6 @@ namespace AgencyDispatchFramework.Dispatching
     /// </summary>
     internal class PoliceDispatcher : Dispatcher
     {
-        public override event CallRaisedHandler OnCallRaised;
-
         /// <summary>
         /// Creates a new instance
         /// </summary>
@@ -45,7 +43,7 @@ namespace AgencyDispatchFramework.Dispatching
                 var calls = (
                         from call in CallQueue
                         where call.NeedsMoreOfficers
-                        orderby call.Priority ascending, call.CallCreated ascending // Oldest first
+                        orderby (int)call.Priority ascending, call.CallCreated ascending // Oldest first
                         select call
                     );
 
@@ -65,37 +63,31 @@ namespace AgencyDispatchFramework.Dispatching
                     {
                         // Select closest available officer
                         var availableOfficers = GetClosestOfficersByPriority(officerPool, call);
-                        if (availableOfficers.Count > 0)
+                        if (availableOfficers.Count == 0) break;
+                        
+                        // Is player in this list? Since we are dispatching more than one
+                        // officer to this call, make the player Primary
+                        var player = availableOfficers.Where(x => !x.IsAIUnit).FirstOrDefault();
+                        if (player != null)
                         {
-                            // Is player in this list? Since we are dispatching more than one
-                            // officer to this call, make the player Primary
-                            var player = availableOfficers.Where(x => !x.IsAIUnit).FirstOrDefault();
-                            if (player != null)
-                            {
-                                // Attempt to Dispatch player as primary to this call
-                                AssignUnitToCall(player, call);
-                            }
-                            else
-                            {
-                                // Dispatch primary AI officer
-                                AssignUnitToCall(availableOfficers[0], call);
+                            // Attempt to Dispatch player as primary to this call
+                            AssignUnitToCall(player, call);
+                        }
 
-                                // Add other units to the call
-                                for (int i = 1; i < availableOfficers.Count - 1; i++)
-                                {
-                                    // Dispatch
-                                    var officer = availableOfficers[i];
-                                    AssignUnitToCall(officer, call);
-                                }
-                            }
+                        // Add other units to the call
+                        foreach (var officer in availableOfficers)
+                        {
+                            // We already dispatched the player
+                            if (!officer.IsAIUnit) continue;
+
+                            // Dispatch
+                            AssignUnitToCall(officer, call);
                         }
 
                         // If we have not officers, stop here
                         if (availableOfficers.Count < call.AdditionalUnitsRequired)
                         {
-                            // Raise this up!
-                            OnCallRaised?.Invoke(Agency, call, new CallRaisedEventArgs() { NeedsPolice = true });
-                            continue;
+                            RaiseCall(call, new CallRaisedEventArgs() { NeedsPolice = true });
                         }
                     }
 
@@ -113,8 +105,12 @@ namespace AgencyDispatchFramework.Dispatching
                         // If we have no officers at all, then stop here and pass it up
                         if (availableOfficers.Count == 0)
                         {
-                            // Raise this up!
-                            OnCallRaised?.Invoke(Agency, call, new CallRaisedEventArgs() { NeedsPolice = true });
+                            // Raise this up if we are not on scene yet!
+                            if (call.CallStatus != CallStatus.OnScene)
+                            {
+                                RaiseCall(call, new CallRaisedEventArgs() { NeedsPolice = true });
+                            }
+                            break;
                         }
 
                         // Is player in this list? Since we are dispatching more than one
@@ -125,15 +121,15 @@ namespace AgencyDispatchFramework.Dispatching
                             // Attempt to Dispatch player as primary to this call
                             AssignUnitToCall(player, call);
                         }
-                        else
+
+                        // Add other units to the call
+                        foreach (var officer in availableOfficers)
                         {
-                            // Add other units to the call
-                            for (int i = 0; i < availableOfficers.Count; i++)
-                            {
-                                // Dispatch
-                                var officer = availableOfficers[i];
-                                AssignUnitToCall(officer, call);
-                            }
+                            // We already dispatched the player
+                            if (!officer.IsAIUnit) continue;
+
+                            // Dispatch
+                            AssignUnitToCall(officer, call);
                         }
                     }
 
@@ -146,21 +142,34 @@ namespace AgencyDispatchFramework.Dispatching
                     else if (call.Priority == CallPriority.Expedited)
                     {
                         // Select closest available officer
-                        var officer = GetClosestOfficersByPriority(officerPool, call).FirstOrDefault();
+                        var availableOfficers = GetClosestOfficersByPriority(officerPool, call);
+                        if (availableOfficers.Count == 0) break;
 
-                        // If we have not officers, stop here
-                        if (officer != null)
+                        // Is player in this list? Since we are dispatching more than one
+                        // officer to this call, make the player Primary
+                        var player = availableOfficers.Where(x => !x.IsAIUnit).FirstOrDefault();
+                        if (player != null)
                         {
+                            // Attempt to Dispatch player as primary to this call
+                            AssignUnitToCall(player, call);
+                        }
+
+                        // Add other units to the call
+                        foreach (var officer in availableOfficers)
+                        {
+                            // We already dispatched the player
+                            if (!officer.IsAIUnit) continue;
+
+                            // Dispatch
                             AssignUnitToCall(officer, call);
-                            continue;
                         }
 
                         // If after 20 minutes, we still have no officers to send from the
                         // primary agency, pull officers from higher agencies
-                        if (currentTime - call.CallCreated > TimeSpan.FromMinutes(30))
+                        if (call.AttachedOfficers.Count == 0 && (currentTime - call.CallCreated > TimeSpan.FromMinutes(30)))
                         {
                             // Raise this up!
-                            OnCallRaised?.Invoke(Agency, call, new CallRaisedEventArgs() { NeedsPolice = true });
+                            RaiseCall(call, new CallRaisedEventArgs() { NeedsPolice = true });
                         }
                     }
 
@@ -175,17 +184,34 @@ namespace AgencyDispatchFramework.Dispatching
                         // If shifts end soon, do not dispatch
                         if (shiftChangesSoon) break;
 
-                        // Select closest available officer
-                        var officer = GetClosestOfficersByPriority(officerPool, call).FirstOrDefault();
-                        if (officer != null)
-                        {
-                            AssignUnitToCall(officer, call);
-                        }
-
-                        // Remove
-                        if (currentTime - call.CallCreated > TimeSpan.FromHours(12))
+                        // Remove if expired
+                        if (currentTime - call.CallCreated > TimeSpan.FromHours(8))
                         {
                             expiredCalls.Add(call);
+                            continue;
+                        }
+
+                        // Select closest available officer
+                        var availableOfficers = GetClosestOfficersByPriority(officerPool, call);
+                        if (availableOfficers.Count == 0) break;
+
+                        // Is player in this list? Since we are dispatching more than one
+                        // officer to this call, make the player Primary
+                        var player = availableOfficers.Where(x => !x.IsAIUnit).FirstOrDefault();
+                        if (player != null)
+                        {
+                            // Attempt to Dispatch player as primary to this call
+                            AssignUnitToCall(player, call);
+                        }
+
+                        // Add other units to the call
+                        foreach (var officer in availableOfficers)
+                        {
+                            // We already dispatched the player
+                            if (!officer.IsAIUnit) continue;
+
+                            // Dispatch
+                            AssignUnitToCall(officer, call);
                         }
                     }
                 }
@@ -197,10 +223,7 @@ namespace AgencyDispatchFramework.Dispatching
                 foreach (var call in expiredCalls)
                 {
                     // Remove call
-                    CallQueue.Remove(call);
-
-                    // Remove event
-
+                    RemoveCall(call);
 
                     // Call events
                     Dispatch.EndCall(call, CallCloseFlag.Expired);

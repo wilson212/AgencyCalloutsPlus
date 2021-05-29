@@ -3,6 +3,11 @@ using System.Collections.Generic;
 
 namespace AgencyDispatchFramework.Dispatching
 {
+    /// <summary>
+    /// A base class that is responsible for dispatching officer units for
+    /// a single <see cref="AgencyDispatchFramework.Dispatching.Agency"/> 
+    /// within its jurisdiction.
+    /// </summary>
     internal abstract class Dispatcher : IDisposable
     {
         /// <summary>
@@ -24,13 +29,18 @@ namespace AgencyDispatchFramework.Dispatching
         /// <summary>
         /// Gets a list of calls this instance is responsible for handling
         /// </summary>
-        public List<PriorityCall> CallQueue { get; set; }
+        public HashSet<PriorityCall> CallQueue { get; set; }
+
+        /// <summary>
+        /// Gets a list of calls this instance has raised
+        /// </summary>
+        public HashSet<PriorityCall> RaisedCalls { get; set; }
 
         /// <summary>
         /// Event fired when a <see cref="PriorityCall"/> needs additional resources
         /// that the <see cref="Agency"/> is unable to provide
         /// </summary>
-        public abstract event CallRaisedHandler OnCallRaised;
+        public static event CallRaisedHandler OnCallRaised;
 
         /// <summary>
         /// Method called every tick to manage calls
@@ -44,14 +54,16 @@ namespace AgencyDispatchFramework.Dispatching
         public Dispatcher(Agency agency)
         {
             Agency = agency ?? throw new ArgumentNullException(nameof(agency));
-            CallQueue = new List<PriorityCall>(12);
+            CallQueue = new HashSet<PriorityCall>(12);
+            RaisedCalls = new HashSet<PriorityCall>();
         }
 
         /// <summary>
         /// Adds the call to the <see cref="CallQueue"/> safely
         /// </summary>
         /// <param name="call"></param>
-        public virtual void AddCall(PriorityCall call)
+        /// <returns>true if the call was added, false if the call already existed in the call queue.</returns>
+        public virtual bool AddCall(PriorityCall call)
         {
             // Stop if we are disposed
             if (IsDisposed) throw new ObjectDisposedException(nameof(Dispatcher));
@@ -59,12 +71,21 @@ namespace AgencyDispatchFramework.Dispatching
             // Add call to priority Queue
             lock (_threadLock)
             {
-                CallQueue.Add(call);
-                Log.Debug($"Dispatcher.AddCall(): Added Call to Queue '{call.ScenarioInfo.Name}' in zone '{call.Zone.FullName}'");
-            }
+                // Returns false if the call already exists in the queue
+                if (CallQueue.Add(call))
+                {
+                    // Register for the end event
+                    call.OnCallEnded += Call_OnCallEnded;
 
-            // Register for the end event
-            call.OnCallEnded += Call_OnCallEnded;
+                    // Log
+                    Log.Debug($"{Agency.ScriptName.ToUpper()} Dispatcher: Added Call to Queue '{call.ScenarioInfo.Name}' in zone '{call.Zone.FullName}'");
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
         }
 
         /// <summary>
@@ -76,14 +97,40 @@ namespace AgencyDispatchFramework.Dispatching
             // Stop if we are disposed
             if (IsDisposed) throw new ObjectDisposedException(nameof(Dispatcher));
 
-            // Unregister
-            call.OnCallEnded -= Call_OnCallEnded;
-
             // Add call to priority Queue
             lock (_threadLock)
             {
-                CallQueue.Remove(call);
-                Log.Debug($"Dispatcher.AddCall(): Removed Call from Queue '{call.ScenarioInfo.Name}' in zone '{call.Zone.FullName}'");
+                // This should always be true, but...
+                if (CallQueue.Remove(call))
+                {
+                    // Unregister
+                    call.OnCallEnded -= Call_OnCallEnded;
+
+                    // Log
+                    Log.Debug($"{Agency.ScriptName.ToUpper()} Dispatcher: Removed Call from Queue '{call.ScenarioInfo.Name}' in zone '{call.Zone.FullName}'");
+                }
+
+                // Attempt to remove from raised
+                RaisedCalls.Remove(call);
+            }
+        }
+
+        /// <summary>
+        /// Raises a call to <see cref="Dispatch"/> so that other <see cref="Dispatching.Agency"/>
+        /// instances can assist in the call.
+        /// </summary>
+        /// <param name="call"></param>
+        /// <param name="args"></param>
+        protected virtual void RaiseCall(PriorityCall call, CallRaisedEventArgs args)
+        {
+            // Ensure we dont spam
+            if (!RaisedCalls.Contains(call))
+            {
+                // Add the call, no need to lock
+                RaisedCalls.Add(call);
+
+                // Raise this up!
+                OnCallRaised?.Invoke(Agency, call, args);
             }
         }
 
@@ -133,13 +180,17 @@ namespace AgencyDispatchFramework.Dispatching
             IsDisposed = true;
 
             // Remove call log, and unregister for events
-            for (int i = CallQueue.Count - 1; i >= 0; i--)
+            foreach (var call in CallQueue)
             {
-                var call = CallQueue[i];
                 call.OnCallEnded -= Call_OnCallEnded;
-
-                CallQueue.RemoveAt(i);
             }
+
+            // Clear call queue
+            CallQueue.Clear();
+            CallQueue = null;
+
+            RaisedCalls.Clear();
+            RaisedCalls = null;
         }
     }
 }
