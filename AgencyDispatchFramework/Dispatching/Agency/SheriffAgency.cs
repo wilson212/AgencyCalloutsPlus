@@ -37,12 +37,12 @@ namespace AgencyDispatchFramework.Dispatching
             }
 
             // Loop through each time period and cache crime numbers
-            foreach (TimeOfDay period in Enum.GetValues(typeof(TimeOfDay)))
+            foreach (TimePeriod period in Enum.GetValues(typeof(TimePeriod)))
             {
                 // Spawn
                 int aiPatrolCount = OptimumPatrols[period];
                 OfficersByShift.Add(period, new List<OfficerUnit>());
-                var periodName = Enum.GetName(typeof(TimeOfDay), period);
+                var periodName = Enum.GetName(typeof(TimePeriod), period);
 
                 // Ensure we have enough locations to spawn patrols at
                 var locations = GetRandomShoulderLocations(aiPatrolCount);
@@ -72,7 +72,7 @@ namespace AgencyDispatchFramework.Dispatching
                     OfficersByShift[period].Add(unit);
 
                     // Start Duty
-                    if (period == GameWorld.CurrentTimeOfDay)
+                    if (period == GameWorld.CurrentTimePeriod)
                     {
                         var sp = locations[i];
                         unit.StartDuty(sp);
@@ -89,12 +89,12 @@ namespace AgencyDispatchFramework.Dispatching
         /// </summary>
         /// <param name="zones"></param>
         /// <returns></returns>
-        protected override Dictionary<TimeOfDay, int> GetOptimumUnitCounts(WorldZone[] zones)
+        protected override Dictionary<TimePeriod, int> GetOptimumUnitCounts(WorldZone[] zones)
         {
-            var patrols = new Dictionary<TimeOfDay, int>();
+            var patrols = new Dictionary<TimePeriod, int>();
 
             // Loop through each time period and cache crime numbers
-            foreach (TimeOfDay period in Enum.GetValues(typeof(TimeOfDay)))
+            foreach (TimePeriod period in Enum.GetValues(typeof(TimePeriod)))
             {
                 // Create info struct
                 double optimumPatrols = 0;

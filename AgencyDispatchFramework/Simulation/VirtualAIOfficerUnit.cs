@@ -101,7 +101,7 @@ namespace AgencyDispatchFramework.Simulation
             int mins = 30;
 
             // Repond code 3?
-            if (CurrentCall.ScenarioInfo.ResponseCode == 3)
+            if (CurrentCall.ScenarioInfo.ResponseCode == ResponseCode.Code3)
             {
                 // Calculate drive times
             }

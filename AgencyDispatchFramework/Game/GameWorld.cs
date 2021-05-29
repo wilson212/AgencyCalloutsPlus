@@ -19,9 +19,9 @@ namespace AgencyDispatchFramework.Game
         private static object _lock = new object();
 
         /// <summary>
-        /// Event called when the <see cref="CurrentTimeOfDay"/> has changed in game
+        /// Event called when the <see cref="CurrentTimePeriod"/> has changed in game
         /// </summary>
-        public static event EventHandler OnTimeOfDayChanged;
+        public static event EventHandler OnTimePeriodChanged;
 
         /// <summary>
         /// An event fired when the <see cref="Weather"/> changes in game.
@@ -73,7 +73,7 @@ namespace AgencyDispatchFramework.Game
         /// <summary>
         /// Gets or sets the weather in game
         /// </summary>
-        public static TimeOfDay CurrentTimeOfDay { get; internal set; }
+        public static TimePeriod CurrentTimePeriod { get; internal set; }
 
         /// <summary>
         /// Gets or sets the weather in game
@@ -127,7 +127,7 @@ namespace AgencyDispatchFramework.Game
         internal static void Initialize()
         {
             // Set current stuff
-            CurrentTimeOfDay = GetCurrentWorldTimeOfDay();
+            CurrentTimePeriod = GetCurrentWorldTimePeriod();
             LastKnownWeather = GetCurrentWeather();
         }
 
@@ -172,14 +172,14 @@ namespace AgencyDispatchFramework.Game
                     }
 
                     // Get current Time of Day and check for changes
-                    var currentTimeOfDay = GetCurrentWorldTimeOfDay();
-                    if (currentTimeOfDay != CurrentTimeOfDay)
+                    var currentTimePeriod = GetCurrentWorldTimePeriod();
+                    if (currentTimePeriod != CurrentTimePeriod)
                     {
                         // Set
-                        CurrentTimeOfDay = currentTimeOfDay;
+                        CurrentTimePeriod = currentTimePeriod;
 
                         // Fire event
-                        OnTimeOfDayChanged?.Invoke(null, EventArgs.Empty);
+                        OnTimePeriodChanged?.Invoke(null, EventArgs.Empty);
                     }
                 }
                 catch (Exception e)
@@ -193,22 +193,22 @@ namespace AgencyDispatchFramework.Game
         }
 
         /// <summary>
-        /// Gets the <see cref="CurrentTimeOfDay"/>
+        /// Gets the current <see cref="TimePeriod"/>
         /// </summary>
         /// <returns></returns>
-        private static TimeOfDay GetCurrentWorldTimeOfDay()
+        private static TimePeriod GetCurrentWorldTimePeriod()
         {
             var currentHour = World.TimeOfDay.Hours;
             var currentTimeOfDay = Parse(currentHour);
             return currentTimeOfDay;
 
             // Local function
-            TimeOfDay Parse(int hour)
+            TimePeriod Parse(int hour)
             {
-                if (hour < 6) return TimeOfDay.Night;
-                else if (hour < 12) return TimeOfDay.Morning;
-                else if (hour < 18) return TimeOfDay.Day;
-                else return TimeOfDay.Evening;
+                if (hour < 6) return TimePeriod.Night;
+                else if (hour < 12) return TimePeriod.Morning;
+                else if (hour < 18) return TimePeriod.Day;
+                else return TimePeriod.Evening;
             }
         }
 
@@ -231,51 +231,51 @@ namespace AgencyDispatchFramework.Game
         }
 
         /// <summary>
-        /// Gets the next time of day based on the <see cref="CurrentTimeOfDay"/>
+        /// Gets the next time of day based on the current <see cref="TimePeriod"/>
         /// </summary>
         /// <returns></returns>
-        public static TimeOfDay GetNextTimeOfDay()
+        public static TimePeriod GetNextTimePeriod()
         {
-            switch (CurrentTimeOfDay)
+            switch (CurrentTimePeriod)
             {
-                case TimeOfDay.Day: return TimeOfDay.Evening;
-                case TimeOfDay.Morning: return TimeOfDay.Day;
-                case TimeOfDay.Night: return TimeOfDay.Morning;
-                default: return TimeOfDay.Night;
+                case TimePeriod.Day: return TimePeriod.Evening;
+                case TimePeriod.Morning: return TimePeriod.Day;
+                case TimePeriod.Night: return TimePeriod.Morning;
+                default: return TimePeriod.Night;
             }
         }
 
         /// <summary>
-        /// Gets the previous time of day based on the <see cref="CurrentTimeOfDay"/>
+        /// Gets the previous time of day based on the current <see cref="TimePeriod"/>
         /// </summary>
         /// <returns></returns>
-        public static TimeOfDay GetPreviousTimeOfDay()
+        public static TimePeriod GetPreviousTimePeriod()
         {
-            switch (CurrentTimeOfDay)
+            switch (CurrentTimePeriod)
             {
-                case TimeOfDay.Day: return TimeOfDay.Morning;
-                case TimeOfDay.Morning: return TimeOfDay.Night;
-                case TimeOfDay.Night: return TimeOfDay.Evening;
-                default: return TimeOfDay.Day;
+                case TimePeriod.Day: return TimePeriod.Morning;
+                case TimePeriod.Morning: return TimePeriod.Night;
+                case TimePeriod.Night: return TimePeriod.Evening;
+                default: return TimePeriod.Day;
             }
         }
 
         /// <summary>
-        /// Gets the remaining time until the next <see cref="TimeOfDay"/> change (GameTime)
+        /// Gets the remaining time until the next <see cref="TimePeriod"/> change (GameTime)
         /// </summary>
         /// <returns></returns>
-        public static TimeSpan GetTimeUntilNextTimeOfDay()
+        public static TimeSpan GetTimeUntilNextTimePeriod()
         {
             var current = World.TimeOfDay;
             var todaysTime = new TimeSpan(current.Hours, current.Minutes, current.Seconds);
 
-            switch (CurrentTimeOfDay)
+            switch (CurrentTimePeriod)
             {
-                case TimeOfDay.Day:
+                case TimePeriod.Day:
                     return TimeSpan.FromHours(18).Subtract(todaysTime);
-                case TimeOfDay.Evening:
+                case TimePeriod.Evening:
                     return TimeSpan.FromHours(24).Subtract(todaysTime);
-                case TimeOfDay.Morning:
+                case TimePeriod.Morning:
                     return TimeSpan.FromHours(12).Subtract(todaysTime);
                 default:
                     return TimeSpan.FromHours(6).Subtract(todaysTime);

@@ -5,13 +5,8 @@
   <Scenarios>
     
     <RearEndNoInjuries>
+      <!-- Emergency Type -->
       <Category>Traffic</Category>
-      <!-- Agencies that handle this callout scenario -->
-      <Agencies target="Police">
-        <Agency>CityPolice</Agency>
-        <Agency>CountySheriff</Agency>
-        <Agency>HighwayPatrol</Agency>
-      </Agencies>
       <!-- The probability of this scenario happening relative to every other scenario of this crime catagory -->
       <Probabilities>
         <Morning clear="10" overcast="10" rain="15" snow="18" storm="12" />
@@ -19,6 +14,7 @@
         <Evening clear="10" overcast="10" rain="15" snow="18" storm="12" />
         <Night clear="10" overcast="10" rain="15" snow="18" storm="12" />
       </Probabilities>
+      <!-- Location requirements for scenario -->
       <Location>
         <Type>RoadShoulder</Type>
         <RequiredFlags mode="Any">
@@ -26,25 +22,44 @@
         </RequiredFlags>
       </Location>
       <Dispatch>
+        <!-- Initial dispatched agency to call -->
+        <Target>Police</Target>
+        <!-- Agencies that handle this callout scenario -->
+        <Agencies target="Police">
+          <Agency>CityPolice</Agency>
+          <Agency>CountySheriff</Agency>
+          <Agency>HighwayPatrol</Agency>
+        </Agencies>
+        <!-- Number of units that dispatch should send to this call -->
+        <UnitCount>1</UnitCount>
+        <Priority>Expedited</Priority>
+        <Response>Code2</Response>
         <!-- Scanner Audio data for call -->
         <Scanner>
           <AudioString>WE_HAVE_01 CRIME_TRAFFIC_ALERT IN_OR_ON_POSITION</AudioString>
           <PrefixCallSign>True</PrefixCallSign>
           <UsePosition>True</UsePosition>
         </Scanner>
-        <!-- CAD texture for this call in call details -->
-        <CADTexture dictionary="char_chat_call">char_chat_call</CADTexture>
-        <!-- Callout Details are for ComputerPlus / CAD -->
-        <Descriptions>
-          <Description probability="10">
-            <Source>Citizen</Source>
-            <Text>RP SAYS THEY WERE INVLOVED IN A VEHICLE COLLISION NEAR $LOCATION$. NO INJURIES REPORTED AT THIS TIME. ~n~~n~RP STATED THAT OTHER INVOLED PED IS BEING AGRESSIVE. RESPOND CODE 2</Text>
-          </Description>
-        </Descriptions>
-        <IncidentType abbreviation="MVA">Motor Vehicle Accident</IncidentType>
-        <Priority>Expedited</Priority>
-        <Response>2</Response>
+        <CAD>
+          <!-- CAD texture for this call in call details -->
+          <Texture dictionary="char_chat_call">char_chat_call</Texture>
+          <IncidentType abbreviation="MVA">Motor Vehicle Accident</IncidentType>
+          <!-- Callout Details are for ComputerPlus / CAD -->
+          <Descriptions>
+            <Description probability="10">
+              <Source>Citizen</Source>
+              <Text>RP SAYS THEY WERE INVLOVED IN A VEHICLE COLLISION NEAR $LOCATION$. NO INJURIES REPORTED AT THIS TIME. ~n~~n~RP STATED THAT OTHER INVOLED PED IS BEING AGRESSIVE. RESPOND CODE 2</Text>
+            </Description>
+          </Descriptions>
+        </CAD>
       </Dispatch>
+      <Simulation>
+        <!-- In game minutes -->
+        <CallTime min="20" max="45" />
+        <!-- Chance that a ped gets arrested -->
+        <Arrests></Arrests>
+        <Escalation chance="0" />
+      </Simulation>
       <FlowSequence>
         <FlowOutcome id="distracted" probability="10" />
         <FlowOutcome id="eating" probability="3" />

@@ -227,14 +227,14 @@ namespace AgencyDispatchFramework.NativeUI
         /// </summary>
         /// <param name="code"></param>
         /// <returns></returns>-
-        private static string GetResponseText(int code)
+        private static string GetResponseText(ResponseCode code)
         {
             switch (code)
             {
                 default:
-                case 1: return "~w~Code 1";
-                case 2: return "~y~Code 2";
-                case 3: return "~o~Code 3";
+                case ResponseCode.Code1: return "~w~Code 1";
+                case ResponseCode.Code2: return "~y~Code 2";
+                case ResponseCode.Code3: return "~o~Code 3";
             }
         }
 

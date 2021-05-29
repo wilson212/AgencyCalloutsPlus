@@ -30,7 +30,7 @@ namespace AgencyDispatchFramework.Dispatching
         public override void Process()
         {
             // Don't dispatch low priority calls if shift changes in less than 20 minutes!
-            bool shiftChangesSoon = GameWorld.GetTimeUntilNextTimeOfDay() < TimeSpan.FromMinutes(20);
+            bool shiftChangesSoon = GameWorld.GetTimeUntilNextTimePeriod() < TimeSpan.FromMinutes(20);
             var currentTime = World.DateTime;
             var expiredCalls = new List<PriorityCall>();
 
@@ -64,7 +64,7 @@ namespace AgencyDispatchFramework.Dispatching
                     if (call.Priority == CallPriority.Immediate)
                     {
                         // Select closest available officer
-                        var availableOfficers = GetClosestOfficersByPriority(officerPool, 4, call.Location.Position);
+                        var availableOfficers = GetClosestOfficersByPriority(officerPool, call);
                         if (availableOfficers.Count > 0)
                         {
                             // Is player in this list? Since we are dispatching more than one
@@ -91,7 +91,7 @@ namespace AgencyDispatchFramework.Dispatching
                         }
 
                         // If we have not officers, stop here
-                        if (availableOfficers.Count < 4)
+                        if (availableOfficers.Count < call.AdditionalUnitsRequired)
                         {
                             // Raise this up!
                             OnCallRaised?.Invoke(Agency, call, new CallRaisedEventArgs() { NeedsPolice = true });
@@ -108,7 +108,7 @@ namespace AgencyDispatchFramework.Dispatching
                     else if (call.Priority == CallPriority.Emergency)
                     {
                         // Select closest available officer
-                        var availableOfficers = GetClosestOfficersByPriority(officerPool, 2, call.Location.Position);
+                        var availableOfficers = GetClosestOfficersByPriority(officerPool, call);
 
                         // If we have no officers at all, then stop here and pass it up
                         if (availableOfficers.Count == 0)
@@ -146,7 +146,7 @@ namespace AgencyDispatchFramework.Dispatching
                     else if (call.Priority == CallPriority.Expedited)
                     {
                         // Select closest available officer
-                        var officer = GetClosestOfficersByPriority(officerPool, 1, call.Location.Position).FirstOrDefault();
+                        var officer = GetClosestOfficersByPriority(officerPool, call).FirstOrDefault();
 
                         // If we have not officers, stop here
                         if (officer != null)
@@ -176,7 +176,7 @@ namespace AgencyDispatchFramework.Dispatching
                         if (shiftChangesSoon) break;
 
                         // Select closest available officer
-                        var officer = GetClosestOfficersByPriority(officerPool, 1, call.Location.Position).FirstOrDefault();
+                        var officer = GetClosestOfficersByPriority(officerPool, call).FirstOrDefault();
                         if (officer != null)
                         {
                             AssignUnitToCall(officer, call);
@@ -303,8 +303,9 @@ namespace AgencyDispatchFramework.Dispatching
         /// <param name="count">The desired number of officers to fetch</param>
         /// <param name="location">The location of the call</param>
         /// <returns></returns>
-        internal static List<OfficerUnit> GetClosestOfficersByPriority(Dictionary<DispatchPriority, List<OfficerUnit>> officers, int count, Vector3 location)
+        internal static List<OfficerUnit> GetClosestOfficersByPriority(Dictionary<DispatchPriority, List<OfficerUnit>> officers, PriorityCall call)
         {
+            var count = call.AdditionalUnitsRequired;
             var list = new List<OfficerUnit>();
             for (int i = 1; i < 5; i++)
             {
@@ -316,7 +317,7 @@ namespace AgencyDispatchFramework.Dispatching
                         continue;
 
                     // Add officers, sorting first by distance to the call
-                    list.AddRange(GetClosestOfficers(units, location, count));
+                    list.AddRange(GetClosestOfficers(units, call.Location.Position, count));
                     count -= units.Count;
 
                     // If we are at length, quit here

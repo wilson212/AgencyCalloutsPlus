@@ -77,7 +77,7 @@ namespace AgencyDispatchFramework.Integration
             text_priority.Text = GetPriorityText((int)Call.OriginalPriority);
             text_status.Text = Call.CallStatus.ToString();
             text_source.Text = "CITIZEN";
-            text_response.Text = Call.ResponseCode == 3 ? "CODE 3" : "CODE 2";
+            text_response.Text = Call.ResponseCode == ResponseCode.Code3 ? "CODE 3" : "CODE 2";
             text_comments.Text = Call.Description.Text
                 .Replace("{{location}}", locationText)
                 .WordWrap(450, text_comments.Font.FaceName.ToString()

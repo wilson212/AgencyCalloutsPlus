@@ -31,7 +31,7 @@ namespace AgencyDispatchFramework.Dispatching
         /// <summary>
         /// Gets the <see cref="RegionCrimeInfo"/> based on TimeOfDay
         /// </summary>
-        public Dictionary<TimeOfDay, RegionCrimeInfo> RegionCrimeInfoByTimeOfDay { get; private set; }
+        public Dictionary<TimePeriod, RegionCrimeInfo> RegionCrimeInfoByTimePeriod { get; private set; }
 
         /// <summary>
         /// Containts a range of time between calls in milliseconds (real life time), using the current <see cref="CrimeLevel"/>.
@@ -87,7 +87,7 @@ namespace AgencyDispatchFramework.Dispatching
         public RegionCrimeGenerator(WorldZone[] zones)
         {
             // Create instance variables
-            RegionCrimeInfoByTimeOfDay = new Dictionary<TimeOfDay, RegionCrimeInfo>();
+            RegionCrimeInfoByTimePeriod = new Dictionary<TimePeriod, RegionCrimeInfo>();
             CrimeZoneGenerator = new ProbabilityGenerator<WorldZone>();
 
             // Only attempt to add if we have zones
@@ -125,7 +125,7 @@ namespace AgencyDispatchFramework.Dispatching
 
         /// <summary>
         /// Begins a new <see cref="Rage.GameFiber"/> to spawn <see cref="CalloutScenario"/>s
-        /// based on current <see cref="TimeOfDay"/>
+        /// based on current <see cref="TimePeriod"/>
         /// </summary>
         public void Begin()
         {
@@ -134,7 +134,7 @@ namespace AgencyDispatchFramework.Dispatching
                 IsRunning = true;
 
                 // Register for Dispatch event
-                GameWorld.OnTimeOfDayChanged += GameWorld_OnTimeOfDayChanged;
+                GameWorld.OnTimePeriodChanged += GameWorld_OnTimeOfDayChanged;
 
                 // Must be called
                 AdjustCallFrequencyTimer();
@@ -151,7 +151,7 @@ namespace AgencyDispatchFramework.Dispatching
         {
             if (IsRunning)
             {
-                GameWorld.OnTimeOfDayChanged -= GameWorld_OnTimeOfDayChanged;
+                GameWorld.OnTimePeriodChanged -= GameWorld_OnTimeOfDayChanged;
                 IsRunning = false;
                 CrimeFiber?.Abort();
                 CrimeFiber = null;
@@ -190,13 +190,13 @@ namespace AgencyDispatchFramework.Dispatching
         }
 
         /// <summary>
-        /// Gets the average calls per specified <see cref="TimeOfDay"/>
+        /// Gets the average calls per specified <see cref="TimePeriod"/>
         /// </summary>
         /// <param name="time"></param>
         /// <returns></returns>
-        public int GetAverageCrimeCalls(TimeOfDay time)
+        public int GetAverageCrimeCalls(TimePeriod time)
         {
-            return RegionCrimeInfoByTimeOfDay[time].AverageCrimeCalls;
+            return RegionCrimeInfoByTimePeriod[time].AverageCrimeCalls;
         }
 
         /// <summary>
@@ -205,10 +205,10 @@ namespace AgencyDispatchFramework.Dispatching
         protected void EvaluateCrimeValues()
         {
             // Clear old stuff
-            RegionCrimeInfoByTimeOfDay.Clear();
+            RegionCrimeInfoByTimePeriod.Clear();
 
             // Loop through each time period and cache crime numbers
-            foreach (TimeOfDay period in Enum.GetValues(typeof(TimeOfDay)))
+            foreach (TimePeriod period in Enum.GetValues(typeof(TimePeriod)))
             {
                 // Create info struct
                 var crimeInfo = new RegionCrimeInfo();
@@ -228,7 +228,7 @@ namespace AgencyDispatchFramework.Dispatching
                 }
 
                 // Get our average real time milliseconds per call
-                var timerUntilNext = GetTimeUntilNextTimeOfDay();
+                var timerUntilNext = GetTimeUntilNextTimePeriod();
                 var nextChangeRealTimeSeconds = (timerUntilNext.Milliseconds / Settings.TimeScale) / 1000;
                 var hourGameTimeToSecondsRealTime = (60d / Settings.TimeScale) * 60;
                 var callsPerSecondRT = (crimeInfo.AverageCallsPerHour / hourGameTimeToSecondsRealTime);
@@ -241,7 +241,7 @@ namespace AgencyDispatchFramework.Dispatching
                 crimeInfo.AverageMillisecondsPerCall = (int)(realSecondsPerCall * 1000);
 
                 // Add period statistics
-                RegionCrimeInfoByTimeOfDay.Add(period, crimeInfo);
+                RegionCrimeInfoByTimePeriod.Add(period, crimeInfo);
             }
         }
 
@@ -308,7 +308,7 @@ namespace AgencyDispatchFramework.Dispatching
         }
 
         /// <summary>
-        /// Method called on event <see cref="GameWorld.OnTimeOfDayChanged"/>
+        /// Method called on event <see cref="GameWorld.OnTimePeriodChanged"/>
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -318,7 +318,7 @@ namespace AgencyDispatchFramework.Dispatching
 
             // Change our Crime level during this period
             CurrentCrimeLevel = CrimeLevelGenerator.Spawn().Value;
-            var name = Enum.GetName(typeof(TimeOfDay), GameWorld.CurrentTimeOfDay);
+            var name = Enum.GetName(typeof(TimePeriod), GameWorld.CurrentTimePeriod);
 
             // Log change
             Log.Info($"RegionCrimeGenerator: The time of day is transitioning to {name}. Settings crime level to {Enum.GetName(typeof(CrimeLevel), CurrentCrimeLevel)}");
@@ -361,7 +361,7 @@ namespace AgencyDispatchFramework.Dispatching
         private void AdjustCallFrequencyTimer()
         {
             // Grab our RegionCrimeInfo for this time period
-            var crimeInfo = RegionCrimeInfoByTimeOfDay[GameWorld.CurrentTimeOfDay];
+            var crimeInfo = RegionCrimeInfoByTimePeriod[GameWorld.CurrentTimePeriod];
             int ms = crimeInfo.AverageMillisecondsPerCall;
 
             int min = 0; 
@@ -400,7 +400,7 @@ namespace AgencyDispatchFramework.Dispatching
             }
 
             // Get time until the next TimeOfDay change
-            var timerUntilNext = GetTimeUntilNextTimeOfDay();
+            var timerUntilNext = GetTimeUntilNextTimePeriod();
             var nextChangeRealTimeMS = Convert.ToInt32(timerUntilNext.TotalMilliseconds / Settings.TimeScale);
             var hourGameTimeToSecondsRealTime = (60d / Settings.TimeScale) * 60;
 
@@ -427,25 +427,25 @@ namespace AgencyDispatchFramework.Dispatching
         /// game's current time scale
         /// </summary>
         /// <returns></returns>
-        private TimeSpan GetTimeUntilNextTimeOfDay()
+        private TimeSpan GetTimeUntilNextTimePeriod()
         {
             // Now get time difference
             var gt = Rage.World.TimeOfDay;
 
             // Get target timespan
             var target = TimeSpan.Zero;
-            switch (GameWorld.CurrentTimeOfDay)
+            switch (GameWorld.CurrentTimePeriod)
             {
-                case TimeOfDay.Morning:
+                case TimePeriod.Morning:
                     target = TimeSpan.FromHours(12);
                     break;
-                case TimeOfDay.Day:
+                case TimePeriod.Day:
                     target = TimeSpan.FromHours(18);
                     break;
-                case TimeOfDay.Evening:
+                case TimePeriod.Evening:
                     target = TimeSpan.FromSeconds(86399);
                     break;
-                case TimeOfDay.Night:
+                case TimePeriod.Night:
                     target = TimeSpan.FromHours(6);
                     break;
             }

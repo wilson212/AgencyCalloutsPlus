@@ -58,7 +58,7 @@ namespace AgencyDispatchFramework.Game
         /// <summary>
         /// Contains a dictionary of the average number of calls per time of day in this zone
         /// </summary>
-        public IReadOnlyDictionary<TimeOfDay, int> AverageCalls { get; internal set; }
+        public IReadOnlyDictionary<TimePeriod, int> AverageCalls { get; internal set; }
 
         /// <summary>
         /// Containts a list <see cref="Residence"/>(s) in this zone
@@ -73,7 +73,7 @@ namespace AgencyDispatchFramework.Game
         /// <summary>
         /// Gets the crime level probability of this zone based on current time of day
         /// </summary>
-        public int Probability => AverageCalls[GameWorld.CurrentTimeOfDay];
+        public int Probability => AverageCalls[GameWorld.CurrentTimePeriod];
 
         /// <summary>
         /// Spawns a <see cref="CallCategory"/> based on the <see cref="WorldStateMultipliers"/> probabilites set

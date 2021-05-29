@@ -95,44 +95,6 @@ namespace AgencyDispatchFramework.Xml
                     continue;
                 }
 
-                // Grab agency list
-                XmlNode agenciesNode = scenarioNode.SelectSingleNode("Agencies");
-                if (agenciesNode == null || !agenciesNode.HasAttribute("target"))
-                {
-                    Log.Error($"CalloutMetaFile.Parse(): Unable to load agency data in CalloutMeta for '{calloutDirName}'");
-                    continue;
-                }
-
-                // No data?
-                if (!agenciesNode.HasChildNodes)
-                {
-                    Log.Error($"CalloutMetaFile.Parse(): Unable to load any agencies data in CalloutMeta for '{calloutDirName}'");
-                    continue;
-                }
-
-                // Parse the "target"
-                if (!Enum.TryParse(agenciesNode.GetAttribute("target"), out CallTarget callTarget))
-                {
-                    Log.Error($"CalloutMetaFile.Parse(): Unable to load agency target attrtibute in CalloutMeta for '{calloutDirName}'");
-                    continue;
-                }
-
-                // Itterate through items
-                agencies.Clear();
-                foreach (XmlNode n in agenciesNode.SelectNodes("Agency"))
-                {
-                    // Try and extract type value
-                    if (!Enum.TryParse(n.InnerText, out AgencyType agencyType))
-                    {
-                        Log.Warning(
-                            $"CalloutMetaFile.Parse(): Unable to parse AgencyType value for '{calloutDirName}/CalloutMeta.xml -> '{scenarioNode.Name}'"
-                        );
-                        continue;
-                    }
-
-                    agencies.Add(agencyType);
-                }
-
                 // Extract simulation time
                 int min = 0, max = 0;
                 XmlNode childNode = scenarioNode.SelectSingleNode("Simulation")?.SelectSingleNode("CallTime");
@@ -242,6 +204,47 @@ namespace AgencyDispatchFramework.Xml
                     continue;
                 }
 
+                // Grab agency list
+                XmlNode agenciesNode = dispatchNode.SelectSingleNode("Agencies");
+                if (agenciesNode == null)
+                {
+                    Log.Error($"CalloutMetaFile.Parse(): Unable to load agency data in CalloutMeta for '{calloutDirName}'");
+                    continue;
+                }
+
+                // No data?
+                if (!agenciesNode.HasChildNodes)
+                {
+                    Log.Error($"CalloutMetaFile.Parse(): Unable to load any agencies data in CalloutMeta for '{calloutDirName}'");
+                    continue;
+                }
+
+                // Itterate through items
+                agencies.Clear();
+                foreach (XmlNode n in agenciesNode.SelectNodes("Agency"))
+                {
+                    // Try and extract type value
+                    if (!Enum.TryParse(n.InnerText, out AgencyType agencyType))
+                    {
+                        Log.Warning(
+                            $"CalloutMetaFile.Parse(): Unable to parse AgencyType value for '{calloutDirName}/CalloutMeta.xml -> '{scenarioNode.Name}'"
+                        );
+                        continue;
+                    }
+
+                    agencies.Add(agencyType);
+                }
+
+                // Try and extract probability value
+                childNode = dispatchNode.SelectSingleNode("Target");
+                if (!Enum.TryParse(childNode.InnerText, out CallTarget callTarget))
+                {
+                    Log.Warning(
+                        $"CalloutMetaFile.Parse(): Unable to extract scenario dispatch target value for '{calloutDirName}/CalloutMeta.xml -> {scenarioNode.Name}'"
+                    );
+                    continue;
+                }
+
                 // Try and extract probability value
                 childNode = dispatchNode.SelectSingleNode("Priority");
                 if (!Enum.TryParse(childNode.InnerText, out CallPriority priority))
@@ -254,10 +257,20 @@ namespace AgencyDispatchFramework.Xml
 
                 // Try and extract Code value
                 childNode = dispatchNode.SelectSingleNode("Response");
-                if (!Int32.TryParse(childNode.InnerText, out int code) || !code.InRange(1, 3))
+                if (!Enum.TryParse(childNode.InnerText, out ResponseCode code))
                 {
                     Log.Warning(
-                        $"CalloutMetaFile.Parse():: Unable to extract scenario respond value for '{calloutDirName}/CalloutMeta.xml -> {scenarioNode.Name}'"
+                        $"CalloutMetaFile.Parse(): Unable to extract scenario response code value for '{calloutDirName}/CalloutMeta.xml -> {scenarioNode.Name}'"
+                    );
+                    continue;
+                }
+
+                // Try and extract Code value
+                childNode = dispatchNode.SelectSingleNode("UnitCount");
+                if (!Int32.TryParse(childNode.InnerText, out int unitCount))
+                {
+                    Log.Warning(
+                        $"CalloutMetaFile.Parse(): Unable to extract scenario unit count value for '{calloutDirName}/CalloutMeta.xml -> {scenarioNode.Name}'"
                     );
                     continue;
                 }
@@ -286,7 +299,17 @@ namespace AgencyDispatchFramework.Xml
                 bool.TryParse(childNode?.InnerText, out bool suffix);
 
                 // Try and extract descriptions
-                childNode = dispatchNode.SelectSingleNode("Descriptions");
+                XmlNode cadNode = dispatchNode.SelectSingleNode("CAD");
+                if (cadNode == null || !cadNode.HasChildNodes)
+                {
+                    Log.Warning(
+                        $"CalloutMetaFile.Parse(): Unable to extract scenario CAD values for '{calloutDirName}/CalloutMeta.xml -> {scenarioNode.Name}'"
+                    );
+                    continue;
+                }
+
+                // Try and extract descriptions
+                childNode = cadNode.SelectSingleNode("Descriptions");
                 if (childNode == null || !childNode.HasChildNodes)
                 {
                     Log.Warning(
@@ -343,7 +366,7 @@ namespace AgencyDispatchFramework.Xml
                 }
 
                 // Grab the CAD Texture
-                childNode = dispatchNode.SelectSingleNode("CADTexture");
+                childNode = cadNode.SelectSingleNode("Texture");
                 if (String.IsNullOrWhiteSpace(childNode.InnerText))
                 {
                     Log.Warning(
@@ -363,7 +386,7 @@ namespace AgencyDispatchFramework.Xml
                 string textDict = childNode.Attributes["dictionary"].Value;
 
                 // Grab the Incident
-                childNode = dispatchNode.SelectSingleNode("IncidentType");
+                childNode = cadNode.SelectSingleNode("IncidentType");
                 if (String.IsNullOrWhiteSpace(childNode.InnerText))
                 {
                     Log.Warning(
@@ -379,9 +402,6 @@ namespace AgencyDispatchFramework.Xml
                     continue;
                 }
 
-                // Get agency probability
-                int baseProbability = 1; // agencyProbabilites[agency.AgencyType];
-
                 // Create scenario
                 var scene = new CalloutScenarioInfo()
                 {
@@ -389,10 +409,10 @@ namespace AgencyDispatchFramework.Xml
                     CalloutName = calloutName,
                     Category = crimeType,
                     Targets = callTarget,
-                    Probability = baseProbability,
                     ProbabilityMultipliers = multipliers,
                     Priority = priority,
                     ResponseCode = code,
+                    UnitCount = unitCount,
                     LocationTypeCode = locationType,
                     LocationFilters = filter,
                     ScannerAudioString = scanner,

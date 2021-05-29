@@ -1,6 +1,6 @@
 ﻿namespace AgencyDispatchFramework.Game
 {
-    public enum TimeOfDay
+    public enum TimePeriod
     {
         Morning,
 

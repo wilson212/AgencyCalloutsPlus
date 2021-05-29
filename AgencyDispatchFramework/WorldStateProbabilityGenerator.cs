@@ -5,7 +5,7 @@ namespace AgencyDispatchFramework
 {
     /// <summary>
     /// A wrapper class for a <see cref="ProbabilityGenerator{T}"/> where the <see cref="ISpawnable.Probability"/>
-    /// of <see cref="T"/> changes based on the in game <see cref="Weather"/> and <see cref="Game.TimeOfDay"/>.
+    /// of <see cref="T"/> changes based on the in game <see cref="Weather"/> and <see cref="Game.TimePeriod"/>.
     /// </summary>
     /// <typeparam name="T"></typeparam>
     public class WorldStateProbabilityGenerator<T> : IDisposable
@@ -17,7 +17,7 @@ namespace AgencyDispatchFramework
 
         /// <summary>
         /// A cached <see cref="ProbabilityGenerator{T}"/> that is current to our last know 
-        /// <see cref="GameWorld.CurrentTimeOfDay"/> and <see cref="GameWorld.CurrentWeather"/>
+        /// <see cref="GameWorld.CurrentTimePeriod"/> and <see cref="GameWorld.CurrentWeather"/>
         /// </summary>
         private ProbabilityGenerator<WorldStateSpawnable<T>> Generator { get; set; }
 
@@ -33,12 +33,12 @@ namespace AgencyDispatchFramework
         {
             Generator = new ProbabilityGenerator<WorldStateSpawnable<T>>();
             GameWorld.OnWeatherChange += GameWorld_OnWeatherChange;
-            GameWorld.OnTimeOfDayChanged += GameWorld_OnTimeOfDayChanged;
+            GameWorld.OnTimePeriodChanged += GameWorld_OnTimePeriodChanged;
         }
 
         /// <summary>
         /// Rebuilds the internal <see cref="ProbabilityGenerator{T}"/> with current probabilities based on current
-        /// <see cref="GameWorld"/> <see cref="Weather"/> and <see cref="TimeOfDay"/>
+        /// <see cref="GameWorld"/> <see cref="Weather"/> and <see cref="TimePeriod"/>
         /// </summary>
         private void Rebuild()
         {
@@ -111,7 +111,7 @@ namespace AgencyDispatchFramework
             lock (_lock)
             {
                 // Unregister events
-                GameWorld.OnTimeOfDayChanged -= GameWorld_OnTimeOfDayChanged;
+                GameWorld.OnTimePeriodChanged -= GameWorld_OnTimePeriodChanged;
                 GameWorld.OnWeatherChange -= GameWorld_OnWeatherChange;
 
                 // Clear generator
@@ -128,11 +128,11 @@ namespace AgencyDispatchFramework
         private void GameWorld_OnWeatherChange(Weather oldWeather, Weather newWeather) => Rebuild();
 
         /// <summary>
-        /// Method called whenever the <see cref="Mod.TimeOfDay"/> changes in game
+        /// Method called whenever the <see cref="TimePeriod"/> changes in game
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void GameWorld_OnTimeOfDayChanged(object sender, EventArgs e) => Rebuild();
+        private void GameWorld_OnTimePeriodChanged(object sender, EventArgs e) => Rebuild();
 
         /// <summary>
         /// An internal wrapper class that inherits the <see cref="ISpawnable"/> interface

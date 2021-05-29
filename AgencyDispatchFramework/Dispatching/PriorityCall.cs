@@ -70,18 +70,17 @@ namespace AgencyDispatchFramework.Dispatching
         /// Indicates whether this Call needs more <see cref="OfficerUnit"/>(s)
         /// assigned to it.
         /// </summary>
-        public bool NeedsMoreOfficers
-        {
-            get
-            {
-                switch (OriginalPriority)
-                {
-                    case CallPriority.Immediate: return AttachedOfficers.Count < 4;
-                    case CallPriority.Emergency: return AttachedOfficers.Count < 3;
-                    default: return AttachedOfficers.Count == 0;
-                }
-            }
-        }
+        public bool NeedsMoreOfficers => AttachedOfficers.Count < TotalRequiredUnits;
+
+        /// <summary>
+        /// Gets the number of <see cref="OfficerUnit"/>s required for this call
+        /// </summary>
+        public int TotalRequiredUnits { get; internal set; }
+
+        /// <summary>
+        /// Gets the number of <see cref="OfficerUnit"/>s required for this call
+        /// </summary>
+        public int AdditionalUnitsRequired => Math.Max(TotalRequiredUnits - AttachedOfficers.Count, 0);
 
         /// <summary>
         /// Indicates whether this call was declined by the player
@@ -97,7 +96,7 @@ namespace AgencyDispatchFramework.Dispatching
         /// <summary>
         /// Indicates wether the OfficerUnit should repsond code 3
         /// </summary>
-        public int ResponseCode => ScenarioInfo.ResponseCode;
+        public ResponseCode ResponseCode => ScenarioInfo.ResponseCode;
 
         /// <summary>
         /// Gets the incident text
@@ -136,6 +135,7 @@ namespace AgencyDispatchFramework.Dispatching
             Zone = zone;
             Location = location;
             Priority = scenarioInfo.Priority;
+            TotalRequiredUnits = scenarioInfo.UnitCount;
 
             // Temp
             AISimulation = new AISceneSimulation(this);
@@ -193,9 +193,13 @@ namespace AgencyDispatchFramework.Dispatching
 
         }
 
+        /// <summary>
+        /// Ends the call and calls the event <see cref="OnCallEnded"/>
+        /// </summary>
+        /// <param name="flag"></param>
         internal void End(CallCloseFlag flag)
         {
-
+            OnCallEnded?.Invoke(this, flag);
         }
 
         public bool Equals(PriorityCall other)

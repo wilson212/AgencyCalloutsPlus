@@ -959,14 +959,14 @@ namespace AgencyDispatchFramework
                 Log.Debug($"\t\tRegion Zone Count: {Zones.Count}");
 
                 // Loop through each time period and cache crime numbers
-                foreach (TimeOfDay period in Enum.GetValues(typeof(TimeOfDay)))
+                foreach (TimePeriod period in Enum.GetValues(typeof(TimePeriod)))
                 {
                     // Add player before logging
                     PlayerAgency.OfficersByShift[period].Add(PlayerUnit);
 
                     // Log crime logic
-                    var crimeInfo = CrimeGenerator.RegionCrimeInfoByTimeOfDay[period];
-                    string name = Enum.GetName(typeof(TimeOfDay), period);
+                    var crimeInfo = CrimeGenerator.RegionCrimeInfoByTimePeriod[period];
+                    string name = Enum.GetName(typeof(TimePeriod), period);
 
                     Log.Debug($"\t\tRegion Data during the {name}:");
                     Log.Debug($"\t\t\tAverage Calls: {crimeInfo.AverageCrimeCalls}");
@@ -1143,7 +1143,7 @@ namespace AgencyDispatchFramework
                 if (!Settings.EnableFullSimulation)
                 {
                     var date = World.DateTime;
-                    var tod = GameWorld.CurrentTimeOfDay;
+                    var tod = GameWorld.CurrentTimePeriod;
 
                     // Start duty for each officer
                     foreach (var agency in AgenciesByName.Values)

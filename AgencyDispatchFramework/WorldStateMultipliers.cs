@@ -17,7 +17,7 @@ namespace AgencyDispatchFramework
         /// <summary>
         /// Gets the probabilities for each time of day and weather category
         /// </summary>
-        private Dictionary<Tuple<TimeOfDay, WeatherCatagory>, int> Probabilities { get; set; }
+        private Dictionary<Tuple<TimePeriod, WeatherCatagory>, int> Probabilities { get; set; }
 
         /// <summary>
         /// Creates a new instance of <see cref="WorldStateMultipliers"/>
@@ -25,25 +25,25 @@ namespace AgencyDispatchFramework
         public WorldStateMultipliers(int baseProbability = 1)
         {
             BaseProbability = baseProbability;
-            Probabilities = new Dictionary<Tuple<TimeOfDay, WeatherCatagory>, int>(20);
-            foreach (TimeOfDay tod in Enum.GetValues(typeof(TimeOfDay)))
+            Probabilities = new Dictionary<Tuple<TimePeriod, WeatherCatagory>, int>(20);
+            foreach (TimePeriod period in Enum.GetValues(typeof(TimePeriod)))
             {
                 foreach (WeatherCatagory catagory in Enum.GetValues(typeof(WeatherCatagory)))
                 {
-                    Probabilities.Add(new Tuple<TimeOfDay, WeatherCatagory>(tod, catagory), 0);
+                    Probabilities.Add(new Tuple<TimePeriod, WeatherCatagory>(period, catagory), 0);
                 }
             }
         }
 
         /// <summary>
-        /// Sets the probability of a <see cref="TimeOfDay"/> and <see cref="WeatherCatagory"/> combination
+        /// Sets the probability of a <see cref="TimePeriod"/> and <see cref="WeatherCatagory"/> combination
         /// </summary>
-        /// <param name="tod"></param>
+        /// <param name="period"></param>
         /// <param name="catagory"></param>
         /// <param name="value"></param>
-        internal void SetProbability(TimeOfDay tod, WeatherCatagory catagory, int value)
+        internal void SetProbability(TimePeriod period, WeatherCatagory catagory, int value)
         {
-            var key = new Tuple<TimeOfDay, WeatherCatagory>(tod, catagory);
+            var key = new Tuple<TimePeriod, WeatherCatagory>(period, catagory);
             Probabilities[key] = value;
         }
 
@@ -53,7 +53,7 @@ namespace AgencyDispatchFramework
         /// <returns></returns>
         public int Calculate()
         {
-            var key = new Tuple<TimeOfDay, WeatherCatagory>(GameWorld.CurrentTimeOfDay, GetWeatherCatagory());
+            var key = new Tuple<TimePeriod, WeatherCatagory>(GameWorld.CurrentTimePeriod, GetWeatherCatagory());
             return BaseProbability * Probabilities[key];
         }
 

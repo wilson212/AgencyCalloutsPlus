@@ -37,12 +37,12 @@ namespace AgencyDispatchFramework.Dispatching
             }
 
             // Loop through each time period and cache crime numbers
-            foreach (TimeOfDay period in Enum.GetValues(typeof(TimeOfDay)))
+            foreach (TimePeriod period in Enum.GetValues(typeof(TimePeriod)))
             {
                 // Spawn
                 int aiPatrolCount = OptimumPatrols[period];
                 OfficersByShift.Add(period, new List<OfficerUnit>());
-                var periodName = Enum.GetName(typeof(TimeOfDay), period);
+                var periodName = Enum.GetName(typeof(TimePeriod), period);
 
                 // Ensure we have enough locations to spawn patrols at
                 var locations = GetRandomShoulderLocations(aiPatrolCount);
@@ -72,7 +72,7 @@ namespace AgencyDispatchFramework.Dispatching
                     OfficersByShift[period].Add(unit);
 
                     // Start Duty
-                    if (period == GameWorld.CurrentTimeOfDay)
+                    if (period == GameWorld.CurrentTimePeriod)
                     {
                         var sp = locations[i];
                         unit.StartDuty(sp);
@@ -89,26 +89,26 @@ namespace AgencyDispatchFramework.Dispatching
         /// </summary>
         /// <param name="zones"></param>
         /// <returns></returns>-
-        protected override Dictionary<TimeOfDay, int> GetOptimumUnitCounts(WorldZone[] zones)
+        protected override Dictionary<TimePeriod, int> GetOptimumUnitCounts(WorldZone[] zones)
         {
             if (Dispatch.PlayerAgency.IsStateAgency)
             {
-                return new Dictionary<TimeOfDay, int>()
+                return new Dictionary<TimePeriod, int>()
                 {
-                    { TimeOfDay.Day, 20 },
-                    { TimeOfDay.Evening, 24 },
-                    { TimeOfDay.Night, 16 },
-                    { TimeOfDay.Morning, 24 }
+                    { TimePeriod.Day, 20 },
+                    { TimePeriod.Evening, 24 },
+                    { TimePeriod.Night, 16 },
+                    { TimePeriod.Morning, 24 }
                 };
             }
             else
             {
-                return new Dictionary<TimeOfDay, int>()
+                return new Dictionary<TimePeriod, int>()
                 {
-                    { TimeOfDay.Day, 10 },
-                    { TimeOfDay.Evening, 12 },
-                    { TimeOfDay.Night, 8 },
-                    { TimeOfDay.Morning, 12 }
+                    { TimePeriod.Day, 10 },
+                    { TimePeriod.Evening, 12 },
+                    { TimePeriod.Night, 8 },
+                    { TimePeriod.Morning, 12 }
                 };
             }
         }

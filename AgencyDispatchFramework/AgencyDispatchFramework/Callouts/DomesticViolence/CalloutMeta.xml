@@ -5,13 +5,8 @@
   <Scenarios>
 
     <ReportsOfArguingThreats>
+      <!-- Emergency Type -->
       <Category>Disturbance</Category>
-      <!-- Agencies that handle this callout scenario -->
-      <Agencies target="Police">
-        <Agency>CityPolice</Agency>
-        <Agency>CountySheriff</Agency>
-        <Agency>HighwayPatrol</Agency>
-      </Agencies>
       <!-- The probability of this scenario happening relative to every other scenario of this crime catagory -->
       <Probabilities>
         <Morning clear="10" overcast="10" rain="10" snow="10" storm="10" />
@@ -19,6 +14,7 @@
         <Evening clear="10" overcast="10" rain="10" snow="10" storm="10" />
         <Night clear="10" overcast="10" rain="10" snow="10" storm="10" />
       </Probabilities>
+      <!-- Location requirements for scenario -->
       <Location>
         <Type>Residence</Type>
         <RequiredFlags mode="Any">
@@ -26,31 +22,47 @@
         </RequiredFlags>
       </Location>
       <Dispatch>
+        <!-- Initial dispatched agency to call -->
+        <Target>Police</Target>
+        <!-- Agencies that handle this callout scenario -->
+        <Agencies>
+          <Agency>CityPolice</Agency>
+          <Agency>CountySheriff</Agency>
+          <Agency>HighwayPatrol</Agency>
+        </Agencies>
+        <!-- Number of units that dispatch should send to this call -->
+        <UnitCount>2</UnitCount>
+        <Priority>Emergency</Priority>
+        <Response>Code3</Response>
         <!-- Scanner Audio data for call -->
         <Scanner>
           <AudioString>WE_HAVE_01 CRIME_DOMESTIC_DISTURBANCE_02 IN_OR_ON_POSITION UNITS_RESPOND_CODE_03_02</AudioString>
           <PrefixCallSign>False</PrefixCallSign>
           <UsePosition>True</UsePosition>
         </Scanner>
-        <!-- Callout Details are for CAD -->
-        <Descriptions>
-          <Description probability="10">
-            <Source>Citizen</Source>
-            <Text>
-RP SAYS THEY HEARD THIER NEIGHBORS VERBALLY FIGHTING AND LOUD CRASHING NOISES COMING FROM INSIDE THE HOME AT $LOCATION$. 
+        <CAD>
+          <!-- CAD texture for this call in call details -->
+          <Texture dictionary="char_chat_call">char_chat_call</Texture>
+          <IncidentType abbreviation="DIST">Domestic Disturbance</IncidentType>
+          <Descriptions>
+            <Description probability="10">
+              <Source>Citizen</Source>
+              <Text>
+RP SAYS THEY HEARD THIER NEIGHBORS VERBALLY FIGHTING AND LOUD CRASHING NOISES COMING FROM INSIDE THE HOME AT $LOCATION$.
 RP STATED ONE OF THE SCREAMS WAS SOMEONE STATING THEY WERE GOING TO KILL SOMEONE. RESPOND CODE 3
-            </Text>
-          </Description>
-        </Descriptions>
-        <!-- CAD texture for this call in call details -->
-        <CADTexture dictionary="char_chat_call">char_chat_call</CADTexture>
-        <IncidentType abbreviation="DIST">Domestic Disturbance</IncidentType>
-        <Priority>Emergency</Priority>
-        <Response>3</Response>
+              </Text>
+            </Description>
+          </Descriptions>
+        </CAD>
       </Dispatch>
       <Simulation>
+        <!-- In game minutes -->
         <CallTime min="20" max="45" />
-        <Arrest chance="80">Suspect</Arrest>
+        <!-- Chance that a ped gets arrested -->
+        <Arrests>
+          <Arrest chance="80">Suspect</Arrest>
+        </Arrests>
+        <Escalation chance="20" />
       </Simulation>
       <FlowSequence>
         <FlowOutcome id="cheating" probability="10" />

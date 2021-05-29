@@ -355,7 +355,7 @@ namespace AgencyDispatchFramework.Simulation
             bool isParking = false;
 
             // Repond code 3?
-            if (CurrentCall.ScenarioInfo.ResponseCode == 3)
+            if (CurrentCall.ScenarioInfo.ResponseCode == ResponseCode.Code3)
             {
                 // Turn on sirens
                 SetBlipColor(OfficerStatusColor.DispatchedCode3);

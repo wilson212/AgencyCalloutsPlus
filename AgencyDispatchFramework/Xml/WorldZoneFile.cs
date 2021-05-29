@@ -152,7 +152,7 @@ namespace AgencyDispatchFramework.Xml
         /// </summary>
         /// <param name="subNode"></param>
         /// <returns></returns>
-        private Dictionary<TimeOfDay, int> GetTimeOfDayProbabilities(XmlNode subNode)
+        private Dictionary<TimePeriod, int> GetTimeOfDayProbabilities(XmlNode subNode)
         {
             // If attributes is null, we know... we know...
             if (subNode?.Attributes == null)
@@ -161,12 +161,12 @@ namespace AgencyDispatchFramework.Xml
             }
 
             // Create our dictionary
-            var item = new Dictionary<TimeOfDay, int>(4)
+            var item = new Dictionary<TimePeriod, int>(4)
             {
-                { TimeOfDay.Morning, 0 },
-                { TimeOfDay.Day, 0 },
-                { TimeOfDay.Evening, 0 },
-                { TimeOfDay.Night, 0 }
+                { TimePeriod.Morning, 0 },
+                { TimePeriod.Day, 0 },
+                { TimePeriod.Evening, 0 },
+                { TimePeriod.Night, 0 }
             };
 
             // Extract and parse morning value
@@ -174,28 +174,28 @@ namespace AgencyDispatchFramework.Xml
             {
                 Log.Error($"ZoneInfo.ctor [{subNode.GetFullPath()}]: Unable to extract 'morning' attribute on XmlNode");
             }
-            item[TimeOfDay.Morning] = m;
+            item[TimePeriod.Morning] = m;
 
             // Extract and parse morning value
             if (!Int32.TryParse(subNode.Attributes["day"]?.Value, out m))
             {
                 Log.Error($"ZoneInfo.ctor [{subNode.GetFullPath()}]: Unable to extract 'day' attribute on XmlNode");
             }
-            item[TimeOfDay.Day] = m;
+            item[TimePeriod.Day] = m;
 
             // Extract and parse morning value
             if (!Int32.TryParse(subNode.Attributes["evening"]?.Value, out m))
             {
                 Log.Error($"ZoneInfo.ctor [{subNode.GetFullPath()}]: Unable to extract 'evening' attribute on XmlNode");
             }
-            item[TimeOfDay.Evening] = m;
+            item[TimePeriod.Evening] = m;
 
             // Extract and parse morning value
             if (!Int32.TryParse(subNode.Attributes["night"]?.Value, out m))
             {
                 Log.Error($"ZoneInfo.ctor [{subNode.GetFullPath()}]: Unable to extract 'night' attribute on XmlNode");
             }
-            item[TimeOfDay.Night] = m;
+            item[TimePeriod.Night] = m;
 
             return item;
         }

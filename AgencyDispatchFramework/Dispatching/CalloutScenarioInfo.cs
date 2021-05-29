@@ -10,7 +10,10 @@ namespace AgencyDispatchFramework.Dispatching
         /// <summary>
         /// Gets the base probability based on the players current <see cref="Agency"/>
         /// </summary>
-        public int Probability { get; set; }
+        public int Probability
+        {
+            get { return ProbabilityMultipliers.Calculate(); }
+        }
 
         /// <summary>
         /// Gets the <see cref="WorldStateMultipliers"/> for this scenario
@@ -30,7 +33,7 @@ namespace AgencyDispatchFramework.Dispatching
         /// <summary>
         /// Indicates whether the responding unit should respond Code 3
         /// </summary>
-        public int ResponseCode { get; set; }
+        public ResponseCode ResponseCode { get; set; }
 
         /// <summary>
         /// Gets the priority level of the call
@@ -106,5 +109,10 @@ namespace AgencyDispatchFramework.Dispatching
         /// Contains an array of <see cref="Agency"/>s that can handle this scenario
         /// </summary>
         public AgencyType[] AgencyTypes { get; internal set; }
+
+        /// <summary>
+        /// Gets the ideal <see cref="OfficerUnit"/> count to handle this call.
+        /// </summary>
+        public int UnitCount { get; internal set; } = 1;
     }
 }

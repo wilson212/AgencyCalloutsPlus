@@ -71,9 +71,9 @@ namespace AgencyDispatchFramework.Dispatching
         public StaffLevel StaffLevel { get; protected set; }
 
         /// <summary>
-        /// Gets the optimum patrol count based on <see cref="TimeOfDay" />
+        /// Gets the optimum patrol count based on <see cref="TimePeriod" />
         /// </summary>
-        internal Dictionary<TimeOfDay, int> OptimumPatrols { get; set; }
+        internal Dictionary<TimePeriod, int> OptimumPatrols { get; set; }
 
         /// <summary>
         /// Contains a list of zones in this jurisdiction
@@ -88,12 +88,12 @@ namespace AgencyDispatchFramework.Dispatching
         /// <summary>
         /// Contains a list of all active on duty officers
         /// </summary>
-        public OfficerUnit[] OnDutyOfficers => OfficersByShift[GameWorld.CurrentTimeOfDay].ToArray();
+        public OfficerUnit[] OnDutyOfficers => OfficersByShift[GameWorld.CurrentTimePeriod].ToArray();
 
         /// <summary>
         /// 
         /// </summary>
-        internal Dictionary<TimeOfDay, List<OfficerUnit>> OfficersByShift { get; set; }
+        internal Dictionary<TimePeriod, List<OfficerUnit>> OfficersByShift { get; set; }
 
         /// <summary>
         /// Gets or sets the <see cref="Dispatcher"/> for this <see cref="Agency"/>
@@ -480,7 +480,7 @@ namespace AgencyDispatchFramework.Dispatching
         /// </summary>
         /// <param name="zoneNames"></param>
         /// <returns></returns>
-        protected abstract Dictionary<TimeOfDay, int> GetOptimumUnitCounts(WorldZone[] zones);
+        protected abstract Dictionary<TimePeriod, int> GetOptimumUnitCounts(WorldZone[] zones);
 
         /// <summary>
         /// Enables simulation on this <see cref="Agency"/> in the game
@@ -494,7 +494,7 @@ namespace AgencyDispatchFramework.Dispatching
             Zones = GetZoneNamesByAgencyName(ScriptName).Select(x => WorldZone.GetZoneByName(x)).ToArray();
 
             // Load officers
-            OfficersByShift = new Dictionary<TimeOfDay, List<OfficerUnit>>();
+            OfficersByShift = new Dictionary<TimePeriod, List<OfficerUnit>>();
 
             // Create dispatcher
             Dispatcher = CreateDispatcher();
@@ -503,7 +503,7 @@ namespace AgencyDispatchFramework.Dispatching
             OptimumPatrols = GetOptimumUnitCounts(Zones);
 
             // Register for TimeOfDay changes!
-            GameWorld.OnTimeOfDayChanged += GameWorld_OnTimeOfDayChanged;
+            GameWorld.OnTimePeriodChanged += GameWorld_OnTimeOfDayChanged;
 
             // Finally, flag
             IsActive = true;
@@ -515,7 +515,7 @@ namespace AgencyDispatchFramework.Dispatching
         internal virtual void Disable()
         {
             // Un-Register for TimeOfDay changes!
-            GameWorld.OnTimeOfDayChanged -= GameWorld_OnTimeOfDayChanged;
+            GameWorld.OnTimePeriodChanged -= GameWorld_OnTimeOfDayChanged;
 
             // Dispose the dispatcher
             Dispatcher?.Dispose();
@@ -542,7 +542,7 @@ namespace AgencyDispatchFramework.Dispatching
         }
 
         /// <summary>
-        /// Method called when <see cref="GameWorld.OnTimeOfDayChanged"/> is called. Manages the
+        /// Method called when <see cref="GameWorld.OnTimePeriodChanged"/> is called. Manages the
         /// shifts of all the <see cref="OfficerUnit"/>s
         /// </summary>
         /// <param name="sender"></param>
@@ -550,7 +550,7 @@ namespace AgencyDispatchFramework.Dispatching
         protected void GameWorld_OnTimeOfDayChanged(object sender, EventArgs e)
         {
             // Ensure we have enough locations to spawn patrols at
-            var period = GameWorld.CurrentTimeOfDay;
+            var period = GameWorld.CurrentTimePeriod;
             int aiPatrolCount = OfficersByShift[period].Count;
             var locations = GetRandomShoulderLocations(aiPatrolCount);
             if (locations.Length < aiPatrolCount)
@@ -562,7 +562,7 @@ namespace AgencyDispatchFramework.Dispatching
                 b.Append(") for '");
                 b.Append(FriendlyName);
                 b.Append("' on ");
-                b.Append(Enum.GetName(typeof(TimeOfDay), period));
+                b.Append(Enum.GetName(typeof(TimePeriod), period));
                 b.Append(" shift.");
                 Log.Warning(b.ToString());
 
@@ -579,7 +579,7 @@ namespace AgencyDispatchFramework.Dispatching
             }
 
             // Tell old units they are off duty last!
-            period = GameWorld.GetPreviousTimeOfDay();
+            period = GameWorld.GetPreviousTimePeriod();
             foreach (var unit in OfficersByShift[period])
             {
                 unit.EndDuty();

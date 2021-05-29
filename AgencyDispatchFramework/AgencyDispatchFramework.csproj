@@ -103,6 +103,7 @@
     <Compile Include="Dispatching\Dispatchers\PoliceDispatcher.cs" />
     <Compile Include="Dispatching\RadioMessage.cs" />
     <Compile Include="Dispatching\Delegates\ScenarioListUpdateHandler.cs" />
+    <Compile Include="Dispatching\Enums\ResponseCode.cs" />
     <Compile Include="Dispatching\ScenarioPool.cs" />
     <Compile Include="Dispatching\Assignments\AssignedToCall.cs" />
     <Compile Include="Dispatching\Assignments\CivilDisturbance.cs" />
@@ -179,7 +180,7 @@
     <Compile Include="Simulation\VirtualAIOfficerUnit.cs" />
     <Compile Include="Callouts\DomesticViolence\Controller.cs" />
     <Compile Include="Callouts\DomesticViolence\ReportsOfArguingThreats.cs" />
-    <Compile Include="Game\Enums\TimeOfDay.cs" />
+    <Compile Include="Game\Enums\TimePeriod.cs" />
     <Compile Include="ExpressionParser.cs" />
     <Compile Include="NativeUI\CurrentCallTabPage.cs" />
     <Compile Include="Dispatching\RegionCrimeInfo.cs" />

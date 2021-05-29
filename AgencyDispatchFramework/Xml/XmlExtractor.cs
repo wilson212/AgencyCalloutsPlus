@@ -26,9 +26,9 @@ namespace AgencyDispatchFramework
             var multipliers = new WorldStateMultipliers();
 
             // Itterate through each time of day
-            foreach (TimeOfDay tod in Enum.GetValues(typeof(TimeOfDay)))
+            foreach (TimePeriod period in Enum.GetValues(typeof(TimePeriod)))
             {
-                var name = Enum.GetName(typeof(TimeOfDay), tod);
+                var name = Enum.GetName(typeof(TimePeriod), period);
                 var todNode = node.SelectSingleNode(name);
                 if (todNode == null)
                 {
@@ -47,7 +47,7 @@ namespace AgencyDispatchFramework
                     }
 
                     // Set probability value
-                    multipliers.SetProbability(tod, catagory, m);
+                    multipliers.SetProbability(period, catagory, m);
                 }
             }
 
