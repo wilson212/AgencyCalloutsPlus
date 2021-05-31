@@ -157,7 +157,7 @@ namespace AgencyDispatchFramework.NativeUI
             headerLoc = SafeSize.AddPoints(new Point(col4p, headerY));
             valueLoc = SafeSize.AddPoints(new Point(col4p, valueY));
             ResText.Draw("~y~Postal", headerLoc, HeaderTextWeight, Color.FromArgb(alpha, Color.White), Common.EFont.ChaletComprimeCologne, a, true, true, new Size(250, 0));
-            ResText.Draw($"~w~{Call.Location.Postal}", valueLoc, ValueTextWeight, Color.FromArgb(alpha, Color.White), Common.EFont.ChaletComprimeCologne, false);
+            ResText.Draw($"~w~{Call.Location.Postal.Code}", valueLoc, ValueTextWeight, Color.FromArgb(alpha, Color.White), Common.EFont.ChaletComprimeCologne, false);
 
             // ===
             // 4th Row

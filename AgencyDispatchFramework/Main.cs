@@ -1,5 +1,6 @@
 ﻿using AgencyDispatchFramework.Dispatching;
 using AgencyDispatchFramework.Game;
+using AgencyDispatchFramework.Game.Locations;
 using AgencyDispatchFramework.Integration;
 using AgencyDispatchFramework.NativeUI;
 using LSPD_First_Response.Mod.API;
@@ -193,6 +194,9 @@ namespace AgencyDispatchFramework
                 // Only initialize these classes once!
                 if (!HasBeenOnDuty)
                 {
+                    // Load postals
+                    Postal.Initialize();
+
                     // Load our agencies and such (this will only initialize once per game session)
                     Agency.Initialize();
 

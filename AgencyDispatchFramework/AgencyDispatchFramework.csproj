@@ -88,6 +88,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Dispatching\Agency\SheriffAgency.cs" />
+    <Compile Include="Dispatching\Assignments\BusinessCheck.cs" />
     <Compile Include="Dispatching\Assignments\FelonyTrafficStop.cs" />
     <Compile Include="Dispatching\Assignments\PrisonerTransport.cs" />
     <Compile Include="Dispatching\Assignments\TrafficEnforcement.cs" />
@@ -125,6 +126,7 @@
     <Compile Include="Game\Enums\RelativeDirection.cs" />
     <Compile Include="Game\Enums\PedGender.cs" />
     <Compile Include="Game\Locations\IntersectionFlags.cs" />
+    <Compile Include="Game\Locations\Postal.cs" />
     <Compile Include="Game\Locations\Requirement.cs" />
     <Compile Include="Game\Locations\FlagFilterGroup.cs" />
     <Compile Include="Game\Locations\ResidenceFlags.cs" />
@@ -350,6 +352,9 @@
     <Content Include="AgencyDispatchFramework\Locations\CMSW.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="AgencyDispatchFramework\Locations\Custom\PLACEHOLDER.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="AgencyDispatchFramework\Locations\CYPRE.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -573,6 +578,15 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="AgencyDispatchFramework\Peds.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AgencyDispatchFramework\Postals\new-postals.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AgencyDispatchFramework\Postals\ocrp-postals.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="AgencyDispatchFramework\Postals\old-postals.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="AgencyDispatchFramework\Vehicles.xml">

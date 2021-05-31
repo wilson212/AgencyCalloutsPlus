@@ -20,14 +20,15 @@ namespace AgencyDispatchFramework
     public static class Dispatch
     {
         /// <summary>
-        /// Our lock object to prevent threading issues
+        /// Our lock object to prevent multi-threading issues
         /// </summary>
-        private static object _lock = new object();
+        private static object _threadLock = new object();
 
         /// <summary>
         /// Contains a hash table of <see cref="WorldLocation"/>s that are currently in use by the Call Queue
         /// </summary>
-        internal static Dictionary<LocationTypeCode, List<WorldLocation>> ActiveCrimeLocations { get; set; }
+        /// <remarks>HashSet{T}.Contains is an O(1) operation</remarks>
+        internal static HashSet<WorldLocation> ActiveCrimeLocations { get; set; }
 
         /// <summary>
         /// Gets the player's current selected <see cref="Agency"/>
@@ -166,11 +167,7 @@ namespace AgencyDispatchFramework
         static Dispatch()
         {
             // Intialize a hash table of active crime locations
-            ActiveCrimeLocations = new Dictionary<LocationTypeCode, List<WorldLocation>>();
-            foreach (LocationTypeCode type in Enum.GetValues(typeof(LocationTypeCode)))
-            {
-                ActiveCrimeLocations.Add(type, new List<WorldLocation>(10));
-            }
+            ActiveCrimeLocations = new HashSet<WorldLocation>();
 
             // Create call Queue
             // See also: https://grantpark.org/info/16029
@@ -287,12 +284,13 @@ namespace AgencyDispatchFramework
         /// Gets the number of calls in an array by priority
         /// </summary>
         /// <returns></returns>
-        public static int[] GetCallCount()
+        public static Dictionary<CallPriority, int> GetCallCount()
         {
-            var callCount = new int[4];
-            for (int i = 0; i < 4; i++)
+            var callCount = new Dictionary<CallPriority, int>();
+            foreach (CallPriority priority in Enum.GetValues(typeof(CallPriority)))
             {
-                callCount[i] = CallQueue[i].Count;
+                var index = ((int)priority) - 1;
+                callCount.Add(priority, CallQueue[index].Count);
             }
 
             return callCount;
@@ -325,15 +323,27 @@ namespace AgencyDispatchFramework
 
         /// <summary>
         /// Gets an array of <see cref="WorldLocation"/>s currently in use based
-        /// on the specified <see cref="LocationTypeCode"/>
+        /// on the specified type <typeparamref name="T"/>
         /// </summary>
         /// <param name="type"></param>
         /// <exception cref="InvalidCastException">thrown if the <paramref name="type"/> does not match the <typeparamref name="T"/></exception>
         /// <typeparam name="T">A type that inherits from <see cref="WorldLocation"/></typeparam>
         /// <returns></returns>
-        public static T[] GetActiveCrimeLocationsByType<T>(LocationTypeCode type) where T : WorldLocation
+        public static T[] GetActiveLocationsOfType<T>() where T : WorldLocation
         {
-            return ActiveCrimeLocations[type].Cast<T>().ToArray();
+            return (from x in ActiveCrimeLocations where x is T select (T)x).ToArray();
+        }
+
+        /// <summary>
+        /// Gets an array of locations that are not currently in use from the provided
+        /// <see cref="WorldLocation"/> pool
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="pool"></param>
+        /// <returns></returns>
+        public static T[] GetInactiveLocationsFromPool<T>(T[] pool) where T : WorldLocation
+        {
+            return (from x in pool where !ActiveCrimeLocations.Contains(x) select x).ToArray();
         }
 
         /// <summary>
@@ -377,9 +387,9 @@ namespace AgencyDispatchFramework
         /// Invokes a random callout from the CallQueue to the player
         /// </summary>
         /// <returns></returns>
-        public static bool InvokeCalloutForPlayer()
+        public static bool InvokeAnyCalloutForPlayer()
         {
-            if (CanInvokeCalloutForPlayer())
+            if (CanInvokeAnyCalloutForPlayer())
             {
                 // Cache player location
                 var location = Rage.Game.LocalPlayer.Character.Position;
@@ -393,7 +403,7 @@ namespace AgencyDispatchFramework
                         continue;
 
                     // Filter calls
-                    var list = calls.Where(x => x.NeedsMoreOfficers).ToArray();
+                    var list = calls.Where(x => CanInvokeCallForPlayer(x) && x.NeedsMoreOfficers).ToArray();
                     if (list.Length == 0)
                         continue;
 
@@ -421,9 +431,9 @@ namespace AgencyDispatchFramework
         /// <returns>Returns true if the player is available and can be dispatched to a call, false otherwise</returns>
         public static bool InvokeNextCalloutForPlayer(out bool dispatched)
         {
-            if (CanInvokeCalloutForPlayer())
+            if (CanInvokeAnyCalloutForPlayer())
             {
-                if (!InvokeCalloutForPlayer())
+                if (!InvokeAnyCalloutForPlayer())
                 {
                     // If we are here, we did not find a call. Signal dispatch to send next call
                     SendNextCallToPlayer = true;
@@ -448,9 +458,9 @@ namespace AgencyDispatchFramework
         /// </summary>
         /// <param name="call"></param>
         /// <returns></returns>
-        public static bool InvokeCalloutForPlayer(PriorityCall call)
+        public static bool InvokeCallForPlayer(PriorityCall call)
         {
-            if (CanInvokeCalloutForPlayer())
+            if (CanInvokeCallForPlayer(call))
             {
                 InvokeForPlayer = call;
                 return true;
@@ -464,10 +474,33 @@ namespace AgencyDispatchFramework
         /// dependant on thier current call status.
         /// </summary>
         /// <returns></returns>
-        public static bool CanInvokeCalloutForPlayer()
+        public static bool CanInvokeAnyCalloutForPlayer()
         {
             CallStatus[] acceptable = { CallStatus.Completed, CallStatus.Dispatched, CallStatus.Waiting };
             return PlayerActiveCall == null || acceptable.Contains(PlayerActiveCall.CallStatus);
+        }
+
+        /// <summary>
+        /// Indicates whether or not a <see cref="Callout"/> can be invoked for the Player
+        /// dependant on thier current call status and jurisdiction limits.
+        /// </summary>
+        /// <returns></returns>
+        public static bool CanInvokeCallForPlayer(PriorityCall call)
+        {
+            // If a call is less priority than a players current assignment
+            if (PlayerUnit.Assignment != null && (int)call.Priority >= (int)PlayerUnit.Assignment.Priority)
+            {
+                return false;
+            }
+
+            // Check to make sure the agency can preform this type of call
+            if (!call.ScenarioInfo.AgencyTypes.Contains(PlayerAgency.AgencyType))
+            {
+                return false;
+            }
+
+            // Check jurisdiction
+            return call.Zone.DoesAgencyHaveJurisdiction(PlayerAgency);
         }
 
         #endregion Public API Methods
@@ -542,7 +575,7 @@ namespace AgencyDispatchFramework
                     }
 
                     // Add call to priority Queue
-                    lock (_lock)
+                    lock (_threadLock)
                     {
                         var index = ((int)call.OriginalPriority) - 1;
                         CallQueue[index].Add(call);
@@ -577,10 +610,10 @@ namespace AgencyDispatchFramework
 
             // Remove call
             var priority = ((int)call.OriginalPriority) - 1;
-            lock (_lock)
+            lock (_threadLock)
             {
                 CallQueue[priority].Remove(call);
-                ActiveCrimeLocations[call.Location.LocationType].Remove(call.Location);
+                ActiveCrimeLocations.Remove(call.Location);
             }
 
             // Set player status
@@ -715,12 +748,20 @@ namespace AgencyDispatchFramework
             }
 
             // Add call to priority Queue
-            lock (_lock)
+            lock (_threadLock)
             {
-                var index = ((int)call.OriginalPriority) - 1;
-                CallQueue[index].Add(call);
-                ActiveCrimeLocations[call.Location.LocationType].Add(call.Location);
-                Log.Debug($"Dispatch.AddIncomingCall(): Added Call to Queue '{call.ScenarioInfo.Name}' in zone '{call.Zone.FullName}'");
+                if (ActiveCrimeLocations.Add(call.Location))
+                {
+                    var index = ((int)call.OriginalPriority) - 1;
+                    CallQueue[index].Add(call);
+                    Log.Debug($"Dispatch.AddIncomingCall(): Added Call to Queue '{call.ScenarioInfo.Name}' in zone '{call.Zone.FullName}'");
+                }
+                else
+                {
+                    // Failed to add?
+                    Log.Error($"Dispatch.AddIncomingCall(): Tried to add a call to Queue in zone '{call.Zone.FullName}', but the location selected was already in use.");
+                    return;
+                }
             }
 
             // Decide which agency gets this call
@@ -741,11 +782,12 @@ namespace AgencyDispatchFramework
             if (SendNextCallToPlayer)
             {
                 // Check jurisdiction
-                if (!call.Zone.AgencyHasJurisdiction(PlayerAgency))
+                if (!call.Zone.DoesAgencyHaveJurisdiction(PlayerAgency))
                 {
                     return;
 
                 }
+
                 // Check call type
                 if (!call.ScenarioInfo.AgencyTypes.Contains(PlayerAgency.AgencyType))
                 {
@@ -784,10 +826,10 @@ namespace AgencyDispatchFramework
 
             // Remove call
             var priority = ((int)call.OriginalPriority) - 1;
-            lock (_lock)
+            lock (_threadLock)
             {
                 CallQueue[priority].Remove(call);
-                ActiveCrimeLocations[call.Location.LocationType].Remove(call.Location);
+                ActiveCrimeLocations.Remove(call.Location);
             }
 
             // Tell the call its done
@@ -885,12 +927,12 @@ namespace AgencyDispatchFramework
                 // Only log if the call was added successfully
                 if (newAgency.Dispatcher.AddCall(call))
                 {
-                    Log.Debug($"{agency.ScriptName.ToUpper()} Dispatcher: Raised call '{call.ScenarioInfo.Name}' up to {newAgency.ScriptName.ToUpper()}");
+                    Log.Debug($"{agency.ScriptName.ToUpper()} Dispatcher: Requested assistance with call '{call.ScenarioInfo.Name}' from {newAgency.ScriptName.ToUpper()}");
                 }
             }
             else
             {
-                Log.Debug($"{agency.ScriptName.ToUpper()} Dispatcher: Attemtped to raise call '{call.ScenarioInfo.Name}', but there is no higher agency.");
+                Log.Debug($"{agency.ScriptName.ToUpper()} Dispatcher: Attemtped to request assitance with call '{call.ScenarioInfo.Name}', but there is other agency.");
             }
         }
 
@@ -1223,7 +1265,7 @@ namespace AgencyDispatchFramework
                 {
                     // Lock the call Queue and draw scenes the player
                     // is close enough to see
-                    lock (_lock)
+                    lock (_threadLock)
                     {
                         // Grab player location just once
                         var location = Rage.Game.LocalPlayer.Character.Position;
@@ -1285,7 +1327,7 @@ namespace AgencyDispatchFramework
             }
 
             // Process each agency
-            var orderedAgencies = AgenciesByName.Values.OrderBy(x => x.AgencyType);
+            var orderedAgencies = AgenciesByName.Values.OrderBy(x => (int)x.AgencyType);
             foreach (var agency in orderedAgencies)
             {
                 agency.Dispatcher.Process();

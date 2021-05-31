@@ -37,6 +37,11 @@ namespace AgencyDispatchFramework.Dispatching
         public HashSet<PriorityCall> RaisedCalls { get; set; }
 
         /// <summary>
+        /// Indicates whether the next call to come in should be sent to the player
+        /// </summary>
+        public bool SendNextCallToPlayer { get; set; }
+
+        /// <summary>
         /// Event fired when a <see cref="PriorityCall"/> needs additional resources
         /// that the <see cref="Agency"/> is unable to provide
         /// </summary>

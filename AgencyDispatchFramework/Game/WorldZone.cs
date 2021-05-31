@@ -110,7 +110,7 @@ namespace AgencyDispatchFramework.Game
         /// </summary>
         /// <param name="agency"></param>
         /// <returns></returns>
-        public bool AgencyHasJurisdiction(Agency agency)
+        public bool DoesAgencyHaveJurisdiction(Agency agency)
         {
             if (agency.IsLawEnforcementAgency)
             {
@@ -193,8 +193,7 @@ namespace AgencyDispatchFramework.Game
                 try
                 {
                     // Find all locations not in use
-                    var active = Dispatch.GetActiveCrimeLocationsByType<T>(type);
-                    locationPool = locationPool.Except(active).ToArray();
+                    locationPool = Dispatch.GetInactiveLocationsFromPool(locationPool);
                 }
                 catch (InvalidCastException ex)
                 {
@@ -223,7 +222,7 @@ namespace AgencyDispatchFramework.Game
         /// </summary>
         /// <param name="inactiveOnly">If true, will only return a <see cref="WorldLocation"/> that is not currently in use</param>
         /// <returns>returns a random <see cref="SpawnPoint"/> on success, or null on failure</returns>
-        public RoadShoulder GetRandomSideOfRoadLocation(FlagFilterGroup filters, bool inactiveOnly = false)
+        public RoadShoulder GetRandomRoadShoulder(FlagFilterGroup filters, bool inactiveOnly = false)
         {
             // Get random location
             return GetRandomLocationFromPool(RoadShoulders, filters, inactiveOnly);

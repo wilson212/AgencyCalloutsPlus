@@ -18,6 +18,18 @@ namespace AgencyDispatchFramework
         internal static Keys[] Modifiers = { Keys.LControlKey, Keys.RControlKey, Keys.Alt, Keys.LShiftKey, Keys.RShiftKey };
 
         /// <summary>
+        /// Indicates whether the on screen keyboard is currently open
+        /// </summary>
+        public static bool IsKeyboardOpen
+        {
+            get
+            {
+                int status = Natives.UpdateOnscreenKeyboard<int>();
+                return status == 0;
+            }
+        }
+
+        /// <summary>
         /// Returns whether the computer key is pressed. If the on screen keyboard
         /// is open, this method returns false.
         /// </summary>
@@ -38,8 +50,7 @@ namespace AgencyDispatchFramework
         /// </remarks>
         internal static bool IsComputerKeyDown(Keys keyPressed, bool rightNow = false, bool ignoreModifiers = true)
         {
-            var status = Natives.UpdateOnscreenKeyboard<int>();
-            if (status != 0)
+            if (!IsKeyboardOpen)
             {
                 // If we are not ignoring modifiers, and a modifier key is down,
                 // Then we return false
@@ -70,8 +81,7 @@ namespace AgencyDispatchFramework
         /// </remarks>
         internal static bool IsAnyComputerKeyDown(bool rightNow, params Keys[] keysPressed)
         {
-            var status = Natives.UpdateOnscreenKeyboard<int>();
-            if (status != 0)
+            if (!IsKeyboardOpen)
             {
                 foreach (Keys key in keysPressed)
                 {
@@ -102,8 +112,7 @@ namespace AgencyDispatchFramework
                 throw new ArgumentException($"Invalid modifier key passed: '{modifierKey}'", nameof(modifierKey));
 
             // Get on keyboard status
-            var status = Natives.UpdateOnscreenKeyboard<int>();
-            if (status != 0 && Rage.Game.IsKeyDownRightNow(modifierKey))
+            if (!IsKeyboardOpen && Rage.Game.IsKeyDownRightNow(modifierKey))
             {
                 return (rightNow) ? Rage.Game.IsKeyDownRightNow(mainKey) : Rage.Game.IsKeyDown(mainKey);
             }

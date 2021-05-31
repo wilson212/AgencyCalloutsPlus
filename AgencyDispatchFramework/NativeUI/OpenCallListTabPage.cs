@@ -336,7 +336,7 @@ namespace AgencyDispatchFramework.NativeUI
             {
                 Rage.Game.DisplaySubtitle("~o~This call is outside your Agency's Jurisdiction", 5000);
             }
-            else if (Dispatch.InvokeCalloutForPlayer(call))
+            else if (Dispatch.InvokeCallForPlayer(call))
             {
                 Rage.Game.DisplaySubtitle("~b~You will be dispatched to this call once you exit the menu", 5000);
             }

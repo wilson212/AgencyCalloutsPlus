@@ -602,7 +602,7 @@ namespace AgencyDispatchFramework.Dispatching
             switch (scenario.LocationTypeCode)
             {
                 case LocationTypeCode.RoadShoulder:
-                    return zone.GetRandomSideOfRoadLocation(scenario.LocationFilters, true);
+                    return zone.GetRandomRoadShoulder(scenario.LocationFilters, true);
                 case LocationTypeCode.Residence:
                     return zone.GetRandomResidence(scenario.LocationFilters, true);
             }

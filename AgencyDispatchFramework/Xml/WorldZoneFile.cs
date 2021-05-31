@@ -240,10 +240,6 @@ namespace AgencyDispatchFramework.Xml
                 try
                 {
                     home.StreetName = homeNode.SelectSingleNode("Street")?.InnerText ?? throw new ArgumentException("Street");
-                    if (int.TryParse(homeNode.SelectSingleNode("Postal")?.InnerText, out int postal))
-                    {
-                        home.Postal = postal;
-                    }
 
                     // See if there is a building number
                     string val = homeNode.SelectSingleNode("Number")?.InnerText;
@@ -381,14 +377,6 @@ namespace AgencyDispatchFramework.Xml
                         continue;
                     }
                     sp.StreetName = val;
-
-                    // Try and extract heading value
-                    if (!Int32.TryParse(n.SelectSingleNode("Postal")?.InnerText, out int postal))
-                    {
-                        Log.Warning($"ZoneInfo.ExtractRoadLocations(): Unable to extract Postal value for '{n.GetFullPath()}'");
-                        continue;
-                    }
-                    sp.Postal = postal;
 
                     // Extract street name
                     val = n.SelectSingleNode("Hint")?.InnerText;

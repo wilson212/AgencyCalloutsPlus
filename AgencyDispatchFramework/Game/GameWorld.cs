@@ -514,6 +514,28 @@ namespace AgencyDispatchFramework.Game
         }
 
         /// <summary>
+        /// Gets the zone name based on the coordinates provided.
+        /// </summary>
+        /// <param name="position"></param>
+        /// <returns></returns>
+        public static string GetZoneNameAtLocation(Vector3 position, bool fullName = false)
+        {
+            return Natives.GetNameOfZone<string>(position.X, position.Y, position.Z);
+        }
+
+        /// <summary>
+        /// Gets the street name based on the provided location
+        /// </summary>
+        /// <param name="position"></param>
+        /// <returns></returns>
+        public static string GetStreetNameAtLocation(Vector3 position)
+        {
+            uint nameHash = 0, crossingRoad = 0;
+            Natives.GetStreetNameAtCoord(position.X, position.Y, position.Z, ref nameHash, ref crossingRoad);
+            return Natives.GetStreetNameFromHashKey<string>(nameHash);
+        }
+
+        /// <summary>
         /// Creates a checkpoint at the specified location, and returns the handle
         /// </summary>
         /// <remarks>

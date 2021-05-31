@@ -18,6 +18,7 @@ namespace AgencyDispatchFramework
 
         internal static int TimeScale { get; set; } = 30;
 
+        internal static string PostalsFile { get; set; }
 
         internal static string GetUnitString => $"{AudioDivision}-{AudioUnitTypeLetter}-{AudioBeat}";
 
@@ -84,6 +85,7 @@ namespace AgencyDispatchFramework
             AudioUnitType = ini.ReadString("GENERAL", "UnitType", "LINCOLN").ToUpperInvariant();
             AudioBeat = ini.ReadInt32("GENERAL", "Beat", 18);
             TimeScale = ini.ReadInt32("GENERAL", "TimeScale", 30);
+            PostalsFile = ini.ReadString("GENERAL", "PostalsFilename", "old-postals");
 
             //EnableFullSimulation = ini.ReadBoolean("SIMULATION", "EnableFullSimulation", false);
 

@@ -62,7 +62,9 @@ RP STATED ONE OF THE SCREAMS WAS SOMEONE STATING THEY WERE GOING TO KILL SOMEONE
         <Arrests>
           <Arrest chance="80">Suspect</Arrest>
         </Arrests>
-        <Escalation chance="20" />
+        <Escalation chance="20">
+          
+        </Escalation>
       </Simulation>
       <FlowSequence>
         <FlowOutcome id="cheating" probability="10" />

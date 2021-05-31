@@ -88,7 +88,7 @@ namespace AgencyDispatchFramework.Integration
                 text_unit.Text = Call.PrimaryOfficer.CallSign;
 
             // Register for events
-            if (!Dispatch.CanInvokeCalloutForPlayer())
+            if (!Dispatch.CanInvokeAnyCalloutForPlayer())
                 btn_dispatch.Disable();
             else
                 btn_dispatch.Clicked += Btn_dispatch_Clicked;
@@ -101,7 +101,7 @@ namespace AgencyDispatchFramework.Integration
         /// <param name="arguments"></param>
         private void Btn_dispatch_Clicked(Base sender, ClickedEventArgs arguments)
         {
-            if (Dispatch.InvokeCalloutForPlayer(Call))
+            if (Dispatch.InvokeCallForPlayer(Call))
             {
                 this.Window.Close();
             }

@@ -11,6 +11,8 @@ namespace AgencyDispatchFramework.Game
     /// </summary>
     public class GamePed
     {
+        public static Ped Player => Rage.Game.LocalPlayer.Character;
+
         /// <summary>
         /// Gets the <see cref="Rage.Ped"/> this object references
         /// </summary>

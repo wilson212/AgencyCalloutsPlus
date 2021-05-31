@@ -161,7 +161,7 @@ namespace AgencyDispatchFramework.NativeUI
             Dispatch.AddIncomingCall(call);
 
             // Try and invoke callout for player
-            if (Dispatch.InvokeCalloutForPlayer(call))
+            if (Dispatch.InvokeCallForPlayer(call))
             {
                 Rage.Game.DisplaySubtitle("~b~Call created! You will be dispatched to this call once you exit the menu", 5000);
             }

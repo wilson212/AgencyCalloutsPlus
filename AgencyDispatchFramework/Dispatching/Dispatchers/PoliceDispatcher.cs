@@ -63,15 +63,10 @@ namespace AgencyDispatchFramework.Dispatching
                     {
                         // Select closest available officer
                         var availableOfficers = GetClosestOfficersByPriority(officerPool, call);
-                        if (availableOfficers.Count == 0) break;
-                        
-                        // Is player in this list? Since we are dispatching more than one
-                        // officer to this call, make the player Primary
-                        var player = availableOfficers.Where(x => !x.IsAIUnit).FirstOrDefault();
-                        if (player != null)
+                        if (availableOfficers.Count == 0)
                         {
-                            // Attempt to Dispatch player as primary to this call
-                            AssignUnitToCall(player, call);
+                            RaiseCall(call, new CallRaisedEventArgs() { NeedsPolice = true });
+                            break;
                         }
 
                         // Add other units to the call
@@ -113,15 +108,6 @@ namespace AgencyDispatchFramework.Dispatching
                             break;
                         }
 
-                        // Is player in this list? Since we are dispatching more than one
-                        // officer to this call, make the player Primary
-                        var player = availableOfficers.Where(x => !x.IsAIUnit).FirstOrDefault();
-                        if (player != null)
-                        {
-                            // Attempt to Dispatch player as primary to this call
-                            AssignUnitToCall(player, call);
-                        }
-
                         // Add other units to the call
                         foreach (var officer in availableOfficers)
                         {
@@ -144,15 +130,6 @@ namespace AgencyDispatchFramework.Dispatching
                         // Select closest available officer
                         var availableOfficers = GetClosestOfficersByPriority(officerPool, call);
                         if (availableOfficers.Count == 0) break;
-
-                        // Is player in this list? Since we are dispatching more than one
-                        // officer to this call, make the player Primary
-                        var player = availableOfficers.Where(x => !x.IsAIUnit).FirstOrDefault();
-                        if (player != null)
-                        {
-                            // Attempt to Dispatch player as primary to this call
-                            AssignUnitToCall(player, call);
-                        }
 
                         // Add other units to the call
                         foreach (var officer in availableOfficers)
@@ -181,37 +158,29 @@ namespace AgencyDispatchFramework.Dispatching
                      */
                     else
                     {
-                        // If shifts end soon, do not dispatch
-                        if (shiftChangesSoon) break;
-
                         // Remove if expired
                         if (currentTime - call.CallCreated > TimeSpan.FromHours(8))
                         {
                             expiredCalls.Add(call);
                             continue;
+
                         }
-
-                        // Select closest available officer
-                        var availableOfficers = GetClosestOfficersByPriority(officerPool, call);
-                        if (availableOfficers.Count == 0) break;
-
-                        // Is player in this list? Since we are dispatching more than one
-                        // officer to this call, make the player Primary
-                        var player = availableOfficers.Where(x => !x.IsAIUnit).FirstOrDefault();
-                        if (player != null)
+                        // If shifts end soon, do not dispatch
+                        if (!shiftChangesSoon)
                         {
-                            // Attempt to Dispatch player as primary to this call
-                            AssignUnitToCall(player, call);
-                        }
+                            // Select closest available officer
+                            var availableOfficers = GetClosestOfficersByPriority(officerPool, call);
+                            if (availableOfficers.Count == 0) break;
 
-                        // Add other units to the call
-                        foreach (var officer in availableOfficers)
-                        {
-                            // We already dispatched the player
-                            if (!officer.IsAIUnit) continue;
+                            // Add other units to the call
+                            foreach (var officer in availableOfficers)
+                            {
+                                // We already dispatched the player
+                                if (!officer.IsAIUnit) continue;
 
-                            // Dispatch
-                            AssignUnitToCall(officer, call);
+                                // Dispatch
+                                AssignUnitToCall(officer, call);
+                            }
                         }
                     }
                 }
@@ -249,7 +218,7 @@ namespace AgencyDispatchFramework.Dispatching
                 if (!officer.IsAIUnit)
                 {
                     // Do not add player if they are busy, declined the call already
-                    if (call.CallDeclinedByPlayer || !Dispatch.CanInvokeCalloutForPlayer())
+                    if (call.CallDeclinedByPlayer || !Dispatch.CanInvokeAnyCalloutForPlayer())
                     {
                         continue;
                     }

@@ -18,7 +18,7 @@ namespace AgencyDispatchFramework.Xml
         /// <summary>
         /// Gets the <see cref="XmlDocument"/> that is to be parsed
         /// </summary>
-        protected XmlDocument Document { get; private set; }
+        internal XmlDocument Document { get; private set; }
 
         /// <summary>
         /// Indicates whether or not this instance is disposed

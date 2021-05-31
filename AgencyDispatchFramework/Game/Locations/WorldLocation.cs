@@ -28,7 +28,7 @@ namespace AgencyDispatchFramework.Game.Locations
         /// <summary>
         /// Gets the postal address if any
         /// </summary>
-        public int Postal { get; internal set; }
+        public Postal Postal { get; internal set; }
 
         /// <summary>
         /// Gets the zone of this location, if known
@@ -40,6 +40,9 @@ namespace AgencyDispatchFramework.Game.Locations
         /// </summary>
         public abstract LocationTypeCode LocationType { get; }
 
+        /// <summary>
+        /// Gets an array of flags used to describe this <see cref="WorldLocation"/>
+        /// </summary>
         public int[] Flags { get; internal set; }
 
         /// <summary>
@@ -49,6 +52,7 @@ namespace AgencyDispatchFramework.Game.Locations
         internal WorldLocation(Vector3 coordinates)
         {
             Position = coordinates;
+            Postal = Postal.FromVector(Position);
         }
 
         public virtual string GetAddress()
