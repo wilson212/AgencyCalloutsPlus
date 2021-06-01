@@ -215,7 +215,7 @@ namespace AgencyDispatchFramework.Xml
             }
 
             // Create a new list to return
-            var nodes = catagoryNode.SelectNodes("Residence");
+            var nodes = catagoryNode.SelectNodes("Location");
             var homes = new List<Residence>(nodes.Count);
             foreach (XmlNode homeNode in nodes)
             {
@@ -242,7 +242,7 @@ namespace AgencyDispatchFramework.Xml
                     home.StreetName = homeNode.SelectSingleNode("Street")?.InnerText ?? throw new ArgumentException("Street");
 
                     // See if there is a building number
-                    string val = homeNode.SelectSingleNode("Number")?.InnerText;
+                    string val = homeNode.SelectSingleNode("BuildingNumber")?.InnerText;
                     if (!String.IsNullOrEmpty(val))
                     {
                         home.BuildingNumber = val;
@@ -262,14 +262,6 @@ namespace AgencyDispatchFramework.Xml
                         throw new ArgumentException("Class");
                     }
                     home.Class = sClass;
-
-                    // Try and parse type
-                    val = homeNode.SelectSingleNode("Type")?.InnerText;
-                    if (String.IsNullOrEmpty(val) || !Enum.TryParse(val, out ResidenceType sType))
-                    {
-                        throw new ArgumentException("Type");
-                    }
-                    home.BuildingType = sType;
 
                     // Try and parse type
                     val = homeNode.SelectSingleNode("Flags")?.InnerText;

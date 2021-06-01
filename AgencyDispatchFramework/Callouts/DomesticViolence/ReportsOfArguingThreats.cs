@@ -96,7 +96,7 @@ namespace AgencyDispatchFramework.Callouts.DomesticViolence
             SpawnId = ResidencePosition.BackYardPed; //random.PickOne(HomeSpawnId.FrontDoorPed, HomeSpawnId.BackYardPed);
 
             // Create a marker for the player to walk into
-            CheckpointPosition = Residence.GetPositionById(ResidencePosition.PolicePed1);
+            CheckpointPosition = Residence.GetPositionById(ResidencePosition.FrontDoorPolicePed1);
             CheckpointPosition.Z -= 2f; // Checkpoints spawn at waist level... Bring it down some
             CheckpointHandle = GameWorld.CreateCheckpoint(CheckpointPosition, Color.Yellow, forceGround: true);
 

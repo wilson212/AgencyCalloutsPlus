@@ -71,33 +71,35 @@
   </Crime>
   <Locations>
     <Residences>
-      <Residence coordinates="1764.497, 3731.593, 34.03936" heading="298.4579">
-        <Number />
-        <Street>Mountain View Dr</Street>
-        <Postal>832</Postal>
+      <Location coordinates="1832.086, 3718.607, 33.3569" heading="24.36805">
+        <BuildingNumber>100</BuildingNumber>
+        <Street>Zancudo Ave</Street>
         <Unit />
-        <Type>House</Type>
         <Class>Lower</Class>
-        <Flags />
+        <Flags>SingleStoryHouse, HasSideYard, HasFrontYard, ForSale</Flags>
         <Positions>
-          <SpawnPoint id="FrontDoorPed" coordinates="1777.486, 3738.097, 34.65507" heading="110.513084" />
-          <SpawnPoint id="PolicePed2" coordinates="1776.05957, 3735.84253, 34.6619034" heading="324.503845" />
-          <SpawnPoint id="PolicePed1" coordinates="1774.9657, 3737.91138, 34.6563034" heading="260.5123" />
-          <SpawnPoint id="FrontYardPed" coordinates="1779.59375, 3727.204, 34.1352577" heading="46.36276" />
-          <SpawnPoint id="BackDoorPed" coordinates="1782.02087, 3748.02954, 34.6566277" heading="164.5115" />
-          <SpawnPoint id="BackYardPed" coordinates="1793.88159, 3742.23462, 33.994194" heading="108.014526" />
-          <SpawnPoint id="SideYardPed" coordinates="1770.208, 3754.55176, 33.8230743" heading="34.91988" />
-          <SpawnPoint id="SidewalkPed" coordinates="1763.50964, 3744.58618, 33.8180923" heading="137.700577" />
-          <SpawnPoint id="HidingSpot1" coordinates="1795.47107, 3752.01929, 33.66748" heading="172.27092" />
-          <SpawnPoint id="HidingSpot2" coordinates="1828.21045, 3747.32642, 33.2860222" heading="11.6932459" />
-          <SpawnPoint id="PolicePed3" coordinates="1783.49536, 3744.79175, 34.6566658" heading="39.64757" />
-          <SpawnPoint id="PoliceParking1" coordinates="1764.03967, 3737.29565, 33.56935" heading="28.2810917" />
-          <SpawnPoint id="PoliceParking2" coordinates="1768.12842, 3729.68872, 33.7013779" heading="27.3149452" />
-          <SpawnPoint id="PoliceParking3" coordinates="1771.63086, 3722.90186, 33.8148232" heading="26.10855" />
-          <SpawnPoint id="ResidentParking1" coordinates="1786.47021, 3754.67627, 33.3475761" heading="215.494064" />
-          <SpawnPoint id="ResidentParking2" coordinates="1781.204, 3762.955, 33.4025574" heading="215.401245" />
+          <SpawnPoint id="FrontDoorPed" coordinates="1826.235, 3729.417, 33.96191" heading="273.9459" />
+          <SpawnPoint id="FrontDoorPolicePed1" coordinates="1829.813, 3730.97, 33.12803" heading="105.6846" />
+          <SpawnPoint id="FrontDoorPolicePed2" coordinates="1830.986, 3729.375, 33.05834" heading="70.86224" />
+          <SpawnPoint id="FrontDoorPolicePed3" coordinates="1832.109, 3730.468, 33.0808" heading="94.04945" />
+          <SpawnPoint id="FrontYardPed" coordinates="1827.142, 3723.751, 33.42544" heading="294.0549" />
+          <SpawnPoint id="BackDoorPed" coordinates="1831.159, 3737.763, 33.96194" heading="352.4259" />
+          <SpawnPoint id="BackYardPed" coordinates="1811.669, 3739.753, 33.60214" heading="247.0842" />
+          <SpawnPoint id="BackYardPolicePed1" coordinates="1812.212, 3737.562, 33.71308" heading="355.6882" />
+          <SpawnPoint id="SideYardPed" coordinates="1830.349, 3745.989, 33.24806" heading="305.583" />
+          <SpawnPoint id="SidewalkPed" coordinates="1825.432, 3716.723, 33.44944" heading="287.3183" />
+          <SpawnPoint id="SideWalkPolicePed1" coordinates="1827.762, 3718.322, 33.35287" heading="111.3145" />
+          <SpawnPoint id="SideWalkPolicePed2" coordinates="1828.357, 3716.81, 33.47021" heading="86.0062" />
+          <SpawnPoint id="HidingSpot1" coordinates="1812.194, 3749.728, 33.54196" heading="163.4993" />
+          <SpawnPoint id="HidingSpot2" coordinates="1810.01, 3750.557, 33.42111" heading="192.4426" />
+          <SpawnPoint id="PoliceParking1" coordinates="1833.68, 3721.012, 32.74432" heading="119.2275" />
+          <SpawnPoint id="PoliceParking2" coordinates="1840.457, 3724.788, 32.59752" heading="119.5494" />
+          <SpawnPoint id="PoliceParking3" coordinates="1828.708, 3760.772, 32.87554" heading="208.3693" />
+          <SpawnPoint id="PoliceParking4" coordinates="1836.572, 3746.34, 32.65314" heading="208.412" />
+          <SpawnPoint id="ResidentParking1" coordinates="1814.474, 3722.339, 33.21755" heading="27.69583" />
+          <SpawnPoint id="ResidentParking2" coordinates="1842.685, 3735.687, 32.58266" heading="205.4919" />
         </Positions>
-      </Residence>
+      </Location>
     </Residences>
     <Stores>
     </Stores>

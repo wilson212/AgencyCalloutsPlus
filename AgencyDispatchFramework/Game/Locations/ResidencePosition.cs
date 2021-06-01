@@ -4,19 +4,24 @@
     {
         /// <summary>
         /// A ped standing at the front door, facing away from the door,
-        /// talking to <see cref="PolicePed1"/> and <see cref="PolicePed2"/>
+        /// talking to <see cref="FrontDoorPolicePed1"/> and <see cref="FrontDoorPolicePed2"/>
         /// </summary>
         FrontDoorPed,
 
         /// <summary>
         /// Talking to <see cref="FrontDoorPed"/>
         /// </summary>
-        PolicePed1,
+        FrontDoorPolicePed1,
 
         /// <summary>
         /// Talking to <see cref="FrontDoorPed"/>
         /// </summary>
-        PolicePed2,
+        FrontDoorPolicePed2,
+
+        /// <summary>
+        /// Talking to <see cref="FrontDoorPed"/>, but standing back
+        /// </summary>
+        FrontDoorPolicePed3,
 
         /// <summary>
         /// A ped standing in the front yard. Ped will have clearance
@@ -36,6 +41,11 @@
         BackYardPed,
 
         /// <summary>
+        /// Talking to <see cref="BackDoorPed"/>
+        /// </summary>
+        BackYardPolicePed1,
+
+        /// <summary>
         /// A ped standing in the side yard. Ped will have clearance
         /// all around to spawn a Ped Group
         /// </summary>
@@ -43,14 +53,19 @@
 
         /// <summary>
         /// A ped standing on the sidewalk in front of the home,
-        /// talking to <see cref="PolicePed3"/>
+        /// talking to <see cref="SideWalkPolicePed1"/>
         /// </summary>
         SidewalkPed,
 
         /// <summary>
         /// Talking to <see cref="SidewalkPed"/>
         /// </summary>
-        PolicePed3,
+        SideWalkPolicePed1,
+
+        /// <summary>
+        /// Talking to <see cref="SidewalkPed"/>
+        /// </summary>
+        SideWalkPolicePed2,
 
         /// <summary>
         /// A place for a ped to hide
@@ -62,11 +77,34 @@
         /// </summary>
         HidingSpot2,
 
+        /// <summary>
+        /// A place for police car to park
+        /// </summary>
         PoliceParking1,
+
+        /// <summary>
+        /// A place for police car to park
+        /// </summary>
         PoliceParking2,
+
+        /// <summary>
+        /// A place for police car to park
+        /// </summary>
         PoliceParking3,
 
+        /// <summary>
+        /// A place for police car to park
+        /// </summary>
+        PoliceParking4,
+
+        /// <summary>
+        /// A place for a resident car to park
+        /// </summary>
         ResidentParking1,
+
+        /// <summary>
+        /// A place for a resident car to park
+        /// </summary>
         ResidentParking2,
     }
 }

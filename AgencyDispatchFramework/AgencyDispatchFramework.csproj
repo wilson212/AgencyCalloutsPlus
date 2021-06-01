@@ -154,7 +154,6 @@
     <Compile Include="Integration\StopThePedAPI.cs" />
     <Compile Include="Callouts\AgencyCallout.cs" />
     <Compile Include="Dispatching\Agency\CityPoliceAgency.cs" />
-    <Compile Include="Game\Locations\ResidenceType.cs" />
     <Compile Include="Dispatching\Enums\OfficerRole.cs" />
     <Compile Include="Dispatching\Agency\HighwayPatrolAgency.cs" />
     <Compile Include="Dispatching\PriorityCallDescription.cs" />

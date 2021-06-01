@@ -25,11 +25,6 @@ namespace AgencyDispatchFramework.Game.Locations
         public SocialClass Class { get; internal set; }
 
         /// <summary>
-        /// Gets the <see cref="Game.Locations.ResidenceType"/> of this home
-        /// </summary>
-        public ResidenceType BuildingType { get; internal set; }
-
-        /// <summary>
         /// Gets the Appartment/Suite/Room number of the address to be used in the CAD, if any
         /// </summary>
         public string UnitId { get; internal set; } = String.Empty;

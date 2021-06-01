@@ -530,8 +530,20 @@ namespace AgencyDispatchFramework.Game
         /// <returns></returns>
         public static string GetStreetNameAtLocation(Vector3 position)
         {
-            uint nameHash = 0, crossingRoad = 0;
-            Natives.GetStreetNameAtCoord(position.X, position.Y, position.Z, ref nameHash, ref crossingRoad);
+            return GetStreetNameAtLocation(position, out string crossingRoad);
+        }
+
+        /// <summary>
+        /// Gets the street name based on the provided location, and its crossing intersection (if near)
+        /// </summary>
+        /// <param name="position"></param>
+        /// <returns></returns>
+        public static string GetStreetNameAtLocation(Vector3 position, out string crossingRoad)
+        {
+            uint nameHash = 0, crossingRoadHash = 0;
+            Natives.GetStreetNameAtCoord(position.X, position.Y, position.Z, ref nameHash, ref crossingRoadHash);
+
+            crossingRoad = Natives.GetStreetNameFromHashKey<string>(crossingRoadHash);
             return Natives.GetStreetNameFromHashKey<string>(nameHash);
         }
 
@@ -541,11 +553,13 @@ namespace AgencyDispatchFramework.Game
         /// <remarks>
         /// Checkpoints are already handled by the game itself, so you must not loop it like markers.
         /// </remarks>
+        /// <seealso cref="https://docs.fivem.net/docs/game-references/checkpoints/"/>
+        /// <param name="checkPointType">The type of checkpoint to create.</param>
         /// <param name="pos">The position of the checkpoint</param>
         /// <param name="radius">The radius of the checkpoint cylinder</param>
         /// <param name="color">The color of the checkpoint</param>
         /// <returns>returns the handle of the checkpoint</returns>
-        public static int CreateCheckpoint(Vector3 pos, Color color, float radius = 5f, float nearHeight = 3f, float farHeight = 3f, bool forceGround = false)
+        public static int CreateCheckpoint(Vector3 pos, Color color, int checkPointType = 47, float radius = 5f, float nearHeight = 3f, float farHeight = 3f, bool forceGround = false, int number = 0)
         {
             if (forceGround)
             {
@@ -555,7 +569,7 @@ namespace AgencyDispatchFramework.Game
             }
 
             // Create checkpoint
-            int handle = Natives.CreateCheckpoint<int>(47, pos.X, pos.Y, pos.Z, pos.X, pos.Y, pos.Z, 1f, color.R, color.G, color.B, color.A, 0);
+            int handle = Natives.CreateCheckpoint<int>(checkPointType, pos.X, pos.Y, pos.Z, pos.X, pos.Y, pos.Z, 1f, color.R, color.G, color.B, color.A, number);
 
             // Set hieght and radius of the cylinder
             Natives.SetCheckpointCylinderHeight(handle, nearHeight, farHeight, radius);
