@@ -8,12 +8,12 @@ namespace AgencyDispatchFramework.Game.Locations
     /// <summary>
     /// Represents a <see cref="Vector3"/> position within the GTA V world
     /// </summary>
-    public abstract class WorldLocation : IEquatable<WorldLocation>
+    public abstract class WorldLocation : ISpatial, IEquatable<WorldLocation>
     {
         /// <summary>
         /// Gets the <see cref="Vector3"/> coordinates of this location
         /// </summary>
-        public Vector3 Position { get; protected set; }
+        public Vector3 Position { get; set; }
 
         /// <summary>
         /// Gets the address to be used in the CAD
@@ -128,5 +128,21 @@ namespace AgencyDispatchFramework.Game.Locations
         /// </summary>
         /// <returns></returns>
         public override int GetHashCode() => Position.GetHashCode();
+
+        #region ISpatial contracts
+
+        public float DistanceTo(Vector3 position) => Position.DistanceTo(position);
+
+        public float DistanceTo(ISpatial spatialObject) => Position.DistanceTo(spatialObject.Position);
+
+        public float DistanceTo2D(Vector3 position) => Position.DistanceTo2D(position);
+
+        public float DistanceTo2D(ISpatial spatialObject) => Position.DistanceTo2D(spatialObject.Position);
+
+        public float TravelDistanceTo(Vector3 position) => Position.TravelDistanceTo(position);
+
+        public float TravelDistanceTo(ISpatial spatialObject) => Position.TravelDistanceTo(spatialObject.Position);
+
+        #endregion
     }
 }

@@ -47,9 +47,14 @@ namespace AgencyDispatchFramework.Game.Locations
         {
             // @todo
             Zone = zone;
-            SpawnPoints = new Dictionary<ResidencePosition, SpawnPoint>(20);
+            SpawnPoints = new Dictionary<ResidencePosition, SpawnPoint>(21);
         }
 
+        /// <summary>
+        /// Returns whether the <see cref="SpawnPoint"/> collection is complete
+        /// for this <see cref="WorldLocation"/> instance.
+        /// </summary>
+        /// <returns>true if all spawn points are set, false otherwise</returns>
         internal bool IsValid()
         {
             // Ensure spawn points is full

@@ -71,223 +71,25 @@
   </Crime>
   <Locations>
     <Residences>
-      <Location coordinates="1832.086, 3718.607, 33.3569" heading="24.36805">
-        <BuildingNumber>100</BuildingNumber>
-        <Street>Zancudo Ave</Street>
-        <Unit />
-        <Class>Lower</Class>
-        <Flags>SingleStoryHouse, HasSideYard, HasFrontYard, ForSale</Flags>
-        <Positions>
-          <SpawnPoint id="FrontDoorPed" coordinates="1826.235, 3729.417, 33.96191" heading="273.9459" />
-          <SpawnPoint id="FrontDoorPolicePed1" coordinates="1829.813, 3730.97, 33.12803" heading="105.6846" />
-          <SpawnPoint id="FrontDoorPolicePed2" coordinates="1830.986, 3729.375, 33.05834" heading="70.86224" />
-          <SpawnPoint id="FrontDoorPolicePed3" coordinates="1832.109, 3730.468, 33.0808" heading="94.04945" />
-          <SpawnPoint id="FrontYardPed" coordinates="1827.142, 3723.751, 33.42544" heading="294.0549" />
-          <SpawnPoint id="BackDoorPed" coordinates="1831.159, 3737.763, 33.96194" heading="352.4259" />
-          <SpawnPoint id="BackYardPed" coordinates="1811.669, 3739.753, 33.60214" heading="247.0842" />
-          <SpawnPoint id="BackYardPolicePed1" coordinates="1812.212, 3737.562, 33.71308" heading="355.6882" />
-          <SpawnPoint id="SideYardPed" coordinates="1830.349, 3745.989, 33.24806" heading="305.583" />
-          <SpawnPoint id="SidewalkPed" coordinates="1825.432, 3716.723, 33.44944" heading="287.3183" />
-          <SpawnPoint id="SideWalkPolicePed1" coordinates="1827.762, 3718.322, 33.35287" heading="111.3145" />
-          <SpawnPoint id="SideWalkPolicePed2" coordinates="1828.357, 3716.81, 33.47021" heading="86.0062" />
-          <SpawnPoint id="HidingSpot1" coordinates="1812.194, 3749.728, 33.54196" heading="163.4993" />
-          <SpawnPoint id="HidingSpot2" coordinates="1810.01, 3750.557, 33.42111" heading="192.4426" />
-          <SpawnPoint id="PoliceParking1" coordinates="1833.68, 3721.012, 32.74432" heading="119.2275" />
-          <SpawnPoint id="PoliceParking2" coordinates="1840.457, 3724.788, 32.59752" heading="119.5494" />
-          <SpawnPoint id="PoliceParking3" coordinates="1828.708, 3760.772, 32.87554" heading="208.3693" />
-          <SpawnPoint id="PoliceParking4" coordinates="1836.572, 3746.34, 32.65314" heading="208.412" />
-          <SpawnPoint id="ResidentParking1" coordinates="1814.474, 3722.339, 33.21755" heading="27.69583" />
-          <SpawnPoint id="ResidentParking2" coordinates="1842.685, 3735.687, 32.58266" heading="205.4919" />
-        </Positions>
-      </Location>
+      
     </Residences>
-    <Stores>
-    </Stores>
+    <Businesses>
+      
+    </Businesses>
     <RoadShoulders>
-      <Location coordinates="1758.661, 3538.26, 35.78361" heading="299.7389">
-        <Street>East Joshua Road</Street>
-        <Hint>near Panorama Dr</Hint>
-        <Speed>50</Speed>
-        <Flags>
-          <Road>TwoLaneRoad, AfterNoStopIntersection</Road>
-          <BeforeIntersection>None</BeforeIntersection>
-          <AfterIntersection>CrossIntersection, TwoWayStop</AfterIntersection>
-        </Flags>
-      </Location>
-      <Location coordinates="1659.529, 3585.022, 35.24927" heading="28.27908">
-        <Street>Panorama Drive</Street>
-        <Hint>near Zancudo Ave</Hint>
-        <Speed>25</Speed>
-        <Flags>
-          <Road>TwoLaneRoad, BeforeNoStopIntersection, AfterNoStopIntersection</Road>
-          <BeforeIntersection direction="Right">ThreeWayIntersection, OneWayStop</BeforeIntersection>
-          <AfterIntersection direction="Right">ThreeWayIntersection, OneWayStop</AfterIntersection>
-        </Flags>
-      </Location>
-      <Location coordinates="1682.301, 3620.803, 35.17736" heading="300.1324">
+      <Location coordinates="1744.697, 3668.555, 34.64974" heading="63.92825">
         <Street>Zancudo Ave</Street>
-        <Hint>near Panorama Dr</Hint>
+        <Hint>near Lolita Ave</Hint>
         <Speed>25</Speed>
         <Flags>
-          <!-- Use "AfterNoStopIntersection" to indicate that this vehicle did not have the stop sign -->
-          <Road>TwoLaneRoad, AfterNoStopIntersection</Road>
-          <BeforeIntersection>None</BeforeIntersection>
-          <!-- Indicate the direction as "Back" to tell the program we had to turn to get to this position -->
-          <AfterIntersection direction="Behind">ThreeWayIntersection, OneWayStop</AfterIntersection>
-        </Flags>
-      </Location>
-      <Location coordinates="1699.293, 3683.165, 34.47552" heading="28.74282">
-        <Street>Lolita Avenue</Street>
-        <Hint>near Zancudo Ave</Hint>
-        <Speed>25</Speed>
-        <Flags>
-          <!-- Use "AfterNoStopIntersection" to indicate that this vehicle did not have the stop sign -->
-          <Road>TwoLaneRoad, BeforeStopIntersection, AfterNoStopIntersection</Road>
-          <!-- Indicate the direction as "Front" to tell the program we have to turn, and cannot go straight -->
-          <BeforeIntersection direction="Front">ThreeWayIntersection, OneWayStop</BeforeIntersection>
-          <!-- Indicate the direction as "Behind" to tell the program we had to turn to get to this position -->
-          <AfterIntersection direction="Behind">ThreeWayIntersection, OneWayStop</AfterIntersection>
-        </Flags>
-      </Location>
-      <Location coordinates="1722.224, 3733.64, 33.55905" heading="300.1952">
-        <Street>Algonquin Boulevard</Street>
-        <Hint>near Mountain View Dr</Hint>
-        <Speed>25</Speed>
-        <Flags>
-          <Road>TwoLaneRoad, BeforeNoStopIntersection, AfterNoStopIntersection</Road>
-          <BeforeIntersection>CrossIntersection, TwoWayStop</BeforeIntersection>
-          <AfterIntersection direction="Right">ThreeWayIntersection, OneWayStop</AfterIntersection>
-        </Flags>
-      </Location>
-      <Location coordinates="1760.485, 3720.321, 33.87332" heading="210.4125">
-        <Street>Mountain View Drive</Street>
-        <Hint>near Zancudo Ave</Hint>
-        <Speed>25</Speed>
-        <Flags>
-          <Road>TwoLaneRoad, BeforeNoStopIntersection, AfterStopIntersection</Road>
-          <BeforeIntersection>CrossIntersection, RightOfWayYield</BeforeIntersection>
-          <AfterIntersection>CrossIntersection, TwoWayStop</AfterIntersection>
-        </Flags>
-      </Location>
-      <Location coordinates="1831.231, 3707.381, 33.27387" heading="299.6535">
-        <Street>Zancudo Avenue</Street>
-        <Hint>near Amadillo Ave</Hint>
-        <Speed>25</Speed>
-        <Flags>
-          <Road>TwoLaneRoad, BeforeNoStopIntersection, AfterNoStopIntersection</Road>
-          <BeforeIntersection direction="Left">ThreeWayIntersection, OneWayStop</BeforeIntersection>
+          <Road>AfterNoStopIntersection, TwoLaneRoad, DrivewaysLeft, DrivewaysRight</Road>
+          <BeforeIntersection />
           <AfterIntersection>CrossIntersection, RightOfWayYield</AfterIntersection>
         </Flags>
-      </Location>
-      <Location coordinates="1909.011, 3810.531, 32.07688" heading="28.60104">
-        <Street>Niland Avenue</Street>
-        <Hint>near Zancudo Ave</Hint>
-        <Speed>25</Speed>
-        <Flags>
-          <Road>TwoLaneRoad, BeforeStopIntersection, AfterNoStopIntersection</Road>
-          <BeforeIntersection>CrossIntersection, TwoWayStop</BeforeIntersection>
-          <AfterIntersection>CrossIntersection, RightOfWayYield</AfterIntersection>
-        </Flags>
-      </Location>
-      <Location coordinates="1944.645, 3861.011, 32.02096" heading="296.6556">
-        <Street>Algonquin Ave</Street>
-        <Hint>near Marina Dr</Hint>
-        <Speed>50</Speed>
-        <Flags>
-          <Road>TwoLaneRoad, BeforeStopIntersection</Road>
-          <BeforeIntersection direction="front">ThreeWayIntersection, OneWayStop</BeforeIntersection>
-          <AfterIntersection>None</AfterIntersection><!-- Slightly too far away -->
-        </Flags>
-      </Location>
-      <Location coordinates="1877.381, 3954.861, 32.72955" heading="93.55849">
-        <Street>Marina Drive</Street>
-        <Hint>near Niland Ave</Hint>
-        <Speed>35</Speed>
-        <Flags>
-          <Road>TwoLaneRoad, BeforeNoStopIntersection</Road>
-          <BeforeIntersection direction="Left">ThreeWayIntersection, OneWayStop</BeforeIntersection>
-          <AfterIntersection>None</AfterIntersection>
-        </Flags>
-      </Location>
-      <Location coordinates="1855.537, 3930.493, 32.76587" heading="195.1366">
-        <Street>Niland Avenue</Street>
-        <Hint>near Marina Dr</Hint>
-        <Speed>25</Speed>
-        <Flags>
-          <Road>TwoLaneRoad, BeforeNoStopIntersection, AfterNoStopIntersection</Road>
-          <BeforeIntersection direction="Right">ThreeWayIntersection, OneWayStop</BeforeIntersection>
-          <AfterIntersection direction="Behind">ThreeWayIntersection, OneWayStop</AfterIntersection>
-        </Flags>
-      </Location>
-      <Location coordinates="1833.641, 3890.632, 33.27746" heading="109.56159">
-        <Street>Cholla Springs Ave</Street>
-        <Hint>near Niland Ave</Hint>
-        <Speed>25</Speed>
-        <Flags>
-          <Road>TwoLaneRoad, BeforeNoStopIntersection, AfterNoStopIntersection</Road>
-          <BeforeIntersection>CrossIntersection, RightOfWayYield</BeforeIntersection>
-          <AfterIntersection direction="Behind">ThreeWayIntersection, OneWayStop</AfterIntersection>
-        </Flags>
-      </Location>
-      <Location coordinates="1855.537, 3930.493, 32.76587" heading="195.1366">
-        <Street>Niland Avenue</Street>
-        <Hint>near Marina Dr</Hint>
-        <Speed>25</Speed>
-        <Flags>
-          <Road>TwoLaneRoad, BeforeNoStopIntersection, AfterNoStopIntersection</Road>
-          <BeforeIntersection direction="Right">ThreeWayIntersection, OneWayStop</BeforeIntersection>
-          <AfterIntersection direction="Behind">ThreeWayIntersection, OneWayStop</AfterIntersection>
-        </Flags>
-      </Location>
-      <Location coordinates="1755.292, 3851.148, 34.21868" heading="119.3669">
-        <Street>Cholla Springs Ave</Street>
-        <Hint>near Mountain View Dr</Hint>
-        <Speed>25</Speed>
-        <Flags>
-          <Road>TwoLaneRoad, BeforeNoStopIntersection, AfterNoStopIntersection</Road>
-          <BeforeIntersection>CrossIntersection, RightOfWayYield</BeforeIntersection>
-          <AfterIntersection>CrossIntersection, RightOfWayYield</AfterIntersection>
-        </Flags>
-      </Location>
-      <Location coordinates="1624.4, 3826.876, 34.66964" heading="128.7986">
-        <Street>Marina Drive</Street>
-        <Hint>near Mountain View Dr</Hint>
-        <Speed>35</Speed>
-        <Flags>
-          <Road>TwoLaneRoad, AfterNoStopIntersection</Road>
-          <BeforeIntersection>None</BeforeIntersection>
-          <AfterIntersection>CrossIntersection, TwoWayStop</AfterIntersection>
-        </Flags>
-      </Location>
-      <Location coordinates="1512.538, 3740.263, 34.21819" heading="118.2286">
-        <Street>Marina Drive</Street>
-        <Hint>in front of The Boat House</Hint>
-        <Speed>35</Speed>
-        <Flags>
-          <Road>TwoLaneRoad, AfterNoStopIntersection</Road>
-          <BeforeIntersection>None</BeforeIntersection>
-          <AfterIntersection>CrossIntersection, TwoWayStop</AfterIntersection>
-        </Flags>
-      </Location>
-      <Location coordinates="1367.141, 3679.198, 33.23569" heading="109.7738">
-        <Street>Marina Drive</Street>
-        <Hint>near Panorama Dr</Hint>
-        <Speed>35</Speed>
-        <Flags>
-          <Road>TwoLaneRoad</Road>
-          <BeforeIntersection>None</BeforeIntersection>
-          <AfterIntersection>None</AfterIntersection>
-        </Flags>
-      </Location>
-      <Location coordinates="1243.861, 3639.192, 33.1542" heading="102.6745">
-        <Street>Marina Drive</Street>
-        <Hint>near Meringue Lane</Hint>
-        <Speed>35</Speed>
-        <Flags>
-          <Road>TwoLaneRoad, AfterNoStopIntersection</Road>
-          <BeforeIntersection>None</BeforeIntersection>
-          <AfterIntersection direction="Left">ThreeWayIntersection, OneWayStop</AfterIntersection>
-        </Flags>
+        <Positions>
+          <SpawnPoint id="SidewalkGroup1" coordinates="1741.578, 3672.83, 34.61052" heading="298.858" />
+          <SpawnPoint id="SidewalkGroup2" coordinates="1747.21, 3675.891, 34.55115" heading="125.5519" />
+        </Positions>
       </Location>
     </RoadShoulders>
   </Locations>

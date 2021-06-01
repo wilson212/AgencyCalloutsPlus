@@ -1,38 +1,9 @@
-﻿What is this going to be?
-	- A callout pack
-	- A callout CAD included with callout details
-	- Custom dispatch script
-		- Dynamic crime levels based on TimeOfDay and weather
-	- An API of sorts for other callout packs including:
-		- Includes a dynamic Callout interaction menu to be used with callout conversations
-			- Conversation handler for callout peds, with dynamic string replacements and conditions	
-		- A location generator within the player's agency jurisdiction
-			- Queryable locations based on LocationFlags
-		- A ped generator based on age group, sex and variant groups.
-
-
-ToDO:
+﻿ToDO:
 	- AISceneSimulation
 	- Figure out how to handle callouts outside this mod (since we cannot have extranal classes extend the AgencyCallout class)
-	- Create a location type (Intersection) that can be used to setup various crash scenes within an intersection
-		- IntersectionFlag.(2WayStop, 4WayStop, Lighted, 4WayYield, 2Lane, 4Lane, 6Lane, WithTurnLeftLane, WithTurnRightLane)
-
-
-AD&C+ Menu [Main Menu] Setup
- - Dispatch Menu
-	- Set Status -> option array
-	- Request Call
-	- End Call
- - Patrol Menu [Callout Name]
-	- Set Role -> option[] { All, Traffic, Crime, Gang, Drugs }
-	- Patrol Area -> option[] : Sets which region to patrol in
-	- Division -> int[]
-	- UnitType -> option[]
-	- Beat
-	- Apply
- - Close
-
-
+	- Finish the CAD
+	- Finish adding "Add x location" for each location types in the plugin menu
+	- Code scenarios for callouts
  
 
 General Information:
@@ -56,27 +27,11 @@ Radio traffic with Dispatch and AI (handshake for accepting calls):
 	- An event is fired on the primary officer, call assigned awaiting confirmation
 	- The AI accepts or denies the call, and queues a radio message (signals back to the Dispatch class)
 
-
-New Dispatch Script Ideas
-	- Dispatch now generates crimes over an entire county (Not including Parks, unless the player specifically choses Park Rangers, and City Agencies the player is not active in)
-	- 3 or 2 agencies active at once
-	- If player choses a CityPolice agency, than 3 agencies are active (Player's City, County and SAHP), 2 if player chooses county or SAHP (County and SAHP)
-		- If the players agency is too full with crimes, then the next higher layer will take the call to help out (if not too busy), up to SAHP
-		- Player can only see calls sent to his Agency in the CAD (Maybe see others grayed out?)
-	- OfficerUnit's are now stored in each "Agency" instance, not the Dispatch script as current
-		- On TimeOfDay change, each Agency instance will add on-coming duty officers and remove officers leaving shift as they complete calls
-	- When a call comes in, the Dispatch script will pull officers from the primary agency of that zone.
-		- If all officers are busy, and cannot be pulled from thier current assignments, OR all officers are queued with an addition call already,
-			then the dispatcher will go UP (if not SAHP) or DOWN (if player is SAHP) a level to pull an available officer there.
-
-	** From a top down view:
-		- the RegionCrimeGenerator class is responsible for generating incoming calls. 
-		- The Dispatch class is responsible for:
-			- Proccessing the logic of assigning OfficerUnits to those calls based on:
-				- Distance from the call
-				- The call's priority level
-				- The type of accident it is
-			- Keeping track of all the calls in the county
-				- Firing events as calls are added and removed
-		- The Agency class is responsible for handling shift changes, adding and removing OfficerUnits as crime levels change
-			- AGENCIES do NOT have thier own dispatching script
+ Location types:
+	- RoadShoulder: Used for pullovers, and simple accidents
+	- Road: Used for more serious accidents where Peds wont pull off the road. Used to spawn moving vehicles for crimes
+	- Intersection: Used for crimes that happen at an intersection
+	- Residence: Used for crimes that happen at a residence
+	- Business: Used for robberies or public altercations
+	- ParkingLot: Used for some crimes
+	- HidingSpot: Used for crimes that require privacy, such as public indecency or prostitution

@@ -69,21 +69,11 @@
     <Residences>
 
     </Residences>
-    <Stores>
+    <Businesses>
 
-    </Stores>
+    </Businesses>
     <RoadShoulders>
-      <Location coordinates="2582.865,1646.836,28.1445" heading="90.17572">
-        <Street>Power Street</Street>
-        <Postal>818</Postal>
-        <Hint>at the Power Station</Hint>
-        <Speed>25</Speed>
-        <Flags>
-          <Road>TwoLaneRoad</Road>
-          <BeforeIntersection direction="Front">ThreeWayIntersection, OneWayStop</BeforeIntersection>
-          <AfterIntersection>None</AfterIntersection>
-        </Flags>
-      </Location>
+
     </RoadShoulders>
   </Locations>
 </PALMPOW>

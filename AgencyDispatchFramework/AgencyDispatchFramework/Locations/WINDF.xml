@@ -69,32 +69,11 @@
     <Residences>
 
     </Residences>
-    <Stores>
+    <Businesses>
 
-    </Stores>
+    </Businesses>
     <RoadShoulders>
-      <Location coordinates="2476.985,1296.132,48.83939" heading="329.646">
-        <Street>Senora Way</Street>
-        <Postal>818</Postal>
-        <Hint>off of Palomino Freeway</Hint>
-        <Speed>35</Speed>
-        <Flags>
-          <Road>TwoLaneRoad, AfterInterstateOffRamp</Road>
-          <BeforeIntersection>None</BeforeIntersection>
-          <AfterIntersection>None</AfterIntersection>
-        </Flags>
-      </Location>
-      <Location coordinates="2547.538,2103.621,19.32726" heading="355.7367">
-        <Street>Senora Way</Street>
-        <Postal>818</Postal>
-        <Hint></Hint>
-        <Speed>35</Speed>
-        <Flags>
-          <Road>TwoLaneRoad</Road>
-          <BeforeIntersection>None</BeforeIntersection>
-          <AfterIntersection>None</AfterIntersection>
-        </Flags>
-      </Location>
+
     </RoadShoulders>
   </Locations>
 </WINDF>

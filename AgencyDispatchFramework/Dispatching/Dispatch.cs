@@ -2,6 +2,7 @@
 using AgencyDispatchFramework.Extensions;
 using AgencyDispatchFramework.Game;
 using AgencyDispatchFramework.Game.Locations;
+using AgencyDispatchFramework.NativeUI;
 using LSPD_First_Response.Mod.API;
 using LSPD_First_Response.Mod.Callouts;
 using Rage;
@@ -1091,6 +1092,9 @@ namespace AgencyDispatchFramework
                     var value = b.ToString().TrimEnd(',', ' ');
                     Log.Debug($"\t\t\tActual Patrols by Agency: [{value}]");
                 }
+
+                // Initialize CAD. This needs called everytime we go on duty
+                ComputerAidedDispatchMenu.Initialize();
 
                 // Start Dispatching logic fibers
                 CrimeGenerator.Begin();

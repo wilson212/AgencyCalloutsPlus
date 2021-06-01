@@ -295,7 +295,7 @@ namespace AgencyDispatchFramework.Xml
                     // Try and extract typ value
                     if (sp.Attributes["id"]?.Value == null || !Enum.TryParse(sp.Attributes["id"].Value, out ResidencePosition s))
                     {
-                        Log.Warning($"ZoneInfo.ParseSpawnPoint(): Unable to extract SpawnPoint id value for '{Zone.ScriptName}->Residences->Residence->Positions'");
+                        Log.Warning($"ZoneInfo.ParseSpawnPoint(): Unable to extract SpawnPoint id value for '{Zone.ScriptName}->Residences->Location->Positions'");
                         break;
                     }
 
@@ -305,7 +305,7 @@ namespace AgencyDispatchFramework.Xml
                 // Not ok?
                 if (!home.IsValid())
                 {
-                    Log.Warning($"ZoneInfo.ExtractHomes(): Home node is missing some SpawnPoints in zone '{Zone.ScriptName}'");
+                    Log.Warning($"ZoneInfo.ExtractHomes(): Location node is missing some SpawnPoints in zone '{Zone.ScriptName}'");
                     continue;
                 }
 
@@ -401,6 +401,31 @@ namespace AgencyDispatchFramework.Xml
                     sp.BeforeIntersectionDirection = bdir;
                     sp.AfterIntersectionDirection = adir;
 
+                    // Parse spawn points
+                    var pointsNode = n.SelectSingleNode("Positions");
+                    foreach (XmlNode point in pointsNode?.SelectNodes("SpawnPoint"))
+                    {
+                        var item = ParseSpawnPoint(LocationTypeCode.RoadShoulder, point);
+                        if (item == null)
+                            continue;
+
+                        // Try and extract typ value
+                        if (point.Attributes["id"]?.Value == null || !Enum.TryParse(point.Attributes["id"].Value, out RoadShoulderPosition key))
+                        {
+                            Log.Warning($"ZoneInfo.ParseSpawnPoint(): Unable to extract SpawnPoint id value for '{Zone.ScriptName}->RoadShoulders->Location->Positions'");
+                            break;
+                        }
+
+                        sp.SpawnPoints[key] = item;
+                    }
+
+                    // Not ok?
+                    if (!sp.IsValid())
+                    {
+                        Log.Warning($"ZoneInfo.ExtractRoadLocations(): Location node is missing some SpawnPoints in zone '{Zone.ScriptName}'");
+                        continue;
+                    }
+
                     // Add spawnpoint to list
                     shoulders.Add(sp);
                 }
@@ -461,7 +486,7 @@ namespace AgencyDispatchFramework.Xml
             // Try and extract heading value
             if (!float.TryParse(n.Attributes["heading"]?.Value, out float heading))
             {
-                Log.Warning($"ZoneInfo.ParseSpawnPoint(): Unable to extract SpawnPoint heading value for '{n.GetFullPath()}'");
+                Log.Warning($"ZoneInfo.ParseSpawnPoint(): Unable to extract SpawnPoint[heading] value for '{n.GetFullPath()}'");
                 return null;
             }
 

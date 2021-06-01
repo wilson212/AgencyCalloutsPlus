@@ -228,9 +228,6 @@ namespace AgencyDispatchFramework
                     // Tell GameWorld to begin listening. Stops automatically when player goes off duty
                     GameWorld.BeginFibers();
 
-                    // Initialize CAD. This needs called everytime we go on duty
-                    ComputerAidedDispatchMenu.Initialize();
-
                     // Display notification to the player
                     Rage.Game.DisplayNotification(
                         "3dtextures",

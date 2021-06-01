@@ -1,33 +1,48 @@
 ﻿namespace AgencyDispatchFramework.Game.Locations
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <remarks>
+    /// Use <see cref="Rage.Entity.GetOffsetPosition(Rage.Vector3)"/> to spawn peds 
+    /// around the groups
+    /// </remarks>
+    /// <seealso cref="https://docs.ragepluginhook.net/html/M_Rage_Entity_GetOffsetPosition.htm"/>
     public enum ResidencePosition
     {
         /// <summary>
         /// A ped standing at the front door, facing away from the door,
         /// talking to <see cref="FrontDoorPolicePed1"/> and <see cref="FrontDoorPolicePed2"/>
         /// </summary>
-        FrontDoorPed,
+        FrontDoorPed1,
 
         /// <summary>
-        /// Talking to <see cref="FrontDoorPed"/>
+        /// A ped standing at the front door, facing away from the door,
+        /// talking to <see cref="FrontDoorPolicePed1"/> and <see cref="FrontDoorPolicePed2"/>
+        /// </summary>
+        FrontDoorPed2,
+
+        /// <summary>
+        /// Talking to <see cref="FrontDoorPed1"/>
         /// </summary>
         FrontDoorPolicePed1,
 
         /// <summary>
-        /// Talking to <see cref="FrontDoorPed"/>
+        /// Talking to <see cref="FrontDoorPed1"/>
         /// </summary>
         FrontDoorPolicePed2,
 
         /// <summary>
-        /// Talking to <see cref="FrontDoorPed"/>, but standing back
+        /// Talking to <see cref="FrontDoorPed1"/>, but standing back providing
+        /// backup if needed
         /// </summary>
         FrontDoorPolicePed3,
 
         /// <summary>
-        /// A ped standing in the front yard. Ped will have clearance
-        /// all around to spawn a Ped Group
+        /// A ped group standing in the front yard, away from the front door. 
+        /// Position will have clearance all around to spawn a Ped Group
         /// </summary>
-        FrontYardPed,
+        FrontYardPedGroup,
 
         /// <summary>
         /// A ped standing at the backdoor facing away from the door
@@ -35,21 +50,21 @@
         BackDoorPed,
 
         /// <summary>
-        /// A ped standing in the back yard. Ped will have clearance
-        /// all around to spawn a Ped Group
-        /// </summary>
-        BackYardPed,
-
-        /// <summary>
         /// Talking to <see cref="BackDoorPed"/>
         /// </summary>
-        BackYardPolicePed1,
+        BackDoorPolicePed,
 
         /// <summary>
-        /// A ped standing in the side yard. Ped will have clearance
-        /// all around to spawn a Ped Group
+        /// A ped group standing in the back yard, away from the back door. 
+        /// Position will have clearance all around to spawn a Ped Group
         /// </summary>
-        SideYardPed,
+        BackYardPedGroup,
+
+        /// <summary>
+        /// A ped group standing in the front yard, away from the front door. 
+        /// Position will have clearance all around to spawn a Ped Group
+        /// </summary>
+        SideYardPedGroup,
 
         /// <summary>
         /// A ped standing on the sidewalk in front of the home,
@@ -103,7 +118,7 @@
         ResidentParking1,
 
         /// <summary>
-        /// A place for a resident car to park
+        /// A second place for a resident car to park
         /// </summary>
         ResidentParking2,
     }

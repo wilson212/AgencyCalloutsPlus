@@ -38,6 +38,11 @@
         Mansion,
 
         /// <summary>
+        /// Describes a residence with no backdoor and spawn points
+        /// </summary>
+        NoBackDoor,
+
+        /// <summary>
         /// Indicates that the home has a backyard
         /// </summary>
         HasBackyard,

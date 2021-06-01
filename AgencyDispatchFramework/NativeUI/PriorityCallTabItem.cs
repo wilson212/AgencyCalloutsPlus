@@ -11,7 +11,7 @@ namespace AgencyDispatchFramework.NativeUI
     /// <summary>
     /// A submenu <see cref="TabItem"/> that represents a <see cref="PriorityCall"/>
     /// </summary>
-    internal class PriorityCallTabItem : TabItem
+    internal class PriorityCallTabItem : TabItem, IEquatable<PriorityCallTabItem>
     {
         /// <summary>
         /// Defines the spacing between headers (each row)
@@ -241,6 +241,22 @@ namespace AgencyDispatchFramework.NativeUI
         private int GetXPointByPercentageOfWidth(float percent)
         {
             return (int)Math.Round(Dimensions.Width * percent, 0);
+        }
+
+        public override int GetHashCode()
+        {
+            return Call.CallId.GetHashCode();
+        }
+
+        public override bool Equals(object obj)
+        {
+            return Equals(obj as PriorityCallTabItem);
+        }
+
+        public bool Equals(PriorityCallTabItem other)
+        {
+            if (other == null) return false;
+            return other.Call.CallId == Call.CallId;
         }
     }
 }

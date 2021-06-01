@@ -69,43 +69,11 @@
     <Residences>
 
     </Residences>
-    <Stores>
+    <Businesses>
 
-    </Stores>
+    </Businesses>
     <RoadShoulders>
-      <Location coordinates="2866.91,4425.019,48.54592" heading="289.1848">
-        <Street>Union Road</Street>
-        <Postal>818</Postal>
-        <Hint>off of Senora Freeway</Hint>
-        <Speed>25</Speed>
-        <Flags>
-          <Road>TwoLaneRoad</Road>
-          <BeforeIntersection>CrossIntersection, TwoWayStop</BeforeIntersection>
-          <AfterIntersection>CrossIntersection, TwoWayStop</AfterIntersection>
-        </Flags>
-      </Location>
-      <Location coordinates="2725.749,5086.909,42.65204" heading="188.7374">
-        <Street>Union Road</Street>
-        <Postal>818</Postal>
-        <Hint>off of Senora Freeway</Hint>
-        <Speed>25</Speed>
-        <Flags>
-          <Road>TwoLaneRoad</Road>
-          <BeforeIntersection>None</BeforeIntersection>
-          <AfterIntersection>None</AfterIntersection>
-        </Flags>
-      </Location>
-      <Location coordinates="2722.724,5123.943,43.98761" heading="56.36723">
-        <Street>Union Road</Street>
-        <Postal>818</Postal>
-        <Hint>before Senora Freeway</Hint>
-        <Speed>25</Speed>
-        <Flags>
-          <Road>TwoLaneRoad</Road>
-          <BeforeIntersection>None</BeforeIntersection>
-          <AfterIntersection>None</AfterIntersection>
-        </Flags>
-      </Location>
+
     </RoadShoulders>
   </Locations>
 </SANCHIA>

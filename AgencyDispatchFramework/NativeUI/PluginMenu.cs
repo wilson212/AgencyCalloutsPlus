@@ -3,16 +3,14 @@ using AgencyDispatchFramework.Dispatching.Assignments;
 using AgencyDispatchFramework.Extensions;
 using AgencyDispatchFramework.Game;
 using AgencyDispatchFramework.Game.Locations;
-using AgencyDispatchFramework.Xml;
 using Rage;
 using RAGENativeUI;
 using RAGENativeUI.Elements;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
-using System.IO;
 using System.Linq;
 using System.Text;
+using System.Xml;
 using static Rage.Native.NativeFunction;
 
 namespace AgencyDispatchFramework.NativeUI
@@ -20,7 +18,7 @@ namespace AgencyDispatchFramework.NativeUI
     /// <summary>
     /// Represents a basic <see cref="MenuPool"/> for questioning peds during a callout
     /// </summary>
-    internal class PluginMenu
+    internal partial class PluginMenu
     {
         private UIMenu MainUIMenu;
         private UIMenu DispatchUIMenu;
@@ -31,11 +29,11 @@ namespace AgencyDispatchFramework.NativeUI
         private UIMenu RoadShoulderFlagsUIMenu;
         private UIMenu RoadShoulderBeforeFlagsUIMenu;
         private UIMenu RoadShoulderAfterFlagsUIMenu;
+        private UIMenu RoadShoulderSpawnPointsUIMenu;
 
         private UIMenu ResidenceUIMenu;
         private UIMenu ResidenceSpawnPointsUIMenu;
         private UIMenu ResidenceFlagsUIMenu;
-
 
         private MenuPool AllMenus;
 
@@ -93,74 +91,23 @@ namespace AgencyDispatchFramework.NativeUI
 
         #endregion
 
-        #region Road Shoulder Menu Buttons
-
-        private UIMenuNumericScrollerItem<int> RoadShoulderSpeedButton { get; set; }
-
-        private UIMenuListItem RoadShoulderPostalButton { get; set; }
-
-        private UIMenuListItem RoadShoulderZoneButton { get; set; }
-
-        private UIMenuItem RoadShoulderStreetButton { get; set; }
-
-        private UIMenuItem RoadShoulderHintButton { get; set; }
-
-        private UIMenuItem RoadShoulderFlagsButton { get; set; }
-
-        private Dictionary<RoadFlags, UIMenuCheckboxItem> RoadShouldFlagsItems { get; set; }
-
-        private UIMenuItem RoadShoulderBeforeFlagsButton { get; set; }
-
-        private UIMenuListItem RoadShoulderBeforeListButton { get; set; }
-
-        private Dictionary<IntersectionFlags, UIMenuCheckboxItem> BeforeIntersectionItems { get; set; }
-
-        private UIMenuItem RoadShoulderAfterFlagsButton { get; set; }
-
-        private UIMenuListItem RoadShoulderAfterListButton { get; set; }
-
-        private Dictionary<IntersectionFlags, UIMenuCheckboxItem> AfterIntersectionItems { get; set; }
-
-        private UIMenuItem RoadShoulderSaveButton { get; set; }
-
-        #endregion
-
-        #region Residence Menu Buttons
-
-        private UIMenuItem ResidencePositionButton { get; set; }
-
-        private UIMenuListItem ResidencePostalButton { get; set; }
-
-        private UIMenuListItem ResidenceZoneButton { get; set; }
-
-        private UIMenuListItem ResidenceClassButton { get; set; }
-
-        private UIMenuItem ResidenceStreetButton { get; set; }
-
-        private UIMenuItem ResidenceNumberButton { get; set; }
-
-        private UIMenuItem ResidenceUnitButton { get; set; }
-
-        private UIMenuItem ResidenceSpawnPointsButton { get; set; }
-
-        private UIMenuItem ResidenceFlagsButton { get; set; }
-
-        private UIMenuItem ResidenceSaveButton { get; set; }
-
-        private Dictionary<ResidenceFlags, UIMenuCheckboxItem> ResidenceFlagsItems { get; set; }
-
-        private Dictionary<ResidencePosition, MyUIMenuItem<SpawnPoint>> ResidenceSpawnPointItems { get; set; }
-
-        private Dictionary<ResidencePosition, int> CheckpointHandles { get; set; }
-
-        #endregion
+        /// <summary>
+        /// flagcode => handle
+        /// </summary>
+        private Dictionary<int, int> CheckpointHandles { get; set; }
 
         private SpawnPoint NewLocationPosition { get; set; }
 
         private int NewLocationCheckpointHandle { get; set; }
 
+        /// <summary>
+        /// Indicates to stop processing the controls of this menu while the keyboard is open
+        /// </summary>
         internal bool IsKeyboardOpen { get; set; }
 
+        /// <summary>
+        /// Creates a new isntance of <see cref="PluginMenu"/>
+        /// </summary>
         public PluginMenu()
         {
             // Create main menu
@@ -228,6 +175,7 @@ namespace AgencyDispatchFramework.NativeUI
                 RoadShoulderFlagsUIMenu,
                 RoadShoulderBeforeFlagsUIMenu,
                 RoadShoulderAfterFlagsUIMenu,
+                RoadShoulderSpawnPointsUIMenu,
                 ResidenceUIMenu,
                 ResidenceFlagsUIMenu,
                 ResidenceSpawnPointsUIMenu
@@ -236,241 +184,6 @@ namespace AgencyDispatchFramework.NativeUI
             // Refresh indexes
             AllMenus.RefreshIndex();
             MainUIMenu.OnMenuChange += MainUIMenu_OnMenuChange;
-        }
-
-        private void OutOfServiceButton_CheckboxEvent(UIMenuCheckboxItem sender, bool Checked)
-        {
-            var player = Dispatch.PlayerUnit;
-            if (Checked)
-            {
-                player.Assignment = new OutOfService();
-
-                // @todo change status to OutOfService
-            }
-            else
-            {
-                player.Assignment = null;
-            }
-        }
-
-        private void BuildRoadShouldersMenu()
-        {
-            // Create road shoulder ui menu
-            RoadShoulderUIMenu = new UIMenu("ADF", "~b~Add Road Shoulder")
-            {
-                MouseControlsEnabled = false,
-                AllowCameraMovement = true,
-                WidthOffset = 12
-            };
-
-            // Flags selection menu
-            RoadShoulderFlagsUIMenu = new UIMenu("ADF", "~b~Road Shoulder Flags")
-            {
-                MouseControlsEnabled = false,
-                AllowCameraMovement = true,
-                WidthOffset = 12
-            };
-
-            // Setup Buttons
-            RoadShoulderStreetButton = new UIMenuItem("Street Name", "");
-            RoadShoulderHintButton = new UIMenuItem("Location Hint", "");
-            RoadShoulderSpeedButton = new UIMenuNumericScrollerItem<int>("Speed Limit", "Sets the speed limit of this road", 10, 80, 5);
-            RoadShoulderZoneButton = new UIMenuListItem("Zone", "Selects the jurisdictional zone");
-            RoadShoulderPostalButton = new UIMenuListItem("Postal", "The current location's Postal Code.");
-            RoadShoulderFlagsButton = new UIMenuItem("Road Shoulder Flags", "Open the RoadShoulder flags menu.");
-            RoadShoulderSaveButton = new UIMenuItem("Save", "Saves the current location data to the XML file");
-
-            // Button events
-            RoadShoulderStreetButton.Activated += DispayKeyboard_SetDescription;
-            RoadShoulderHintButton.Activated += DispayKeyboard_SetDescription;
-            RoadShoulderSaveButton.Activated += RoadShoulderSaveButton_Activated;
-
-            // Add Buttons
-            RoadShoulderUIMenu.AddItem(RoadShoulderStreetButton);
-            RoadShoulderUIMenu.AddItem(RoadShoulderHintButton);
-            RoadShoulderUIMenu.AddItem(RoadShoulderSpeedButton);
-            RoadShoulderUIMenu.AddItem(RoadShoulderZoneButton);
-            RoadShoulderUIMenu.AddItem(RoadShoulderPostalButton);
-            RoadShoulderUIMenu.AddItem(RoadShoulderFlagsButton);
-            RoadShoulderUIMenu.AddItem(RoadShoulderSaveButton);
-
-            // Bind buttons
-            RoadShoulderUIMenu.BindMenuToItem(RoadShoulderFlagsUIMenu, RoadShoulderFlagsButton);
-
-            // *************************************************
-            // Intersection Flags
-            // *************************************************
-            RoadShoulderBeforeFlagsUIMenu = new UIMenu("ADF", "~b~Before Intersection Flags")
-            {
-                MouseControlsEnabled = false,
-                AllowCameraMovement = true,
-                WidthOffset = 12
-            };
-
-            RoadShoulderAfterFlagsUIMenu = new UIMenu("ADF", "~b~After Intersection Flags")
-            {
-                MouseControlsEnabled = false,
-                AllowCameraMovement = true,
-                WidthOffset = 12
-            };
-
-            // Create Buttons
-            RoadShoulderBeforeListButton = new UIMenuListItem("Direction", "The direction of the ajoining road (only applies to T intersections)");
-            RoadShoulderAfterListButton = new UIMenuListItem("Direction", "The direction of the ajoining road (only applies to T intersections)");
-
-            // Add directions
-            foreach (RelativeDirection direction in Enum.GetValues(typeof(RelativeDirection)))
-            {
-                var name = Enum.GetName(typeof(RelativeDirection), direction);
-                RoadShoulderBeforeListButton.Collection.Add(direction, name);
-                RoadShoulderAfterListButton.Collection.Add(direction, name);
-            }
-
-            // Add buttons to the menu
-            RoadShoulderBeforeFlagsUIMenu.AddItem(RoadShoulderBeforeListButton);
-            RoadShoulderAfterFlagsUIMenu.AddItem(RoadShoulderAfterListButton);
-
-            // Add road shoulder intersection flags
-            BeforeIntersectionItems = new Dictionary<IntersectionFlags, UIMenuCheckboxItem>();
-            AfterIntersectionItems = new Dictionary<IntersectionFlags, UIMenuCheckboxItem>();
-            foreach (IntersectionFlags flag in Enum.GetValues(typeof(IntersectionFlags)))
-            {
-                var name = Enum.GetName(typeof(IntersectionFlags), flag);
-                var cb = new UIMenuCheckboxItem(name, false);
-                BeforeIntersectionItems.Add(flag, cb);
-                RoadShoulderBeforeFlagsUIMenu.AddItem(cb);
-
-                cb = new UIMenuCheckboxItem(name, false);
-                AfterIntersectionItems.Add(flag, cb);
-                RoadShoulderAfterFlagsUIMenu.AddItem(cb);
-            }
-
-            // Bind buttons
-            RoadShoulderBeforeFlagsButton = new UIMenuItem("Before Intersection Flags");
-            RoadShoulderBeforeFlagsButton.LeftBadge = UIMenuItem.BadgeStyle.Car;
-            RoadShoulderFlagsUIMenu.AddItem(RoadShoulderBeforeFlagsButton);
-            RoadShoulderFlagsUIMenu.BindMenuToItem(RoadShoulderBeforeFlagsUIMenu, RoadShoulderBeforeFlagsButton);
-
-            RoadShoulderAfterFlagsButton = new UIMenuItem("After Intersection Flags");
-            RoadShoulderAfterFlagsButton.LeftBadge = UIMenuItem.BadgeStyle.Car;
-            RoadShoulderFlagsUIMenu.AddItem(RoadShoulderAfterFlagsButton);
-            RoadShoulderFlagsUIMenu.BindMenuToItem(RoadShoulderAfterFlagsUIMenu, RoadShoulderAfterFlagsButton);
-
-            // Finally, add road
-            // Add road shoulder flags list
-            RoadShouldFlagsItems = new Dictionary<RoadFlags, UIMenuCheckboxItem>();
-            foreach (RoadFlags flag in Enum.GetValues(typeof(RoadFlags)))
-            {
-                var name = Enum.GetName(typeof(RoadFlags), flag);
-                var cb = new UIMenuCheckboxItem(name, false);
-                RoadShouldFlagsItems.Add(flag, cb);
-
-                // Add button
-                RoadShoulderFlagsUIMenu.AddItem(cb);
-            }
-        }
-
-        private void BuildResidencesMenu()
-        {
-            // Create residence ui menu
-            ResidenceUIMenu = new UIMenu("ADF", "~b~Add Residence")
-            {
-                MouseControlsEnabled = false,
-                AllowCameraMovement = true,
-                WidthOffset = 12
-            };
-
-            // Flags selection menu
-            ResidenceFlagsUIMenu = new UIMenu("ADF", "~b~Residence Flags")
-            {
-                MouseControlsEnabled = false,
-                AllowCameraMovement = true,
-                WidthOffset = 12
-            };
-
-            // Create residence ui menu
-            ResidenceSpawnPointsUIMenu = new UIMenu("ADF", "~b~Residence Spawn Points")
-            {
-                MouseControlsEnabled = false,
-                AllowCameraMovement = true,
-                WidthOffset = 12
-            };
-
-            // Setup Buttons
-            ResidencePositionButton = new UIMenuItem("Location", "Sets the street location coordinates for this home. Please stand on the street, in front of the home, and activate this button.");
-            ResidenceNumberButton = new UIMenuItem("Building Number", "");
-            ResidenceUnitButton = new UIMenuItem("Room/Unit Number", "");
-            ResidenceStreetButton = new UIMenuItem("Street Name", "");
-            ResidenceClassButton = new UIMenuListItem("Class", "Sets the social class of this home");
-            ResidenceZoneButton = new UIMenuListItem("Zone", "Selects the jurisdictional zone");
-            ResidencePostalButton = new UIMenuListItem("Postal", "The current location's Postal Code");
-            ResidenceSpawnPointsButton = new UIMenuItem("Spawn Points", "Sets the required spawn points");
-            ResidenceFlagsButton = new UIMenuItem("Residence Flags", "Open the Residence flags menu");
-            ResidenceSaveButton = new UIMenuItem("Save", "Saves the current residence to the XML file");
-
-            // Button events
-            ResidencePositionButton.Activated += ResidencePositionButton_Activated;
-            ResidenceNumberButton.Activated += DispayKeyboard_SetDescription;
-            ResidenceUnitButton.Activated += DispayKeyboard_SetDescription;
-            ResidenceStreetButton.Activated += DispayKeyboard_SetDescription;
-            ResidenceSaveButton.Activated += ResidenceSaveButton_Activated;
-
-            // Add Buttons
-            ResidenceUIMenu.AddItem(ResidencePositionButton);
-            ResidenceUIMenu.AddItem(ResidenceNumberButton);
-            ResidenceUIMenu.AddItem(ResidenceUnitButton);
-            ResidenceUIMenu.AddItem(ResidenceStreetButton);
-            ResidenceUIMenu.AddItem(ResidenceClassButton);
-            ResidenceUIMenu.AddItem(ResidenceZoneButton);
-            ResidenceUIMenu.AddItem(ResidencePostalButton);
-            ResidenceUIMenu.AddItem(ResidenceSpawnPointsButton);
-            ResidenceUIMenu.AddItem(ResidenceFlagsButton);
-            ResidenceUIMenu.AddItem(ResidenceSaveButton);
-
-            // Bind buttons
-            ResidenceUIMenu.BindMenuToItem(ResidenceFlagsUIMenu, ResidenceFlagsButton);
-            ResidenceUIMenu.BindMenuToItem(ResidenceSpawnPointsUIMenu, ResidenceSpawnPointsButton);
-
-            // *************************************************
-            // Residence Flags
-            // *************************************************
-
-            // Add flags
-            ResidenceFlagsItems = new Dictionary<ResidenceFlags, UIMenuCheckboxItem>();
-            foreach (ResidenceFlags flag in Enum.GetValues(typeof(ResidenceFlags)))
-            {
-                var name = Enum.GetName(typeof(ResidenceFlags), flag);
-                var cb = new UIMenuCheckboxItem(name, false);
-                ResidenceFlagsItems.Add(flag, cb);
-                ResidenceFlagsUIMenu.AddItem(cb);
-            }
-
-            // Add positions
-            ResidenceSpawnPointItems = new Dictionary<ResidencePosition, MyUIMenuItem<SpawnPoint>>();
-            foreach (ResidencePosition flag in Enum.GetValues(typeof(ResidencePosition)))
-            {
-                var name = Enum.GetName(typeof(ResidencePosition), flag);
-                var item = new MyUIMenuItem<SpawnPoint>(name, "Activate to set position");
-                item.Activated += ResidenceSpawnPointButton_Activated;
-                ResidenceSpawnPointItems.Add(flag, item);
-
-                // Add button
-                ResidenceSpawnPointsUIMenu.AddItem(item);
-            }
-
-            // Add class flags
-            foreach (SocialClass flag in Enum.GetValues(typeof(SocialClass)))
-            {
-                var name = Enum.GetName(typeof(SocialClass), flag);
-                ResidenceClassButton.Collection.Add(name);
-            }
-
-            // Create needed checkpoints
-            CheckpointHandles = new Dictionary<ResidencePosition, int>(20);
-
-            // Register for events
-            ResidenceUIMenu.OnMenuChange += ResidenceUIMenu_OnMenuChange;
-            ResidenceFlagsUIMenu.OnMenuChange += ResidenceFlagsUIMenu_OnMenuChange;
         }
 
         private void BuildLocationsMenu()
@@ -620,150 +333,6 @@ namespace AgencyDispatchFramework.NativeUI
         #region Events
 
         /// <summary>
-        /// Method called when the "Create New Residence" button is clicked.
-        /// Clears all prior data.
-        /// </summary>
-        private void ResidenceButton_Activated(UIMenu sender, UIMenuItem selectedItem)
-        {
-            //
-            // Reset everything!
-            //
-            if (NewLocationCheckpointHandle != -123456789)
-            {
-                GameWorld.DeleteCheckpoint(NewLocationCheckpointHandle);
-                NewLocationCheckpointHandle = -123456789;
-            }
-
-            // Reset flags
-            foreach (var cb in ResidenceFlagsItems.Values)
-            {
-                cb.Checked = false;
-            }
-
-            // Reset spawn points
-            foreach (MyUIMenuItem<SpawnPoint> item in ResidenceSpawnPointItems.Values)
-            {
-                item.Tag = null;
-                item.RightBadge = UIMenuItem.BadgeStyle.None;
-            }
-
-            // Grab player location
-            var pos = Rage.Game.LocalPlayer.Character.Position;
-
-            // Get current Postal
-            ResidencePostalButton.Collection.Clear();
-            var postal = Postal.FromVector(pos);
-            ResidencePostalButton.Collection.Add(postal, postal.Code.ToString());
-
-            // Add Zones
-            ResidenceZoneButton.Collection.Clear();
-            ResidenceZoneButton.Collection.Add(GameWorld.GetZoneNameAtLocation(pos));
-
-            // Set street name default
-            var streetName = GameWorld.GetStreetNameAtLocation(pos);
-            if (!String.IsNullOrEmpty(streetName))
-            {
-                ResidenceStreetButton.Description = streetName;
-                ResidenceStreetButton.RightBadge = UIMenuItem.BadgeStyle.Tick;
-            }
-            else
-            {
-                ResidenceStreetButton.Description = "";
-                ResidenceStreetButton.RightBadge = UIMenuItem.BadgeStyle.None;
-            }
-
-            // Reset buttons
-            ResidenceNumberButton.Description = "";
-            ResidenceNumberButton.RightBadge = UIMenuItem.BadgeStyle.None;
-
-            // Reset ticks
-            ResidenceUnitButton.Description = $"";
-            ResidenceUnitButton.RightBadge = UIMenuItem.BadgeStyle.Tick; // Not required
-
-            ResidenceFlagsButton.RightBadge = UIMenuItem.BadgeStyle.None;
-            ResidenceSpawnPointsButton.RightBadge = UIMenuItem.BadgeStyle.None;
-            ResidencePositionButton.RightBadge = UIMenuItem.BadgeStyle.None;
-
-            // Enable button
-            ResidenceSaveButton.Enabled = true;
-        }
-
-        /// <summary>
-        /// Method called when the "Create New Road Shoulder" button is clicked.
-        /// Clears all prior data.
-        /// </summary>
-        private void RoadShouldersButton_Activated(UIMenu sender, UIMenuItem selectedItem)
-        {
-            //
-            // Reset everything!
-            //
-            if (NewLocationCheckpointHandle != -123456789)
-            {
-                GameWorld.DeleteCheckpoint(NewLocationCheckpointHandle);
-                NewLocationCheckpointHandle = -123456789;
-            }
-
-            // Reset road shoulder flags
-            foreach (var cb in RoadShouldFlagsItems.Values)
-            {
-                cb.Checked = false;
-            }
-
-            // Reset intersection flags
-            foreach (var cb in BeforeIntersectionItems)
-            {
-                cb.Value.Checked = false;
-                AfterIntersectionItems[cb.Key].Checked = false;
-            }
-            RoadShoulderBeforeListButton.Index = 0;
-            RoadShoulderAfterListButton.Index = 0;
-
-            // Grab player location
-            var pos = Rage.Game.LocalPlayer.Character.Position;
-
-            // Create checkpoint at the player location
-            NewLocationCheckpointHandle = GameWorld.CreateCheckpoint(pos, Color.Yellow, forceGround: true);
-
-            // Get current Postal
-            RoadShoulderPostalButton.Collection.Clear();
-            var postal = Postal.FromVector(pos);
-            RoadShoulderPostalButton.Collection.Add(postal, postal.Code.ToString());
-
-            // Add Zones
-            RoadShoulderZoneButton.Collection.Clear();
-            RoadShoulderZoneButton.Collection.Add(GameWorld.GetZoneNameAtLocation(pos));
-            RoadShoulderZoneButton.Collection.Add("HIGHWAY");
-
-            // Set street name default
-            var streetName = GameWorld.GetStreetNameAtLocation(pos, out string crossingRoad);
-            if (!String.IsNullOrEmpty(streetName))
-            {
-                RoadShoulderStreetButton.Description = streetName;
-                RoadShoulderStreetButton.RightBadge = UIMenuItem.BadgeStyle.Tick;
-            }
-            else
-            {
-                RoadShoulderStreetButton.Description = "";
-                RoadShoulderStreetButton.RightBadge = UIMenuItem.BadgeStyle.Alert;
-            }
-
-            // Crossing road
-            if (!String.IsNullOrEmpty(crossingRoad))
-            {
-                RoadShoulderHintButton.Description = $"near {crossingRoad}";
-                RoadShoulderHintButton.RightBadge = UIMenuItem.BadgeStyle.Tick;
-            }
-            else
-            {
-                // Reset ticks
-                RoadShoulderHintButton.RightBadge = UIMenuItem.BadgeStyle.None;
-            }
-
-            // Enable button
-            RoadShoulderSaveButton.Enabled = true;
-        }
-
-        /// <summary>
         /// Method called when a UIMenu item is clicked. The OnScreen keyboard is displayed,
         /// and the text that is typed will be saved in the description
         /// </summary>
@@ -810,26 +379,53 @@ namespace AgencyDispatchFramework.NativeUI
             });
         }
 
-        private void ResidenceUIMenu_OnMenuChange(UIMenu oldMenu, UIMenu newMenu, bool forward)
+        private void OutOfServiceButton_CheckboxEvent(UIMenuCheckboxItem sender, bool Checked)
+        {
+            var player = Dispatch.PlayerUnit;
+            if (Checked)
+            {
+                player.Assignment = new OutOfService();
+
+                // @todo change status to OutOfService
+            }
+            else
+            {
+                player.Assignment = null;
+            }
+        }
+
+        private void RoadShoulderUIMenu_OnMenuChange(UIMenu oldMenu, UIMenu newMenu, bool forward)
         {
             // Are we backing out of this main menu
-            if (!forward && oldMenu == ResidenceUIMenu)
+            if (!forward && oldMenu == RoadShoulderUIMenu)
             {
-                // Delete all checkpoints
-                foreach (int handle in CheckpointHandles.Values)
-                {
-                    GameWorld.DeleteCheckpoint(handle);
-                }
+                ResetCheckPoints();
+            }
+        }
 
-                // Clear checkpoint handles
-                CheckpointHandles.Clear();
-
-                // Clear location check point
-                if (NewLocationCheckpointHandle != -123456789)
+        private void RoadShoulderFlagsUIMenu_OnMenuChange(UIMenu oldMenu, UIMenu newMenu, bool forward)
+        {
+            // Are we backing out of this menu?
+            if (!forward && oldMenu == RoadShoulderFlagsUIMenu)
+            {
+                // We must have at least 1 item checked
+                if (RoadShouldFlagsItems.Any(x => x.Value.Checked))
                 {
-                    GameWorld.DeleteCheckpoint(NewLocationCheckpointHandle);
-                    NewLocationCheckpointHandle = -123456789;
+                    RoadShoulderFlagsButton.RightBadge = UIMenuItem.BadgeStyle.Tick;
                 }
+                else
+                {
+                    RoadShoulderFlagsButton.RightBadge = UIMenuItem.BadgeStyle.None;
+                }
+            }
+        }
+
+        private void ResidenceUIMenu_OnMenuChange(UIMenu oldMenu, UIMenu newMenu, bool forward)
+        {
+            // Reset checkpoint handles
+            if (newMenu == LocationsUIMenu || oldMenu == LocationsUIMenu)
+            {
+                ResetCheckPoints();
             }
         }
 
@@ -848,329 +444,6 @@ namespace AgencyDispatchFramework.NativeUI
                     ResidenceFlagsButton.RightBadge = UIMenuItem.BadgeStyle.None;
                 }
             }
-        }
-
-        private void ResidencePositionButton_Activated(UIMenu sender, UIMenuItem selectedItem)
-        {
-            // Delete old handle
-            if (NewLocationCheckpointHandle != -123456789)
-            {
-                GameWorld.DeleteCheckpoint(NewLocationCheckpointHandle);
-            }
-
-            // Set new location
-            NewLocationPosition = new SpawnPoint(GamePed.Player.Position, GamePed.Player.Heading);
-            ResidencePositionButton.RightBadge = UIMenuItem.BadgeStyle.Tick;
-
-            // Create checkpoint here
-            var pos = new Vector3(NewLocationPosition.Position.X, NewLocationPosition.Position.Y, NewLocationPosition.Position.Z - 2);
-            NewLocationCheckpointHandle = GameWorld.CreateCheckpoint(pos, Color.Purple);
-        }
-
-        /// <summary>
-        /// Method called when a residece "Spawnpoint" button is clicked on the Residence Spawn Points UI menu
-        /// </summary>
-        private void ResidenceSpawnPointButton_Activated(UIMenu sender, UIMenuItem selectedItem)
-        {
-            int handle = 0;
-            var pos = GamePed.Player.Position;
-            var value = (ResidencePosition)Enum.Parse(typeof(ResidencePosition), selectedItem.Text);
-            var menuItem = (MyUIMenuItem<SpawnPoint>)selectedItem;
-            
-            // Check, do we have a check point already for this position?
-            if (CheckpointHandles.ContainsKey(value))
-            {
-                handle = CheckpointHandles[value];
-                GameWorld.DeleteCheckpoint(handle);
-            }
-
-            // Create new checkpoint !!important, need to subtract 2 from the Z since checkpoints spawn at waist level
-            var cpPos = pos;
-            cpPos.Z -= 2;
-            handle = GameWorld.CreateCheckpoint(cpPos, GetResidencePositionColor(value), radius: 1f);
-            if (CheckpointHandles.ContainsKey(value))
-                CheckpointHandles[value] = handle;
-            else
-                CheckpointHandles.Add(value, handle);
-
-            // Create spawn point
-            menuItem.Tag = new SpawnPoint(pos, GamePed.Player.Heading);
-            menuItem.RightBadge = UIMenuItem.BadgeStyle.Tick;
-
-            // Are we complete
-            bool complete = true;
-            foreach (MyUIMenuItem<SpawnPoint> item in ResidenceSpawnPointItems.Values)
-            {
-                if (item.Tag == null)
-                {
-                    complete = false;
-                    break;
-                }
-            }
-
-            // Signal to the player
-            if (complete)
-            {
-                ResidenceSpawnPointsButton.RightBadge = UIMenuItem.BadgeStyle.Tick;
-            }
-        }
-
-        /// <summary>
-        /// Method called when the "Save" button is clicked on the Residence UI menu
-        /// </summary>
-        private void ResidenceSaveButton_Activated(UIMenu sender, UIMenuItem selectedItem)
-        {
-            // Disable button to prevent spam clicking!
-            ResidenceSaveButton.Enabled = false;
-
-            // Ensure everything is done
-            var requiredItems = new[] { ResidenceFlagsButton, ResidenceNumberButton, ResidencePositionButton, ResidenceSpawnPointsButton, ResidenceStreetButton };
-            foreach (var item in requiredItems)
-            {
-                if (item.RightBadge != UIMenuItem.BadgeStyle.Tick)
-                {
-                    // Display notification to the player
-                    Rage.Game.DisplayNotification(
-                        "3dtextures",
-                        "mpgroundlogo_cops",
-                        "Agency Dispatch Framework",
-                        "Add Residence",
-                        $"~o~Location does not have all required parameters set"
-                    );
-                    ResidenceSaveButton.Enabled = true;
-                    return;
-                }
-            }
-
-            // @todo Save file
-            var pos = NewLocationPosition;
-            string zoneName = ResidenceZoneButton.SelectedValue.ToString();
-            string path = Path.Combine(Main.FrameworkFolderPath, "Locations", $"{zoneName}.xml");
-
-            // Make sure the file exists!
-            if (!File.Exists(path))
-            {
-                // Display notification to the player
-                Rage.Game.DisplayNotification(
-                    "3dtextures",
-                    "mpgroundlogo_cops",
-                    "Agency Dispatch Framework",
-                    "Add Residence",
-                    $"~o~Location file {zoneName}.xml does not exist!"
-                );
-                return;
-            }
-
-            // Open the file, and add the location
-            using (var file = new WorldZoneFile(path))
-            {
-                // Create attributes
-                var vectorAttr = file.Document.CreateAttribute("coordinates");
-                vectorAttr.Value = $"{pos.Position.X}, {pos.Position.Y}, {pos.Position.Z}";
-
-                var headingAttr = file.Document.CreateAttribute("heading");
-                headingAttr.Value = $"{pos.Heading}";
-
-                // Create location node, and add attributes
-                var locationNode = file.Document.CreateElement("Location");
-                locationNode.Attributes.Append(vectorAttr);
-                locationNode.Attributes.Append(headingAttr);
-
-                // Create number node
-                var numberNode = file.Document.CreateElement("BuildingNumber");
-                numberNode.InnerText = ResidenceNumberButton.Description;
-                locationNode.AppendChild(numberNode);
-
-                // Create street node
-                var streetNode = file.Document.CreateElement("Street");
-                streetNode.InnerText = ResidenceStreetButton.Description;
-                locationNode.AppendChild(streetNode);
-
-                // Create hint node
-                var hintNode = file.Document.CreateElement("Unit");
-                hintNode.InnerText = ResidenceUnitButton.Description;
-                locationNode.AppendChild(hintNode);
-
-                // Pretty print
-                if (String.IsNullOrWhiteSpace(ResidenceUnitButton.Description))
-                {
-                    hintNode.IsEmpty = true;
-                }
-
-                // Create class node
-                var speedNode = file.Document.CreateElement("Class");
-                speedNode.InnerText = ResidenceClassButton.SelectedValue.ToString();
-                locationNode.AppendChild(speedNode);
-
-                // Flags
-                var flagsNode = file.Document.CreateElement("Flags");
-                var flags = ResidenceFlagsItems.Values.Where(x => x.Checked).Select(x => x.Text).ToArray();
-                flagsNode.InnerText = String.Join(", ", flags);
-                locationNode.AppendChild(flagsNode);
-
-                // Add residence spawn points
-                var positionsNode = file.Document.CreateElement("Positions");
-                foreach (MyUIMenuItem<SpawnPoint> p in ResidenceSpawnPointItems.Values)
-                {
-                    var spawnPointNode = file.Document.CreateElement("SpawnPoint");
-
-                    var idAttr = file.Document.CreateAttribute("id");
-                    idAttr.Value = p.Text;
-
-                    var coordAttr = file.Document.CreateAttribute("coordinates");
-                    coordAttr.Value = $"{p.Tag.Position.X}, {p.Tag.Position.Y}, {p.Tag.Position.Z}";
-
-                    var hAttr = file.Document.CreateAttribute("heading");
-                    hAttr.Value = $"{p.Tag.Heading}";
-
-                    // Set attributes
-                    spawnPointNode.Attributes.Append(idAttr);
-                    spawnPointNode.Attributes.Append(coordAttr);
-                    spawnPointNode.Attributes.Append(hAttr);
-
-                    // Add spawn point
-                    spawnPointNode.IsEmpty = true;
-                    positionsNode.AppendChild(spawnPointNode);
-                }
-
-                // Add all positions
-                locationNode.AppendChild(positionsNode);
-
-                // Add the new location node
-                var node = file.Document.SelectSingleNode($"{zoneName}/Locations/Residences");
-                node.AppendChild(locationNode);
-
-                // Save
-                file.Document.Save(path);
-            }
-
-            // Display notification to the player
-            Rage.Game.DisplayNotification(
-                "3dtextures",
-                "mpgroundlogo_cops",
-                "Agency Dispatch Framework",
-                "~b~Add Residence",
-                $"~g~Location saved Successfully. It will be available next time you load up the game!"
-            );
-
-            // Go back
-            ResidenceUIMenu.GoBack();
-        }
-
-        /// <summary>
-        /// Method called when the "Save" button is clicked on the Road Shoulder UI menu
-        /// </summary>
-        private void RoadShoulderSaveButton_Activated(UIMenu sender, UIMenuItem selectedItem)
-        {
-            // Disable button to prevent spam clicking!
-            RoadShoulderSaveButton.Enabled = false;
-
-            // @todo Save file
-            var pos = GamePed.Player.Position;
-            string zoneName = RoadShoulderZoneButton.SelectedValue.ToString();
-            string path = Path.Combine(Main.FrameworkFolderPath, "Locations", $"{zoneName}.xml");
-
-            // Make sure the file exists!
-            if (!File.Exists(path))
-            {
-                // Display notification to the player
-                Rage.Game.DisplayNotification(
-                    "3dtextures",
-                    "mpgroundlogo_cops",
-                    "Agency Dispatch Framework",
-                    "Add Road Shoulder",
-                    $"~o~Location file {zoneName}.xml does not exist!"
-                );
-                return;
-            }
-
-            // Open the file, and add the location
-            using (var file = new WorldZoneFile(path))
-            {
-                // Create attributes
-                var vectorAttr = file.Document.CreateAttribute("coordinates");
-                vectorAttr.Value = $"{pos.X}, {pos.Y}, {pos.Z}";
-
-                var headingAttr = file.Document.CreateAttribute("heading");
-                headingAttr.Value = $"{GamePed.Player.Heading}";
-
-                // Create location node, and add attributes
-                var locationNode = file.Document.CreateElement("Location");
-                locationNode.Attributes.Append(vectorAttr);
-                locationNode.Attributes.Append(headingAttr);
-
-                // Create street node
-                var streetNode = file.Document.CreateElement("Street");
-                streetNode.InnerText = RoadShoulderStreetButton.Description;
-                locationNode.AppendChild(streetNode);
-
-                // Create street node
-                var hintNode = file.Document.CreateElement("Hint");
-                hintNode.InnerText = RoadShoulderHintButton.Description;
-                locationNode.AppendChild(hintNode);
-
-                // Create speed node
-                var speedNode = file.Document.CreateElement("Speed");
-                speedNode.InnerText = RoadShoulderSpeedButton.Value.ToString();
-                locationNode.AppendChild(speedNode);
-
-                // Flags
-                var flagsNode = file.Document.CreateElement("Flags");
-
-                // Road flags
-                var roadFlagsNode = file.Document.CreateElement("Road");
-                var items = RoadShouldFlagsItems.Values.Where(x => x.Checked).Select(x => x.Text).ToArray();
-                roadFlagsNode.InnerText = String.Join(", ", items);
-
-                // Before intersection flags
-                var beforeFlagsNode = file.Document.CreateElement("BeforeIntersection");
-                if (RoadShoulderBeforeListButton.Index != 0)
-                {
-                    // Create attribute
-                    var beforeAttr = file.Document.CreateAttribute("direction");
-                    beforeAttr.Value = RoadShoulderBeforeListButton.SelectedValue.ToString();
-                    beforeFlagsNode.Attributes.Append(beforeAttr);
-                }
-                items = BeforeIntersectionItems.Values.Where(x => x.Checked).Select(x => x.Text).ToArray();
-                beforeFlagsNode.InnerText = String.Join(", ", items);
-
-                // After intersection flags
-                var afterFlagsNode = file.Document.CreateElement("AfterIntersection");
-                if (RoadShoulderAfterListButton.Index != 0)
-                {
-                    // Create attribute
-                    var afterAttr = file.Document.CreateAttribute("direction");
-                    afterAttr.Value = RoadShoulderAfterListButton.SelectedValue.ToString();
-                    afterFlagsNode.Attributes.Append(afterAttr);
-                }
-                items = AfterIntersectionItems.Values.Where(x => x.Checked).Select(x => x.Text).ToArray();
-                afterFlagsNode.InnerText = String.Join(", ", items);
-
-                // Add
-                flagsNode.AppendChild(roadFlagsNode);
-                flagsNode.AppendChild(beforeFlagsNode);
-                flagsNode.AppendChild(afterFlagsNode);
-                locationNode.AppendChild(flagsNode);
-
-                // Add the new location node
-                var node = file.Document.SelectSingleNode($"{zoneName}/Locations/RoadShoulders");
-                node.AppendChild(locationNode);
-
-                // Save
-                file.Document.Save(path);
-            }
-
-            // Display notification to the player
-            Rage.Game.DisplayNotification(
-                "3dtextures",
-                "mpgroundlogo_cops",
-                "Agency Dispatch Framework",
-                "~b~Add Road Shoulder.",
-                $"~g~Location saved Successfully. It will be available next time you load up the game!"
-            );
-
-            // Go back
-            RoadShoulderUIMenu.GoBack();
         }
 
         private void MainUIMenu_OnMenuChange(UIMenu oldMenu, UIMenu newMenu, bool forward)
@@ -1301,36 +574,74 @@ namespace AgencyDispatchFramework.NativeUI
 
         #endregion Events
 
-        private Color GetResidencePositionColor(ResidencePosition value)
+        /// <summary>
+        /// Creates a {Positions} node with child {SpawnPoint} nodes
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="document"></param>
+        /// <param name="items"></param>
+        /// <returns></returns>
+        private static XmlElement CreatePositionsNodeWithSpawnPoints<T>(XmlDocument document, Dictionary<T, MyUIMenuItem<SpawnPoint>> items)
         {
-            switch (value)
+            // Add spawn points
+            var positionsNode = document.CreateElement("Positions");
+            foreach (MyUIMenuItem<SpawnPoint> p in items.Values)
             {
-                case ResidencePosition.BackDoorPed:
-                case ResidencePosition.BackYardPed:
-                case ResidencePosition.FrontDoorPed:
-                case ResidencePosition.FrontYardPed:
-                case ResidencePosition.SidewalkPed:
-                case ResidencePosition.SideYardPed:
-                    return Color.Yellow;
-                case ResidencePosition.BackYardPolicePed1:
-                case ResidencePosition.FrontDoorPolicePed1:
-                case ResidencePosition.FrontDoorPolicePed2:
-                case ResidencePosition.FrontDoorPolicePed3:
-                case ResidencePosition.SideWalkPolicePed1:
-                case ResidencePosition.SideWalkPolicePed2:
-                    return Color.DodgerBlue;
-                case ResidencePosition.HidingSpot1:
-                case ResidencePosition.HidingSpot2:
-                    return Color.Orange;
-                case ResidencePosition.PoliceParking1:
-                case ResidencePosition.PoliceParking2:
-                case ResidencePosition.PoliceParking3:
-                case ResidencePosition.PoliceParking4:
-                    return Color.Red;
-                case ResidencePosition.ResidentParking1:
-                case ResidencePosition.ResidentParking2:
-                default:
-                    return Color.Green;
+                var spawnPointNode = document.CreateElement("SpawnPoint");
+
+                var idAttr = document.CreateAttribute("id");
+                idAttr.Value = p.Text;
+
+                var coordAttr = document.CreateAttribute("coordinates");
+                coordAttr.Value = $"{p.Tag.Position.X}, {p.Tag.Position.Y}, {p.Tag.Position.Z}";
+
+                var hAttr = document.CreateAttribute("heading");
+                hAttr.Value = $"{p.Tag.Heading}";
+
+                // Set attributes
+                spawnPointNode.Attributes.Append(idAttr);
+                spawnPointNode.Attributes.Append(coordAttr);
+                spawnPointNode.Attributes.Append(hAttr);
+
+                // Add spawn point
+                spawnPointNode.IsEmpty = true;
+                positionsNode.AppendChild(spawnPointNode);
+            }
+
+            return positionsNode;
+        }
+
+        /// <summary>
+        /// Closes an element tag with short hand if there is no inner text
+        /// </summary>
+        /// <param name="node"></param>
+        private void CloseElementTagShortIfEmpty(XmlElement node)
+        {
+            if (String.IsNullOrWhiteSpace(node.InnerText))
+            {
+                node.IsEmpty = true;
+            }
+        }
+
+        /// <summary>
+        /// Resets all check points just added by this position
+        /// </summary>
+        private void ResetCheckPoints()
+        {
+            // Delete all checkpoints
+            foreach (int handle in CheckpointHandles.Values)
+            {
+                GameWorld.DeleteCheckpoint(handle);
+            }
+
+            // Clear checkpoint handles
+            CheckpointHandles.Clear();
+
+            // Clear location check point
+            if (NewLocationCheckpointHandle != -123456789)
+            {
+                GameWorld.DeleteCheckpoint(NewLocationCheckpointHandle);
+                NewLocationCheckpointHandle = -123456789;
             }
         }
 

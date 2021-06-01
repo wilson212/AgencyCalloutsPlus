@@ -6,6 +6,6 @@
         RoadShoulder,
         Intersection,
         Residence,
-        Store
+        Business
     }
 }

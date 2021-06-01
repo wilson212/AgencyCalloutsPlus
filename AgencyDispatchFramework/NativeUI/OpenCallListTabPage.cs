@@ -16,6 +16,11 @@ namespace AgencyDispatchFramework.NativeUI
     internal class OpenCallListTabPage : TabItem // TabSubmenuItem
     {
         /// <summary>
+        /// Our lock object to prevent multi-threading issues
+        /// </summary>
+        private static object _threadLock = new object();
+
+        /// <summary>
         /// Gets the message to display when the player is not on a <see cref="AgencyCallout"/>
         /// </summary>
         public static readonly string NoAssingnmentMessage = "There are currently no open calls";
@@ -305,26 +310,37 @@ namespace AgencyDispatchFramework.NativeUI
 
         private void Dispatch_OnCallCompleted(PriorityCall call)
         {
-            int i = Items.Select((callItem, index) => new { callItem, index }).First(x => x.callItem.Call == call).index;
-            Items.RemoveAt(i);
+            lock (_threadLock)
+            {
+                int i = Items.FindIndex(x => x.Call.CallId == call.CallId);
+                if (i == -1)
+                {
+                    Log.Error($"OpenCallListTabPage.Dispatch_OnCallCompleted(): Unable to remove call '{call.ScenarioInfo.Name}' with id {call.CallId} as it does not exist in the list");
+                    return;
+                }
 
-            // Always refresh
-            RefreshIndex();
+                // Always refresh
+                Items.RemoveAt(i);
+                RefreshIndex();
+            }
         }
 
         private void Dispatch_OnCallAdded(PriorityCall call)
         {
-            var tItem = new PriorityCallTabItem(call);
-            tItem.Activated += CallListItem_Activated;
-            Items.Add(tItem);
+            lock (_threadLock)
+            {
+                var tItem = new PriorityCallTabItem(call);
+                tItem.Activated += CallListItem_Activated;
+                Items.Add(tItem);
 
-            // Apply ordering
-            Items = Items.OrderByDescending(x => Dispatch.CanAssignAgencyToCall(Dispatch.PlayerAgency, x.Call))
-                .ThenBy(x => x.Call.Priority)
-                .ThenBy(x => x.Call.CallCreated).ToList();
+                // Apply ordering
+                Items = Items.OrderByDescending(x => Dispatch.CanAssignAgencyToCall(Dispatch.PlayerAgency, x.Call))
+                    .ThenBy(x => (int)x.Call.Priority)
+                    .ThenBy(x => x.Call.CallCreated).ToList();
 
-            // Always refresh
-            RefreshIndex();
+                // Always refresh
+                RefreshIndex();
+            }
         }
 
         private void CallListItem_Activated(object sender, EventArgs e)

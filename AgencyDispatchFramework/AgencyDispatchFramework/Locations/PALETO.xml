@@ -70,32 +70,11 @@
     <Residences>
 
     </Residences>
-    <Stores>
+    <Businesses>
 
-    </Stores>
+    </Businesses>
     <RoadShoulders>
-      <Location coordinates="-22.2518,6633.133,30.45876" heading="123.2169">
-        <Street>Procopio Drive</Street>
-        <Postal>818</Postal>
-        <Hint>near Cascabel Ave</Hint>
-        <Speed>25</Speed>
-        <Flags>
-          <Road>TwoLaneRoad, DrivewaysLeft, DrivewaysRight</Road>
-          <BeforeIntersection>None</BeforeIntersection>
-          <AfterIntersection>None</AfterIntersection>
-        </Flags>
-      </Location>
-      <Location coordinates="-324.5273,6351.488,30.07028" heading="134.4314">
-        <Street>Procopio Drive</Street>
-        <Postal>818</Postal>
-        <Hint>near Duluoz Ave</Hint>
-        <Speed>25</Speed>
-        <Flags>
-          <Road>TwoLaneRoad, DrivewaysLeft</Road>
-          <BeforeIntersection>None</BeforeIntersection>
-          <AfterIntersection>None</AfterIntersection>
-        </Flags>
-      </Location>
+
     </RoadShoulders>
   </Locations>
 </PALETO>

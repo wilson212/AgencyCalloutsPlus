@@ -125,19 +125,22 @@
     <Compile Include="Game\Enums\County.cs" />
     <Compile Include="Game\Enums\RelativeDirection.cs" />
     <Compile Include="Game\Enums\PedGender.cs" />
-    <Compile Include="Game\Locations\IntersectionFlags.cs" />
+    <Compile Include="Game\Locations\Enums\IntersectionFlags.cs" />
     <Compile Include="Game\Locations\Postal.cs" />
     <Compile Include="Game\Locations\Requirement.cs" />
     <Compile Include="Game\Locations\FlagFilterGroup.cs" />
-    <Compile Include="Game\Locations\ResidenceFlags.cs" />
-    <Compile Include="Game\Locations\RoadFlags.cs" />
+    <Compile Include="Game\Locations\Enums\ResidenceFlags.cs" />
+    <Compile Include="Game\Locations\Enums\RoadFlags.cs" />
     <Compile Include="Game\Enums\PedDemeanor.cs" />
     <Compile Include="Game\Enums\PedVariantGroup.cs" />
     <Compile Include="Game\Enums\Weather.cs" />
     <Compile Include="Game\GameWorld.cs" />
     <Compile Include="Extensions\EnumExtensions.cs" />
     <Compile Include="Conversation\SubtitleEventHandler.cs" />
+    <Compile Include="Game\Locations\Enums\RoadShoulderPosition.cs" />
     <Compile Include="Game\PedCache.cs" />
+    <Compile Include="NativeUI\PluginMenuPartials\ResidenceUIMenu.cs" />
+    <Compile Include="NativeUI\PluginMenuPartials\RoadShouldersUIMenu.cs" />
     <Compile Include="NativeUI\OpenCallListTabPage.cs" />
     <Compile Include="NativeUI\MyUIMenuItem.cs" />
     <Compile Include="NativeUI\PriorityCallTabItem.cs" />
@@ -162,7 +165,7 @@
     <Compile Include="Dispatching\Enums\CallCategory.cs" />
     <Compile Include="Dispatching\Enums\CrimeLevel.cs" />
     <Compile Include="Dispatching\Enums\AgencyType.cs" />
-    <Compile Include="Game\Locations\ResidencePosition.cs" />
+    <Compile Include="Game\Locations\Enums\ResidencePosition.cs" />
     <Compile Include="Dispatching\Enums\PatrolType.cs" />
     <Compile Include="Game\Enums\ZoneType.cs" />
     <Compile Include="ProbableItem.cs" />
@@ -229,7 +232,7 @@
     <Compile Include="Dispatching\Dispatch.cs" />
     <Compile Include="CryptoRandom.cs" />
     <Compile Include="Dispatching\Agency\Agency.cs" />
-    <Compile Include="Game\Locations\LocationTypeCode.cs" />
+    <Compile Include="Game\Locations\Enums\LocationTypeCode.cs" />
     <Compile Include="Extensions\AttributeExtensions.cs" />
     <Compile Include="Keyboard.cs" />
     <Compile Include="ISpawnable.cs" />
@@ -349,9 +352,6 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="AgencyDispatchFramework\Locations\CMSW.xml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="AgencyDispatchFramework\Locations\Custom\PLACEHOLDER.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="AgencyDispatchFramework\Locations\CYPRE.xml">

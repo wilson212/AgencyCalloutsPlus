@@ -16,7 +16,7 @@ namespace AgencyDispatchFramework.Game
         /// <summary>
         /// Our lock object to prevent threading issues
         /// </summary>
-        private static object _lock = new object();
+        private static object _threadLock = new object();
 
         /// <summary>
         /// Event called when the <see cref="CurrentTimePeriod"/> has changed in game
@@ -82,7 +82,7 @@ namespace AgencyDispatchFramework.Game
         {
             get
             {
-                lock (_lock)
+                lock (_threadLock)
                 {
                     return LastKnownWeather;
                 }
@@ -91,7 +91,7 @@ namespace AgencyDispatchFramework.Game
             {
                 if (Enum.IsDefined(typeof(Weather), value) && value != Weather.Unknown)
                 {
-                    lock (_lock)
+                    lock (_threadLock)
                     {
                         Natives.SetWeatherTypeNow(WeatherNames[(int)value]);
                     }
@@ -160,7 +160,7 @@ namespace AgencyDispatchFramework.Game
                     if (currentWeather != CurrentWeather)
                     {
                         Weather lastWeather = Weather.Unknown;
-                        lock (_lock)
+                        lock (_threadLock)
                         {
                             lastWeather = LastKnownWeather;
                             LastKnownWeather = currentWeather;
