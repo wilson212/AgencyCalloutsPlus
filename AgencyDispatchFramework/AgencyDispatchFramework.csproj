@@ -135,7 +135,6 @@
     <Compile Include="Game\Enums\PedVariantGroup.cs" />
     <Compile Include="Game\Enums\Weather.cs" />
     <Compile Include="Game\GameWorld.cs" />
-    <Compile Include="Extensions\EnumExtensions.cs" />
     <Compile Include="Conversation\SubtitleEventHandler.cs" />
     <Compile Include="Game\Locations\Enums\RoadShoulderPosition.cs" />
     <Compile Include="Game\PedCache.cs" />
@@ -258,6 +257,7 @@
     <Compile Include="WorldStateProbabilityGenerator.cs" />
     <Compile Include="Game\TimeScale.cs" />
     <Compile Include="Xml\CalloutMetaFile.cs" />
+    <Compile Include="Xml\FlowSequenceFile.cs" />
     <Compile Include="Xml\WorldZoneFile.cs" />
     <Compile Include="Xml\XmlExtractor.cs" />
     <Compile Include="Xml\XmlFileBase.cs" />

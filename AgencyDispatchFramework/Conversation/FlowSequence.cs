@@ -7,6 +7,7 @@ using RAGENativeUI.Elements;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Xml;
 
@@ -57,6 +58,11 @@ namespace AgencyDispatchFramework.Conversation
         /// Contains a list of flow return menu items that are initially no visible
         /// </summary>
         protected Dictionary<string, UIMenuItem> HiddenMenuItems { get; set; }
+
+        /// <summary>
+        /// Contains a list of flow return menu items that are initially no visible
+        /// </summary>
+        protected Dictionary<string, Action> Callbacks { get; set; }
 
         /// <summary>
         /// Contains our <see cref="ResponseSet"/> for this <see cref="FlowSequence"/>
@@ -113,6 +119,7 @@ namespace AgencyDispatchFramework.Conversation
             Variables = new Dictionary<string, object>();
             HiddenMenuItems = new Dictionary<string, UIMenuItem>();
             MenuButtonsById = new Dictionary<string, UIMenuItem>();
+            Callbacks = new Dictionary<string, Action>();
 
             // Parse XML document
             LoadXml(document, outcome.Id);
@@ -193,6 +200,19 @@ namespace AgencyDispatchFramework.Conversation
         public void SetVariableDictionary(Dictionary<string, object> variables)
         {
             Variables = variables;
+        }
+
+        /// <summary>
+        /// Registers a callack listener on certain <see cref="Statement"/>s
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="action"></param>
+        public void RegisterCallback(string id, Action action)
+        {
+            if (Callbacks.ContainsKey(id))
+                Callbacks[id] = action;
+            else
+                Callbacks.Add(id, action);
         }
 
         /// <summary>
@@ -367,8 +387,53 @@ namespace AgencyDispatchFramework.Conversation
             }
 
             // Add Ped response
+            int index = 0;
+            int lastIndex = statement.Subtitles.Length - 1;
             foreach (Subtitle line in statement.Subtitles)
             {
+                // Do we have a callback for "onFirstShown" ?
+                if (index == 0 && !String.IsNullOrEmpty(statement.CallOnFirstShown))
+                {
+                    if (Callbacks.TryGetValue(statement.CallOnFirstShown, out Action action))
+                    {
+                        void handler(Subtitle s)
+                        {
+                            line.OnDisplayed -= handler;
+                            action.Invoke();
+                        }
+
+                        line.OnDisplayed += handler;
+                    }
+                }
+
+                // Check for last subtitle events
+                if (index == lastIndex)
+                {
+                    // Do we have a callback for "onLastShown" ?
+                    if (!String.IsNullOrEmpty(statement.CallOnLastShown) && Callbacks.TryGetValue(statement.CallOnLastShown, out Action action))
+                    {
+                        void handler(Subtitle s)
+                        {
+                            line.OnDisplayed -= handler;
+                            action.Invoke();
+                        }
+
+                        line.OnDisplayed += handler;
+                    }
+
+                    // Do we have a callback for "elapsed" ?
+                    if (!String.IsNullOrEmpty(statement.CallOnElapsed) && Callbacks.TryGetValue(statement.CallOnElapsed, out Action action2))
+                    {
+                        void handler(Subtitle s)
+                        {
+                            line.Elapsed -= handler;
+                            action2.Invoke();
+                        }
+
+                        line.Elapsed += handler;
+                    }
+                }
+
                 // Set ped in statement to allow animations
                 line.Speaker = SubjectPed.Ped;
                 line.PrefixText = $"~y~{SubjectPed.Persona.Forename}~w~:";
@@ -376,6 +441,7 @@ namespace AgencyDispatchFramework.Conversation
 
                 // Add line
                 SubtitleQueue.Add(line);
+                index++;
             }
 
             // Enable button and change font color to show its been clicked before

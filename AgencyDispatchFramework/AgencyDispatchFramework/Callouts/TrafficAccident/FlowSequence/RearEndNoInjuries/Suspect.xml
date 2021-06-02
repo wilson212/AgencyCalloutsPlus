@@ -135,7 +135,7 @@
       </Ped>
       <Responses>
         <Response to="ok" returnMenu="main">
-          <Statement probability="100">
+          <Statement probability="100" onFirstShown="First_ItWorks" onLastShown="Last_ItWorks" elapsed="Elapsed_ItWorks">
             <Subtitle time="3000">No, I seem to be ok...</Subtitle>
           </Statement>
           <Statement probability="100">

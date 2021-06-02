@@ -14,6 +14,8 @@ namespace AgencyDispatchFramework.NativeUI
 {
     internal partial class PluginMenu
     {
+        private SpawnPoint RoadShoulderLocation { get; set; }
+
         private UIMenuNumericScrollerItem<int> RoadShoulderSpeedButton { get; set; }
 
         private UIMenuListItem RoadShoulderPostalButton { get; set; }
@@ -207,6 +209,11 @@ namespace AgencyDispatchFramework.NativeUI
                 NewLocationCheckpointHandle = -123456789;
             }
 
+            // Grab player location
+            var pos = Rage.Game.LocalPlayer.Character.Position;
+            var heading = Rage.Game.LocalPlayer.Character.Heading;
+            RoadShoulderLocation = new SpawnPoint(pos, heading);
+
             // Reset road shoulder flags
             foreach (var cb in RoadShouldFlagsItems.Values)
             {
@@ -228,9 +235,6 @@ namespace AgencyDispatchFramework.NativeUI
             }
             RoadShoulderBeforeListButton.Index = 0;
             RoadShoulderAfterListButton.Index = 0;
-
-            // Grab player location
-            var pos = Rage.Game.LocalPlayer.Character.Position;
 
             // Create checkpoint at the player location
             NewLocationCheckpointHandle = GameWorld.CreateCheckpoint(pos, Color.Red, forceGround: true);
@@ -285,6 +289,7 @@ namespace AgencyDispatchFramework.NativeUI
         {
             int handle = 0;
             var pos = GamePed.Player.Position;
+            var heading = GamePed.Player.Heading;
             var value = (RoadShoulderPosition)Enum.Parse(typeof(RoadShoulderPosition), selectedItem.Text);
             int index = (int)value;
             var menuItem = (MyUIMenuItem<SpawnPoint>)selectedItem;
@@ -306,7 +311,7 @@ namespace AgencyDispatchFramework.NativeUI
                 CheckpointHandles.Add(index, handle);
 
             // Create spawn point
-            menuItem.Tag = new SpawnPoint(pos, GamePed.Player.Heading);
+            menuItem.Tag = new SpawnPoint(pos, heading);
             menuItem.RightBadge = UIMenuItem.BadgeStyle.Tick;
 
             // Are we complete
@@ -355,7 +360,7 @@ namespace AgencyDispatchFramework.NativeUI
             }
 
             // @todo Save file
-            var pos = GamePed.Player.Position;
+            var pos = RoadShoulderLocation.Position;
             string zoneName = RoadShoulderZoneButton.SelectedValue.ToString();
             string path = Path.Combine(Main.FrameworkFolderPath, "Locations", $"{zoneName}.xml");
 
@@ -381,7 +386,7 @@ namespace AgencyDispatchFramework.NativeUI
                 vectorAttr.Value = $"{pos.X}, {pos.Y}, {pos.Z}";
 
                 var headingAttr = file.Document.CreateAttribute("heading");
-                headingAttr.Value = $"{GamePed.Player.Heading}";
+                headingAttr.Value = $"{RoadShoulderLocation.Heading}";
 
                 // Create location node, and add attributes
                 var locationNode = file.Document.CreateElement("Location");

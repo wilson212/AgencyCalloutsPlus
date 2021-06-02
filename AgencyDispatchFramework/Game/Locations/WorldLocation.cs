@@ -133,15 +133,15 @@ namespace AgencyDispatchFramework.Game.Locations
 
         public float DistanceTo(Vector3 position) => Position.DistanceTo(position);
 
-        public float DistanceTo(ISpatial spatialObject) => Position.DistanceTo(spatialObject.Position);
+        public float DistanceTo(ISpatial spatialObject) => Position.DistanceTo(spatialObject);
 
         public float DistanceTo2D(Vector3 position) => Position.DistanceTo2D(position);
 
-        public float DistanceTo2D(ISpatial spatialObject) => Position.DistanceTo2D(spatialObject.Position);
+        public float DistanceTo2D(ISpatial spatialObject) => Position.DistanceTo2D(spatialObject);
 
         public float TravelDistanceTo(Vector3 position) => Position.TravelDistanceTo(position);
 
-        public float TravelDistanceTo(ISpatial spatialObject) => Position.TravelDistanceTo(spatialObject.Position);
+        public float TravelDistanceTo(ISpatial spatialObject) => Position.TravelDistanceTo(spatialObject);
 
         #endregion
     }

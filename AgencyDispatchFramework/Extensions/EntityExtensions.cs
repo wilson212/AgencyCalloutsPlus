@@ -1,4 +1,5 @@
 ﻿using Rage;
+using System;
 
 namespace AgencyDispatchFramework.Extensions
 {
@@ -7,6 +8,12 @@ namespace AgencyDispatchFramework.Extensions
     /// </summary>
     public static class EntityExtensions
     {
+        /// <summary>
+        /// Calculates a heading from one <see cref="Rage.Entity"/> towards another
+        /// </summary>
+        /// <param name="ent"></param>
+        /// <param name="target"></param>
+        /// <returns></returns>
         public static float CalculateHeadingTowardsEntity(this Entity ent, Entity target)
         {
             Vector3 directionToTargetEnt = (target.Position - ent.Position);
@@ -23,13 +30,18 @@ namespace AgencyDispatchFramework.Extensions
         /// <param name="entity"></param>
         public static void Cleanup(this Entity entity)
         {
+            // Variables to mark an error step if we have one
             string name = "Unknown";
             string step = "None";
 
+            // Quit here if null
+            if (entity == null) return;
+
+            // No exceptions
             try
             {
                 // Ensure we have a valid entity!
-                if (entity.Exists() && entity.IsValid())
+                if (entity.Exists())
                 {
                     step = "GetModelName";
                     name = entity.Model.Name ?? "NoNameSet";
@@ -46,7 +58,7 @@ namespace AgencyDispatchFramework.Extensions
                         step = "RemoveBlips";
                         foreach (var blip in blips)
                         {
-                            if (blip.Exists() && blip.IsValid())
+                            if (blip.Exists())
                             {
                                 blip.Delete();
                             }
@@ -67,9 +79,9 @@ namespace AgencyDispatchFramework.Extensions
                     }
                 }
             }
-            catch
+            catch (Exception e)
             {
-                Log.Warning($"Error cleaning up entity with name of '{name}' on step '{step}'");
+                Log.Exception(e, $"Error cleaning up entity with name of '{name}' on step '{step}'");
             }
         }
     }

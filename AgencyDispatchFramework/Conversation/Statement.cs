@@ -1,4 +1,6 @@
-﻿namespace AgencyDispatchFramework.Conversation
+﻿using System;
+
+namespace AgencyDispatchFramework.Conversation
 {
     /// <summary>
     /// Represents a series of lines to display in a Subtitle
@@ -27,6 +29,12 @@
         /// if this <see cref="Statement"/> is displayed
         /// </summary>
         public string[] ShowMenuItems { get; set; }
+
+        internal string CallOnFirstShown = String.Empty;
+
+        internal string CallOnLastShown = String.Empty;
+
+        internal string CallOnElapsed = String.Empty;
 
         /// <summary>
         /// Creates a new instance of <see cref="Statement"/> with the specified probability

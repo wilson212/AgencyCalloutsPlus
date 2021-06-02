@@ -61,7 +61,7 @@ namespace AgencyDispatchFramework.Conversation
         /// </summary>
         private bool SpeakerAppearsValid
         {
-            get => (Speaker != null && Speaker.IsValid() && Speaker.IsAlive && Speaker.IsVisible);
+            get => (Speaker?.Exists() ?? false && Speaker.IsAlive && Speaker.IsVisible);
         }
 
         /// <summary>
@@ -82,12 +82,13 @@ namespace AgencyDispatchFramework.Conversation
             }
 
             // Invoke animaiton?
-            AnimationTask task = null;
             if (AnimationAppearsValid && SpeakerAppearsValid)
             {
                 try
                 {
-                    task = Speaker.Tasks.PlayAnimation(AnimationDictionaryName, AnimationName, 1f, AnimationFlags.SecondaryTask);
+                    // Clear animation if its still playing
+                    //Speaker.Tasks.ClearSecondary();
+                    Speaker.Tasks.PlayAnimation(AnimationDictionaryName, AnimationName, 1f, AnimationFlags.SecondaryTask);
                 }
                 catch (Exception e)
                 {
@@ -103,12 +104,6 @@ namespace AgencyDispatchFramework.Conversation
 
             // Fire event
             Elapsed?.Invoke(this);
-
-            // Clear animation if its still playing
-            if (task != null && task.IsPlaying)
-            {
-                Speaker.Tasks.ClearSecondary();
-            }
         }
     }
 }

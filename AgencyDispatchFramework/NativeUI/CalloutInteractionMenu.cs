@@ -10,7 +10,7 @@ using System.Windows.Forms;
 namespace AgencyDispatchFramework.NativeUI
 {
     /// <summary>
-    /// Represents a basic <see cref="RAGENativeUI.MenuPool"/> for questioning peds during a callout
+    /// Represents a basic <see cref="MenuPool"/> for questioning peds during a callout
     /// </summary>
     public class CalloutInteractionMenu
     {
@@ -93,10 +93,12 @@ namespace AgencyDispatchFramework.NativeUI
         public CalloutInteractionMenu(string calloutName, string scenarioName)
         {
             // Create main menu
-            MainUIMenu = new UIMenu("Callout Interaction", $"~b~{calloutName}: ~y~{scenarioName}");
-            MainUIMenu.MouseControlsEnabled = false;
-            MainUIMenu.AllowCameraMovement = true;
-            MainUIMenu.SetMenuWidthOffset(12);
+            MainUIMenu = new UIMenu("Callout Interaction", $"~b~{calloutName}: ~y~{scenarioName}")
+            {
+                MouseControlsEnabled = false,
+                AllowCameraMovement = true,
+                WidthOffset = 12
+            };
 
             // Add main menu buttons
             SpeakWithButton = new UIMenuItem("Speak with Subject", "Advance the conversation with the ~y~Subject");
@@ -227,6 +229,9 @@ namespace AgencyDispatchFramework.NativeUI
             ped = null;
             foreach (Ped subject in Peds.Keys)
             {
+                // Skip
+                if (!subject.Exists()) continue;
+
                 // Is player within 3m of the ped?
                 if (player.Position.DistanceTo(subject.Position) > 3f)
                 {

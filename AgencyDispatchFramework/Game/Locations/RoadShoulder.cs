@@ -86,6 +86,14 @@ namespace AgencyDispatchFramework.Game.Locations
             return true;
         }
 
+        public SpawnPoint GetPositionById(RoadShoulderPosition id)
+        {
+            if (!SpawnPoints.ContainsKey(id))
+                return null;
+
+            return SpawnPoints[id];
+        }
+
         /// <summary>
         /// Enables casting to a <see cref="Vector3"/>
         /// </summary>

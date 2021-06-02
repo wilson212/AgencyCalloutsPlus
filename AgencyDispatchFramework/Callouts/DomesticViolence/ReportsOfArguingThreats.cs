@@ -33,6 +33,7 @@ namespace AgencyDispatchFramework.Callouts.DomesticViolence
 
         private Ped Victim;
         private PedGender VictimGender;
+        private bool InitialPedWasVictim = false;
         private Blip VictimBlip;
 
         private Ped Suspect;
@@ -225,12 +226,25 @@ namespace AgencyDispatchFramework.Callouts.DomesticViolence
                     // Spawn a Ped at the door
                     ped.Position = Residence.GetPositionById(ResidencePosition.FrontDoorPed1);
 
-                    // Attach Blips
-                    SuspectBlip = Suspect.AttachBlip();
-                    SuspectBlip.Sprite = BlipSprite.Friend;
+                    // Attach Blip
+                    if (ped == Suspect)
+                    {
+                        SuspectBlip = Suspect.AttachBlip();
+                        SuspectBlip.Sprite = BlipSprite.Friend;
+
+                        // Roll to see if the suspect attacks
+                    }
+                    else
+                    {
+                        InitialPedWasVictim = true;
+                        VictimBlip = Victim.AttachBlip();
+                        VictimBlip.Sprite = BlipSprite.Friend;
+                    }
 
                     // Update scene progress
                     SceneProgress = ScenarioProgress.DoorAnswered;
+                    break;
+                case ScenarioProgress.DoorAnswered:
                     break;
             }
 

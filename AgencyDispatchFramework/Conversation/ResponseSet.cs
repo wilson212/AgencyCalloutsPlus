@@ -1,4 +1,5 @@
-﻿using System;
+﻿using AgencyDispatchFramework.Extensions;
+using System;
 using System.Collections.Generic;
 using System.Xml;
 
@@ -179,17 +180,35 @@ namespace AgencyDispatchFramework.Conversation
                         statement.ShowMenuItems = new string[0];
                     }
 
+                    // Load callbacks
+                    statement.CallOnFirstShown = lsNode.GetAttribute("onFirstShown");
+                    statement.CallOnLastShown = lsNode.GetAttribute("onLastShown");
+                    statement.CallOnElapsed = lsNode.GetAttribute("elapsed");
+
                     // Fetch response lines
                     List<Subtitle> lines = new List<Subtitle>(lsNode.ChildNodes.Count);
                     foreach (XmlNode lNode in lsNode.SelectNodes("Subtitle"))
                     {
                         // Validate and extract attributes
-                        if (lNode.Attributes == null || !Int32.TryParse(lNode.Attributes["time"]?.Value, out int time))
+                        if (!lNode.TryGetAttribute("time", out int time))
                         {
                             time = 3000;
                         }
 
-                        lines.Add(new Subtitle() { Text = lNode.InnerText, Duration = time });
+                        // Check for animations
+                        var subtitle = new Subtitle() { Text = lNode.InnerText, Duration = time };
+                        if (lNode.TryGetAttribute("animation", out string animation))
+                        {
+                            var parts = animation.Split('.');
+                            if (parts.Length == 2)
+                            {
+                                subtitle.AnimationDictionaryName = parts[0];
+                                subtitle.AnimationName = parts[1];
+                            }
+                        }
+
+                        // Add
+                        lines.Add(subtitle);
                     }
 
                     // Save lines

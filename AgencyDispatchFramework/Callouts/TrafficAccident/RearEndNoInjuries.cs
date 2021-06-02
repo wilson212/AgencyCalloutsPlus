@@ -104,6 +104,11 @@ namespace AgencyDispatchFramework.Callouts.TrafficAccident
             Victim.IsPersistent = true;
             Victim.BlockPermanentEvents = true;
 
+            // Set victim location
+            var location = Location.GetPositionById(RoadShoulderPosition.SidewalkGroup1);
+            Victim.SetPositionWithSnap(location);
+            Victim.Heading = location.Heading;
+
             // Create suspect vehicle 1m behind victim vehicle
             var vector = VictimVehicle.GetOffsetPositionFront(-(VictimVehicle.Length + 1f));
             var suspectV = VehicleInfo.GetRandomVehicleByType(SuspectVehicleType);
@@ -117,6 +122,11 @@ namespace AgencyDispatchFramework.Callouts.TrafficAccident
             Suspect = SuspectVehicle.CreateRandomDriver();
             Suspect.IsPersistent = true;
             Suspect.BlockPermanentEvents = true;
+
+            // Set victim location
+            location = Location.GetPositionById(RoadShoulderPosition.SidewalkGroup2);
+            Suspect.SetPositionWithSnap(location);
+            Suspect.Heading = Location.Heading; // Use forward heading
 
             // Attach Blips
             VictimBlip = Victim.AttachBlip();
@@ -146,6 +156,9 @@ namespace AgencyDispatchFramework.Callouts.TrafficAccident
             var document = LoadFlowSequenceFile("TrafficAccident", "FlowSequence", "RearEndNoInjuries", "Suspect.xml");
             var suspectSeq = new FlowSequence("Suspect", Suspect, FlowOutcome, document, Parser);
             suspectSeq.SetVariableDictionary(variables);
+            suspectSeq.RegisterCallback("First_ItWorks", First_ItWorks);
+            suspectSeq.RegisterCallback("Last_ItWorks", Last_ItWorks);
+            suspectSeq.RegisterCallback("Elapsed_ItWorks", Elapsed_ItWorks);
 
             // Load converation flow sequence for the victim
             document = LoadFlowSequenceFile("TrafficAccident", "FlowSequence", "RearEndNoInjuries", "Victim.xml");
@@ -156,6 +169,24 @@ namespace AgencyDispatchFramework.Callouts.TrafficAccident
             Menu = new CalloutInteractionMenu("Traffic Accident", "Rear End Collision");
             Menu.RegisterPedConversation(Suspect, suspectSeq);
             Menu.RegisterPedConversation(Victim, victimSeq);
+        }
+
+        private void First_ItWorks()
+        {
+            // Show player notification
+            Log.Debug("Callback: First Works");
+        }
+
+        private void Elapsed_ItWorks()
+        {
+            // Show player notification
+            Log.Debug("Callback: Elapsed Works");
+        }
+
+        private void Last_ItWorks()
+        {
+            // Show player notification
+            Log.Debug("Callback: Last Works");
         }
 
         /// <summary>
@@ -199,13 +230,13 @@ namespace AgencyDispatchFramework.Callouts.TrafficAccident
             SuspectVehicle?.Cleanup();
             SuspectVehicle = null;
 
-            if (VictimBlip.Exists() && VictimBlip.IsValid())
+            if (VictimBlip.Exists())
             {
                 VictimBlip.Delete();
                 //VictimBlip = null;
             }
 
-            if (SuspectBlip.Exists() && SuspectBlip.IsValid())
+            if (SuspectBlip.Exists())
             {
                 SuspectBlip.Delete();
                 //SuspectBlip = null;
