@@ -8,7 +8,6 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Xml;
 
 namespace AgencyDispatchFramework.NativeUI
 {
@@ -455,9 +454,9 @@ namespace AgencyDispatchFramework.NativeUI
                 var positionsNode = CreatePositionsNodeWithSpawnPoints(file.Document, RoadShoulderSpawnPointItems);
                 locationNode.AppendChild(positionsNode);
 
-                // Add the new location node
-                var node = file.Document.SelectSingleNode($"{zoneName}/Locations/RoadShoulders");
-                node.AppendChild(locationNode);
+                // Ensure path exists and add the new location node
+                var rootNode = UpdateOrCreateXmlNode(file.Document, zoneName, "Locations", "RoadShoulders");
+                rootNode.AppendChild(locationNode);
 
                 // Save
                 file.Document.Save(path);

@@ -7,7 +7,6 @@ using RAGENativeUI.Elements;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
 using System.Text.RegularExpressions;
 using System.Xml;
 
@@ -16,7 +15,7 @@ namespace AgencyDispatchFramework.Conversation
     /// <summary>
     /// Represents a conversation flow for a <see cref="Rage.Ped"/> based on menu input by the player
     /// </summary>
-    public class FlowSequence
+    public class FlowSequence : IDisposable
     {
         /// <summary>
         /// Contains the regular expression to replace variables within Ped responses
@@ -225,14 +224,29 @@ namespace AgencyDispatchFramework.Conversation
                 AllMenus.CloseAllMenus();
                 AllMenus.Clear();
                 AllMenus = null;
-            }
 
-            foreach (var menu in FlowReturnMenus)
-            {
-                menu.Value.Clear();
-            }
+                foreach (var menu in FlowReturnMenus)
+                {
+                    menu.Value.Clear();
+                }
 
-            FlowReturnMenus.Clear();
+                FlowReturnMenus.Clear();
+                FlowReturnMenus = null;
+
+                MenuButtonsById.Clear();
+                MenuButtonsById = null;
+
+                HiddenMenuItems.Clear();
+                SubjectPed = null;
+
+                Callbacks.Clear();
+                Callbacks = null;
+
+                OfficerDialogs = null;
+
+                Variables.Clear();
+                Variables = null;
+            }
         }
 
         /// <summary>
@@ -604,10 +618,32 @@ namespace AgencyDispatchFramework.Conversation
             // Call menu refresh
             AllMenus.RefreshIndex();
 
+            // Load all flow outcome id's
+            var mapping = new Dictionary<string, XmlNode>();
+            foreach (XmlNode node in documentRoot.SelectNodes("Output/FlowOutcome"))
+            {
+                var ids = node.GetAttribute("id")?.Split(',');
+                if (ids == null || ids.Length == 0)
+                {
+                    throw new ArgumentNullException("Output", $"Scenario FlowOutcome does not contain any id's");
+                }
+                
+                foreach (string name in ids)
+                {
+                    mapping.Add(name, node);
+                }
+            }
+
+            // Ensure flow outcome ID exists
+            if (!mapping.ContainsKey(outcomeId))
+            {
+                throw new ArgumentNullException("Output", $"Scenario FlowOutcome does not exist '{outcomeId}'");
+            }
+
             // ====================================================
             // Load response sequences
             // ====================================================
-            catagoryNode = documentRoot.SelectSingleNode($"Output/FlowOutcome[@id = '{outcomeId}']");
+            catagoryNode = mapping[outcomeId];
             if (catagoryNode == null || !catagoryNode.HasChildNodes)
             {
                 throw new ArgumentNullException("Output", $"Scenario FlowOutcome does not exist '{outcomeId}'");

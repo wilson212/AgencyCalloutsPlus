@@ -1,0 +1,144 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<FlowSequence>
+
+  <!-- The Input node builds the RageNativeUI question menu -->
+  <Input>
+    
+    <!-- Initial RageNativeUI Questioning Menu should always be named "main" -->
+    <Menu id="main">
+      
+      <!-- 
+        A MenuItem node describes a question that can be asked, and is displayed as a RageNativeUI button 
+        The "id" attribute defines a question ID, that the code uses to find an answer from a FlowOutcome.
+        
+        NOTE: The "id" attribute must be unique for this entire file, not just this "Menu"!
+      -->
+      <MenuItem id="ok" buttonText="Do you need medical?" visible="true">
+        
+        <!-- 
+          A subtitle is just that, a single line displayed on screen for the "time" in milliseconds.
+          Multiple Subtitle nodes can be present, and each one will be displayed in order.
+        -->
+        <Subtitle time="2000">Do you require any medical attention?</Subtitle>
+      </MenuItem>
+      
+      <!-- Another question with the unique id of "how", displaying for 2 seconds -->
+      <MenuItem id="how" buttonText="How did this happen?" visible="true">
+        <Subtitle time="2000">How did this happen?</Subtitle>
+      </MenuItem>
+      
+      <!-- 
+        As you can see, the MenuItem below has an attribute set to: visible="false"
+        This means the button to ask this question is hidden until from the player until
+        shown later by a subtitle
+      -->
+      <MenuItem id="tailgate" buttonText="Tailgating?" visible="false">
+        
+        <!-- 
+          As you can see we have a variable in the text labeled "$...$".
+          These variables are set in the callout file using an the FlowSequence.SetVariable() method
+        -->
+        <Subtitle time="3000">$VictimName$ stated that you were tailgating. Is this a true statement?</Subtitle>
+      </MenuItem>
+    </Menu>
+  </Input>
+
+  <!-- The Output node has a set of different response sets to inputs from the Input node -->
+  <Output>
+    
+    <!-- 
+      A Flow outcome is essentially an organized random conversation with a Ped. A flow outcome
+      must define an initialMenu to display, and must have a unique ID from other FlowOutcome nodes
+    -->
+    <FlowOutcome id="uniqueIdHere" initialMenu="main">
+      
+      <!-- 
+        The <Ped> node is used as a config to set the chances of the Ped being drunk,
+        high, thier demeanor and items in thier inventory.
+      -->
+      <Ped drunkChance="5" highChance="5">
+        <Inventory>
+          <Item chance="10"></Item>
+        </Inventory>
+        <Presentation>
+          <Demeanor probability="10">Calm</Demeanor>
+          <Demeanor probability="10">Worried</Demeanor>
+          <Demeanor probability="10">Nervous</Demeanor>
+          <Demeanor probability="5">Angry</Demeanor>
+        </Presentation>
+      </Ped>
+      
+      <!-- The Responses node contains responses to each and every question asked by all the "Menu"s -->
+      <Responses>
+        
+        <!-- 
+          Each response must specific a "to" attribute, which tells the program which question ID we are answering from the "MenuItem[id]".
+          We must also define which menu to return to once the question is asked. The returnMenu attribute allows us
+          to display menu's that are not otherwise accessible from the initial menu
+        -->
+        <Response to="ok" returnMenu="main">
+          
+          <!-- 
+            In this initial statement (if selected at random based on the "probability"), we have 3 callbacks we can hook into
+            within the CalloutScenario using the following method: FlowSequence.RegisterCallback(name, Action);
+            
+            For all intents and purposes, a callback is basically just an event created dynamically, and calls on the Action
+            supplied when the callback is registered in the CalloutScenario. Callbacks are not required to be defined.
+            
+            The "onFirstShown" callback gets fired when the first <Subtitle> node is displayed in game, calling the action
+            registered as "First_Shown" ( FlowSequence.RegisterCallback("First_Shown", Action) ) 
+            
+            The "onLastShown" callback gets fired when the last <Subtitle> node is displayed in game, calling the action
+            registered as "Last_Shown" ( FlowSequence.RegisterCallback("Last_Shown", Action) ) 
+            
+            The "elapsed" callback gets fired when the last <Subtitle> node has finished displaying in game, calling the action
+            registered as "Elapsed_Shown" ( FlowSequence.RegisterCallback("Elapsed_Shown", Action) )  
+            
+            A good use of callbacks would be to initiate a gun fight with the player after a subtitle is displayed, or run away
+            from the officer, or making the ped preform a scenario. Really the posibilities are endless here.
+          -->
+          <Statement probability="100" onFirstShown="First_Shown" onLastShown="Last_Shown" elapsed="Elapsed_Shown">
+            <Subtitle time="3000">No, I seem to be ok...</Subtitle>
+          </Statement>
+          
+          <!--
+            In this statement, we see an example of a condition statement (this "if" attribute).
+            In this example, if the Victim ped is a female, this statement will not be
+            selected as a potential statement for the ped.
+            
+            This statements are compiled as C# expressions, and therfor only support C# syntax.
+            
+            In this example, the "Victim" object is defined in the CalloutScenario as so:
+            ExpressionParser.SetParamater("Victim", new AgencyDispatchFramework.Game.GamePed(Rage.Ped));
+          -->
+          <Statement probability="100" if="Victim.Ped.IsMale == true">
+            
+            <!-- 
+              Animations can be played on the speaker, on a line by line basis. The format is as follows:
+              
+              "DictionaryName" (then a period) "." (then) "AnimationName"
+            -->
+            <Subtitle time="3000" animation="amb@world_human_cheering@female_a.base">I am ok officer</Subtitle>
+          </Statement>
+        </Response>
+        
+        <!-- Response when the MenuItem with id "how" is selected by the player -->
+        <Response to="how" returnMenu="main">
+          
+          <!-- 
+            Here we can see the attribute show="FlowSquenceName.MenuItemName"
+            When this statement is shown, it un-hides that menu's button for the 
+            player to then ask a new question. The format is always as follows:
+            
+            "FlowSequenceID" (then a period) "." (Then the button name) "MenuItem[id]"
+          -->
+          <Statement probability="100" if="Suspect.Ped.IsMale == true" show="FlowSequenceID.tailgate">
+            <Subtitle time="4000">I noticed that this dude was tailgating me before he rear-ended me.</Subtitle>
+          </Statement>
+          <!-- More Statements to the question ID of "how" -->
+        </Response>
+      </Responses>
+    </FlowOutcome>
+
+  </Output>
+</FlowSequence>

@@ -210,6 +210,12 @@ namespace AgencyDispatchFramework
                     ComputerPlusAPI.Initialize();
                     StopThePedAPI.Initialize();
 
+                    // Set timescale?
+                    if (Settings.ForceTimeScale && Settings.TimeScaleMultiplier > 0)
+                    {
+                        TimeScale.SetTimeScaleMultiplier(Settings.TimeScaleMultiplier);
+                    }
+
                     // Flag
                     HasBeenOnDuty = true;
                 }
@@ -251,6 +257,8 @@ namespace AgencyDispatchFramework
 
                 // Close loading spinner
                 Rage.Game.HideHelp();
+
+                Log.Debug($"Detected a timescale multiplier of {TimeScale.GetCurrentTimeScaleMultiplier()}");
             });
         }
 

@@ -16,8 +16,6 @@ namespace AgencyDispatchFramework
 
         internal static int AudioBeat { get; set; } = 18;
 
-        internal static int TimeScale { get; set; } = 30;
-
         internal static string PostalsFile { get; set; }
 
         internal static string GetUnitString => $"{AudioDivision}-{AudioUnitTypeLetter}-{AudioBeat}";
@@ -58,6 +56,13 @@ namespace AgencyDispatchFramework
         internal static bool EnableFullSimulation { get; set; } = false;
 
         /// <summary>
+        /// Indicates whether to force a custom timescale in game
+        /// </summary>
+        internal static bool ForceTimeScale { get; set; } = false;
+
+        internal static int TimeScaleMultiplier { get; set; } = 30;
+
+        /// <summary>
         /// Loads the user settings from the ini file
         /// </summary>
         internal static void Initialize()
@@ -84,10 +89,12 @@ namespace AgencyDispatchFramework
             AudioDivision = ini.ReadInt32("GENERAL", "Division", 1);
             AudioUnitType = ini.ReadString("GENERAL", "UnitType", "LINCOLN").ToUpperInvariant();
             AudioBeat = ini.ReadInt32("GENERAL", "Beat", 18);
-            TimeScale = ini.ReadInt32("GENERAL", "TimeScale", 30);
             PostalsFile = ini.ReadString("GENERAL", "PostalsFilename", "old-postals");
 
             //EnableFullSimulation = ini.ReadBoolean("SIMULATION", "EnableFullSimulation", false);
+
+            ForceTimeScale = ini.ReadBoolean("TIMESCALE", "ForceTimeScale", false);
+            TimeScaleMultiplier = ini.ReadInt32("TIMESCALE", "TimeScaleMultiplier", 30);
 
             // Log
             Log.Info("Loaded AgencyDispatchFramework config successfully!");

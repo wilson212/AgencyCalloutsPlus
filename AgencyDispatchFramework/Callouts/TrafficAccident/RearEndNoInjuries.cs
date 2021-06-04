@@ -48,6 +48,8 @@ namespace AgencyDispatchFramework.Callouts.TrafficAccident
         private VehicleClass SuspectVehicleType;
         private Vehicle SuspectVehicle;
         private Blip SuspectBlip;
+        private FlowSequence SuspectSeq;
+        private FlowSequence VictimSeq;
 
         #endregion
 
@@ -96,13 +98,14 @@ namespace AgencyDispatchFramework.Callouts.TrafficAccident
             VictimVehicle = new Vehicle(victimV.ModelName, Location.Position, Location.Heading)
             {
                 IsPersistent = true,
-                EngineHealth = 0
+                EngineHealth = 200f
             };
 
             // Create Victim
             Victim = VictimVehicle.CreateRandomDriver();
             Victim.IsPersistent = true;
             Victim.BlockPermanentEvents = true;
+            Victim.StartScenario("WORLD_HUMAN_CLIPBOARD");
 
             // Set victim location
             var location = Location.GetPositionById(RoadShoulderPosition.SidewalkGroup1);
@@ -115,13 +118,14 @@ namespace AgencyDispatchFramework.Callouts.TrafficAccident
             SuspectVehicle = new Vehicle(suspectV.ModelName, vector, Location.Heading)
             {
                 IsPersistent = true,
-                EngineHealth = 0
+                EngineHealth = 200f
             };
 
             // Create suspect
             Suspect = SuspectVehicle.CreateRandomDriver();
             Suspect.IsPersistent = true;
             Suspect.BlockPermanentEvents = true;
+            Suspect.StartScenario("WORLD_HUMAN_STAND_MOBILE");
 
             // Set victim location
             location = Location.GetPositionById(RoadShoulderPosition.SidewalkGroup2);
@@ -154,39 +158,18 @@ namespace AgencyDispatchFramework.Callouts.TrafficAccident
 
             // Load converation flow sequence for the suspect
             var document = LoadFlowSequenceFile("TrafficAccident", "FlowSequence", "RearEndNoInjuries", "Suspect.xml");
-            var suspectSeq = new FlowSequence("Suspect", Suspect, FlowOutcome, document, Parser);
-            suspectSeq.SetVariableDictionary(variables);
-            suspectSeq.RegisterCallback("First_ItWorks", First_ItWorks);
-            suspectSeq.RegisterCallback("Last_ItWorks", Last_ItWorks);
-            suspectSeq.RegisterCallback("Elapsed_ItWorks", Elapsed_ItWorks);
+            SuspectSeq = new FlowSequence("Suspect", Suspect, FlowOutcome, document, Parser);
+            SuspectSeq.SetVariableDictionary(variables);
 
             // Load converation flow sequence for the victim
             document = LoadFlowSequenceFile("TrafficAccident", "FlowSequence", "RearEndNoInjuries", "Victim.xml");
-            var victimSeq = new FlowSequence("Victim", Victim, FlowOutcome, document, Parser);
-            victimSeq.SetVariableDictionary(variables);
+            VictimSeq = new FlowSequence("Victim", Victim, FlowOutcome, document, Parser);
+            VictimSeq.SetVariableDictionary(variables);
 
             // Register menu
             Menu = new CalloutInteractionMenu("Traffic Accident", "Rear End Collision");
-            Menu.RegisterPedConversation(Suspect, suspectSeq);
-            Menu.RegisterPedConversation(Victim, victimSeq);
-        }
-
-        private void First_ItWorks()
-        {
-            // Show player notification
-            Log.Debug("Callback: First Works");
-        }
-
-        private void Elapsed_ItWorks()
-        {
-            // Show player notification
-            Log.Debug("Callback: Elapsed Works");
-        }
-
-        private void Last_ItWorks()
-        {
-            // Show player notification
-            Log.Debug("Callback: Last Works");
+            Menu.RegisterPedConversation(Suspect, SuspectSeq);
+            Menu.RegisterPedConversation(Victim, VictimSeq);
         }
 
         /// <summary>
@@ -241,6 +224,9 @@ namespace AgencyDispatchFramework.Callouts.TrafficAccident
                 SuspectBlip.Delete();
                 //SuspectBlip = null;
             }
+
+            SuspectSeq.Dispose();
+            VictimSeq.Dispose();
         }
     }
 }

@@ -21,14 +21,7 @@ namespace AgencyDispatchFramework.Game
         /// <summary>
         /// Event called when the <see cref="CurrentTimePeriod"/> has changed in game
         /// </summary>
-        public static event EventHandler OnTimePeriodChanged;
-
-        /// <summary>
-        /// An event fired when the <see cref="Weather"/> changes in game.
-        /// </summary>
-        /// <param name="oldWeather"></param>
-        /// <param name="newWeather"></param>
-        public delegate void WeatherChangedEventHandler(Weather oldWeather, Weather newWeather);
+        public static event TimePeriodChangedEventHandler OnTimePeriodChanged;
 
         /// <summary>
         /// Event called when the weather changes in game
@@ -140,7 +133,7 @@ namespace AgencyDispatchFramework.Game
         }
 
         /// <summary>
-        /// 
+        /// Every three seconds, this method checks for weather changes and TimePeriod changes
         /// </summary>
         private static void UpdateWorldState()
         {
@@ -179,7 +172,7 @@ namespace AgencyDispatchFramework.Game
                         CurrentTimePeriod = currentTimePeriod;
 
                         // Fire event
-                        OnTimePeriodChanged?.Invoke(null, EventArgs.Empty);
+                        OnTimePeriodChanged?.Invoke(GetPreviousTimePeriod(), CurrentTimePeriod);
                     }
                 }
                 catch (Exception e)

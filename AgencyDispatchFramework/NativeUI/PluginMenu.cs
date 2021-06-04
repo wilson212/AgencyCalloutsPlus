@@ -575,6 +575,35 @@ namespace AgencyDispatchFramework.NativeUI
         #endregion Events
 
         /// <summary>
+        /// Ensures a node path exists in an <see cref="XmlDocument"/>
+        /// </summary>
+        /// <param name="document">The document</param>
+        /// <param name="rootName">The root node name in the XmlDocument</param>
+        /// <param name="paths"></param>
+        /// <returns></returns>
+        private static XmlNode UpdateOrCreateXmlNode(XmlDocument document, string rootName, params string[] paths)
+        {
+            // Walk
+            XmlNode node = document.SelectSingleNode(rootName);
+            foreach (string path in paths)
+            {
+                XmlNode child = node.SelectSingleNode(path);
+                if (child != null)
+                {
+                    node = child;
+                }
+                else
+                {
+                    child = document.CreateElement(path);
+                    node.AppendChild(child);
+                    node = child;
+                }
+            }
+
+            return node;
+        }
+
+        /// <summary>
         /// Creates a {Positions} node with child {SpawnPoint} nodes
         /// </summary>
         /// <typeparam name="T"></typeparam>

@@ -132,7 +132,7 @@ namespace AgencyDispatchFramework
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void GameWorld_OnTimePeriodChanged(object sender, EventArgs e) => Rebuild();
+        private void GameWorld_OnTimePeriodChanged(TimePeriod oldPeriod, TimePeriod period) => Rebuild();
 
         /// <summary>
         /// An internal wrapper class that inherits the <see cref="ISpawnable"/> interface

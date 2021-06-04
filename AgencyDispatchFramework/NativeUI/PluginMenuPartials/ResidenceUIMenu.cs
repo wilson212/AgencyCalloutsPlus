@@ -374,9 +374,9 @@ namespace AgencyDispatchFramework.NativeUI
                 var positionsNode = CreatePositionsNodeWithSpawnPoints(file.Document, ResidenceSpawnPointItems);
                 locationNode.AppendChild(positionsNode);
 
-                // Add the new location node
-                var node = file.Document.SelectSingleNode($"{zoneName}/Locations/Residences");
-                node.AppendChild(locationNode);
+                // Ensure path exists then Add the new location node
+                var rootNode = UpdateOrCreateXmlNode(file.Document, zoneName, "Locations", "Residences");
+                rootNode.AppendChild(locationNode);
 
                 // Save
                 file.Document.Save(path);

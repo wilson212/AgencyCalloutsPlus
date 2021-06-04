@@ -25,10 +25,10 @@
         /// <summary>
         /// Gets the average number of calls per In game hour
         /// </summary>
-        public double AverageCallsPerHour => (AverageCrimeCalls / 6d);
+        public double AverageCallsPerGameHour => (AverageCrimeCalls / 6d);
 
         /// <summary>
-        /// Gets the average number of calls per In game hour
+        /// Gets the average milliseconds in real time per call
         /// </summary>
         public int AverageMillisecondsPerCall { get; set; }
     }

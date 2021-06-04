@@ -43,7 +43,6 @@ namespace AgencyDispatchFramework.Integration
         {
             // Ensure we are running!
             if (!IsRunning) return;
-
             Functions.setPedAlcoholOverLimit(ped, value);
         }
 

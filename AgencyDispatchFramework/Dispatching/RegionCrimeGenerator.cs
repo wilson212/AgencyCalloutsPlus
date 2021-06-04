@@ -1,11 +1,8 @@
-﻿using AgencyDispatchFramework.Extensions;
-using AgencyDispatchFramework.Game;
+﻿using AgencyDispatchFramework.Game;
 using AgencyDispatchFramework.Game.Locations;
 using Rage;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
 
 namespace AgencyDispatchFramework.Dispatching
 {
@@ -90,6 +87,10 @@ namespace AgencyDispatchFramework.Dispatching
             // Create instance variables
             RegionCrimeInfoByTimePeriod = new Dictionary<TimePeriod, RegionCrimeInfo>();
             CrimeZoneGenerator = new ProbabilityGenerator<WorldZone>();
+            foreach (TimePeriod period in Enum.GetValues(typeof(TimePeriod)))
+            {
+                RegionCrimeInfoByTimePeriod.Add(period, null);
+            }
 
             // Only attempt to add if we have zones
             if (zones.Length > 0)
@@ -103,6 +104,9 @@ namespace AgencyDispatchFramework.Dispatching
 
             // Do initial evaluation
             EvaluateCrimeValues();
+
+            // Register for this event right away
+            TimeScale.OnTimeScaleChanged += TimeScale_OnTimeScaleChanged;
 
             // Determine our initial Crime level during this period
             CurrentCrimeLevel = CrimeLevelGenerator.Spawn().Value;
@@ -174,22 +178,6 @@ namespace AgencyDispatchFramework.Dispatching
             return null;
         }
 
-        [Obsolete]
-        internal RoadShoulder[] GetRandomShoulderLocations(int count)
-        {
-            // Get a list of all locations
-            var locs = new List<RoadShoulder>(count);
-            foreach (var zone in Zones)
-            {
-                locs.AddRange(zone.RoadShoulders);
-            }
-
-            // Shuffle
-            locs.Shuffle();
-
-            return locs.Take(count).ToArray();
-        }
-
         /// <summary>
         /// Gets the average calls per specified <see cref="TimePeriod"/>
         /// </summary>
@@ -207,6 +195,11 @@ namespace AgencyDispatchFramework.Dispatching
         {
             // Clear old stuff
             RegionCrimeInfoByTimePeriod.Clear();
+
+            // Declare vars
+            int timeScaleMult = TimeScale.GetCurrentTimeScaleMultiplier();
+            int msPerGameMinute = TimeScale.GetMillisecondsPerGameMinute();
+            int hourGameTimeToMSRealTime = 60 * msPerGameMinute;
 
             // Loop through each time period and cache crime numbers
             foreach (TimePeriod period in Enum.GetValues(typeof(TimePeriod)))
@@ -229,20 +222,17 @@ namespace AgencyDispatchFramework.Dispatching
                 }
 
                 // Get our average real time milliseconds per call
-                var timerUntilNext = GetTimeUntilNextTimePeriod();
-                var nextChangeRealTimeSeconds = (timerUntilNext.Milliseconds / Settings.TimeScale) / 1000;
-                var hourGameTimeToSecondsRealTime = (60d / Settings.TimeScale) * 60;
-                var callsPerSecondRT = (crimeInfo.AverageCallsPerHour / hourGameTimeToSecondsRealTime);
-
-                // Prevent divide by zero... check for zero calls average this Time Of Day
-                var realSecondsPerCall = (callsPerSecondRT == 0) ? nextChangeRealTimeSeconds : (1d / callsPerSecondRT);
+                if (crimeInfo.AverageCallsPerGameHour > 0)
+                {
+                    int realTimeMsPerCall = (int)(hourGameTimeToMSRealTime / crimeInfo.AverageCallsPerGameHour);
+                    crimeInfo.AverageMillisecondsPerCall = realTimeMsPerCall;
+                }
 
                 // Set numbers
                 crimeInfo.OptimumPatrols = (int)Math.Ceiling(optimumPatrols);
-                crimeInfo.AverageMillisecondsPerCall = (int)(realSecondsPerCall * 1000);
 
                 // Add period statistics
-                RegionCrimeInfoByTimePeriod.Add(period, crimeInfo);
+                RegionCrimeInfoByTimePeriod[period] = crimeInfo;
             }
         }
 
@@ -309,90 +299,48 @@ namespace AgencyDispatchFramework.Dispatching
         }
 
         /// <summary>
-        /// Method called on event <see cref="GameWorld.OnTimePeriodChanged"/>
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void GameWorld_OnTimeOfDayChanged(object sender, EventArgs e)
-        {
-            var oldLevel = CurrentCrimeLevel;
-
-            // Change our Crime level during this period
-            CurrentCrimeLevel = CrimeLevelGenerator.Spawn().Value;
-            var name = Enum.GetName(typeof(TimePeriod), GameWorld.CurrentTimePeriod);
-
-            // Log change
-            Log.Info($"RegionCrimeGenerator: The time of day is transitioning to {name}. Settings crime level to {Enum.GetName(typeof(CrimeLevel), CurrentCrimeLevel)}");
-
-            // Adjust our call frequency based on new crime level
-            AdjustCallFrequencyTimer();
-
-            // Determine message
-            string current = Enum.GetName(typeof(CrimeLevel), CurrentCrimeLevel);
-            if (CurrentCrimeLevel != oldLevel)
-            {
-                var oldName = Enum.GetName(typeof(CrimeLevel), CurrentCrimeLevel);
-                var text = (oldLevel > CurrentCrimeLevel) ? "~g~decrease~w~" : "~y~increase~w~";
-
-                // Show the player some dialog
-                Rage.Game.DisplayNotification(
-                    "3dtextures",
-                    "mpgroundlogo_cops",
-                    "Agency Dispatch Framework",
-                    "~b~Call Center Update",
-                    $"The time of day is transitioning to ~y~{name}~w~. Crime levels are starting to {text}"
-                );
-            }
-            else
-            {
-                // Show the player some dialog
-                Rage.Game.DisplayNotification(
-                    "3dtextures",
-                    "mpgroundlogo_cops",
-                    "Agency Dispatch Framework",
-                    "~b~Call Center Update",
-                    $"The time of day is transitioning to ~y~{name}~w~. Crime levels are not expected to change"
-                );
-            }
-        }
-
-        /// <summary>
         /// Adjusts the crime frequency timer based on current <see cref="CrimeLevel"/>
         /// </summary>
         private void AdjustCallFrequencyTimer()
         {
             // Grab our RegionCrimeInfo for this time period
             var crimeInfo = RegionCrimeInfoByTimePeriod[GameWorld.CurrentTimePeriod];
-            int ms = crimeInfo.AverageMillisecondsPerCall;
+            int realMSPerCall = crimeInfo.AverageMillisecondsPerCall;
+
+            // Get time until the next TimeOfDay change
+            var timeScaleMult = TimeScale.GetCurrentTimeScaleMultiplier();
+            var timerUntilNext = GetTimeUntilNextTimePeriod();
+            var nextChangeRealMS = (int)(timerUntilNext.TotalMilliseconds / timeScaleMult);
+            var hourGameTimeToMSRealTime = 60 * TimeScale.GetMillisecondsPerGameMinute();
 
             int min = 0; 
             int max = 0;
 
             // Ensure we have any calls
-            if (ms > 0)
+            if (realMSPerCall > 0)
             {
                 // Adjust call frequency timer based on current Crime Level
                 switch (CurrentCrimeLevel)
                 {
                     case CrimeLevel.VeryHigh:
-                        min = Convert.ToInt32(ms / 2.5d);
-                        max = Convert.ToInt32(ms / 1.75d);
+                        min = Convert.ToInt32(realMSPerCall / 2.5d);
+                        max = Convert.ToInt32(realMSPerCall / 1.75d);
                         break;
                     case CrimeLevel.High:
-                        min = Convert.ToInt32(ms / 1.75d);
-                        max = Convert.ToInt32(ms / 1.25d);
+                        min = Convert.ToInt32(realMSPerCall / 1.75d);
+                        max = Convert.ToInt32(realMSPerCall / 1.25d);
                         break;
                     case CrimeLevel.Moderate:
-                        min = Convert.ToInt32(ms / 1.25d);
-                        max = Convert.ToInt32(ms * 1.25d);
+                        min = Convert.ToInt32(realMSPerCall / 1.25d);
+                        max = Convert.ToInt32(realMSPerCall * 1.25d);
                         break;
                     case CrimeLevel.Low:
-                        min = Convert.ToInt32(ms * 1.5d);
-                        max = Convert.ToInt32(ms * 2d);
+                        min = Convert.ToInt32(realMSPerCall * 1.5d);
+                        max = Convert.ToInt32(realMSPerCall * 2d);
                         break;
                     case CrimeLevel.VeryLow:
-                        min = Convert.ToInt32(ms * 2d);
-                        max = Convert.ToInt32(ms * 2.5d);
+                        min = Convert.ToInt32(realMSPerCall * 2d);
+                        max = Convert.ToInt32(realMSPerCall * 2.5d);
                         break;
                     default:
                         // None - This gets fixed later down
@@ -400,16 +348,11 @@ namespace AgencyDispatchFramework.Dispatching
                 }
             }
 
-            // Get time until the next TimeOfDay change
-            var timerUntilNext = GetTimeUntilNextTimePeriod();
-            var nextChangeRealTimeMS = Convert.ToInt32(timerUntilNext.TotalMilliseconds / Settings.TimeScale);
-            var hourGameTimeToSecondsRealTime = (60d / Settings.TimeScale) * 60;
-
             // Ensure we do not float too far into the next timer period
-            if (CurrentCrimeLevel == CrimeLevel.None || min > nextChangeRealTimeMS)
+            if (realMSPerCall == 0 || CurrentCrimeLevel == CrimeLevel.None || min > nextChangeRealMS)
             {
-                min = nextChangeRealTimeMS;
-                max = (int)(nextChangeRealTimeMS + (hourGameTimeToSecondsRealTime * 1000));
+                min = nextChangeRealMS;
+                max = nextChangeRealMS + hourGameTimeToMSRealTime;
             }
 
             // Adjust call frequency timer
@@ -418,8 +361,8 @@ namespace AgencyDispatchFramework.Dispatching
             {
                 Log.Error($"RegionCrimeGenerator.AdjustCallFrequencyTimer(): Detected a bad call timer range of {CallTimerRange}");
                 Log.Debug($"\t\t\tCurrent Crime Level: {CurrentCrimeLevel}");
-                Log.Debug($"\t\t\tAvg MS Per Call: {ms}");
-                Log.Debug($"\t\t\tTime Until Next TimeOfDay MS: {nextChangeRealTimeMS}");
+                Log.Debug($"\t\t\tAvg MS Per Call: {realMSPerCall}");
+                Log.Debug($"\t\t\tTime Until Next TimeOfDay MS: {nextChangeRealMS}");
             }
         }
         
@@ -431,7 +374,7 @@ namespace AgencyDispatchFramework.Dispatching
         private TimeSpan GetTimeUntilNextTimePeriod()
         {
             // Now get time difference
-            var gt = Rage.World.TimeOfDay;
+            var gt = World.TimeOfDay;
 
             // Get target timespan
             var target = TimeSpan.Zero;
@@ -610,5 +553,72 @@ namespace AgencyDispatchFramework.Dispatching
 
             return null;
         }
+
+        #region Events
+
+        /// <summary>
+        /// Method called on event <see cref="GameWorld.OnTimePeriodChanged"/>
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void GameWorld_OnTimeOfDayChanged(TimePeriod oldPeriod, TimePeriod period)
+        {
+            var oldLevel = CurrentCrimeLevel;
+
+            // Change our Crime level during this period
+            CurrentCrimeLevel = CrimeLevelGenerator.Spawn().Value;
+            var name = Enum.GetName(typeof(TimePeriod), period);
+
+            // Log change
+            Log.Info($"RegionCrimeGenerator: The time of day is transitioning to {name}. Settings crime level to {Enum.GetName(typeof(CrimeLevel), CurrentCrimeLevel)}");
+
+            // Adjust our call frequency based on new crime level
+            AdjustCallFrequencyTimer();
+
+            // Determine message
+            string current = Enum.GetName(typeof(CrimeLevel), CurrentCrimeLevel);
+            if (CurrentCrimeLevel != oldLevel)
+            {
+                var oldName = Enum.GetName(typeof(CrimeLevel), CurrentCrimeLevel);
+                var text = (oldLevel > CurrentCrimeLevel) ? "~g~decrease~w~" : "~y~increase~w~";
+
+                // Show the player some dialog
+                Rage.Game.DisplayNotification(
+                    "3dtextures",
+                    "mpgroundlogo_cops",
+                    "Agency Dispatch Framework",
+                    "~b~Call Center Update",
+                    $"The time of day is transitioning to ~y~{name}~w~. Crime levels are starting to {text}"
+                );
+            }
+            else
+            {
+                // Show the player some dialog
+                Rage.Game.DisplayNotification(
+                    "3dtextures",
+                    "mpgroundlogo_cops",
+                    "Agency Dispatch Framework",
+                    "~b~Call Center Update",
+                    $"The time of day is transitioning to ~y~{name}~w~. Crime levels are not expected to change"
+                );
+            }
+        }
+
+        /// <summary>
+        /// Method called if the TimeScale in game is changed
+        /// </summary>
+        /// <param name="oldMultiplier"></param>
+        /// <param name="newMultiplier"></param>
+        private void TimeScale_OnTimeScaleChanged(int oldMultiplier, int newMultiplier)
+        {
+            // Re-evaluate
+            EvaluateCrimeValues();
+
+            // Re-adjust
+            if (IsRunning)
+                AdjustCallFrequencyTimer();
+        }
+
+        #endregion
     }
 }

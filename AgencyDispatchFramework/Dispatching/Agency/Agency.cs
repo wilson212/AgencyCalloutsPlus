@@ -37,7 +37,7 @@ namespace AgencyDispatchFramework.Dispatching
         /// <remarks>
         /// [ AgencyScriptName => List of ZoneNames ]
         /// </remarks>
-        private static Dictionary<string, List<string>> AgencyZones { get; set; }
+        private static Dictionary<string, HashSet<string>> AgencyZones { get; set; }
 
         /// <summary>
         /// A dictionary of agencies and thier <see cref="AgencyType"/>. This will be used
@@ -163,7 +163,7 @@ namespace AgencyDispatchFramework.Dispatching
             // Create collections
             Agencies = new Dictionary<string, Agency>(5);
             AgencyTypes = new Dictionary<string, AgencyType>(25);
-            AgencyZones = new Dictionary<string, List<string>>();
+            AgencyZones = new Dictionary<string, HashSet<string>>();
             var mapping = new Dictionary<string, string>();
 
             // *******************************************
@@ -214,7 +214,7 @@ namespace AgencyDispatchFramework.Dispatching
             {
                 string name = region.SelectSingleNode("Name").InnerText;
                 string agency = mapping[name];
-                var zones = new List<string>();
+                var zones = new HashSet<string>();
 
                 // Make sure we have zones!
                 XmlNode node = region.SelectSingleNode("Zones");
@@ -226,20 +226,20 @@ namespace AgencyDispatchFramework.Dispatching
                 // Load all zones of jurisdiction
                 foreach (XmlNode zNode in node.ChildNodes)
                 {
-                    zones.Add(zNode.InnerText);
+                    zones.Add(zNode.InnerText.ToUpperInvariant());
                 }
 
                 // Add or Update
                 if (AgencyZones.ContainsKey(agency))
                 {
-                    AgencyZones[agency].AddRange(zones);
+                    AgencyZones[agency].UnionWith(zones);
                 }
                 else
                 {
                     AgencyZones.Add(agency, zones);
                 }
                 
-                WorldZone.AddRegion(name, zones);
+                WorldZone.AddRegion(name, zones.ToList());
             }
 
             // Add Highway to highway patrol
@@ -249,7 +249,7 @@ namespace AgencyDispatchFramework.Dispatching
             }
             else
             {
-                AgencyZones.Add("sahp", new List<string>() { "HIGHWAY" });
+                AgencyZones.Add("sahp", new HashSet<string>() { "HIGHWAY" });
             }
 
 
@@ -547,10 +547,9 @@ namespace AgencyDispatchFramework.Dispatching
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        protected void GameWorld_OnTimeOfDayChanged(object sender, EventArgs e)
+        protected void GameWorld_OnTimeOfDayChanged(TimePeriod oldPeriod, TimePeriod period)
         {
             // Ensure we have enough locations to spawn patrols at
-            var period = GameWorld.CurrentTimePeriod;
             int aiPatrolCount = OfficersByShift[period].Count;
             var locations = GetRandomShoulderLocations(aiPatrolCount);
             if (locations.Length < aiPatrolCount)
@@ -579,8 +578,7 @@ namespace AgencyDispatchFramework.Dispatching
             }
 
             // Tell old units they are off duty last!
-            period = GameWorld.GetPreviousTimePeriod();
-            foreach (var unit in OfficersByShift[period])
+            foreach (var unit in OfficersByShift[oldPeriod])
             {
                 unit.EndDuty();
             }

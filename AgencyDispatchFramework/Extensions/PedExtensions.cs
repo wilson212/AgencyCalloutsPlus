@@ -48,7 +48,42 @@ namespace AgencyDispatchFramework.Extensions
         /// <param name="isDrunk"></param>
         public static void SetIsDrunk(this Ped ped, bool isDrunk)
         {
-            StopThePedAPI.SetPedIsDrunk(ped, isDrunk);
+            if (StopThePedAPI.IsRunning)
+            {
+                StopThePedAPI.SetPedIsDrunk(ped, isDrunk);
+            }
+            else
+            {
+                // Determine a random alcohol level
+                var level = new CryptoRandom().Next(800, 1700);
+                float fl = level / 1000f;
+
+                string GetAnimaionString()
+                {
+                    if (level > 1300)
+                    {
+                        return "MOVE_M@DRUNK@VERYDRUNK";
+                    }
+                    else if (level > 1100)
+                    {
+                        return "MOVE_M@DRUNK@MODERATEDRUNK";
+                    }
+                    else
+                    {
+                        return "MOVE_M@DRUNK@SLIGHTLYDRUNK";
+                    }
+                }
+
+                var animation = GetAnimaionString();
+                if (!Natives.HasAnimSetLoaded(animation))
+                {
+                    Natives.RequestAnimSet(animation);
+                }
+
+                // Play
+                Natives.SetPedMovementClipset(ped, animation, 1f);
+                ped.Metadata.DrunkLevel = fl;
+            }
         }
 
         /// <summary>
@@ -79,6 +114,27 @@ namespace AgencyDispatchFramework.Extensions
         public static bool GetIsUnderDrugInfluence(this Ped ped)
         {
             return StopThePedAPI.IsPedUnderDrugInfluence(ped);
+        }
+
+        /// <summary>
+        /// Plays a scenario on a Ped at their current location.
+        /// </summary>
+        /// <param name="ped"></param>
+        /// <param name="scenarioName"></param>
+        /// <seealso cref="https://github.com/DurtyFree/gta-v-data-dumps/blob/master/scenariosCompact.json"/>
+        public static void StartScenario(this Ped ped, string scenarioName)
+        {
+            Natives.TaskStartScenarioInPlace(ped, scenarioName, 0, true);
+        }
+
+        /// <summary>
+        /// Returns whether the Ped is currently preforming a scenario
+        /// </summary>
+        /// <param name="ped"></param>
+        /// <returns></returns>
+        public static bool HasScenario(this Ped ped)
+        {
+            return Natives.PedHasUseScenarioTask<bool>(ped);
         }
     }
 }
