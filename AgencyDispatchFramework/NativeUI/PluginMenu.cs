@@ -3,11 +3,14 @@ using AgencyDispatchFramework.Dispatching.Assignments;
 using AgencyDispatchFramework.Extensions;
 using AgencyDispatchFramework.Game;
 using AgencyDispatchFramework.Game.Locations;
+using AgencyDispatchFramework.Xml;
 using Rage;
 using RAGENativeUI;
 using RAGENativeUI.Elements;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Xml;
@@ -20,18 +23,22 @@ namespace AgencyDispatchFramework.NativeUI
     /// </summary>
     internal partial class PluginMenu
     {
+        private const string MENU_NAME = "ADF";
+
         private UIMenu MainUIMenu;
         private UIMenu DispatchUIMenu;
         private UIMenu PatrolUIMenu;
         private UIMenu LocationsUIMenu;
 
         private UIMenu RoadShoulderUIMenu;
+        private UIMenu AddRoadShoulderUIMenu;
         private UIMenu RoadShoulderFlagsUIMenu;
         private UIMenu RoadShoulderBeforeFlagsUIMenu;
         private UIMenu RoadShoulderAfterFlagsUIMenu;
         private UIMenu RoadShoulderSpawnPointsUIMenu;
 
         private UIMenu ResidenceUIMenu;
+        private UIMenu AddResidenceUIMenu;
         private UIMenu ResidenceSpawnPointsUIMenu;
         private UIMenu ResidenceFlagsUIMenu;
 
@@ -94,7 +101,12 @@ namespace AgencyDispatchFramework.NativeUI
         /// <summary>
         /// flagcode => handle
         /// </summary>
-        private Dictionary<int, int> CheckpointHandles { get; set; }
+        private Dictionary<int, int> SpawnPointHandles { get; set; }
+
+        private List<Blip> ZoneBlips { get; set; }
+
+        private List<int> ZoneCheckpoints { get; set; }
+
 
         private SpawnPoint NewLocationPosition { get; set; }
 
@@ -106,12 +118,17 @@ namespace AgencyDispatchFramework.NativeUI
         internal bool IsKeyboardOpen { get; set; }
 
         /// <summary>
+        /// Indicates whether this menu is actively listening for key events
+        /// </summary>
+        internal bool IsListening { get; set; }
+
+        /// <summary>
         /// Creates a new isntance of <see cref="PluginMenu"/>
         /// </summary>
         public PluginMenu()
         {
             // Create main menu
-            MainUIMenu = new UIMenu("ADF", "~b~Main Menu")
+            MainUIMenu = new UIMenu(MENU_NAME, "~b~Main Menu")
             {
                 MouseControlsEnabled = false,
                 AllowCameraMovement = true
@@ -122,7 +139,7 @@ namespace AgencyDispatchFramework.NativeUI
             DispatchMenuButton = new UIMenuItem("Dispatch Menu", "Opens the dispatch menu");
             PatrolSettingsMenuButton = new UIMenuItem("Patrol Settings", "Opens the patrol settings menu");
             ModSettingsMenuButton = new UIMenuItem("Mod Settings", "Opens the patrol settings menu");
-            LocationsMenuButton = new UIMenuItem("Add Location", "Allows you to add new locations for callouts");
+            LocationsMenuButton = new UIMenuItem("Location Menu", "Allows you to view and add new locations for callouts");
             CloseMenuButton = new UIMenuItem("Close", "Closes the main menu");
 
             // Cheater menu
@@ -130,8 +147,7 @@ namespace AgencyDispatchFramework.NativeUI
             {
                 "Sandy", "Paleto", "Vespucci", "Rockford", "Downtown", "La Mesa", "Vinewood", "Davis"
             };
-            TeleportMenuButton = new UIMenuListItem("Teleport To", "Select police station to teleport to", places);
-            TeleportMenuButton.Activated += TeleportMenuButton_Activated;
+            TeleportMenuButton = new UIMenuListItem("Teleport", "Select police station to teleport to", places);
             
             // Add menu buttons
             MainUIMenu.AddItem(DispatchMenuButton);
@@ -141,7 +157,9 @@ namespace AgencyDispatchFramework.NativeUI
             MainUIMenu.AddItem(TeleportMenuButton);
             MainUIMenu.AddItem(CloseMenuButton);
 
-            // Register for events
+            // Register for button events
+            LocationsMenuButton.Activated += LocationsMenuButton_Activated;
+            TeleportMenuButton.Activated += TeleportMenuButton_Activated;
             CloseMenuButton.Activated += (s, e) => MainUIMenu.Visible = false;
 
             // Create Dispatch Menu
@@ -171,11 +189,13 @@ namespace AgencyDispatchFramework.NativeUI
                 DispatchUIMenu,
                 PatrolUIMenu,
                 LocationsUIMenu,
+                AddRoadShoulderUIMenu,
                 RoadShoulderUIMenu,
                 RoadShoulderFlagsUIMenu,
                 RoadShoulderBeforeFlagsUIMenu,
                 RoadShoulderAfterFlagsUIMenu,
                 RoadShoulderSpawnPointsUIMenu,
+                AddResidenceUIMenu,
                 ResidenceUIMenu,
                 ResidenceFlagsUIMenu,
                 ResidenceSpawnPointsUIMenu
@@ -184,12 +204,17 @@ namespace AgencyDispatchFramework.NativeUI
             // Refresh indexes
             AllMenus.RefreshIndex();
             MainUIMenu.OnMenuChange += MainUIMenu_OnMenuChange;
+
+            // Create needed checkpoints
+            SpawnPointHandles = new Dictionary<int, int>(20);
+            ZoneBlips = new List<Blip>(40);
+            ZoneCheckpoints = new List<int>(40);
         }
 
         private void BuildLocationsMenu()
         {
             // Create patrol menu
-            LocationsUIMenu = new UIMenu("ADF", "~b~Add Location Menu")
+            LocationsUIMenu = new UIMenu(MENU_NAME, "~b~Location Menu")
             {
                 MouseControlsEnabled = false,
                 AllowCameraMovement = true,
@@ -197,11 +222,8 @@ namespace AgencyDispatchFramework.NativeUI
             };
 
             // Setup Buttons
-            RoadShouldersButton = new UIMenuItem("New Road Shoulder", "Creates a new Road Shoulder location");
-            RoadShouldersButton.Activated += RoadShouldersButton_Activated;
-
-            ResidenceButton = new UIMenuItem("New Residence", "Creates a new residence location");
-            ResidenceButton.Activated += ResidenceButton_Activated;
+            RoadShouldersButton = new UIMenuItem("Road Shoulders", "Manage road shoulder locations");
+            ResidenceButton = new UIMenuItem("Residences", "Manage residence locations");
 
             // Add buttons
             LocationsUIMenu.AddItem(RoadShouldersButton);
@@ -215,7 +237,7 @@ namespace AgencyDispatchFramework.NativeUI
         private void BuildPatrolMenu()
         {
             // Create patrol menu
-            PatrolUIMenu = new UIMenu("ADF", "~b~Patrol Settings Menu")
+            PatrolUIMenu = new UIMenu(MENU_NAME, "~b~Patrol Settings Menu")
             {
                 MouseControlsEnabled = false,
                 AllowCameraMovement = true,
@@ -283,7 +305,7 @@ namespace AgencyDispatchFramework.NativeUI
         private void BuildDispatchMenu()
         {
             // Create dispatch menu
-            DispatchUIMenu = new UIMenu("ADF", "~b~Dispatch Menu")
+            DispatchUIMenu = new UIMenu(MENU_NAME, "~b~Dispatch Menu")
             {
                 MouseControlsEnabled = false,
                 AllowCameraMovement = true,
@@ -394,10 +416,10 @@ namespace AgencyDispatchFramework.NativeUI
             }
         }
 
-        private void RoadShoulderUIMenu_OnMenuChange(UIMenu oldMenu, UIMenu newMenu, bool forward)
+        private void AddRoadShoulderUIMenu_OnMenuChange(UIMenu oldMenu, UIMenu newMenu, bool forward)
         {
             // Are we backing out of this main menu
-            if (!forward && oldMenu == RoadShoulderUIMenu)
+            if (!forward && oldMenu == AddRoadShoulderUIMenu)
             {
                 ResetCheckPoints();
             }
@@ -420,10 +442,10 @@ namespace AgencyDispatchFramework.NativeUI
             }
         }
 
-        private void ResidenceUIMenu_OnMenuChange(UIMenu oldMenu, UIMenu newMenu, bool forward)
+        private void AddResidenceUIMenu_OnMenuChange(UIMenu oldMenu, UIMenu newMenu, bool forward)
         {
             // Reset checkpoint handles
-            if (newMenu == LocationsUIMenu || oldMenu == LocationsUIMenu)
+            if (newMenu == LocationsUIMenu || oldMenu == AddResidenceUIMenu)
             {
                 ResetCheckPoints();
             }
@@ -456,6 +478,13 @@ namespace AgencyDispatchFramework.NativeUI
                 int index = OfficerStatusMenuButton.Collection.IndexOf(status);
                 OfficerStatusMenuButton.Index = index;
             }
+        }
+
+        private void LocationsMenuButton_Activated(UIMenu sender, UIMenuItem selectedItem)
+        {
+            // Grab player location
+            var pos = Rage.Game.LocalPlayer.Character.Position;
+            LocationsUIMenu.SubtitleText = $"~y~{GameWorld.GetZoneNameAtLocation(pos)}~b~ Locations Menu";
         }
 
         private void RequestQueueMenuButton_Activated(UIMenu sender, UIMenuItem selectedItem)
@@ -658,13 +687,13 @@ namespace AgencyDispatchFramework.NativeUI
         private void ResetCheckPoints()
         {
             // Delete all checkpoints
-            foreach (int handle in CheckpointHandles.Values)
+            foreach (int handle in SpawnPointHandles.Values)
             {
                 GameWorld.DeleteCheckpoint(handle);
             }
 
             // Clear checkpoint handles
-            CheckpointHandles.Clear();
+            SpawnPointHandles.Clear();
 
             // Clear location check point
             if (NewLocationCheckpointHandle != -123456789)
@@ -674,11 +703,94 @@ namespace AgencyDispatchFramework.NativeUI
             }
         }
 
+        /// <summary>
+        /// Deletes the checkpoints and blips loaded on the map
+        /// </summary>
+        private void ClearZoneLocations()
+        {
+            foreach (int handle in ZoneCheckpoints)
+            {
+                GameWorld.DeleteCheckpoint(handle);
+            }
+
+            foreach (Blip blip in ZoneBlips)
+            {
+                if (blip.Exists())
+                {
+                    blip.Delete();
+                }
+            }
+
+            ZoneCheckpoints.Clear();
+            ZoneBlips.Clear();
+        }
+
+        /// <summary>
+        /// Loads checkpoints and map blips of all zone locations of the 
+        /// specified type
+        /// </summary>
+        /// <param name="nodeName"></param>
+        /// <param name="color"></param>
+        private void LoadZoneLocations(string nodeName, Color color)
+        {
+            // Clear old shit
+            ClearZoneLocations();
+
+            // Get players current zone name
+            var pos = GamePed.Player.Position;
+            var zoneName = GameWorld.GetZoneNameAtLocation(pos);
+            string path = Path.Combine(Main.FrameworkFolderPath, "Locations", $"{zoneName}.xml");
+
+            // Make sure the file exists!
+            if (!File.Exists(path))
+            {
+                // Display notification to the player
+                Rage.Game.DisplayNotification(
+                    "3dtextures",
+                    "mpgroundlogo_cops",
+                    "Agency Dispatch Framework",
+                    "Add Residence",
+                    $"~o~Location file {zoneName}.xml does not exist!"
+                );
+                return;
+            }
+
+            // Open the file, and add the location
+            using (var file = new WorldZoneFile(path))
+            {
+                // Grab root locations node
+                var rootNode = UpdateOrCreateXmlNode(file.Document, zoneName, "Locations", nodeName);
+                foreach (XmlNode node in rootNode.SelectNodes("Location"))
+                {
+                    // Ensure we have attributes
+                    if (node.Attributes == null)
+                    {
+                        // Just skip
+                        continue;
+                    }
+
+                    // Try and extract probability value
+                    if (!Vector3Extensions.TryParse(node.Attributes["coordinates"]?.Value, out Vector3 vector))
+                    {
+                        // Just skip
+                        continue;
+                    }
+
+                    // Add checkpoint and blip
+                    ZoneCheckpoints.Add(GameWorld.CreateCheckpoint(vector, color, forceGround: true));
+                    ZoneBlips.Add(new Blip(vector) { Color = Color.Red });
+                }
+            }
+        }
+
         internal void BeginListening()
         {
+            if (IsListening) return;
+            IsListening = true;
+
             ListenFiber = GameFiber.StartNew(delegate 
             {
-                while (true)
+                while (IsListening)
                 {
                     // Let other fibers do stuff
                     GameFiber.Yield();
@@ -712,6 +824,11 @@ namespace AgencyDispatchFramework.NativeUI
                     }
                 }
             });
+        }
+
+        internal void StopListening()
+        {
+            IsListening = false;
         }
     }
 }

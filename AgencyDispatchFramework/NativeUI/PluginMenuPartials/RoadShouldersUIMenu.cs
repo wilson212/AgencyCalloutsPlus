@@ -13,6 +13,12 @@ namespace AgencyDispatchFramework.NativeUI
 {
     internal partial class PluginMenu
     {
+        private UIMenuItem RoadShoulderCreateButton { get; set; }
+
+        private UIMenuItem RoadShoulderLoadBlipsButton { get; set; }
+
+        private UIMenuItem RoadShoulderClearBlipsButton { get; set; }
+
         private SpawnPoint RoadShoulderLocation { get; set; }
 
         private UIMenuNumericScrollerItem<int> RoadShoulderSpeedButton { get; set; }
@@ -53,27 +59,62 @@ namespace AgencyDispatchFramework.NativeUI
         private void BuildRoadShouldersMenu()
         {
             // Create road shoulder ui menu
-            RoadShoulderUIMenu = new UIMenu("ADF", "~b~Add Road Shoulder")
+            RoadShoulderUIMenu = new UIMenu(MENU_NAME, "~b~Road Shoulder Menu")
             {
                 MouseControlsEnabled = false,
                 AllowCameraMovement = true,
                 WidthOffset = 12
             };
 
-            // Flags selection menu
-            RoadShoulderFlagsUIMenu = new UIMenu("ADF", "~b~Road Shoulder Flags")
+            // Create road shoulder ui menu
+            AddRoadShoulderUIMenu = new UIMenu(MENU_NAME, "~b~Add Road Shoulder")
             {
                 MouseControlsEnabled = false,
                 AllowCameraMovement = true,
                 WidthOffset = 12
             };
 
-            RoadShoulderSpawnPointsUIMenu = new UIMenu("ADF", "~b~Road Shoulder Spawn Points")
+            // Road Shoulder flags selection menu
+            RoadShoulderFlagsUIMenu = new UIMenu(MENU_NAME, "~b~Road Shoulder Flags")
             {
                 MouseControlsEnabled = false,
                 AllowCameraMovement = true,
                 WidthOffset = 12
             };
+
+            // Road shoulder spawn points menu
+            RoadShoulderSpawnPointsUIMenu = new UIMenu(MENU_NAME, "~b~Road Shoulder Spawn Points")
+            {
+                MouseControlsEnabled = false,
+                AllowCameraMovement = true,
+                WidthOffset = 12
+            };
+
+            // *************************************************
+            // RoadShoulder UI Menu
+            // *************************************************
+
+            // Setup buttons
+            RoadShoulderCreateButton = new UIMenuItem("Add New Location", "Creates a new Road Shoulder location where you are currently");
+            RoadShoulderLoadBlipsButton = new UIMenuItem("Load Checkpoints", "Loads checkpoints in the world as well as blips on the map to show all saved locations in this zone");
+            RoadShoulderClearBlipsButton = new UIMenuItem("Clear Checkpoints", "Clears all checkpoints and blips loaded by the ~y~Load Checkpoints ~w~option");
+
+            // Button Events
+            RoadShoulderCreateButton.Activated += RoadShouldersCreateButton_Activated;
+            RoadShoulderLoadBlipsButton.Activated += (s, e) => LoadZoneLocations("RoadShoulders", Color.Red);
+            RoadShoulderClearBlipsButton.Activated += (s, e) => ClearZoneLocations();
+
+            // Add buttons
+            RoadShoulderUIMenu.AddItem(RoadShoulderCreateButton);
+            RoadShoulderUIMenu.AddItem(RoadShoulderLoadBlipsButton);
+            RoadShoulderUIMenu.AddItem(RoadShoulderClearBlipsButton);
+
+            // Bind Buttons
+            RoadShoulderUIMenu.BindMenuToItem(AddRoadShoulderUIMenu, RoadShoulderCreateButton);
+
+            // *************************************************
+            // Add RoadShoulder UI Menu
+            // *************************************************
 
             // Setup Buttons
             RoadShoulderStreetButton = new UIMenuItem("Street Name", "");
@@ -91,30 +132,30 @@ namespace AgencyDispatchFramework.NativeUI
             RoadShoulderSaveButton.Activated += RoadShoulderSaveButton_Activated;
 
             // Add Buttons
-            RoadShoulderUIMenu.AddItem(RoadShoulderStreetButton);
-            RoadShoulderUIMenu.AddItem(RoadShoulderHintButton);
-            RoadShoulderUIMenu.AddItem(RoadShoulderSpeedButton);
-            RoadShoulderUIMenu.AddItem(RoadShoulderZoneButton);
-            RoadShoulderUIMenu.AddItem(RoadShoulderPostalButton);
-            RoadShoulderUIMenu.AddItem(RoadShoulderSpawnPointsButton);
-            RoadShoulderUIMenu.AddItem(RoadShoulderFlagsButton);
-            RoadShoulderUIMenu.AddItem(RoadShoulderSaveButton);
+            AddRoadShoulderUIMenu.AddItem(RoadShoulderStreetButton);
+            AddRoadShoulderUIMenu.AddItem(RoadShoulderHintButton);
+            AddRoadShoulderUIMenu.AddItem(RoadShoulderSpeedButton);
+            AddRoadShoulderUIMenu.AddItem(RoadShoulderZoneButton);
+            AddRoadShoulderUIMenu.AddItem(RoadShoulderPostalButton);
+            AddRoadShoulderUIMenu.AddItem(RoadShoulderSpawnPointsButton);
+            AddRoadShoulderUIMenu.AddItem(RoadShoulderFlagsButton);
+            AddRoadShoulderUIMenu.AddItem(RoadShoulderSaveButton);
 
             // Bind buttons
-            RoadShoulderUIMenu.BindMenuToItem(RoadShoulderFlagsUIMenu, RoadShoulderFlagsButton);
-            RoadShoulderUIMenu.BindMenuToItem(RoadShoulderSpawnPointsUIMenu, RoadShoulderSpawnPointsButton);
+            AddRoadShoulderUIMenu.BindMenuToItem(RoadShoulderFlagsUIMenu, RoadShoulderFlagsButton);
+            AddRoadShoulderUIMenu.BindMenuToItem(RoadShoulderSpawnPointsUIMenu, RoadShoulderSpawnPointsButton);
 
             // *************************************************
             // Intersection Flags
             // *************************************************
-            RoadShoulderBeforeFlagsUIMenu = new UIMenu("ADF", "~b~Before Intersection Flags")
+            RoadShoulderBeforeFlagsUIMenu = new UIMenu(MENU_NAME, "~b~Before Intersection Flags")
             {
                 MouseControlsEnabled = false,
                 AllowCameraMovement = true,
                 WidthOffset = 12
             };
 
-            RoadShoulderAfterFlagsUIMenu = new UIMenu("ADF", "~b~After Intersection Flags")
+            RoadShoulderAfterFlagsUIMenu = new UIMenu(MENU_NAME, "~b~After Intersection Flags")
             {
                 MouseControlsEnabled = false,
                 AllowCameraMovement = true,
@@ -189,7 +230,7 @@ namespace AgencyDispatchFramework.NativeUI
             }
 
             // Register for events
-            RoadShoulderUIMenu.OnMenuChange += RoadShoulderUIMenu_OnMenuChange;
+            AddRoadShoulderUIMenu.OnMenuChange += AddRoadShoulderUIMenu_OnMenuChange;
             RoadShoulderFlagsUIMenu.OnMenuChange += RoadShoulderFlagsUIMenu_OnMenuChange;
         }
 
@@ -197,7 +238,7 @@ namespace AgencyDispatchFramework.NativeUI
         /// Method called when the "Create New Road Shoulder" button is clicked.
         /// Clears all prior data.
         /// </summary>
-        private void RoadShouldersButton_Activated(UIMenu sender, UIMenuItem selectedItem)
+        private void RoadShouldersCreateButton_Activated(UIMenu sender, UIMenuItem selectedItem)
         {
             //
             // Reset everything!
@@ -294,9 +335,9 @@ namespace AgencyDispatchFramework.NativeUI
             var menuItem = (MyUIMenuItem<SpawnPoint>)selectedItem;
 
             // Check, do we have a check point already for this position?
-            if (CheckpointHandles.ContainsKey(index))
+            if (SpawnPointHandles.ContainsKey(index))
             {
-                handle = CheckpointHandles[index];
+                handle = SpawnPointHandles[index];
                 GameWorld.DeleteCheckpoint(handle);
             }
 
@@ -304,10 +345,10 @@ namespace AgencyDispatchFramework.NativeUI
             var cpPos = pos;
             cpPos.Z -= 2;
             handle = GameWorld.CreateCheckpoint(cpPos, Color.Yellow, radius: 5f);
-            if (CheckpointHandles.ContainsKey(index))
-                CheckpointHandles[index] = handle;
+            if (SpawnPointHandles.ContainsKey(index))
+                SpawnPointHandles[index] = handle;
             else
-                CheckpointHandles.Add(index, handle);
+                SpawnPointHandles.Add(index, handle);
 
             // Create spawn point
             menuItem.Tag = new SpawnPoint(pos, heading);
@@ -472,7 +513,7 @@ namespace AgencyDispatchFramework.NativeUI
             );
 
             // Go back
-            RoadShoulderUIMenu.GoBack();
+            AddRoadShoulderUIMenu.GoBack();
         } 
     }
 }

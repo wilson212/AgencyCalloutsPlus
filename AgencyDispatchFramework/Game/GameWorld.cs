@@ -145,7 +145,7 @@ namespace AgencyDispatchFramework.Game
             {
                 try
                 {
-                    // Do police checks
+                    // Do dispatching stuff
                     Dispatch.ProcessDispatchLogic();
 
                     // Update weather
@@ -169,10 +169,11 @@ namespace AgencyDispatchFramework.Game
                     if (currentTimePeriod != CurrentTimePeriod)
                     {
                         // Set
+                        var lastPeriod = CurrentTimePeriod;
                         CurrentTimePeriod = currentTimePeriod;
 
                         // Fire event
-                        OnTimePeriodChanged?.Invoke(GetPreviousTimePeriod(), CurrentTimePeriod);
+                        OnTimePeriodChanged?.Invoke(lastPeriod, currentTimePeriod);
                     }
                 }
                 catch (Exception e)

@@ -14,6 +14,12 @@ namespace AgencyDispatchFramework.NativeUI
 {
     internal partial class PluginMenu
     {
+        private UIMenuItem ResidenceCreateButton { get; set; }
+
+        private UIMenuItem ResidenceLoadBlipsButton { get; set; }
+
+        private UIMenuItem ResidenceClearBlipsButton { get; set; }
+
         private UIMenuItem ResidencePositionButton { get; set; }
 
         private UIMenuListItem ResidencePostalButton { get; set; }
@@ -44,7 +50,16 @@ namespace AgencyDispatchFramework.NativeUI
         private void BuildResidencesMenu()
         {
             // Create residence ui menu
-            ResidenceUIMenu = new UIMenu("ADF", "~b~Add Residence")
+            ResidenceUIMenu = new UIMenu(MENU_NAME, "~b~Residence Menu")
+            {
+                MouseControlsEnabled = false,
+                AllowCameraMovement = true,
+                WidthOffset = 12
+            };
+
+
+            // Create add residence ui menu
+            AddResidenceUIMenu = new UIMenu(MENU_NAME, "~b~Add Residence")
             {
                 MouseControlsEnabled = false,
                 AllowCameraMovement = true,
@@ -52,20 +67,46 @@ namespace AgencyDispatchFramework.NativeUI
             };
 
             // Flags selection menu
-            ResidenceFlagsUIMenu = new UIMenu("ADF", "~b~Residence Flags")
+            ResidenceFlagsUIMenu = new UIMenu(MENU_NAME, "~b~Residence Flags")
             {
                 MouseControlsEnabled = false,
                 AllowCameraMovement = true,
                 WidthOffset = 12
             };
 
-            // Create residence ui menu
-            ResidenceSpawnPointsUIMenu = new UIMenu("ADF", "~b~Residence Spawn Points")
+            // Residence spawn points ui menu
+            ResidenceSpawnPointsUIMenu = new UIMenu(MENU_NAME, "~b~Residence Spawn Points")
             {
                 MouseControlsEnabled = false,
                 AllowCameraMovement = true,
                 WidthOffset = 12
             };
+
+            // *************************************************
+            // Residence UI Menu
+            // *************************************************
+
+            // Setup buttons
+            ResidenceCreateButton = new UIMenuItem("Add New Location", "Creates a new Residence location where you are currently");
+            ResidenceLoadBlipsButton = new UIMenuItem("Load Checkpoints", "Loads checkpoints in the world as well as blips on the map to show all saved locations in this zone");
+            ResidenceClearBlipsButton = new UIMenuItem("Clear Checkpoints", "Clears all checkpoints and blips loaded by the ~y~Load Checkpoints ~w~option");
+
+            // Button Events
+            ResidenceCreateButton.Activated += ResidenceCreateButton_Activated;
+            ResidenceLoadBlipsButton.Activated += (s, e) => LoadZoneLocations("Residences", Color.Yellow);
+            ResidenceClearBlipsButton.Activated += (s, e) => ClearZoneLocations();
+
+            // Add buttons
+            ResidenceUIMenu.AddItem(ResidenceCreateButton);
+            ResidenceUIMenu.AddItem(ResidenceLoadBlipsButton);
+            ResidenceUIMenu.AddItem(ResidenceClearBlipsButton);
+
+            // Bind Buttons
+            ResidenceUIMenu.BindMenuToItem(AddResidenceUIMenu, ResidenceCreateButton);
+
+            // *************************************************
+            // Add Residence UI Menu
+            // *************************************************
 
             // Setup Buttons
             ResidencePositionButton = new UIMenuItem("Location", "Sets the street location coordinates for this home. Please stand on the street facing the home, and activate this button.");
@@ -87,20 +128,20 @@ namespace AgencyDispatchFramework.NativeUI
             ResidenceSaveButton.Activated += ResidenceSaveButton_Activated;
 
             // Add Buttons
-            ResidenceUIMenu.AddItem(ResidencePositionButton);
-            ResidenceUIMenu.AddItem(ResidenceNumberButton);
-            ResidenceUIMenu.AddItem(ResidenceUnitButton);
-            ResidenceUIMenu.AddItem(ResidenceStreetButton);
-            ResidenceUIMenu.AddItem(ResidenceClassButton);
-            ResidenceUIMenu.AddItem(ResidenceZoneButton);
-            ResidenceUIMenu.AddItem(ResidencePostalButton);
-            ResidenceUIMenu.AddItem(ResidenceSpawnPointsButton);
-            ResidenceUIMenu.AddItem(ResidenceFlagsButton);
-            ResidenceUIMenu.AddItem(ResidenceSaveButton);
+            AddResidenceUIMenu.AddItem(ResidencePositionButton);
+            AddResidenceUIMenu.AddItem(ResidenceNumberButton);
+            AddResidenceUIMenu.AddItem(ResidenceUnitButton);
+            AddResidenceUIMenu.AddItem(ResidenceStreetButton);
+            AddResidenceUIMenu.AddItem(ResidenceClassButton);
+            AddResidenceUIMenu.AddItem(ResidenceZoneButton);
+            AddResidenceUIMenu.AddItem(ResidencePostalButton);
+            AddResidenceUIMenu.AddItem(ResidenceSpawnPointsButton);
+            AddResidenceUIMenu.AddItem(ResidenceFlagsButton);
+            AddResidenceUIMenu.AddItem(ResidenceSaveButton);
 
             // Bind buttons
-            ResidenceUIMenu.BindMenuToItem(ResidenceFlagsUIMenu, ResidenceFlagsButton);
-            ResidenceUIMenu.BindMenuToItem(ResidenceSpawnPointsUIMenu, ResidenceSpawnPointsButton);
+            AddResidenceUIMenu.BindMenuToItem(ResidenceFlagsUIMenu, ResidenceFlagsButton);
+            AddResidenceUIMenu.BindMenuToItem(ResidenceSpawnPointsUIMenu, ResidenceSpawnPointsButton);
 
             // *************************************************
             // Residence Flags
@@ -136,11 +177,8 @@ namespace AgencyDispatchFramework.NativeUI
                 ResidenceClassButton.Collection.Add(name);
             }
 
-            // Create needed checkpoints
-            CheckpointHandles = new Dictionary<int, int>(20);
-
             // Register for events
-            ResidenceUIMenu.OnMenuChange += ResidenceUIMenu_OnMenuChange;
+            AddResidenceUIMenu.OnMenuChange += AddResidenceUIMenu_OnMenuChange;
             ResidenceFlagsUIMenu.OnMenuChange += ResidenceFlagsUIMenu_OnMenuChange;
         }
 
@@ -148,7 +186,7 @@ namespace AgencyDispatchFramework.NativeUI
         /// Method called when the "Create New Residence" button is clicked.
         /// Clears all prior data.
         /// </summary>
-        private void ResidenceButton_Activated(UIMenu sender, UIMenuItem selectedItem)
+        private void ResidenceCreateButton_Activated(UIMenu sender, UIMenuItem selectedItem)
         {
             //
             // Reset everything!
@@ -240,9 +278,9 @@ namespace AgencyDispatchFramework.NativeUI
             var menuItem = (MyUIMenuItem<SpawnPoint>)selectedItem;
 
             // Check, do we have a check point already for this position?
-            if (CheckpointHandles.ContainsKey(index))
+            if (SpawnPointHandles.ContainsKey(index))
             {
-                handle = CheckpointHandles[index];
+                handle = SpawnPointHandles[index];
                 GameWorld.DeleteCheckpoint(handle);
             }
 
@@ -250,10 +288,10 @@ namespace AgencyDispatchFramework.NativeUI
             var cpPos = pos;
             cpPos.Z -= 2;
             handle = GameWorld.CreateCheckpoint(cpPos, GetResidencePositionColor(value), radius: 1f);
-            if (CheckpointHandles.ContainsKey(index))
-                CheckpointHandles[index] = handle;
+            if (SpawnPointHandles.ContainsKey(index))
+                SpawnPointHandles[index] = handle;
             else
-                CheckpointHandles.Add(index, handle);
+                SpawnPointHandles.Add(index, handle);
 
             // Create spawn point
             menuItem.Tag = new SpawnPoint(pos, GamePed.Player.Heading);
@@ -392,7 +430,7 @@ namespace AgencyDispatchFramework.NativeUI
             );
 
             // Go back
-            ResidenceUIMenu.GoBack();
+            AddResidenceUIMenu.GoBack();
         }
 
         private Color GetResidencePositionColor(ResidencePosition value)

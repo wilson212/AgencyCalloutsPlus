@@ -67,7 +67,12 @@ namespace AgencyDispatchFramework.Game.Locations
             return true;
         }
 
-        public SpawnPoint GetPositionById(ResidencePosition id)
+        /// <summary>
+        /// Gets an identifiable <see cref="SpawnPoint"/> by name for this <see cref="Residence"/>
+        /// </summary>
+        /// <param name="id">The <see cref="SpawnPoint"/> id</param>
+        /// <returns>a <see cref="SpawnPoint"/> on success, false otherwise</returns>
+        public SpawnPoint GetSpawnPositionById(ResidencePosition id)
         {
             if (!SpawnPoints.ContainsKey(id))
                 return null;

@@ -105,10 +105,10 @@ namespace AgencyDispatchFramework.Callouts.TrafficAccident
             Victim = VictimVehicle.CreateRandomDriver();
             Victim.IsPersistent = true;
             Victim.BlockPermanentEvents = true;
-            Victim.StartScenario("WORLD_HUMAN_CLIPBOARD");
+            Victim.StartScenario("WORLD_HUMAN_STAND_MOBILE");
 
             // Set victim location
-            var location = Location.GetPositionById(RoadShoulderPosition.SidewalkGroup1);
+            var location = Location.GetSpawnPositionById(RoadShoulderPosition.SidewalkGroup1);
             Victim.SetPositionWithSnap(location);
             Victim.Heading = location.Heading;
 
@@ -128,7 +128,7 @@ namespace AgencyDispatchFramework.Callouts.TrafficAccident
             Suspect.StartScenario("WORLD_HUMAN_STAND_MOBILE");
 
             // Set victim location
-            location = Location.GetPositionById(RoadShoulderPosition.SidewalkGroup2);
+            location = Location.GetSpawnPositionById(RoadShoulderPosition.SidewalkGroup2);
             Suspect.SetPositionWithSnap(location);
             Suspect.Heading = Location.Heading; // Use forward heading
 

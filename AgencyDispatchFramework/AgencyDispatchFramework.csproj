@@ -122,8 +122,8 @@
     <Compile Include="Extensions\IEnumerableExtensions.cs" />
     <Compile Include="Extensions\ListExtensions.cs" />
     <Compile Include="Extensions\StringBuilderExtensions.cs" />
-    <Compile Include="Game\delegates\TimePeriodChangedEventHandler.cs" />
-    <Compile Include="Game\delegates\WeatherChangedEventHandler.cs" />
+    <Compile Include="Game\Delegates\TimePeriodChangedEventHandler.cs" />
+    <Compile Include="Game\Delegates\WeatherChangedEventHandler.cs" />
     <Compile Include="Game\Enums\County.cs" />
     <Compile Include="Game\Enums\RelativeDirection.cs" />
     <Compile Include="Game\Enums\PedGender.cs" />
@@ -140,7 +140,8 @@
     <Compile Include="Conversation\SubtitleEventHandler.cs" />
     <Compile Include="Game\Locations\Enums\RoadShoulderPosition.cs" />
     <Compile Include="Game\PedCache.cs" />
-    <Compile Include="Game\delegates\TimeScaleChangedEventHandler.cs" />
+    <Compile Include="Game\Delegates\TimeScaleChangedEventHandler.cs" />
+    <Compile Include="LogLevel.cs" />
     <Compile Include="NativeUI\PluginMenuPartials\ResidenceUIMenu.cs" />
     <Compile Include="NativeUI\PluginMenuPartials\RoadShouldersUIMenu.cs" />
     <Compile Include="NativeUI\OpenCallListTabPage.cs" />
@@ -598,6 +599,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Callouts\Scenarios.txt" />
+    <Content Include="GameScenarios.txt" />
     <Content Include="Todo.txt" />
   </ItemGroup>
   <ItemGroup>

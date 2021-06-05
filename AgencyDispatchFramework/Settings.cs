@@ -16,9 +16,15 @@ namespace AgencyDispatchFramework
 
         internal static int AudioBeat { get; set; } = 18;
 
-        internal static string PostalsFile { get; set; }
+        /// <summary>
+        /// Gets or sets the postals file name (without extension) to load on startup
+        /// </summary>
+        internal static string PostalsFileName { get; set; }
 
-        internal static string GetUnitString => $"{AudioDivision}-{AudioUnitTypeLetter}-{AudioBeat}";
+        /// <summary>
+        /// Gets or sets the desired logging level of the Game.log
+        /// </summary>
+        internal static LogLevel LogLevel { get; set; }
 
         /// <summary>
         /// The key to open the callout interaction menu
@@ -60,6 +66,10 @@ namespace AgencyDispatchFramework
         /// </summary>
         internal static bool ForceTimeScale { get; set; } = false;
 
+        /// <summary>
+        /// Gets or sets the TimeScale multiplier to set if <see cref="ForceTimeScale"/>
+        /// is set to true.
+        /// </summary>
         internal static int TimeScaleMultiplier { get; set; } = 30;
 
         /// <summary>
@@ -86,13 +96,17 @@ namespace AgencyDispatchFramework
             OpenCADMenuKey = ini.ReadEnum("KEYBINDINGS", "OpenCADMenuKey", Keys.F9);
             OpenCADMenuModifierKey = ini.ReadEnum("KEYBINDINGS", "OpenCADMenuModifierKey", Keys.None);
 
-            AudioDivision = ini.ReadInt32("GENERAL", "Division", 1);
-            AudioUnitType = ini.ReadString("GENERAL", "UnitType", "LINCOLN").ToUpperInvariant();
-            AudioBeat = ini.ReadInt32("GENERAL", "Beat", 18);
-            PostalsFile = ini.ReadString("GENERAL", "PostalsFilename", "old-postals");
-
+            // Read general settings
+            LogLevel = ini.ReadEnum("GENERAL", "LogLevel", LogLevel.DEBUG);
+            PostalsFileName = ini.ReadString("GENERAL", "PostalsFilename", "old-postals");
             //EnableFullSimulation = ini.ReadBoolean("SIMULATION", "EnableFullSimulation", false);
 
+            // Read player settings
+            AudioDivision = ini.ReadInt32("PLAYER", "Division", 1);
+            AudioUnitType = ini.ReadString("PLAYER", "UnitType", "LINCOLN").ToUpperInvariant();
+            AudioBeat = ini.ReadInt32("PLAYER", "Beat", 18);
+
+            // Read timescale settings
             ForceTimeScale = ini.ReadBoolean("TIMESCALE", "ForceTimeScale", false);
             TimeScaleMultiplier = ini.ReadInt32("TIMESCALE", "TimeScaleMultiplier", 30);
 

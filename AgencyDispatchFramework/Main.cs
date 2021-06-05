@@ -107,14 +107,13 @@ namespace AgencyDispatchFramework
             }
 
             // Initialize log file
-            Log.Initialize(Path.Combine(FrameworkFolderPath, "Game.log"));
+            Log.Initialize(Path.Combine(FrameworkFolderPath, "Game.log"), LogLevel.DEBUG);
 
             // Load settings
             Settings.Initialize();
 
-            // Begin listening for the Plugin Menu
-            PluginMenu = new PluginMenu();
-            PluginMenu.BeginListening();
+            // Set logging level to config value
+            Log.SetLogLevel(Settings.LogLevel);
 
             // Register for events
             Functions.OnOnDutyStateChanged += OnOnDutyStateChangedHandler;
@@ -161,6 +160,9 @@ namespace AgencyDispatchFramework
             {
                 // Stop generating calls
                 Dispatch.StopDuty();
+
+                // Stop the plugin menu
+                PluginMenu?.StopListening();
 
                 // Cancel CAD
                 ComputerAidedDispatchMenu.Dispose();
@@ -216,6 +218,9 @@ namespace AgencyDispatchFramework
                         TimeScale.SetTimeScaleMultiplier(Settings.TimeScaleMultiplier);
                     }
 
+                    // Initialize plugin menu
+                    PluginMenu = new PluginMenu();
+
                     // Flag
                     HasBeenOnDuty = true;
                 }
@@ -233,6 +238,9 @@ namespace AgencyDispatchFramework
                 {
                     // Tell GameWorld to begin listening. Stops automatically when player goes off duty
                     GameWorld.BeginFibers();
+
+                    // Begin listening for the Plugin Menu
+                    PluginMenu.BeginListening();
 
                     // Display notification to the player
                     Rage.Game.DisplayNotification(
@@ -255,10 +263,11 @@ namespace AgencyDispatchFramework
                     );
                 }
 
+                // Log our TimeScale multiplier
+                Log.Debug($"Detected a timescale multiplier of {TimeScale.GetCurrentTimeScaleMultiplier()}");
+
                 // Close loading spinner
                 Rage.Game.HideHelp();
-
-                Log.Debug($"Detected a timescale multiplier of {TimeScale.GetCurrentTimeScaleMultiplier()}");
             });
         }
 
@@ -333,8 +342,12 @@ namespace AgencyDispatchFramework
             return false;
         }
 
+        /// <summary>
+        /// Closer method
+        /// </summary>
         public override void Finally()
         {
+            Log.Close();
             Rage.Game.LogTrivial("[TRACE] AgencyDispatchFramework has been cleaned up.");
         }
     }

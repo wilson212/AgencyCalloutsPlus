@@ -97,7 +97,7 @@ namespace AgencyDispatchFramework.Callouts.DomesticViolence
             SpawnId = ResidencePosition.BackYardPedGroup; //random.PickOne(HomeSpawnId.FrontDoorPed, HomeSpawnId.BackYardPed);
 
             // Create a marker for the player to walk into
-            CheckpointPosition = Residence.GetPositionById(ResidencePosition.FrontDoorPolicePed1);
+            CheckpointPosition = Residence.GetSpawnPositionById(ResidencePosition.FrontDoorPolicePed1);
             CheckpointPosition.Z -= 2f; // Checkpoints spawn at waist level... Bring it down some
             CheckpointHandle = GameWorld.CreateCheckpoint(CheckpointPosition, Color.Yellow, forceGround: true);
 
@@ -161,7 +161,7 @@ namespace AgencyDispatchFramework.Callouts.DomesticViolence
             Menu.AddMenuItem(KnockButton);
 
             // Create blip at the hime
-            AddressBlip = new Blip(Residence.GetPositionById(ResidencePosition.FrontDoorPed1))
+            AddressBlip = new Blip(Residence.GetSpawnPositionById(ResidencePosition.FrontDoorPed1))
             {
                 IsRouteEnabled = true,
                 Sprite = BlipSprite.PointOfInterest
@@ -218,13 +218,13 @@ namespace AgencyDispatchFramework.Callouts.DomesticViolence
                     // Spawn a Ped out of view close by... prevents ped from falling down when 
                     // their position is changed to the front door directly
                     var ped = new CryptoRandom().PickOne(Suspect, Victim);
-                    ped.Position = Residence.GetPositionById(ResidencePosition.BackYardPedGroup);
+                    ped.Position = Residence.GetSpawnPositionById(ResidencePosition.BackYardPedGroup);
 
                     // Wait for an answer
                     GameFiber.Wait(3000);
 
                     // Spawn a Ped at the door
-                    ped.Position = Residence.GetPositionById(ResidencePosition.FrontDoorPed1);
+                    ped.Position = Residence.GetSpawnPositionById(ResidencePosition.FrontDoorPed1);
 
                     // Attach Blip
                     if (ped == Suspect)

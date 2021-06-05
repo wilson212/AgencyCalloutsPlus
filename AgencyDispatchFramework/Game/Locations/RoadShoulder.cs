@@ -86,7 +86,12 @@ namespace AgencyDispatchFramework.Game.Locations
             return true;
         }
 
-        public SpawnPoint GetPositionById(RoadShoulderPosition id)
+        /// <summary>
+        /// Gets an identifiable <see cref="SpawnPoint"/> by name for this <see cref="RoadShoulder"/>
+        /// </summary>
+        /// <param name="id">The <see cref="SpawnPoint"/> id</param>
+        /// <returns>a <see cref="SpawnPoint"/> on success, false otherwise</returns>
+        public SpawnPoint GetSpawnPositionById(RoadShoulderPosition id)
         {
             if (!SpawnPoints.ContainsKey(id))
                 return null;

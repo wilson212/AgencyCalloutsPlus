@@ -7,8 +7,7 @@ namespace AgencyDispatchFramework
 {
     /// <summary>
     /// Provides an object wrapper for a file that is used to
-    /// store LogMessage's into. Uses a Multi-Thread safe Queueing
-    /// system, and provides full Asynchronous writing and flushing
+    /// store messages into. This class is thread safe.
     /// </summary>
     internal class Log
     {
@@ -18,31 +17,31 @@ namespace AgencyDispatchFramework
         private static FileInfo LogFile;
 
         /// <summary>
-        /// The <see cref="StreamWriter"/> for our <paramref name="LogFile"/>
+        /// The <see cref="StreamWriter"/> instance for our <see cref="Log.LogFile"/>
         /// </summary>
         private static StreamWriter LogStream;
 
         /// <summary>
         /// Our lock object, preventing race conditions
         /// </summary>
-        private static Object _sync = new Object();
+        private static Object _threadSync = new Object();
 
         /// <summary>
-        /// Provides a full sync lock between all isntances of this app
+        /// Gets or sets the <see cref="LogLevel"/>
         /// </summary>
-        private static Object _fullSync = new Object();
+        private static LogLevel LoggingLevel;
 
         /// <summary>
-        /// Creates a new Log Writter instance
+        /// Initilizes a new log file by clearing old data, or creating the file
+        /// if it does not exist.
         /// </summary>
-        /// <param name="FileLocation">The location of the logfile. If the file doesnt exist,
-        /// It will be created.</param>
-        public static void Initialize(string FileLocation)
+        /// <param name="fileLocation">The location of the logfile. If the file doesnt exist, it will be created.</param>
+        public static void Initialize(string fileLocation, LogLevel level)
         {
             if (LogFile == null)
             {
                 // Test that we are able to open and write to the file
-                LogFile = new FileInfo(FileLocation);
+                LogFile = new FileInfo(fileLocation);
                 FileStream fileStream = LogFile.Open(FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite);
                 LogStream = new StreamWriter(fileStream, Encoding.UTF8);
                 LogStream.BaseStream.SetLength(0);
@@ -51,29 +50,55 @@ namespace AgencyDispatchFramework
             }
         }
 
+        /// <summary>
+        /// Appends the log file with a message at the <see cref="LogLevel.INFO"/> level
+        /// </summary>
+        /// <param name="message">The message to add to the log file</param>
         public static void Info(string message)
         {
-            Write(message, LogLevel.INFO);
+            if (LogLevel.INFO >= LoggingLevel)
+                Write(message, LogLevel.INFO);
         }
 
+        /// <summary>
+        /// Appends the log file with a message at the <see cref="LogLevel.WARN"/> level
+        /// </summary>
+        /// <param name="message">The message to add to the log file</param>
         public static void Warning(string message)
         {
-            Write(message, LogLevel.WARN);
+            if (LogLevel.WARN >= LoggingLevel)
+                Write(message, LogLevel.WARN);
         }
 
+        /// <summary>
+        /// Appends the log file with a message at the <see cref="LogLevel.ERROR"/> level
+        /// </summary>
+        /// <param name="message">The message to add to the log file</param>
         public static void Error(string message)
         {
-            Write(message, LogLevel.ERROR);
-        }
-        public static void Debug(string message)
-        {
-            Write(message, LogLevel.DEBUG);
+            if (LogLevel.ERROR >= LoggingLevel)
+                Write(message, LogLevel.ERROR);
         }
 
+        /// <summary>
+        /// Appends the log file with a message at the <see cref="LogLevel.DEBUG"/> level
+        /// </summary>
+        /// <param name="message">The message to add to the log file</param>
+        public static void Debug(string message)
+        {
+            if (LogLevel.DEBUG >= LoggingLevel)
+                Write(message, LogLevel.DEBUG);
+        }
+
+        /// <summary>
+        /// Appends the log file with exception tracing information
+        /// </summary>
+        /// <param name="exception"></param>
+        /// <param name="optionMessage"></param>
         public static void Exception(Exception exception, string optionMessage = null)
         {
             // Only allow 1 thread at a time do these operations
-            lock (_sync)
+            lock (_threadSync)
             {
                 // Write the header data
                 LogStream.WriteLine("-------- AgencyDispatchFramework Exception Trace Entry --------");
@@ -116,6 +141,14 @@ namespace AgencyDispatchFramework
             }
         }
 
+        /// <summary>
+        /// Sets the <see cref="LogLevel"/> to use
+        /// </summary>
+        /// <param name="logLevel"></param>
+        internal static void SetLogLevel(LogLevel logLevel)
+        {
+            LoggingLevel = logLevel;
+        }
 
         /// <summary>
         /// Adds a message to the queue, to be written to the log file
@@ -124,7 +157,7 @@ namespace AgencyDispatchFramework
         private static void Write(string message, LogLevel level)
         {
             // Only allow 1 thread at a time do these operations
-            lock (_sync)
+            lock (_threadSync)
             {
                 LogStream.WriteLine(String.Format("{0}: [{2}] {1}", DateTime.Now, message, level));
                 LogStream.Flush();
@@ -132,40 +165,15 @@ namespace AgencyDispatchFramework
         }
 
         /// <summary>
-        /// Adds a message to the queue, to be written to the log file
-        /// </summary>
-        /// <param name="message">The message to write to the log</param>
-        private static void Write(string message, LogLevel level, params object[] items)
-        {
-            // Only allow 1 thread at a time do these operations
-            lock (_sync)
-            {
-                LogStream.WriteLine(String.Format("{0}: [{1}] {2}", DateTime.Now, level, String.Format(message, items)));
-                LogStream.Flush();
-            }
-        }
-
-        /// <summary>
         /// Destructor. Make sure we flush!
         /// </summary>
-        public void Close()
+        public static void Close()
         {
             try
             {
                 LogStream?.Dispose();
             }
             catch (ObjectDisposedException) { } // Ignore
-        }
-
-        private enum LogLevel
-        {
-            DEBUG,
-
-            INFO,
-
-            WARN,
-
-            ERROR,
         }
     }
 }

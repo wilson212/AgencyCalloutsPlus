@@ -67,7 +67,7 @@ namespace AgencyDispatchFramework.Game.Locations
 
             // Load XML document
             var document = new XmlDocument();
-            var filePath = Path.Combine(Main.FrameworkFolderPath, "Postals", $"{Settings.PostalsFile}.xml");
+            var filePath = Path.Combine(Main.FrameworkFolderPath, "Postals", $"{Settings.PostalsFileName}.xml");
             using (var file = new FileStream(filePath, FileMode.Open))
             {
                 document.Load(file);
