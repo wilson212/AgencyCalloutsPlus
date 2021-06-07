@@ -1,8 +1,10 @@
 ﻿using AgencyDispatchFramework.Xml;
 using LSPD_First_Response.Mod.API;
+using Rage;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 
 namespace AgencyDispatchFramework.Dispatching
@@ -16,6 +18,11 @@ namespace AgencyDispatchFramework.Dispatching
         /// Contains a list Scenarios by name
         /// </summary>
         internal static Dictionary<string, CalloutScenarioInfo> ScenariosByName { get; set; }
+
+        /// <summary>
+        /// Contains a list Scenarios by name
+        /// </summary>
+        internal static Dictionary<string, List<CalloutScenarioInfo>> ScenariosByAssembly { get; set; }
 
         /// <summary>
         /// Contains a list Scenarios seperated by CalloutType that will be used
@@ -51,6 +58,7 @@ namespace AgencyDispatchFramework.Dispatching
         {
             // Initialize callout types
             ScenariosByName = new Dictionary<string, CalloutScenarioInfo>();
+            ScenariosByAssembly = new Dictionary<string, List<CalloutScenarioInfo>>();
             ScenariosByCalloutName = new Dictionary<string, WorldStateProbabilityGenerator<CalloutScenarioInfo>>();
             ScenariosByCalloutType = new Dictionary<CallCategory, WorldStateProbabilityGenerator<CalloutScenarioInfo>>();
             foreach (CallCategory type in Enum.GetValues(typeof(CallCategory)))
@@ -65,7 +73,7 @@ namespace AgencyDispatchFramework.Dispatching
         /// <param name="rootPath">The full directory path to the callout pack root folder</param>
         /// <param name="assembly">The calling assembly that contains the callout scripts</param>
         /// <returns></returns>
-        public static int RegisterCalloutsFromPath(string rootPath, Assembly assembly)
+        public static int RegisterCalloutsFromPath(string rootPath, Assembly assembly, bool yieldFiber = true)
         {
             // Load directory
             var directory = new DirectoryInfo(rootPath);
@@ -95,14 +103,24 @@ namespace AgencyDispatchFramework.Dispatching
                 // Wrap in a try/catch. Exceptions are thrown in here
                 try
                 {
+                    // Add assembly
+                    var name = assembly.GetName().Name;
+                    if (!ScenariosByAssembly.ContainsKey(name))
+                    {
+                        ScenariosByAssembly.Add(name, new List<CalloutScenarioInfo>());
+                    }
+
                     // Load meta file
                     using (var metaFile = new CalloutMetaFile(path))
                     {
                         // Parse file
-                        metaFile.Parse(assembly);
+                        metaFile.Parse(assembly, yieldFiber);
+
+                        // Yield fiber?
+                        if (yieldFiber) GameFiber.Yield();
 
                         // Add each scenario
-                        foreach (var scenario in metaFile.Scenarios)
+                        foreach (var scenario in metaFile.Scenarios.OrderBy(x => x.Name))
                         {
                             // Create entry if not already
                             if (!ScenariosByCalloutName.ContainsKey(scenario.CalloutName))
@@ -112,6 +130,7 @@ namespace AgencyDispatchFramework.Dispatching
 
                             // Add scenario to the pools
                             ScenariosByName.Add(scenario.Name, scenario);
+                            ScenariosByAssembly[name].Add(scenario);
                             ScenariosByCalloutName[scenario.CalloutName].Add(scenario, scenario.ProbabilityMultipliers);
                             ScenariosByCalloutType[scenario.Category].Add(scenario, scenario.ProbabilityMultipliers);
 
@@ -120,6 +139,9 @@ namespace AgencyDispatchFramework.Dispatching
 
                             // Call event
                             OnScenarioAdded?.Invoke(scenario);
+
+                            // Yield fiber?
+                            if (yieldFiber) GameFiber.Yield();
                         }
 
                         // Register the callout

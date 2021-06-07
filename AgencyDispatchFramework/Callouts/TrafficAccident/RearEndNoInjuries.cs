@@ -125,7 +125,7 @@ namespace AgencyDispatchFramework.Callouts.TrafficAccident
             Suspect = SuspectVehicle.CreateRandomDriver();
             Suspect.IsPersistent = true;
             Suspect.BlockPermanentEvents = true;
-            Suspect.StartScenario("WORLD_HUMAN_STAND_MOBILE");
+            Suspect.StartScenario("WORLD_HUMAN_STAND_IMPATIENT");
 
             // Set victim location
             location = Location.GetSpawnPositionById(RoadShoulderPosition.SidewalkGroup2);

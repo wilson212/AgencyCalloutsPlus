@@ -3,18 +3,10 @@
 namespace AgencyDispatchFramework.Dispatching
 {
     /// <summary>
-    /// Contains Scenario info for an <see cref="AgencyCallout"/>
+    /// Contains Scenario info for a <see cref="Callout"/>
     /// </summary>
     public class CalloutScenarioInfo
     {
-        /// <summary>
-        /// Gets the base probability based on the players current <see cref="Agency"/>
-        /// </summary>
-        public int Probability
-        {
-            get { return ProbabilityMultipliers.Calculate(); }
-        }
-
         /// <summary>
         /// Gets the <see cref="WorldStateMultipliers"/> for this scenario
         /// </summary>
@@ -26,7 +18,7 @@ namespace AgencyDispatchFramework.Dispatching
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets the name of the <see cref="AgencyCallout"/> that runs this scenario
+        /// Gets the name of the <see cref="Callout"/> script that runs this scenario
         /// </summary>
         public string CalloutName { get; set; }
 

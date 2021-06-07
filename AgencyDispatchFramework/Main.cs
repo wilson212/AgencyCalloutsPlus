@@ -125,22 +125,6 @@ namespace AgencyDispatchFramework
         }
 
         /// <summary>
-        /// Event fired when resolving assembly names in LSPDFR
-        /// </summary>
-        /// <returns></returns>
-        private static Assembly LSPDFRResolveEventHandler(object sender, ResolveEventArgs args)
-        {
-            foreach (Assembly assembly in Functions.GetAllUserPlugins())
-            {
-                if (args.Name.ToLower().Contains(assembly.GetName().Name.ToLower()))
-                {
-                    return assembly;
-                }
-            }
-            return null;
-        }
-
-        /// <summary>
         /// Event fired when the player's Duty status changes
         /// </summary>
         /// <param name="onDuty">Indicates whether the player is going on or off duty</param>
@@ -230,12 +214,21 @@ namespace AgencyDispatchFramework
                     ScenarioPool.Reset();
                 }
 
+                // Yield to prevent freezing
+                GameFiber.Yield();
+
                 // Load scenarios for updated probabilities
                 ScenarioPool.RegisterCalloutsFromPath(Path.Combine(FrameworkFolderPath, "Callouts"), typeof(Main).Assembly);
+
+                // Yield to prevent freezing
+                GameFiber.Yield();
 
                 // Finally, start dispatch call center
                 if (Dispatch.StartDuty())
                 {
+                    // Yield to prevent freezing
+                    GameFiber.Yield();
+
                     // Tell GameWorld to begin listening. Stops automatically when player goes off duty
                     GameWorld.BeginFibers();
 
@@ -268,7 +261,25 @@ namespace AgencyDispatchFramework
 
                 // Close loading spinner
                 Rage.Game.HideHelp();
+
+                PauseMenuExample.RunPauseMenuExample();
             });
+        }
+
+        /// <summary>
+        /// Event fired when resolving assembly names in LSPDFR
+        /// </summary>
+        /// <returns></returns>
+        private static Assembly LSPDFRResolveEventHandler(object sender, ResolveEventArgs args)
+        {
+            foreach (Assembly assembly in Functions.GetAllUserPlugins())
+            {
+                if (args.Name.ToLower().Contains(assembly.GetName().Name.ToLower()))
+                {
+                    return assembly;
+                }
+            }
+            return null;
         }
 
         /// <summary>

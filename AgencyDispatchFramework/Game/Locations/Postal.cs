@@ -117,7 +117,7 @@ namespace AgencyDispatchFramework.Game.Locations
         /// <param name="location"></param>
         public static Postal FromVector(Vector3 location)
         {
-            return (from x in Postals orderby x.Location.DistanceTo(location) select x).FirstOrDefault();
+            return (from x in Postals orderby x.Location.DistanceTo2D(location) select x).FirstOrDefault();
         }
 
         #endregion static

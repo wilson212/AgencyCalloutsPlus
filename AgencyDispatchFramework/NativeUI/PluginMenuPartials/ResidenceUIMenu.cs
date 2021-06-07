@@ -431,6 +431,13 @@ namespace AgencyDispatchFramework.NativeUI
 
             // Go back
             AddResidenceUIMenu.GoBack();
+
+            // Are we currently showing checkpoints and blips?
+            if (ZoneCheckpoints.Count > 0)
+            {
+                ZoneCheckpoints.Add(GameWorld.CreateCheckpoint(pos, Color.Yellow, forceGround: true));
+                ZoneBlips.Add(new Blip(pos) { Color = Color.Red });
+            }
         }
 
         private Color GetResidencePositionColor(ResidencePosition value)

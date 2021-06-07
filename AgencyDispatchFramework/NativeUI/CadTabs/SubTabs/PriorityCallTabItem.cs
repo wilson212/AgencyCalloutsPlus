@@ -65,7 +65,8 @@ namespace AgencyDispatchFramework.NativeUI
             if (String.IsNullOrWhiteSpace(Address))
                 Address = World.GetStreetName(Call.Location.Position);
 
-            Description = Call.Description.Text.Replace("$Location$", Address);
+            // @todo replace with Tokenizer
+            Description = Call.Description.Text.ToUpperInvariant().Replace("$LOCATION$", Address);
         }
 
         /// <summary>
@@ -73,12 +74,15 @@ namespace AgencyDispatchFramework.NativeUI
         /// </summary>
         public override void Draw()
         {
+            FadeInWhenFocused = false;
+
             // Draw's background
             base.Draw();
 
             // define text alpha
             var a = ResText.Alignment.Left;
             int alpha = 255; // (Focused || !CanBeFocused) ? 255 : 150;
+            Dimensions = new Size(BottomRight.SubtractPoints(TopLeft));
 
             // Grab (relative to screen resolution) starting points for 4 columns
             int col1p = GetXPointByPercentageOfWidth(0.07f);

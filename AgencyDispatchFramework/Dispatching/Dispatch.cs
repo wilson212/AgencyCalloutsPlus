@@ -298,6 +298,16 @@ namespace AgencyDispatchFramework
         }
 
         /// <summary>
+        /// Gets an array of <see cref="Agency"/> instances that are currently
+        /// being simulated
+        /// </summary>
+        /// <returns>If the player is not on duty, this method return null</returns>
+        public static Agency[] GetEnabledAgencies()
+        {
+            return (Main.OnDuty) ? AgenciesByName.Values.ToArray() : null;
+        }
+
+        /// <summary>
         /// Determines if the specified <see cref="Agency"/> can be dispatched to a call.
         /// </summary>
         /// <param name="agency"></param>
@@ -510,7 +520,7 @@ namespace AgencyDispatchFramework
 
         /// <summary>
         /// Requests a <see cref="PriorityCall"/> from dispatch using the specified
-        /// <see cref="AgencyCallout"/>.
+        /// <see cref="Callout"/> type.
         /// </summary>
         /// <param name="calloutType"></param>
         /// <returns></returns>
@@ -526,6 +536,13 @@ namespace AgencyDispatchFramework
                 if (calloutName.Equals(PlayerActiveCall.ScenarioInfo.CalloutName))
                 {
                     return PlayerActiveCall;
+                }
+                else if (PlayerActiveCall.CallStatus != CallStatus.Waiting)
+                {
+                    // This call is currently running!
+                    EndPlayerCallout();
+                    PlayerActiveCall = null;
+                    Log.Error($"Dispatch.RequestPlayerCallInfo: Player was already on a call out when a request from {calloutName} was recieved");
                 }
                 else
                 {
@@ -786,7 +803,6 @@ namespace AgencyDispatchFramework
                 if (!call.Zone.DoesAgencyHaveJurisdiction(PlayerAgency))
                 {
                     return;
-
                 }
 
                 // Check call type
@@ -1048,12 +1064,18 @@ namespace AgencyDispatchFramework
                     return false;
                 }
 
+                // Yield to prevent freezing
+                GameFiber.Yield();
+
                 // Create player, and initialize all agencies
                 PlayerUnit = new PlayerOfficerUnit(Rage.Game.LocalPlayer, PlayerAgency);
                 foreach (var a in AgenciesByName.Values)
                 {
                     a.Enable();
                 }
+
+                // Yield to prevent freezing
+                GameFiber.Yield();
 
                 // ********************************************
                 // Build the crime generator

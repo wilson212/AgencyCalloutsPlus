@@ -142,11 +142,12 @@
     <Compile Include="Game\PedCache.cs" />
     <Compile Include="Game\Delegates\TimeScaleChangedEventHandler.cs" />
     <Compile Include="LogLevel.cs" />
+    <Compile Include="NativeUI\Example.cs" />
     <Compile Include="NativeUI\PluginMenuPartials\ResidenceUIMenu.cs" />
     <Compile Include="NativeUI\PluginMenuPartials\RoadShouldersUIMenu.cs" />
-    <Compile Include="NativeUI\OpenCallListTabPage.cs" />
+    <Compile Include="NativeUI\CadTabs\CallListTabPage.cs" />
     <Compile Include="NativeUI\MyUIMenuItem.cs" />
-    <Compile Include="NativeUI\PriorityCallTabItem.cs" />
+    <Compile Include="NativeUI\CadTabs\SubTabs\PriorityCallTabItem.cs" />
     <Compile Include="Game\Enums\PedDescriptionProperty.cs" />
     <Compile Include="Game\PedInfo.cs" />
     <Compile Include="Game\PedModelMeta.cs" />
@@ -189,7 +190,7 @@
     <Compile Include="Callouts\DomesticViolence\ReportsOfArguingThreats.cs" />
     <Compile Include="Game\Enums\TimePeriod.cs" />
     <Compile Include="ExpressionParser.cs" />
-    <Compile Include="NativeUI\CurrentCallTabPage.cs" />
+    <Compile Include="NativeUI\CadTabs\AssignmentTabPage.cs" />
     <Compile Include="Dispatching\RegionCrimeInfo.cs" />
     <Compile Include="Game\Locations\RoadShoulder.cs" />
     <Compile Include="Conversation\SubtitleQueue.cs" />

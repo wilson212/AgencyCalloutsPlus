@@ -1,6 +1,7 @@
 ﻿using AgencyDispatchFramework.Game;
 using AgencyDispatchFramework.Game.Locations;
 using AgencyDispatchFramework.Xml;
+using Rage;
 using RAGENativeUI;
 using RAGENativeUI.Elements;
 using System;
@@ -514,6 +515,13 @@ namespace AgencyDispatchFramework.NativeUI
 
             // Go back
             AddRoadShoulderUIMenu.GoBack();
+
+            // Are we currently showing checkpoints and blips?
+            if (ZoneCheckpoints.Count > 0)
+            {
+                ZoneCheckpoints.Add(GameWorld.CreateCheckpoint(pos, Color.Yellow, forceGround: true));
+                ZoneBlips.Add(new Blip(pos) { Color = Color.Red });
+            }
         } 
     }
 }

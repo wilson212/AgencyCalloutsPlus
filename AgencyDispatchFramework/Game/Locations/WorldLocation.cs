@@ -104,7 +104,7 @@ namespace AgencyDispatchFramework.Game.Locations
         public bool Equals(WorldLocation other)
         {
             if (other == null) return false;
-            return (other.Position == Position);
+            return (other.Position.X == Position.X && other.Position.Y == Position.Y && other.Position.Z == Position.Z);
         }
 
         /// <summary>
@@ -127,7 +127,7 @@ namespace AgencyDispatchFramework.Game.Locations
         /// 
         /// </summary>
         /// <returns></returns>
-        public override int GetHashCode() => Position.GetHashCode();
+        public override int GetHashCode() => (Position.X, Position.Y, Position.Z).GetHashCode();
 
         #region ISpatial contracts
 

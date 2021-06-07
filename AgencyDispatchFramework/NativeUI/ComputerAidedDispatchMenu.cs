@@ -1,4 +1,5 @@
 ﻿using AgencyDispatchFramework.Dispatching;
+using AgencyDispatchFramework.Game;
 using LSPD_First_Response.Engine.Scripting.Entities;
 using LSPD_First_Response.Mod.API;
 using Rage;
@@ -32,17 +33,27 @@ namespace AgencyDispatchFramework.NativeUI
         /// <summary>
         /// Contains the current call tab
         /// </summary>
-        private static CurrentCallTabPage CurrentCallTab { get; set; }
+        private static AssignmentTabPage CurrentCallTab { get; set; }
 
         /// <summary>
         /// Contains the call list tab
         /// </summary>
-        private static OpenCallListTabPage CallListTab { get; set; }
+        private static CallListTabPage CallListTab { get; set; }
 
         /// <summary>
         /// Contains the scenario list tab
         /// </summary>
-        private static TabInteractiveListItem ScenarioListTab { get; set; }
+        private static TabSubmenuItem ScenarioListTab { get; set; }
+
+        /// <summary>
+        /// Contains the officer status tab
+        /// </summary>
+        private static TabSubmenuItem DepartmentListTab { get; set; }
+
+        /// <summary>
+        /// Contains the officer status tabs
+        /// </summary>
+        private static List<TabInteractiveListItem> OfficersList { get; set; }
 
         /// <summary>
         /// Containts the players <see cref="Persona"/>
@@ -52,14 +63,11 @@ namespace AgencyDispatchFramework.NativeUI
         /// <summary>
         /// Initializes the CAD for this mod
         /// </summary>
-        public static void Initialize()
+        internal static void Initialize()
         {
             // Exit if already running
             if (IsRunning) return;
             IsRunning = true;
-
-            // Tell the game to process this menu every game tick
-            Rage.Game.FrameRender += Process;
 
             // Is this the first time this session the player has gone on duty?
             if (!Initialized)
@@ -73,11 +81,17 @@ namespace AgencyDispatchFramework.NativeUI
                 DispatchWindow.Money = Dispatch.PlayerAgency.FriendlyName;
                 DispatchWindow.OnMenuClose += (s, e) => Rage.Game.IsPaused = false;
 
+                // BOLO'S ?
+
                 // Add active calls list
-                DispatchWindow.AddTab(CallListTab = new OpenCallListTabPage("Open Calls"));
+                DispatchWindow.AddTab(CallListTab = new CallListTabPage("Open Calls"));
 
                 // Add Current Call tab
-                DispatchWindow.AddTab(CurrentCallTab = new CurrentCallTabPage("Assigned Call"));
+                DispatchWindow.AddTab(CurrentCallTab = new AssignmentTabPage("Assigned Call"));
+
+                // Officer Status (per department)
+                OfficersList = new List<TabInteractiveListItem>();
+                DispatchWindow.AddTab(DepartmentListTab = new TabSubmenuItem("Unit Status", OfficersList));
 
                 // Build initial scnario page
                 BuildScenarioPage();
@@ -100,6 +114,9 @@ namespace AgencyDispatchFramework.NativeUI
                 // Build initial scnario page
                 BuildScenarioPage();
             }
+
+            // Tell the game to process this menu every game tick
+            Rage.Game.FrameRender += Process;
         }
 
         internal static void Dispose()
@@ -126,20 +143,25 @@ namespace AgencyDispatchFramework.NativeUI
             }
 
             // Add each registered callout scenario to the list
-            var menuItems = new List<MyUIMenuItem<CalloutScenarioInfo>>();
-            foreach (var scenes in ScenarioPool.ScenariosByName)
+            var iList = new List<TabInteractiveListItem>();
+            foreach (var scenes in ScenarioPool.ScenariosByAssembly)
             {
-                var item = new MyUIMenuItem<CalloutScenarioInfo>(scenes.Key)
+                var menuItems = new List<MyUIMenuItem<CalloutScenarioInfo>>(scenes.Value.Count);
+                foreach (var scenario in scenes.Value)
                 {
-                    Tag = scenes.Value
-                };
-                item.Activated += ScenarioItem_Activated;
-                menuItems.Add(item);
+                    var item = new MyUIMenuItem<CalloutScenarioInfo>(scenario.Name)
+                    {
+                        Tag = scenario
+                    };
+                    item.Activated += ScenarioItem_Activated;
+                    menuItems.Add(item);
+                }
+
+                iList.Add(new TabInteractiveListItem(scenes.Key, menuItems));
             }
 
             // Add scenario list tab page
-            ScenarioListTab = new TabInteractiveListItem("Scenario List", menuItems);
-            DispatchWindow.AddTab(ScenarioListTab);
+            DispatchWindow.AddTab(ScenarioListTab = new TabSubmenuItem("Scenario List", iList));
 
             // Always refresh index after adding or removing items
             DispatchWindow.RefreshIndex();
@@ -176,20 +198,24 @@ namespace AgencyDispatchFramework.NativeUI
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        public static void Process(object sender, GraphicsEventArgs e)
+        internal static void Process(object sender, GraphicsEventArgs e)
         {
             // Ignore if we are not on duty
             if (!IsRunning) return;
+            var justOpened = false;
 
             // Our menu toggle key switch.
             if (Keyboard.IsKeyDownWithModifier(Settings.OpenCADMenuKey, Settings.OpenCADMenuModifierKey))
             {
+                // Toggle window state
                 DispatchWindow.Visible = !DispatchWindow.Visible;
 
                 // Always refresh index after opening the menu again
                 if (DispatchWindow.Visible)
                 {
+                    // Refresh index
                     DispatchWindow.RefreshIndex();
+                    justOpened = true;
                 }
             }
             
@@ -207,6 +233,26 @@ namespace AgencyDispatchFramework.NativeUI
                 // Update tabview
                 DispatchWindow.Update();
                 DispatchWindow.DrawTextures(e.Graphics);
+
+                // if we just opened, update the list
+                if (justOpened)
+                {
+                    // Build new list
+                    DepartmentListTab.Items.Clear();
+                    foreach (var agency in Dispatch.GetEnabledAgencies())
+                    {
+                        var items = new List<UIMenuItem>();
+                        var period = GameWorld.CurrentTimePeriod;
+
+                        // Add each unit
+                        foreach (var unit in agency.OfficersByShift[period])
+                        {
+                            items.Add(new UIMenuListScrollerItem<string>(unit.CallSign, "", new[] { unit.Status.ToString() }) { ScrollingEnabled = false });
+                        }
+
+                        DepartmentListTab.Items.Add(new TabInteractiveListItem(agency.FriendlyName, items));
+                    }
+                }
             }
         }
     }

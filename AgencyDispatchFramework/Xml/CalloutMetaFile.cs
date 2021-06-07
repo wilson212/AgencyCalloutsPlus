@@ -2,6 +2,7 @@
 using AgencyDispatchFramework.Extensions;
 using AgencyDispatchFramework.Game.Locations;
 using LSPD_First_Response.Mod.Callouts;
+using Rage;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -44,7 +45,7 @@ namespace AgencyDispatchFramework.Xml
         /// Parses the XML in the callout meta
         /// </summary>
         /// <param name="assembly">The assembly containing the callout class type for the contained scenarios</param>
-        public void Parse(Assembly assembly)
+        public void Parse(Assembly assembly, bool yieldFiber)
         {
             // Setup some vars
             var calloutDirName = Path.GetDirectoryName(FilePath);
@@ -78,6 +79,9 @@ namespace AgencyDispatchFramework.Xml
             {
                 throw new Exception($"CalloutMetaFile.Parse(): Callout class '{typeName}' in Assembly '{assembly.FullName}' is missing the CalloutInfoAttribute!");
             }
+
+            // Yield fiber?
+            if (yieldFiber) GameFiber.Yield();
 
             // Process the XML scenarios
             foreach (XmlNode scenarioNode in rootElement.SelectSingleNode("Scenarios")?.ChildNodes)
@@ -194,6 +198,9 @@ namespace AgencyDispatchFramework.Xml
                     }
                 }
 
+                // Yield fiber?
+                if (yieldFiber) GameFiber.Yield();
+
                 // Get the Dispatch Node
                 XmlNode dispatchNode = scenarioNode.SelectSingleNode("Dispatch");
                 if (dispatchNode == null)
@@ -307,6 +314,9 @@ namespace AgencyDispatchFramework.Xml
                     );
                     continue;
                 }
+
+                // Yield fiber?
+                if (yieldFiber) GameFiber.Yield();
 
                 // Try and extract descriptions
                 childNode = cadNode.SelectSingleNode("Descriptions");
@@ -429,6 +439,9 @@ namespace AgencyDispatchFramework.Xml
 
                 // Add scenario to the pools
                 Scenarios.Add(scene);
+
+                // Yield fiber?
+                if (yieldFiber) GameFiber.Yield();
             }
         }
 

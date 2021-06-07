@@ -13,7 +13,7 @@ namespace AgencyDispatchFramework.NativeUI
     /// <summary>
     /// Represents the "Open Calls" tab in the CAD pause menu
     /// </summary>
-    internal class OpenCallListTabPage : TabItem // TabSubmenuItem
+    internal class CallListTabPage : TabItem // TabSubmenuItem
     {
         /// <summary>
         /// Our lock object to prevent multi-threading issues
@@ -52,10 +52,10 @@ namespace AgencyDispatchFramework.NativeUI
         public Range<int> IndexesInView { get; private set; }
 
         /// <summary>
-        /// Creates a new instance of <see cref="OpenCallListTabPage"/>
+        /// Creates a new instance of <see cref="CallListTabPage"/>
         /// </summary>
         /// <param name="name"></param>
-        public OpenCallListTabPage(string name) : base(name)
+        public CallListTabPage(string name) : base(name)
         {
             Items = new List<PriorityCallTabItem>();
             IndexesInView = new Range<int>(0, MaxItemsToDisplay - 1);
@@ -270,7 +270,6 @@ namespace AgencyDispatchFramework.NativeUI
                     focusedItem.SafeSize = SafeSize.AddPoints(new Point((int)activeWidth - submenuWidth, 0));
                     focusedItem.TopLeft = SafeSize.AddPoints(new Point((int)activeWidth - submenuWidth, 0));
                     focusedItem.BottomRight = new Point((int)res.Width - SafeSize.X, (int)res.Height - SafeSize.Y);
-                    focusedItem.Dimensions = new Size(focusedItem.BottomRight.SubtractPoints(focusedItem.TopLeft));
                     focusedItem.Draw();
                 }
             }
