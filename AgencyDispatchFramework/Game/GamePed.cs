@@ -7,10 +7,13 @@ using System;
 namespace AgencyDispatchFramework.Game
 {
     /// <summary>
-    /// A class that provides methods to better describe a <see cref="Rage.Ped"/>
+    /// A class that provides methods and properties to better describe a <see cref="Rage.Ped"/>
     /// </summary>
     public class GamePed
     {
+        /// <summary>
+        /// Gets the player <see cref="Rage.Ped"/> instance
+        /// </summary>
         public static Ped Player => Rage.Game.LocalPlayer.Character;
 
         /// <summary>
@@ -52,6 +55,12 @@ namespace AgencyDispatchFramework.Game
         }
 
         /// <summary>
+        /// Gets a valid indicating whether a <see cref="Rage.Ped"/> is valid in the <see cref="Rage.World"/>
+        /// </summary>
+        /// <returns></returns>
+        public bool IsValid => Ped?.Exists() ?? false;
+
+        /// <summary>
         /// Creates a new instance of <see cref="GamePed"/>
         /// </summary>
         /// <param name="ped"></param>
@@ -59,15 +68,6 @@ namespace AgencyDispatchFramework.Game
         {
             Ped = ped ?? throw new ArgumentNullException(nameof(ped));
             Persona = Functions.GetPersonaForPed(ped);
-        }
-
-        /// <summary>
-        /// Gets a valid indicating whether a <see cref="Rage.Ped"/> is valid in the <see cref="Rage.World"/>
-        /// </summary>
-        /// <returns></returns>
-        public bool IsValid()
-        {
-            return Ped != null && Ped.Exists() && Ped.IsValid();
         }
 
         public override string ToString()

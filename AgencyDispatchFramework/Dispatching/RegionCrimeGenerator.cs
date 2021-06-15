@@ -475,7 +475,7 @@ namespace AgencyDispatchFramework.Dispatching
                     }
 
                     // Add call to the dispatch Queue
-                    return new PriorityCall(NextCallId++, scenario, zone, location);
+                    return new PriorityCall(NextCallId++, scenario, location);
                 }
                 catch (Exception ex)
                 {
@@ -523,7 +523,7 @@ namespace AgencyDispatchFramework.Dispatching
                     }
 
                     // Add call to the dispatch Queue
-                    return new PriorityCall(NextCallId++, scenario, zone, location);
+                    return new PriorityCall(NextCallId++, scenario, location);
                 }
                 catch (Exception ex)
                 {

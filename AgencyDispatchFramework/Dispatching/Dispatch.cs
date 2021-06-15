@@ -324,7 +324,7 @@ namespace AgencyDispatchFramework
                     return (call.Priority == CallPriority.Immediate || call.PrimaryOfficer == null || call.NeedsMoreOfficers);
                 case AgencyType.CityPolice:
                     // City police can only take calls in their primary jurisdiction
-                    return agency.Zones.Contains(call.Zone);
+                    return agency.Zones.Contains(call.Location.Zone);
                 case AgencyType.HighwayPatrol:
                     return call.ScenarioInfo.Category == CallCategory.Traffic;
                 default:
@@ -511,7 +511,7 @@ namespace AgencyDispatchFramework
             }
 
             // Check jurisdiction
-            return call.Zone.DoesAgencyHaveJurisdiction(PlayerAgency);
+            return call.Location.Zone.DoesAgencyHaveJurisdiction(PlayerAgency);
         }
 
         #endregion Public API Methods
@@ -597,7 +597,7 @@ namespace AgencyDispatchFramework
                     {
                         var index = ((int)call.OriginalPriority) - 1;
                         CallQueue[index].Add(call);
-                        Log.Debug($"Dispatch: Added Call to Queue '{call.ScenarioInfo.Name}' in zone '{call.Zone.FullName}'");
+                        Log.Debug($"Dispatch: Added Call to Queue '{call.ScenarioInfo.Name}' in zone '{call.Location.Zone.FullName}'");
 
                         // Invoke the next callout for player
                         InvokeForPlayer = call;
@@ -772,12 +772,12 @@ namespace AgencyDispatchFramework
                 {
                     var index = ((int)call.OriginalPriority) - 1;
                     CallQueue[index].Add(call);
-                    Log.Debug($"Dispatch.AddIncomingCall(): Added Call to Queue '{call.ScenarioInfo.Name}' in zone '{call.Zone.FullName}'");
+                    Log.Debug($"Dispatch.AddIncomingCall(): Added Call to Queue '{call.ScenarioInfo.Name}' in zone '{call.Location.Zone.FullName}'");
                 }
                 else
                 {
                     // Failed to add?
-                    Log.Error($"Dispatch.AddIncomingCall(): Tried to add a call to Queue in zone '{call.Zone.FullName}', but the location selected was already in use.");
+                    Log.Error($"Dispatch.AddIncomingCall(): Tried to add a call to Queue in zone '{call.Location.Zone.FullName}', but the location selected was already in use.");
                     return;
                 }
             }
@@ -786,7 +786,7 @@ namespace AgencyDispatchFramework
             switch (call.ScenarioInfo.Targets)
             {
                 case CallTarget.Police:
-                    call.Zone.PoliceAgencies[0].Dispatcher.AddCall(call);
+                    call.Location.Zone.PoliceAgencies[0].Dispatcher.AddCall(call);
                     break;
                 case CallTarget.Fire:
                 case CallTarget.Medical:
@@ -800,7 +800,7 @@ namespace AgencyDispatchFramework
             if (SendNextCallToPlayer)
             {
                 // Check jurisdiction
-                if (!call.Zone.DoesAgencyHaveJurisdiction(PlayerAgency))
+                if (!call.Location.Zone.DoesAgencyHaveJurisdiction(PlayerAgency))
                 {
                     return;
                 }
@@ -916,17 +916,17 @@ namespace AgencyDispatchFramework
                 {
                     case AgencyType.CityPolice:
                         // Grab county agency
-                        newAgency = call.Zone.PoliceAgencies.Where(x => x.AgencyType == AgencyType.CountySheriff).FirstOrDefault();
+                        newAgency = call.Location.Zone.PoliceAgencies.Where(x => x.AgencyType == AgencyType.CountySheriff).FirstOrDefault();
                         break;
                     case AgencyType.StateParks:
                     case AgencyType.CountySheriff:
                         // Grab state agency
-                        newAgency = call.Zone.PoliceAgencies.Where(x => x.IsStateAgency && x.AgencyType != AgencyType.StateParks).FirstOrDefault();
+                        newAgency = call.Location.Zone.PoliceAgencies.Where(x => x.IsStateAgency && x.AgencyType != AgencyType.StateParks).FirstOrDefault();
                         break;
                     case AgencyType.HighwayPatrol:
                     case AgencyType.StatePolice:
                         // We need to grab the county that has jurisdiction here
-                        newAgency = call.Zone.PoliceAgencies.Where(x => x.AgencyType == AgencyType.CountySheriff).FirstOrDefault();
+                        newAgency = call.Location.Zone.PoliceAgencies.Where(x => x.AgencyType == AgencyType.CountySheriff).FirstOrDefault();
                         break;
                     default:
                         throw new NotSupportedException();

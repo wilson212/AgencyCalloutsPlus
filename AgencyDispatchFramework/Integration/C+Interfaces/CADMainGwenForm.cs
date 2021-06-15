@@ -312,12 +312,12 @@ namespace AgencyDispatchFramework.Integration
                     var row = list_active_calls.AddRow(
                         String.Format("{0}{1}{2}{3}{4}{5}{6}",
                             call.CallId.ToString().PadRight(12),
-                            call.IncidentAbbreviation.PadRight(32),
+                            call.ScenarioInfo.IncidentAbbreviation.PadRight(32),
                             timeSpan.ToString().PadRight(20),
                             call.OriginalPriority.ToString().PadRight(16),
                             call.CallStatus.ToString().PadRight(20),
                             call.PrimaryOfficer?.CallSign.PadRight(20) ?? " ".PadRight(25),
-                            call.Zone.ScriptName
+                            call.Location.Zone.ScriptName
                         )
                     );
 

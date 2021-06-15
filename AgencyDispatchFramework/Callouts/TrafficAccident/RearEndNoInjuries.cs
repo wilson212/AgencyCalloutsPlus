@@ -103,8 +103,7 @@ namespace AgencyDispatchFramework.Callouts.TrafficAccident
 
             // Create Victim
             Victim = VictimVehicle.CreateRandomDriver();
-            Victim.IsPersistent = true;
-            Victim.BlockPermanentEvents = true;
+            Victim.MakeMissionPed(true);
             Victim.StartScenario("WORLD_HUMAN_STAND_MOBILE");
 
             // Set victim location
@@ -123,8 +122,7 @@ namespace AgencyDispatchFramework.Callouts.TrafficAccident
 
             // Create suspect
             Suspect = SuspectVehicle.CreateRandomDriver();
-            Suspect.IsPersistent = true;
-            Suspect.BlockPermanentEvents = true;
+            Suspect.MakeMissionPed(true);
             Suspect.StartScenario("WORLD_HUMAN_STAND_IMPATIENT");
 
             // Set victim location
@@ -183,7 +181,7 @@ namespace AgencyDispatchFramework.Callouts.TrafficAccident
             Menu.Process();
 
             // Temporary
-            if (Rage.Game.IsKeyDown(System.Windows.Forms.Keys.Enter))
+            if (Keyboard.IsComputerKeyDown(System.Windows.Forms.Keys.Enter))
             {
                 World.TeleportLocalPlayer(Location.Position.Around(15f), true);
             }

@@ -78,23 +78,26 @@ namespace AgencyDispatchFramework.Game
         /// <summary>
         /// Spawns a <see cref="CallCategory"/> based on the <see cref="WorldStateMultipliers"/> probabilites set
         /// </summary>
-        internal WorldStateProbabilityGenerator<CallCategory> CrimeTypeGenerator { get; set; }
+        internal WorldStateProbabilityGenerator<CallCategory> CallCategoryGenerator { get; set; }
 
         /// <summary>
-        /// 
+        /// Contains a list of police <see cref="Agency"/> instances that have jurisdiction in this <see cref="WorldZone"/>
         /// </summary>
         public List<Agency> PoliceAgencies { get; internal set; }
 
         /// <summary>
-        /// 
+        /// Gets the medical <see cref="Agency"/> that services this <see cref="WorldZone"/>
         /// </summary>
         public Agency EmsAgency { get; internal set; }
 
         /// <summary>
-        /// 
+        /// Gets the fire <see cref="Agency"/> that services this <see cref="WorldZone"/>
         /// </summary>
         public Agency FireAgeny { get; internal set; }
 
+        /// <summary>
+        /// Gets the <see cref="Game.County"/> in game this zone belongs in
+        /// </summary>
         public County County { get; internal set; }
 
         /// <summary>
@@ -102,7 +105,7 @@ namespace AgencyDispatchFramework.Game
         /// </summary>
         public WorldZone()
         {
-            
+            PoliceAgencies = new List<Agency>();
         }
 
         /// <summary>
@@ -126,15 +129,11 @@ namespace AgencyDispatchFramework.Game
         /// <returns></returns>
         public int GetTotalNumberOfLocations()
         {
-            var count = 0;
-
-            // Do we have SideOfRoad locations? If so, add em
-            if (RoadShoulders != null)
-                count += RoadShoulders.Length;
+            // Add up location counts
+            var count = RoadShoulders?.Length ?? 0;
+                count += Residences?.Length ?? 0;
 
             // Final count
-            count += Residences.Length;
-
             return count;
         }
 
@@ -148,7 +147,7 @@ namespace AgencyDispatchFramework.Game
         /// </returns>
         public CallCategory GetNextRandomCrimeType()
         {
-            if (CrimeTypeGenerator.TrySpawn(out CallCategory calloutType))
+            if (CallCategoryGenerator.TrySpawn(out CallCategory calloutType))
             {
                 return calloutType;
             }

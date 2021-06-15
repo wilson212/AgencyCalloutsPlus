@@ -51,6 +51,7 @@ Callouts:
 	- ShoutingProfanityInPublic				[Disturbance] [Business]
 	- RefusingToLeaveProperty				[Disturbance] [Business]
 	- PedWavingAWeapon						[Violent] [Residence]
+	- UnstableIndividual					[Disturbance] [Residence]
 - GangActivity
 	- GangHasseling							[Gang]
 	- GangStolenCar							[Gang]

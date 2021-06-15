@@ -1,6 +1,5 @@
-﻿using AgencyDispatchFramework.Simulation;
-using AgencyDispatchFramework.Game;
-using AgencyDispatchFramework.Game.Locations;
+﻿using AgencyDispatchFramework.Game.Locations;
+using AgencyDispatchFramework.Simulation;
 using LSPD_First_Response.Mod.Callouts;
 using System;
 using System.Collections.Generic;
@@ -10,24 +9,30 @@ namespace AgencyDispatchFramework.Dispatching
 {
     /// <summary>
     /// Represents a <see cref="LSPD_First_Response.Mod.Callouts.Callout"/> that can
-    /// be queued up and dispatched to <see cref="API.OfficerUnit"/>(s)
+    /// be queued up and dispatched to <see cref="Dispatching.OfficerUnit"/>(s)
     /// </summary>
     public sealed class PriorityCall : IEquatable<PriorityCall>
     {
         /// <summary>
-        /// The call ID
+        /// The unique call ID
         /// </summary>
         public int CallId { get; internal set; }
 
         /// <summary>
         /// The callout scenario for this call
         /// </summary>
-        internal CalloutScenarioInfo ScenarioInfo { get; private set; }
+        public CalloutScenarioInfo ScenarioInfo { get; private set; }
 
         /// <summary>
         /// Gets the Callout handle
         /// </summary>
         internal Callout Callout { get; set; }
+
+        /// <summary>
+        /// Gets whether this call has been escelated to a dangerous level, 
+        /// requiring more immediate attention
+        /// </summary>
+        public bool IsEscalated { get; internal set; }
 
         /// <summary>
         /// The current <see cref="CallPriority"/>
@@ -40,7 +45,7 @@ namespace AgencyDispatchFramework.Dispatching
         public CallPriority OriginalPriority => ScenarioInfo.Priority;
 
         /// <summary>
-        /// Gets the <see cref="Game.DateTime"/> when this call was created
+        /// Gets the  <see cref="DateTime"/> when this call was created using Game Time
         /// </summary>
         public DateTime CallCreated { get; internal set; }
 
@@ -50,7 +55,7 @@ namespace AgencyDispatchFramework.Dispatching
         public CallStatus CallStatus { get; internal set; }
 
         /// <summary>
-        /// The general <see cref="WorldLocation"/> that this callout takes place at
+        /// The <see cref="WorldLocation"/> that this callout takes place or begins at
         /// </summary>
         public WorldLocation Location { get; internal set; }
 
@@ -62,9 +67,7 @@ namespace AgencyDispatchFramework.Dispatching
         /// <summary>
         /// Gets a list of officers attached to this <see cref="PriorityCall"/>
         /// </summary>
-        public List<OfficerUnit> AttachedOfficers { get; private set; }
-
-        public AISceneSimulation AISimulation { get; set; }
+        private List<OfficerUnit> AttachedOfficers { get; set; }
 
         /// <summary>
         /// Indicates whether this Call needs more <see cref="OfficerUnit"/>(s)
@@ -80,7 +83,7 @@ namespace AgencyDispatchFramework.Dispatching
         /// <summary>
         /// Gets the number of <see cref="OfficerUnit"/>s required for this call
         /// </summary>
-        public int AdditionalUnitsRequired => Math.Max(TotalRequiredUnits - AttachedOfficers.Count, 0);
+        public int NumberOfAdditionalUnitsRequired => Math.Max(TotalRequiredUnits - AttachedOfficers.Count, 0);
 
         /// <summary>
         /// Indicates whether this call was declined by the player
@@ -88,30 +91,19 @@ namespace AgencyDispatchFramework.Dispatching
         public bool CallDeclinedByPlayer { get; internal set; }
 
         /// <summary>
-        /// Gets the <see cref="WorldZone"/> this <see cref="PriorityCall"/>
-        /// takes place in
-        /// </summary>
-        public WorldZone Zone { get; internal set; }
-
-        /// <summary>
         /// Indicates wether the OfficerUnit should repsond code 3
         /// </summary>
-        public ResponseCode ResponseCode => ScenarioInfo.ResponseCode;
-
-        /// <summary>
-        /// Gets the incident text
-        /// </summary>
-        public string IncidentText => ScenarioInfo.IncidentText;
-
-        /// <summary>
-        /// Gets the incident abbreviation text
-        /// </summary>
-        public string IncidentAbbreviation => ScenarioInfo.IncidentAbbreviation;
+        public ResponseCode ResponseCode => (IsEscalated) ? ResponseCode.Code3 : ScenarioInfo.ResponseCode;
 
         /// <summary>
         /// Gets the description of the call
         /// </summary>
         public PriorityCallDescription Description { get; internal set; }
+
+        /// <summary>
+        /// TEMPORARY
+        /// </summary>
+        public AISceneSimulation AISimulation { get; set; }
 
         /// <summary>
         /// An event fired when this call is closed. This event is used to remove the call from
@@ -124,7 +116,7 @@ namespace AgencyDispatchFramework.Dispatching
         /// </summary>
         /// <param name="id"></param>
         /// <param name="scenarioInfo"></param>
-        internal PriorityCall(int id, CalloutScenarioInfo scenarioInfo, WorldZone zone, WorldLocation location)
+        internal PriorityCall(int id, CalloutScenarioInfo scenarioInfo, WorldLocation location)
         {
             CallId = id;
             CallCreated = Rage.World.DateTime;
@@ -132,7 +124,6 @@ namespace AgencyDispatchFramework.Dispatching
             Description = scenarioInfo.Descriptions.Spawn();
             AttachedOfficers = new List<OfficerUnit>(4);
             CallStatus = CallStatus.Created;
-            Zone = zone;
             Location = location;
             Priority = scenarioInfo.Priority;
             TotalRequiredUnits = scenarioInfo.UnitCount;
@@ -202,6 +193,16 @@ namespace AgencyDispatchFramework.Dispatching
             OnCallEnded?.Invoke(this, flag);
         }
 
+        /// <summary>
+        /// Gets a list of officers attached to this <see cref="PriorityCall"/>
+        /// </summary>
+        public OfficerUnit[] GetAttachedOfficers() => AttachedOfficers.ToArray();
+
+        public override string ToString()
+        {
+            return ScenarioInfo?.Name;
+        }
+
         public bool Equals(PriorityCall other)
         {
             if (other == null) return false;
@@ -211,11 +212,6 @@ namespace AgencyDispatchFramework.Dispatching
         public override bool Equals(object obj)
         {
             return Equals(obj as PriorityCall);
-        }
-
-        public override string ToString()
-        {
-            return ScenarioInfo?.Name;
         }
 
         public override int GetHashCode()

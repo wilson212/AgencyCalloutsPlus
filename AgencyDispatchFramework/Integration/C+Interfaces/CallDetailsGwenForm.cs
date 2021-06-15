@@ -73,7 +73,7 @@ namespace AgencyDispatchFramework.Integration
             text_event_id.Text = Call.CallId.ToString();
             text_datetime.Text = Call.CallCreated.ToString();
             text_location.Text = locationText;
-            text_incident.Text = Call.IncidentText;
+            text_incident.Text = Call.ScenarioInfo.IncidentText;
             text_priority.Text = GetPriorityText((int)Call.OriginalPriority);
             text_status.Text = Call.CallStatus.ToString();
             text_source.Text = "CITIZEN";

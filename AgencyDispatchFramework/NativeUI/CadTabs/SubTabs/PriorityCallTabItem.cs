@@ -57,7 +57,7 @@ namespace AgencyDispatchFramework.NativeUI
         /// Creates a new instance of <see cref="PriorityCallTabItem"/>
         /// </summary>
         /// <param name="call"></param>
-        public PriorityCallTabItem(PriorityCall call) : base(call.IncidentText)
+        public PriorityCallTabItem(PriorityCall call) : base(call.ScenarioInfo.IncidentText)
         {
             Call = call;
             Address = Call.Location.GetAddress();
@@ -130,7 +130,7 @@ namespace AgencyDispatchFramework.NativeUI
             headerLoc = SafeSize.AddPoints(new Point(col2p, headerY));
             valueLoc = SafeSize.AddPoints(new Point(col2p, valueY));
             ResText.Draw("~b~Incident", headerLoc, HeaderTextWeight, Color.FromArgb(alpha, Color.White), Common.EFont.ChaletComprimeCologne, a, true, true, new Size(250, 0));
-            ResText.Draw($"~w~{Call.IncidentText}", valueLoc, ValueTextWeight, Color.FromArgb(alpha, Color.White), Common.EFont.ChaletComprimeCologne, false);
+            ResText.Draw($"~w~{Call.ScenarioInfo.IncidentText}", valueLoc, ValueTextWeight, Color.FromArgb(alpha, Color.White), Common.EFont.ChaletComprimeCologne, false);
 
             // Add Priority
             headerLoc = SafeSize.AddPoints(new Point(col4p, headerY));
@@ -155,7 +155,7 @@ namespace AgencyDispatchFramework.NativeUI
             headerLoc = SafeSize.AddPoints(new Point(col3p, headerY));
             valueLoc = SafeSize.AddPoints(new Point(col3p, valueY));
             ResText.Draw("~y~Zone", headerLoc, HeaderTextWeight, Color.FromArgb(alpha, Color.White), Common.EFont.ChaletComprimeCologne, a, true, true, new Size(250, 0));
-            ResText.Draw($"~w~{Call.Zone.ScriptName}", valueLoc, ValueTextWeight, Color.FromArgb(alpha, Color.White), Common.EFont.ChaletComprimeCologne, false);
+            ResText.Draw($"~w~{Call.Location.Zone.ScriptName}", valueLoc, ValueTextWeight, Color.FromArgb(alpha, Color.White), Common.EFont.ChaletComprimeCologne, false);
 
             // Add callout postal
             headerLoc = SafeSize.AddPoints(new Point(col4p, headerY));
@@ -183,7 +183,7 @@ namespace AgencyDispatchFramework.NativeUI
             ResText.Draw($"~w~{Call.PrimaryOfficer?.CallSign ?? "None"}", valueLoc, ValueTextWeight, Color.FromArgb(alpha, Color.White), Common.EFont.ChaletComprimeCologne, false);
 
             // add Agency
-            var agency = Call.PrimaryOfficer != null ? Call.PrimaryOfficer.Agency.ScriptName : Call.Zone.PoliceAgencies[0].ScriptName;
+            var agency = Call.PrimaryOfficer != null ? Call.PrimaryOfficer.Agency.ScriptName : Call.Location.Zone.PoliceAgencies[0].ScriptName;
             headerLoc = SafeSize.AddPoints(new Point(col3p, headerY));
             valueLoc = SafeSize.AddPoints(new Point(col3p, valueY));
             ResText.Draw("~y~Primary Agency", headerLoc, HeaderTextWeight, Color.FromArgb(alpha, Color.White), Common.EFont.ChaletComprimeCologne, a, true, true, new Size(250, 0));

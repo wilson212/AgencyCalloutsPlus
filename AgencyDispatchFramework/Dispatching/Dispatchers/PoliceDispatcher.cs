@@ -80,7 +80,7 @@ namespace AgencyDispatchFramework.Dispatching
                         }
 
                         // If we have not officers, stop here
-                        if (availableOfficers.Count < call.AdditionalUnitsRequired)
+                        if (availableOfficers.Count < call.NumberOfAdditionalUnitsRequired)
                         {
                             RaiseCall(call, new CallRaisedEventArgs() { NeedsPolice = true });
                         }
@@ -143,7 +143,7 @@ namespace AgencyDispatchFramework.Dispatching
 
                         // If after 20 minutes, we still have no officers to send from the
                         // primary agency, pull officers from higher agencies
-                        if (call.AttachedOfficers.Count == 0 && (currentTime - call.CallCreated > TimeSpan.FromMinutes(30)))
+                        if (call.PrimaryOfficer == null && (currentTime - call.CallCreated > TimeSpan.FromMinutes(30)))
                         {
                             // Raise this up!
                             RaiseCall(call, new CallRaisedEventArgs() { NeedsPolice = true });
@@ -297,7 +297,7 @@ namespace AgencyDispatchFramework.Dispatching
         /// <returns></returns>
         internal static List<OfficerUnit> GetClosestOfficersByPriority(Dictionary<DispatchPriority, List<OfficerUnit>> officers, PriorityCall call)
         {
-            var count = call.AdditionalUnitsRequired;
+            var count = call.NumberOfAdditionalUnitsRequired;
             var list = new List<OfficerUnit>();
             for (int i = 1; i < 5; i++)
             {

@@ -59,7 +59,7 @@ namespace AgencyDispatchFramework.Callouts.DomesticViolence
 
             // Show are blip and message
             ShowCalloutAreaBlipBeforeAccepting(Location.Position, 40f);
-            CalloutMessage = call.IncidentText;
+            CalloutMessage = call.ScenarioInfo.IncidentText;
             CalloutPosition = Location.Position;
 
             // Return base

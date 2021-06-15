@@ -1,6 +1,5 @@
 ﻿ToDO:
 	- AISceneSimulation
-	- Figure out how to handle callouts outside this mod (since we cannot have extranal classes extend the AgencyCallout class)
 	- Finish the CAD
 	- Finish adding "Add x location" for each location types in the plugin menu
 	- Code scenarios for callouts
@@ -34,4 +33,4 @@ Radio traffic with Dispatch and AI (handshake for accepting calls):
 	- Residence: Used for crimes that happen at a residence
 	- Business: Used for robberies or public altercations
 	- ParkingLot: Used for some crimes
-	- HidingSpot: Used for crimes that require privacy, such as public indecency or prostitution
+	- SecludedSpot: Used for crimes that require privacy, such as public indecency or prostitution

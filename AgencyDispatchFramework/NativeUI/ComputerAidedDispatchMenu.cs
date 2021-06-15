@@ -3,6 +3,7 @@ using AgencyDispatchFramework.Game;
 using LSPD_First_Response.Engine.Scripting.Entities;
 using LSPD_First_Response.Mod.API;
 using Rage;
+using RAGENativeUI;
 using RAGENativeUI.Elements;
 using RAGENativeUI.PauseMenu;
 using System;
@@ -173,7 +174,7 @@ namespace AgencyDispatchFramework.NativeUI
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="selectedItem"></param>
-        private static void ScenarioItem_Activated(RAGENativeUI.UIMenu sender, UIMenuItem selectedItem)
+        private static void ScenarioItem_Activated(UIMenu sender, UIMenuItem selectedItem)
         {
             // Get our scenario info
             var item = selectedItem as MyUIMenuItem<CalloutScenarioInfo>;

@@ -90,7 +90,7 @@ namespace AgencyDispatchFramework.Xml
             }
 
             // Load crime probabilites
-            Zone.CrimeTypeGenerator = new WorldStateProbabilityGenerator<CallCategory>();
+            Zone.CallCategoryGenerator = new WorldStateProbabilityGenerator<CallCategory>();
 
             // Get average calls by time of day
             var subNode = catagoryNode.SelectSingleNode("AverageCalls");
@@ -127,7 +127,7 @@ namespace AgencyDispatchFramework.Xml
 
                     // Try and parse the probability levels by Time of Day
                     var multipliers = XmlExtractor.GetWorldStateMultipliers(n);
-                    Zone.CrimeTypeGenerator.Add(calloutType, multipliers);
+                    Zone.CallCategoryGenerator.Add(calloutType, multipliers);
                 }
             }
 
