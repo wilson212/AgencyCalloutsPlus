@@ -55,15 +55,64 @@
       <!-- 
         The <Ped> node is used as a config to set the chances of the Ped being drunk,
         high, thier demeanor and items in thier inventory.
+        
+        Attributes:
+          - drunkChance : sets the chance of making the Ped drunk. This is a percentage chance (0 - 100)
+          - highChance : sets the chance of making the Ped High on drugs. This is a percentage chance (0 - 100)
       -->
       <Ped drunkChance="5" highChance="5">
-        <Inventory>
-          <Item chance="10"></Item>
+        
+        <!-- 
+          The Inventory node is used to add contraband and/or weapons into the Peds inventory. You may add as many
+          items as you with under this node.
+          
+          There are 2 accepted node names for each item: 
+            - Contraband : Indicates that the item is added as contraband which can be discoverd when searching the ped
+            - Weapon : Adds the item as contraband to the Ped, but also adds the weapon to the ped's inventory
+            
+          Attributes:
+            - clearContraband : If true, the Peds inventory will be cleared of all contraband added by 
+                                LSPDFR and StopThePed prior to the items added below.
+            - clearWeapons : If true, all weapons in the Peds invetory proir to the items being added
+                              below will be removed
+        -->
+        <Inventory clearContraband="false" clearWeapons="false">
+          <!-- 
+            Here we are adding narcotics to the ped with a 25% chance, but only if the Victim ped is High on drugs 
+            If the program rolls lower than a 25, one of the <Item> nodes will be selected based on probability, and
+            added to the peds inventory as contraband.
+            
+            Accepted values for the attribute "type":
+              - Narcotics : Highlighted in red on the ped search screen
+              - Contraband : Highlighted in yellow on the ped search screen
+              - Misc : Highlighted in green on the ped search screen
+          -->
+          <Contraband type="Narcotics" chance="25" if="Victim.IsHigh">
+            <Item probability="10">A gram of weed</Item>
+          </Contraband>
+          
+          <!--
+            Below we are adding a weapon to the ped with a 10% chance, but only if they are not drunk.
+            Like Contraband, if the program rolls less than the "chance" value, the weapon will be added
+            as contraband to the ped, as well as thier inventory for use in the game.
+          -->
+          <Weapon chance="10" if="Victim.IsDrunk == false">
+            <!-- See Also: https://wiki.rage.mp/index.php?title=Weapons -->
+            <Item probability="10" id="weapon_pistol" ammo="30">A 9mm Pistol</Item>
+          </Weapon>
         </Inventory>
+        
+        <!--
+          The presentation node is used to randomly select a demeanor for the Ped based on set probability.
+          Each <Demeanor> node can support an "if" attribute also.
+          
+          The presentaion node is loaded after the <Inventory> node, therfore the "if" attribute supported
+          lookup of the Peds inventory.
+        -->
         <Presentation>
           <Demeanor probability="10">Calm</Demeanor>
-          <Demeanor probability="10">Worried</Demeanor>
-          <Demeanor probability="10">Nervous</Demeanor>
+          <Demeanor probability="25" if="Victim.HasNarcotics or Victim.HasLoadedWeapon">Worried</Demeanor>
+          <Demeanor probability="25" if="Victim.IsHigh or Victim.IsDrunk">Nervous</Demeanor>
           <Demeanor probability="5">Angry</Demeanor>
         </Presentation>
       </Ped>

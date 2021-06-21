@@ -1,5 +1,4 @@
 ﻿using AgencyDispatchFramework.Game.Locations;
-using AgencyDispatchFramework.Simulation;
 using LSPD_First_Response.Mod.Callouts;
 using System;
 using System.Collections.Generic;
@@ -11,7 +10,7 @@ namespace AgencyDispatchFramework.Dispatching
     /// Represents a <see cref="LSPD_First_Response.Mod.Callouts.Callout"/> that can
     /// be queued up and dispatched to <see cref="Dispatching.OfficerUnit"/>(s)
     /// </summary>
-    public sealed class PriorityCall : IEquatable<PriorityCall>
+    public sealed class PriorityCall : IEquatable<PriorityCall>, IDisposable
     {
         /// <summary>
         /// The unique call ID
@@ -81,7 +80,7 @@ namespace AgencyDispatchFramework.Dispatching
         public int TotalRequiredUnits { get; internal set; }
 
         /// <summary>
-        /// Gets the number of <see cref="OfficerUnit"/>s required for this call
+        /// Gets the number of additional <see cref="OfficerUnit"/>s still required for this call
         /// </summary>
         public int NumberOfAdditionalUnitsRequired => Math.Max(TotalRequiredUnits - AttachedOfficers.Count, 0);
 
@@ -101,9 +100,14 @@ namespace AgencyDispatchFramework.Dispatching
         public PriorityCallDescription Description { get; internal set; }
 
         /// <summary>
-        /// TEMPORARY
+        /// Gets a value indicated whether the call has ended
         /// </summary>
-        public AISceneSimulation AISimulation { get; set; }
+        public bool HasEnded { get; internal set; }
+
+        /// <summary>
+        /// Gets a value indicating whether this instance is disposed
+        /// </summary>
+        public bool Disposed { get; internal set; }
 
         /// <summary>
         /// An event fired when this call is closed. This event is used to remove the call from
@@ -127,9 +131,6 @@ namespace AgencyDispatchFramework.Dispatching
             Location = location;
             Priority = scenarioInfo.Priority;
             TotalRequiredUnits = scenarioInfo.UnitCount;
-
-            // Temp
-            AISimulation = new AISceneSimulation(this);
         }
 
         /// <summary>
@@ -179,18 +180,40 @@ namespace AgencyDispatchFramework.Dispatching
             AttachedOfficers.Remove(officer);
         }
 
-        internal void OnTick()
-        {
-
-        }
-
         /// <summary>
         /// Ends the call and calls the event <see cref="OnCallEnded"/>
         /// </summary>
         /// <param name="flag"></param>
         internal void End(CallCloseFlag flag)
         {
-            OnCallEnded?.Invoke(this, flag);
+            if (!HasEnded)
+            {
+                HasEnded = true;
+
+                // Fire event
+                OnCallEnded?.Invoke(this, flag);
+
+                // Dispose of this instance
+                Dispose();
+            }
+        }
+
+        public void Dispose()
+        {
+            // Only dispose once, and on internal calls only
+            if (Disposed || !HasEnded) return;
+
+            // Flag
+            Disposed = true;
+
+            // Clear
+            Callout = null;
+            ScenarioInfo = null;
+            AttachedOfficers.Clear();
+            AttachedOfficers = null;
+            PrimaryOfficer = null;
+            Location = null;
+            Description = null;
         }
 
         /// <summary>

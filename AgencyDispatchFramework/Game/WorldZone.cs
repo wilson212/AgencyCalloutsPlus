@@ -196,8 +196,7 @@ namespace AgencyDispatchFramework.Game
                 }
                 catch (InvalidCastException ex)
                 {
-                    Log.Error($"ZoneInfo.GetRandomLocationFromPool<T>(): Cast exception to {typeof(T).Name} from location pool. Logging exception data");
-                    Log.Exception(ex);
+                    Log.Exception(ex, $"ZoneInfo.GetRandomLocationFromPool<T>(): Cast exception to {typeof(T).Name} from location pool. Logging exception data");
                     return null;
                 }
             }

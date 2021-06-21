@@ -820,7 +820,7 @@ namespace AgencyDispatchFramework.NativeUI
                     {
                         // Disable the Callout menu button if player is not on a callout
                         EndCallMenuButton.Enabled = Dispatch.PlayerActiveCall != null;
-                        RequestCallMenuButton.Enabled = Dispatch.CanInvokeAnyCalloutForPlayer();
+                        RequestCallMenuButton.Enabled = Dispatch.CanInvokeAnyCalloutForPlayer(true);
                     }
                 }
             });

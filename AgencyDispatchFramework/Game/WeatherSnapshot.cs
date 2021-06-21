@@ -1,27 +1,42 @@
 ﻿using Rage;
+using System;
 
 namespace AgencyDispatchFramework.Game
 {
     /// <summary>
     /// A snapshot of Wheather information, used mostly within a <see cref="Callouts.CalloutScenario"/>
     /// </summary>
-    public class WeatherInfo
+    public class WeatherSnapshot
     {
         /// <summary>
         /// Indicates whether the roads in game are wet
         /// </summary>
-        public bool RoadsAreWet { get; set; }
+        public bool RoadsAreWet { get; internal set; }
 
         /// <summary>
         /// Indicates whether the game has snowing enabled
         /// </summary>
-        public bool IsSnowing { get; set; }
+        public bool IsSnowing { get; internal set; }
+
+        /// <summary>
+        /// Gets the <see cref="Game.Weather"/> at the time of this snapshot
+        /// </summary>
+        public Weather Weather { get; internal set; }
+
+        /// <summary>
+        /// Gets the <see cref="DateTime"/> of this snapshot using the in Game time and date
+        /// </summary>
+        public DateTime DateTime { get; internal set; }
 
         /// <summary>
         /// Internal constructor
         /// </summary>
-        internal WeatherInfo()
+        internal WeatherSnapshot()
         {
+            // Set datetime
+            DateTime = World.DateTime;
+
+            // Set if road is wet
             if (World.WaterPuddlesIntensity > 0.0)
             {
                 RoadsAreWet = true;
@@ -38,6 +53,11 @@ namespace AgencyDispatchFramework.Game
                     RoadsAreWet = true;
                     break;
             }
+        }
+
+        public override string ToString()
+        {
+            return Weather.ToString();
         }
     }
 }

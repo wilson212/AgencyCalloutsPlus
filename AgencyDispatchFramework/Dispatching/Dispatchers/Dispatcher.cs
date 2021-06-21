@@ -163,7 +163,7 @@ namespace AgencyDispatchFramework.Dispatching
             // If player, tell dispatch so it can play the radio
             if (!officer.IsAIUnit)
             {
-                Dispatch.DispatchedPlayerToCall(call);
+                Dispatch.AssignedPlayerToCall(call);
             }
         }
 

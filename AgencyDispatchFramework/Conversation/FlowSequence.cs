@@ -1,6 +1,7 @@
 ﻿using AgencyDispatchFramework.Extensions;
 using AgencyDispatchFramework.Game;
 using AgencyDispatchFramework.NativeUI;
+using LSPD_First_Response.Engine.Scripting.Entities;
 using Rage;
 using RAGENativeUI;
 using RAGENativeUI.Elements;
@@ -25,7 +26,7 @@ namespace AgencyDispatchFramework.Conversation
         /// <summary>
         /// Gets the sequence ID for this conversation event
         /// </summary>
-        public string SequenceId { get; protected set; }
+        public string SequenceId { get; private set; }
 
         /// <summary>
         /// Gets the <see cref="Rage.Ped"/> this <see cref="FlowSequence"/> is attacthed to
@@ -35,7 +36,7 @@ namespace AgencyDispatchFramework.Conversation
         /// <summary>
         /// Contains the main menu string name
         /// </summary>
-        protected string InitialMenuName { get; set; }
+        internal string InitialMenuName { get; set; }
 
         /// <summary>
         /// A <see cref="MenuPool"/> that contains all of this <see cref="FlowSequence"/> <see cref="UIMenu"/>s
@@ -45,23 +46,23 @@ namespace AgencyDispatchFramework.Conversation
         /// <summary>
         /// Contains a list of flow return menu's by name
         /// </summary>
-        protected Dictionary<string, UIMenu> FlowReturnMenus { get; set; }
+        internal Dictionary<string, UIMenu> FlowReturnMenus { get; set; }
 
         /// <summary>
         /// Contains a list of <see cref="UIMenuItem"/>s by id
         /// that it belongs to
         /// </summary>
-        protected Dictionary<string, UIMenuItem> MenuButtonsById { get; set; }
+        internal Dictionary<string, UIMenuItem> MenuButtonsById { get; set; }
 
         /// <summary>
         /// Contains a list of flow return menu items that are initially no visible
         /// </summary>
-        protected Dictionary<string, UIMenuItem> HiddenMenuItems { get; set; }
+        internal Dictionary<string, UIMenuItem> HiddenMenuItems { get; set; }
 
         /// <summary>
         /// Contains a list of flow return menu items that are initially no visible
         /// </summary>
-        protected Dictionary<string, Action> Callbacks { get; set; }
+        internal Dictionary<string, Action> Callbacks { get; set; }
 
         /// <summary>
         /// Contains our <see cref="ResponseSet"/> for this <see cref="FlowSequence"/>
@@ -71,7 +72,7 @@ namespace AgencyDispatchFramework.Conversation
         /// <summary>
         /// Contains officer dialogs attached to each menu option
         /// </summary>
-        protected Dictionary<string, Subtitle[]> OfficerDialogs { get; set; }
+        internal Dictionary<string, Subtitle[]> OfficerDialogs { get; set; }
 
         /// <summary>
         /// Contains string replacements in the Output strings
@@ -79,22 +80,9 @@ namespace AgencyDispatchFramework.Conversation
         protected Dictionary<string, object> Variables { get; set; }
 
         /// <summary>
-        /// Contains the expression parser used on the "if" attribuutes
-        /// </summary>
-        protected ExpressionParser Parser { get; set; }
-
-        /// <summary>
         /// Gets the FlowOutcome name selected for this conversation event
         /// </summary>
         public string FlowOutcomeId { get; protected set; }
-
-        /// <summary>
-        /// Delegate to handle a <see cref="FlowSequenceEvent"/>
-        /// </summary>
-        /// <param name="sender">The <see cref="FlowSequence"/> that triggered the <see cref="PedResponse"/></param>
-        /// <param name="e">The <see cref="PedResponse"/> instance</param>
-        /// <param name="l">The displayed <see cref="Statement"/> to the player in game</param>
-        public delegate void PedResponseEventHandler(FlowSequence sender, PedResponse e, Statement l);
 
         /// <summary>
         /// Event fired whenever a <see cref="PedResponse"/> is displayed
@@ -104,24 +92,24 @@ namespace AgencyDispatchFramework.Conversation
         /// <summary>
         /// Creates a new <see cref="FlowSequence"/> instance
         /// </summary>
+        /// <param name="sequenceId">The unique name of this sequence. Usually the filename without extension</param>
         /// <param name="ped">The conversation subject ped</param>
-        /// <param name="outcomeId">The selected outcome <see cref="ResponseSet"/></param>
-        /// <param name="document">The XML document containing the <see cref="FlowSequence"/> XML data</param>
-        /// <param name="parser">An <see cref="ExpressionParser" /> containing parameters to parse "if" statements in the XML</param>
-        public FlowSequence(string sequenceId, Ped ped, FlowOutcome outcome, XmlDocument document, ExpressionParser parser)
+        /// <param name="outcome">The selected outcome <see cref="ResponseSet"/></param>
+        internal FlowSequence(string sequenceId, GamePed ped, FlowOutcome outcome)
         {
-            // Set internal vars
+            // Set internals
             SequenceId = sequenceId;
+            SubjectPed = ped;
             FlowOutcomeId = outcome.Id;
-            SubjectPed = new GamePed(ped);
-            Parser = parser;
+
+            // Create empty containers
+            AllMenus = new MenuPool();
+            FlowReturnMenus = new Dictionary<string, UIMenu>();
+            OfficerDialogs = new Dictionary<string, Subtitle[]>();
             Variables = new Dictionary<string, object>();
             HiddenMenuItems = new Dictionary<string, UIMenuItem>();
             MenuButtonsById = new Dictionary<string, UIMenuItem>();
             Callbacks = new Dictionary<string, Action>();
-
-            // Parse XML document
-            LoadXml(document, outcome.Id);
         }
 
         /// <summary>
@@ -466,307 +454,33 @@ namespace AgencyDispatchFramework.Conversation
             OnPedResponse(this, response, statement);
         }
 
-        #region XML loading methods
-
-        private void LoadXml(XmlDocument document, string outcomeId)
+        /// <summary>
+        /// Adds a menu button to the internal list, and registers for the click event
+        /// </summary>
+        /// <param name="buttonId"></param>
+        /// <param name="item"></param>
+        /// <param name="visible"></param>
+        internal void AddMenuButton(string buttonId, MyUIMenuItem<string> item, bool visible)
         {
-            var documentRoot = document.SelectSingleNode("FlowSequence");
-            AllMenus = new MenuPool();
-            FlowReturnMenus = new Dictionary<string, UIMenu>();
-            OfficerDialogs = new Dictionary<string, Subtitle[]>();
+            // Register for event
+            item.Activated += On_ItemActivated;
 
-            // ====================================================
-            // Load input flow return menus
-            // ====================================================
-            XmlNode catagoryNode = documentRoot.SelectSingleNode("Input");
-            if (catagoryNode == null || !catagoryNode.HasChildNodes)
+            // Add named item to our hash table
+            if (!MenuButtonsById.ContainsKey(buttonId))
             {
-                throw new ArgumentNullException("Input");
+                MenuButtonsById.Add(buttonId, item);
             }
 
-            // Load FlowReturn items
-            int i = 0;
-            foreach (XmlNode n in catagoryNode.SelectNodes("Menu"))
+            // Handle item visibility
+            if (!visible)
             {
-                // Validate and extract attributes
-                if (n.Attributes == null || n.Attributes["id"]?.Value == null)
-                {
-                    Log.Warning($"FlowSequence.LoadXml(): Menu node has no 'id' attribute");
-                    continue;
-                }
-
-                // Create
-                string menuId = n.Attributes["id"].Value;
-                var menu = new UIMenu("Ped Interaction", $"~y~{SubjectPed.Persona.FullName}");
-
-                // Extract menu items
-                foreach (XmlNode menuItemNode in n.SelectNodes("MenuItem"))
-                {
-                    // Extract attributes
-                    if (menuItemNode.Attributes == null)
-                    {
-                        Log.Error($"FlowSequence.LoadXml(): Menu -> MenuItem has no attributes");
-                        continue;
-                    }
-
-                    // Extract id attriibute
-                    string buttonId = menuItemNode.Attributes["id"]?.Value;
-                    if (String.IsNullOrWhiteSpace(buttonId))
-                    {
-                        Log.Error($"FlowSequence.LoadXml(): Menu -> MenuItem has no or empty 'id' attribute");
-                        continue;
-                    }
-
-                    // Ensure ID is unique
-                    if (OfficerDialogs.ContainsKey(buttonId))
-                    {
-                        Log.Error($"FlowSequence.LoadXml(): Menu -> MenuItem 'id' attribute is not unique");
-                        continue;
-                    }
-
-                    // Extract button text attriibute
-                    string text = menuItemNode.Attributes["buttonText"]?.Value;
-                    if (String.IsNullOrWhiteSpace(text))
-                    {
-                        Log.Error($"FlowSequence.LoadXml(): Menu -> MenuItem has no or empty 'buttonText' attribute");
-                        continue;
-                    }
-
-                    // Extract visible attriibute
-                    bool isVisible = true;
-                    string val = menuItemNode.Attributes["visible"]?.Value;
-                    if (!String.IsNullOrWhiteSpace(text))
-                    {
-                        if (!bool.TryParse(val, out isVisible))
-                        {
-                            isVisible = true;
-                            Log.Warning($"FlowSequence.LoadXml(): Menu -> MenuItem attribute 'visible' attribute is not correctly formatted");
-                        }
-                    }
-
-                    // Ensure we have lines to read
-                    if (!menuItemNode.HasChildNodes)
-                    {
-                        Log.Error($"FlowSequence.LoadXml(): Menu -> MenuItem has no Line child nodes");
-                        continue;
-                    }
-
-                    // Load dialog for officer
-                    var subNodes = menuItemNode.SelectNodes("Subtitle");
-                    if (subNodes != null && subNodes.Count > 0)
-                    {
-                        List<Subtitle> lines = new List<Subtitle>(subNodes.Count);
-                        foreach (XmlNode lNode in subNodes)
-                        {
-                            // Validate and extract attributes
-                            if (lNode.Attributes == null || !Int32.TryParse(lNode.Attributes["time"]?.Value, out int time))
-                            {
-                                time = 3000;
-                            }
-
-                            lines.Add(new Subtitle() { Text = lNode.InnerText, Duration = time });
-                        }
-
-                        // Save lines
-                        OfficerDialogs.Add(buttonId, lines.ToArray());
-                    }
-                    else
-                    {
-                        // Log
-                        Log.Warning("FlowSequence.LoadXml(): Menu -> MenuItem has no Line nodes");
-
-                        // Save default line
-                        OfficerDialogs.Add(buttonId, new Subtitle[] { new Subtitle() { Text = text, Duration = 3000 } });
-                    }
-
-                    // Create button
-                    var item = new MyUIMenuItem<string>(text);
-                    item.Tag = buttonId;
-                    item.Parent = menu; // !! Important !!
-                    item.Activated += On_ItemActivated;
-
-                    // Add named item to our hash table
-                    if (!MenuButtonsById.ContainsKey(buttonId))
-                    {
-                        MenuButtonsById.Add(buttonId, item);
-                    }
-
-                    // Handle item visibility
-                    if (!isVisible)
-                    {
-                        // Store for later
-                        HiddenMenuItems.Add(buttonId, item);
-                    }
-                    else
-                    {
-                        menu.AddItem(item);
-                    }
-                }
-
-                // Add menu
-                AllMenus.Add(menu);
-                FlowReturnMenus.Add(menuId, menu);
-
-                if (i == 0)
-                {
-                    InitialMenuName = menuId;
-                }
-
-                i++;
-            }
-
-            // Call menu refresh
-            AllMenus.RefreshIndex();
-
-            // Load all flow outcome id's
-            var mapping = new Dictionary<string, XmlNode>();
-            foreach (XmlNode node in documentRoot.SelectNodes("Output/FlowOutcome"))
-            {
-                var ids = node.GetAttribute("id")?.Split(',');
-                if (ids == null || ids.Length == 0)
-                {
-                    throw new ArgumentNullException("Output", $"Scenario FlowOutcome does not contain any id's");
-                }
-                
-                foreach (string name in ids)
-                {
-                    mapping.Add(name, node);
-                }
-            }
-
-            // Ensure flow outcome ID exists
-            if (!mapping.ContainsKey(outcomeId))
-            {
-                throw new ArgumentNullException("Output", $"Scenario FlowOutcome does not exist '{outcomeId}'");
-            }
-
-            // ====================================================
-            // Load response sequences
-            // ====================================================
-            catagoryNode = mapping[outcomeId];
-            if (catagoryNode == null || !catagoryNode.HasChildNodes)
-            {
-                throw new ArgumentNullException("Output", $"Scenario FlowOutcome does not exist '{outcomeId}'");
-            }
-
-            // Validate and extract attributes
-            if (!String.IsNullOrWhiteSpace(catagoryNode.Attributes["initialMenu"]?.Value))
-            {
-                // Ensure menu exists
-                var menuName = catagoryNode.Attributes["initialMenu"].Value;
-                if (FlowReturnMenus.ContainsKey(menuName))
-                {
-                    InitialMenuName = menuName;
-                }
-                else
-                {
-                    // Log as warning and continue
-                    Log.Warning($"FlowSequence.LoadXml(): Specified initial menu for FlowOutcome '{FlowOutcomeId}' does not exist!");
-                }
+                // Store for later
+                HiddenMenuItems.Add(buttonId, item);
             }
             else
             {
-                // Log as warning and continue
-                Log.Warning($"FlowSequence.LoadXml(): FlowOutcome '{FlowOutcomeId}' does not have an 'initialMenu' attribute!");
+                item.Parent.AddItem(item);
             }
-
-            // Extract Ped data
-            var subNode = catagoryNode.SelectSingleNode("Ped");
-            if (subNode == null || !subNode.HasChildNodes)
-            {
-                throw new ArgumentNullException("Output", $"Scenario FlowOutcome '{outcomeId}' does not contain a Ped node");
-            }
-
-            // Extract drunk attribute
-            var random = new CryptoRandom();
-            if (Int32.TryParse(catagoryNode.Attributes["drunkChance"]?.Value, out int drunkChance))
-            {
-                // Set ped to drunk?
-                if (drunkChance.InRange(1, 100) && random.Next(1, 100) <= drunkChance)
-                {
-                    SubjectPed.IsDrunk = true;
-                }
-            }
-
-            // Extract high attribute
-            if (Int32.TryParse(catagoryNode.Attributes["highChance"]?.Value, out drunkChance))
-            {
-                // Set ped to drunk?
-                if (drunkChance.InRange(1, 100) && random.Next(1, 100) <= drunkChance)
-                {
-                    SubjectPed.IsHigh = true;
-                }
-            }
-
-            // ====================================================
-            // @TODO :: Extract inventory items
-            // ====================================================
-
-            // ====================================================
-            // Get SubjectPed Demeanor
-            // ====================================================
-            subNode = subNode.SelectSingleNode("Presentation");
-            var items = subNode.SelectNodes("Demeanor");
-            if (subNode == null || items.Count == 0)
-            {
-                SubjectPed.Demeanor = PedDemeanor.Calm;
-
-                // Log as warning and continue
-                Log.Warning($"FlowSequence.LoadXml(): FlowOutcome '{FlowOutcomeId}' does not have a Ped->Presentation node");
-            }
-            else
-            {
-                var gen = new ProbabilityGenerator<Spawnable<PedDemeanor>>();
-                foreach (XmlNode item in items)
-                {
-                    // Skip if we cant parse the value
-                    if (!Enum.TryParse(item.InnerText, out PedDemeanor demeanor))
-                    {
-                        // Log as warning and continue
-                        Log.Warning($"FlowSequence.LoadXml(): Unable to parse FlowOutcome['{FlowOutcomeId}'] Ped->Presentation->Demeanor node value");
-                        continue;
-                    }                    
-
-                    // Skip if we cant parse the value
-                    if (!Int32.TryParse(item.Attributes["probability"]?.Value, out int prob))
-                    {
-                        // Log as warning and continue
-                        Log.Warning($"FlowSequence.LoadXml(): Unable to parse FlowOutcome['{FlowOutcomeId}'] Ped->Presentation->Demeanor probability attribute value");
-                        continue;
-                    }
-
-                    // See if we have an IF statement
-                    if (!String.IsNullOrEmpty(item.Attributes["if"]?.Value))
-                    {
-                        // Do we have a parser?
-                        if (Parser == null)
-                        {
-                            Log.Warning($"FlowSequence.LoadXml(): Statement from FlowOutcome['{FlowOutcomeId}']->Ped->Presentation->Demeanor has 'if' statement but no ExpressionParser is defined... Skipping");
-                            continue;
-                        }
-
-                        // parse expression
-                        if (!Parser.Evaluate<bool>(item.Attributes["if"].Value))
-                        {
-                            // If we failed to evaluate to true, skip
-                            continue;
-                        }
-                    }
-
-                    gen.Add(new Spawnable<PedDemeanor>(prob, demeanor));
-                }
-
-                // If we extracted anything
-                if (gen.ItemCount > 0)
-                {
-                    SubjectPed.Demeanor = gen.Spawn().Value;
-                }
-            }
-
-            // Load flow outcome
-            PedResponses = new ResponseSet(outcomeId, catagoryNode.SelectSingleNode("Responses"), Parser);
         }
-
-        #endregion XML loading methods
     }
 }

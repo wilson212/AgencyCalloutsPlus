@@ -87,16 +87,20 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Conversation\PedResponseEventHandler.cs" />
     <Compile Include="Dispatching\Agency\SheriffAgency.cs" />
     <Compile Include="Dispatching\Assignments\BusinessCheck.cs" />
     <Compile Include="Dispatching\Assignments\FelonyTrafficStop.cs" />
     <Compile Include="Dispatching\Assignments\PrisonerTransport.cs" />
     <Compile Include="Dispatching\Assignments\TrafficEnforcement.cs" />
+    <Compile Include="Dispatching\Delegates\BeforeRadioPlayedHandler.cs" />
     <Compile Include="Dispatching\Delegates\CallEndedHandler.cs" />
     <Compile Include="Dispatching\Delegates\CallListUpdateHandler.cs" />
     <Compile Include="Dispatching\Delegates\CalloutListUpdateHandler.cs" />
     <Compile Include="Dispatching\Delegates\CalloutPackLoadedHandler.cs" />
     <Compile Include="Dispatching\Delegates\CallRaisedHandler.cs" />
+    <Compile Include="Dispatching\Delegates\RadioCancelEventArgs.cs" />
+    <Compile Include="Dispatching\Delegates\RadioMessageEventHandler.cs" />
     <Compile Include="Dispatching\Dispatchers\Dispatcher.cs" />
     <Compile Include="Dispatching\Enums\CallTarget.cs" />
     <Compile Include="Dispatching\Enums\DispatchPriority.cs" />
@@ -105,6 +109,7 @@
     <Compile Include="Dispatching\RadioMessage.cs" />
     <Compile Include="Dispatching\Delegates\ScenarioListUpdateHandler.cs" />
     <Compile Include="Dispatching\Enums\ResponseCode.cs" />
+    <Compile Include="Dispatching\Scanner.cs" />
     <Compile Include="Dispatching\ScenarioPool.cs" />
     <Compile Include="Dispatching\Assignments\AssignedToCall.cs" />
     <Compile Include="Dispatching\Assignments\CivilDisturbance.cs" />
@@ -115,13 +120,23 @@
     <Compile Include="Dispatching\Assignments\Pursuit.cs" />
     <Compile Include="Dispatching\Assignments\TrafficAccident.cs" />
     <Compile Include="Dispatching\Assignments\StandardTrafficStop.cs" />
+    <Compile Include="Events\AiScriptedEvent.cs" />
+    <Compile Include="Events\TrafficStop\BackupRequested.cs" />
+    <Compile Include="Events\TrafficStop\K9RequestEvent.cs" />
+    <Compile Include="Events\TrafficStop\ShotsFiredEvent.cs" />
+    <Compile Include="Events\TrafficStop\SupervisorRequestEvent.cs" />
     <Compile Include="Events\AmbientEvent.cs" />
+    <Compile Include="Events\Ambient\CarAccidentEvent.cs" />
+    <Compile Include="Events\Ambient\PeopleFightingEvent.cs" />
+    <Compile Include="Events\Ambient\RecklessDriverEvent.cs" />
+    <Compile Include="Events\Ambient\SuspiciousVehicleEvent.cs" />
     <Compile Include="Extensions\CharExtensions.cs" />
     <Compile Include="Extensions\Enums\LogicOperator.cs" />
     <Compile Include="Extensions\Enums\SelectionOperator.cs" />
     <Compile Include="Extensions\IEnumerableExtensions.cs" />
     <Compile Include="Extensions\ListExtensions.cs" />
     <Compile Include="Extensions\StringBuilderExtensions.cs" />
+    <Compile Include="Game\ContrabandItem.cs" />
     <Compile Include="Game\Delegates\TimePeriodChangedEventHandler.cs" />
     <Compile Include="Game\Delegates\WeatherChangedEventHandler.cs" />
     <Compile Include="Game\Enums\County.cs" />
@@ -139,7 +154,6 @@
     <Compile Include="Game\GameWorld.cs" />
     <Compile Include="Conversation\SubtitleEventHandler.cs" />
     <Compile Include="Game\Locations\Enums\RoadShoulderPosition.cs" />
-    <Compile Include="Game\PedCache.cs" />
     <Compile Include="Game\Delegates\TimeScaleChangedEventHandler.cs" />
     <Compile Include="LogLevel.cs" />
     <Compile Include="NativeUI\Example.cs" />
@@ -151,7 +165,7 @@
     <Compile Include="Game\Enums\PedDescriptionProperty.cs" />
     <Compile Include="Game\PedInfo.cs" />
     <Compile Include="Game\PedModelMeta.cs" />
-    <Compile Include="Game\WeatherInfo.cs" />
+    <Compile Include="Game\WeatherSnapshot.cs" />
     <Compile Include="Conversation\FlowOutcome.cs" />
     <Compile Include="Extensions\ColorExtensions.cs" />
     <Compile Include="Extensions\RegexExtensions.cs" />
@@ -601,6 +615,8 @@
     </Content>
     <Content Include="Callouts\Scenarios.txt" />
     <Content Include="GameScenarios.txt" />
+    <Content Include="Integration\STP.txt" />
+    <Content Include="PedMetadata.txt" />
     <Content Include="Todo.txt" />
   </ItemGroup>
   <ItemGroup>

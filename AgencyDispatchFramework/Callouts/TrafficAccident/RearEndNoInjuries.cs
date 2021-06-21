@@ -1,11 +1,15 @@
 ﻿using AgencyDispatchFramework.Conversation;
+using AgencyDispatchFramework.Dispatching;
 using AgencyDispatchFramework.Extensions;
 using AgencyDispatchFramework.Game;
 using AgencyDispatchFramework.Game.Locations;
 using AgencyDispatchFramework.NativeUI;
+using AgencyDispatchFramework.Xml;
+using LSPD_First_Response.Mod.API;
 using Rage;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Xml;
 
 namespace AgencyDispatchFramework.Callouts.TrafficAccident
@@ -35,7 +39,7 @@ namespace AgencyDispatchFramework.Callouts.TrafficAccident
 
         #region Victim fields
 
-        private Ped Victim;
+        private GamePed Victim;
         private VehicleClass VictimVehicleType;
         private Vehicle VictimVehicle;
         private Blip VictimBlip;
@@ -44,7 +48,7 @@ namespace AgencyDispatchFramework.Callouts.TrafficAccident
 
         #region Suspect fields
 
-        private Ped Suspect;
+        private GamePed Suspect;
         private VehicleClass SuspectVehicleType;
         private Vehicle SuspectVehicle;
         private Blip SuspectBlip;
@@ -58,18 +62,10 @@ namespace AgencyDispatchFramework.Callouts.TrafficAccident
         /// </summary>
         /// <param name="callout">The parent callout instance</param>
         /// <param name="scenarioNode">The <see cref="XmlNode"/> for this scenario specifically</param>
-        public RearEndNoInjuries(Controller callout, XmlNode scenarioNode) : base(scenarioNode)
+        public RearEndNoInjuries(Controller callout, CalloutScenarioInfo info) : base(info)
         {
             // Set internals
             Callout = callout;
-
-            // Get Victim 1 vehicle type using probability defined in the CalloutMeta.xml
-            var cars = scenarioNode.SelectSingleNode("Victim1/VehicleTypes").ChildNodes;
-            VictimVehicleType = GetRandomVehicleType(cars);
-
-            // Get Victim 2 vehicle type using probability defined in the CalloutMeta.xml
-            cars = scenarioNode.SelectSingleNode("Victim2/VehicleTypes").ChildNodes;
-            SuspectVehicleType = GetRandomVehicleType(cars);
         }
 
         /// <summary>
@@ -78,12 +74,6 @@ namespace AgencyDispatchFramework.Callouts.TrafficAccident
         /// </summary>
         public override void Setup()
         {
-            // Ensure our FlowOutcome is not null
-            if (FlowOutcome == null)
-            {
-                throw new ArgumentNullException(nameof(FlowOutcome));
-            }
-
             // Show player notification
             Rage.Game.DisplayNotification(
                 "3dtextures",
@@ -92,6 +82,21 @@ namespace AgencyDispatchFramework.Callouts.TrafficAccident
                 "~r~MVA",
                 "Reports of a vehicle accident, respond ~b~CODE-2"
             );
+
+            // Build a random car type generator
+            var generator = new ProbabilityGenerator<VehicleSpawn>();
+            generator.Add(new VehicleSpawn() { Type = VehicleClass.Compact, Probability = 5 });
+            generator.Add(new VehicleSpawn() { Type = VehicleClass.Sedan, Probability = 5 });
+            generator.Add(new VehicleSpawn() { Type = VehicleClass.Coupe, Probability = 5 });
+            generator.Add(new VehicleSpawn() { Type = VehicleClass.Sport, Probability = 5 });
+            generator.Add(new VehicleSpawn() { Type = VehicleClass.SUV, Probability = 5 });
+            generator.Add(new VehicleSpawn() { Type = VehicleClass.Emergency, Probability = 3 });
+            generator.Add(new VehicleSpawn() { Type = VehicleClass.Muscle, Probability = 3 });
+            generator.Add(new VehicleSpawn() { Type = VehicleClass.Super, Probability = 2 });
+
+            // Spawn random vehicle types for both the victim and suspect
+            VictimVehicleType = generator.Spawn().Type;
+            SuspectVehicleType = generator.Spawn().Type;
 
             // Create victim car
             var victimV = VehicleInfo.GetRandomVehicleByType(VictimVehicleType);
@@ -103,13 +108,13 @@ namespace AgencyDispatchFramework.Callouts.TrafficAccident
 
             // Create Victim
             Victim = VictimVehicle.CreateRandomDriver();
-            Victim.MakeMissionPed(true);
-            Victim.StartScenario("WORLD_HUMAN_STAND_MOBILE");
+            Victim.Ped.MakeMissionPed(true);
+            Victim.Ped.StartScenario("WORLD_HUMAN_STAND_MOBILE");
 
             // Set victim location
             var location = Location.GetSpawnPositionById(RoadShoulderPosition.SidewalkGroup1);
-            Victim.SetPositionWithSnap(location);
-            Victim.Heading = location.Heading;
+            Victim.Ped.SetPositionWithSnap(location);
+            Victim.Ped.Heading = location.Heading;
 
             // Create suspect vehicle 1m behind victim vehicle
             var vector = VictimVehicle.GetOffsetPositionFront(-(VictimVehicle.Length + 1f));
@@ -122,52 +127,56 @@ namespace AgencyDispatchFramework.Callouts.TrafficAccident
 
             // Create suspect
             Suspect = SuspectVehicle.CreateRandomDriver();
-            Suspect.MakeMissionPed(true);
-            Suspect.StartScenario("WORLD_HUMAN_STAND_IMPATIENT");
+            Suspect.Ped.MakeMissionPed(true);
+            Suspect.Ped.StartScenario("WORLD_HUMAN_STAND_IMPATIENT");
 
             // Set victim location
             location = Location.GetSpawnPositionById(RoadShoulderPosition.SidewalkGroup2);
-            Suspect.SetPositionWithSnap(location);
-            Suspect.Heading = Location.Heading; // Use forward heading
+            Suspect.Ped.SetPositionWithSnap(location);
+            Suspect.Ped.Heading = Location.Heading; // Use forward heading
 
             // Attach Blips
-            VictimBlip = Victim.AttachBlip();
+            VictimBlip = Victim.Ped.AttachBlip();
             VictimBlip.IsRouteEnabled = true;
-            SuspectBlip = Suspect.AttachBlip();
+            SuspectBlip = Suspect.Ped.AttachBlip();
 
             // Damage the rear of the victim vehicle and front of suspect vehicle
             VictimVehicle.DeformRear(200, 200);
             SuspectVehicle.DeformFront(200, 200);
 
             // Add parser variables
-            var suspect = new GamePed(Suspect);
-            var victim = new GamePed(Victim);
-            Parser.SetParamater("Victim", victim);
-            Parser.SetParamater("Suspect", suspect);
+            Parser.SetParamater("Victim", Victim);
+            Parser.SetParamater("Suspect", Suspect);
+
+            // Register menu
+            Menu = new CalloutInteractionMenu("Traffic Accident", "Rear End Collision");
 
             // Create variable dictionary
             var variables = new Dictionary<string, object>()
             {
                 { "SuspectVehicleType", VehicleInfo.GetVehicleTypeDescription(SuspectVehicleType) },
                 { "VictimVehicleType", VehicleInfo.GetVehicleTypeDescription(VictimVehicleType) },
-                { "SuspectTitle", $"{suspect.GenderTitle}. {suspect.Persona.Surname}" },
-                { "VictimTitle", $"{victim.GenderTitle}. {victim.Persona.Surname}" },
+                { "SuspectTitle", $"{Suspect.GenderTitle}. {Suspect.Persona.Surname}" },
+                { "VictimTitle", $"{Victim.GenderTitle}. {Victim.Persona.Surname}" },
             };
 
             // Load converation flow sequence for the suspect
-            var document = LoadFlowSequenceFile("TrafficAccident", "FlowSequence", "RearEndNoInjuries", "Suspect.xml");
-            SuspectSeq = new FlowSequence("Suspect", Suspect, FlowOutcome, document, Parser);
-            SuspectSeq.SetVariableDictionary(variables);
+            var path = Path.Combine(Main.FrameworkFolderPath, "Callouts", "TrafficAccident", "FlowSequence", nameof(RearEndNoInjuries), "Suspect.xml");
+            using (var file = new FlowSequenceFile(path))
+            {
+                SuspectSeq = file.Parse("Suspect", FlowOutcome, Suspect, Parser);
+                SuspectSeq.SetVariableDictionary(variables);
+                Menu.RegisterPedConversation(Suspect, SuspectSeq);
+            }
 
             // Load converation flow sequence for the victim
-            document = LoadFlowSequenceFile("TrafficAccident", "FlowSequence", "RearEndNoInjuries", "Victim.xml");
-            VictimSeq = new FlowSequence("Victim", Victim, FlowOutcome, document, Parser);
-            VictimSeq.SetVariableDictionary(variables);
-
-            // Register menu
-            Menu = new CalloutInteractionMenu("Traffic Accident", "Rear End Collision");
-            Menu.RegisterPedConversation(Suspect, SuspectSeq);
-            Menu.RegisterPedConversation(Victim, VictimSeq);
+            path = Path.Combine(Main.FrameworkFolderPath, "Callouts", "TrafficAccident", "FlowSequence", nameof(RearEndNoInjuries), "Victim.xml");
+            using (var file = new FlowSequenceFile(path))
+            {
+                VictimSeq = file.Parse("Victim", FlowOutcome, Victim, Parser);
+                VictimSeq.SetVariableDictionary(variables);
+                Menu.RegisterPedConversation(Victim, VictimSeq);
+            }
         }
 
         /// <summary>
@@ -185,7 +194,6 @@ namespace AgencyDispatchFramework.Callouts.TrafficAccident
             {
                 World.TeleportLocalPlayer(Location.Position.Around(15f), true);
             }
-            
         }
 
         /// <summary>
@@ -199,13 +207,13 @@ namespace AgencyDispatchFramework.Callouts.TrafficAccident
             Menu?.Dispose();
             Menu = null;
 
-            Victim?.Cleanup();
+            Victim?.Ped?.Cleanup();
             Victim = null;
 
             VictimVehicle?.Cleanup();
             VictimVehicle = null;
 
-            Suspect?.Cleanup();
+            Suspect?.Ped?.Cleanup();
             Suspect = null;
 
             SuspectVehicle?.Cleanup();
@@ -223,8 +231,15 @@ namespace AgencyDispatchFramework.Callouts.TrafficAccident
                 //SuspectBlip = null;
             }
 
-            SuspectSeq.Dispose();
-            VictimSeq.Dispose();
+            SuspectSeq?.Dispose();
+            VictimSeq?.Dispose();
+        }
+
+        private class VehicleSpawn : ISpawnable
+        {
+            public int Probability { get; set; }
+
+            public VehicleClass Type { get; set; }
         }
     }
 }

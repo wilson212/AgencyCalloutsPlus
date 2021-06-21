@@ -48,11 +48,12 @@ namespace AgencyDispatchFramework.Extensions
         /// <param name="isDrunk"></param>
         public static void SetIsDrunk(this Ped ped, bool isDrunk)
         {
-            if (StopThePedAPI.IsRunning)
-            {
-                StopThePedAPI.SetPedIsDrunk(ped, isDrunk);
-            }
-            else
+            // Alert stop the ped
+            bool wasDrunk = GetIsDrunk(ped);
+            StopThePedAPI.SetPedIsDrunk(ped, isDrunk);
+            
+            // Applu movement sets and BAC reading
+            if (isDrunk)
             {
                 // Determine a random alcohol level
                 var level = new CryptoRandom().Next(800, 1700);
@@ -75,14 +76,21 @@ namespace AgencyDispatchFramework.Extensions
                 }
 
                 var animation = GetAnimaionString();
-                if (!Natives.HasAnimSetLoaded(animation))
+                // This was returning null, so added null opperator
+                if (!(Natives.HasAnimSetLoaded<bool>(animation) ?? false))
                 {
                     Natives.RequestAnimSet(animation);
                 }
 
                 // Play
                 Natives.SetPedMovementClipset(ped, animation, 1f);
-                ped.Metadata.DrunkLevel = fl;
+                ped.Metadata.BAC = fl;
+            }
+            else if (wasDrunk)
+            {
+                // Reset
+                Natives.ResetPedMovementClipset(ped, 0.0f);
+                ped.Metadata.BAC = 0f;
             }
         }
 

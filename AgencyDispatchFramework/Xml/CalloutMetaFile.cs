@@ -1,4 +1,5 @@
-﻿using AgencyDispatchFramework.Dispatching;
+﻿using AgencyDispatchFramework.Conversation;
+using AgencyDispatchFramework.Dispatching;
 using AgencyDispatchFramework.Extensions;
 using AgencyDispatchFramework.Game.Locations;
 using LSPD_First_Response.Mod.Callouts;
@@ -6,7 +7,6 @@ using Rage;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.Xml;
 
@@ -33,7 +33,7 @@ namespace AgencyDispatchFramework.Xml
         /// Creates a new instance of <see cref="CalloutMetaFile"/> using the specified
         /// file
         /// </summary>
-        /// <param name="filePath"></param>
+        /// <param name="filePath">The full file path to the FlowSequence xml file</param>
         public CalloutMetaFile(string filePath) : base(filePath)
         {
             // === Document loaded successfully by base class if we are here === //
@@ -412,6 +412,48 @@ namespace AgencyDispatchFramework.Xml
                     continue;
                 }
 
+                // Fetch each FlowOutcome item
+                var flowOutcomeNodes = scenarioNode.SelectSingleNode("FlowSequence")?.SelectNodes("FlowOutcome");
+                if (flowOutcomeNodes == null || flowOutcomeNodes.Count == 0)
+                {
+                    Log.Error($"CalloutMetaFile.Parse(): Unable to load FlowSquence nodes in CalloutMeta for '{calloutDirName}'");
+                    continue;
+                }
+
+                // Evaluate each flow outcome, and add it to the probability generator
+                List<FlowOutcome> outcomes = new List<FlowOutcome>();
+                foreach (XmlNode n in flowOutcomeNodes)
+                {
+                    // Ensure we have attributes
+                    if (n.Attributes == null)
+                    {
+                        Log.Warning($"Scenario FlowOutcome item has no attributes in 'CalloutMeta.xml->FlowSequence'");
+                        continue;
+                    }
+
+                    // Try and extract type value
+                    if (n.Attributes["id"]?.Value == null)
+                    {
+                        Log.Warning($"Unable to extract the 'id' attribute value in 'CalloutMeta.xml->FlowSequence'");
+                        continue;
+                    }
+
+                    // Try and extract probability value
+                    if (n.Attributes["probability"]?.Value == null || !int.TryParse(n.Attributes["probability"].Value, out int probability))
+                    {
+                        Log.Warning($"Unable to extract VehicleType probability value in 'CalloutMeta.xml'");
+                        continue;
+                    }
+
+                    // Add
+                    outcomes.Add(new FlowOutcome()
+                    {
+                        Id = n.Attributes["id"].Value,
+                        Probability = probability,
+                        ConditionStatement = n.Attributes["if"]?.Value ?? String.Empty
+                    });
+                }
+
                 // Create scenario
                 var scene = new CalloutScenarioInfo()
                 {
@@ -434,7 +476,8 @@ namespace AgencyDispatchFramework.Xml
                     CADSpriteName = textName,
                     CADSpriteTextureDict = textDict,
                     SimulationTime = new Range<int>(min, max),
-                    AgencyTypes = agencies.ToArray()
+                    AgencyTypes = agencies.ToArray(),
+                    FlowOutcomes = outcomes.ToArray()
                 };
 
                 // Add scenario to the pools

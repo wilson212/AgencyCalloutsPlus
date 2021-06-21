@@ -12,7 +12,7 @@ namespace AgencyDispatchFramework.Conversation
         /// <summary>
         /// A lock object to prevent threading issues
         /// </summary>
-        private static object _lock = new object();
+        private static object _threadLock = new object();
 
         /// <summary>
         /// Contains our subtitle lines to display.
@@ -28,7 +28,7 @@ namespace AgencyDispatchFramework.Conversation
         /// Gets whether the <see cref="SubtitleQueue"/> is activly running. See <see cref="Begin()"/>
         /// to start the queue.
         /// </summary>
-        public static bool IsEnabled { get; private set; }
+        public static bool IsBusy { get; private set; }
 
         /// <summary>
         /// Static constructor
@@ -44,7 +44,7 @@ namespace AgencyDispatchFramework.Conversation
         /// </summary>
         public static void Stop()
         {
-            IsEnabled = false;
+            IsBusy = false;
             Fiber = null;
         }
 
@@ -54,24 +54,24 @@ namespace AgencyDispatchFramework.Conversation
         /// </summary>
         private static void Begin()
         {
-            if (IsEnabled) return;
+            if (IsBusy) return;
 
-            IsEnabled = true;
+            IsBusy = true;
             Fiber = GameFiber.StartNew(() =>
             {
                 Subtitle item = null;
-                while (IsEnabled)
+                while (IsBusy)
                 {
                     // Always yield in a continuous GameFiber!
                     GameFiber.Yield();
 
                     // Lock to prevent threading issues
-                    lock (_lock)
+                    lock (_threadLock)
                     {
                         // Ensure we have at least one item!
                         if (LineQueue.Count == 0)
                         {
-                            IsEnabled = false;
+                            IsBusy = false;
                             Fiber = null;
                             break;
                         }
@@ -91,12 +91,12 @@ namespace AgencyDispatchFramework.Conversation
         /// <param name="line"></param>
         public static void Add(Subtitle line)
         {
-            lock (_lock)
+            lock (_threadLock)
             {
                 LineQueue.Enqueue(line);
             }
 
-            if (!IsEnabled) Begin();
+            if (!IsBusy) Begin();
         }
 
         /// <summary>
@@ -106,12 +106,12 @@ namespace AgencyDispatchFramework.Conversation
         /// <param name="timeMS"></param>
         public static void Add(string line, int timeMS)
         {
-            lock (_lock)
+            lock (_threadLock)
             {
                 LineQueue.Enqueue(new Subtitle() { Text = line, Duration = timeMS });
             }
 
-            if (!IsEnabled) Begin();
+            if (!IsBusy) Begin();
         }
 
         /// <summary>
@@ -119,7 +119,7 @@ namespace AgencyDispatchFramework.Conversation
         /// </summary>
         public static void Clear()
         {
-            lock (_lock)
+            lock (_threadLock)
             {
                 LineQueue.Clear();
             }

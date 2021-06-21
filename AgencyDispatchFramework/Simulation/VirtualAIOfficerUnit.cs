@@ -72,8 +72,11 @@ namespace AgencyDispatchFramework.Simulation
         internal override void CompleteCall(CallCloseFlag flag)
         {
             // Tell dispatch we are done here
-            Dispatch.RegisterCallComplete(CurrentCall);
-            Log.Debug($"OfficerUnit {CallSign} of {Agency.FriendlyName} completed call '{CurrentCall.ScenarioInfo.Name}' with flag: {flag}");
+            if (CurrentCall.PrimaryOfficer == this)
+            {
+                Log.Debug($"OfficerUnit {CallSign} of {Agency.FriendlyName} completed call '{CurrentCall.ScenarioInfo.Name}' with flag: {flag}");
+                Dispatch.RegisterCallComplete(CurrentCall);
+            }
 
             // Call base
             base.CompleteCall(flag);

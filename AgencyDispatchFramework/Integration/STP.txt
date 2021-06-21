@@ -1,0 +1,14 @@
+﻿A. Pat Down items
+   You may inject items into "Ped.Metadata.searchPed" variable (similar with "Search Warrant" plugin)
+
+   Example: myPed.Metadata.searchPed = "~r~handgun~s~, ~y~pocket knife~s~, ~g~wallet~s~";
+   Please notice that the ~r~, ~y~, and ~g~ are for text color of red, yellow, and green. Whether ~s~ is for text default color.
+
+B. Vehicle Search items
+   You may inject items into vehicle metadata variables (similar with "Search Warrant" plugin)
+    - Vehicle.Metadata.searchDriver 
+    - Vehicle.Metadata.searchPassenger 
+    - Vehicle.Metadata.searchTrunk 
+
+   Example: veh.Metadata.searchDriver = "~r~assault riffle~s~, ~y~machete~s~, ~g~a pair of shoes~s~";
+   Please notice that the ~r~, ~y~, and ~g~ are for text color of red, yellow, and green. Whether ~s~ is for text default color.

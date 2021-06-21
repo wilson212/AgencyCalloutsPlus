@@ -1,4 +1,5 @@
 ﻿using AgencyDispatchFramework.Conversation;
+using AgencyDispatchFramework.Dispatching;
 using AgencyDispatchFramework.Game;
 using Rage;
 using System;
@@ -23,16 +24,27 @@ namespace AgencyDispatchFramework.Callouts
         protected FlowOutcome FlowOutcome { get; set; }
 
         /// <summary>
+        /// Gets the <see cref="CalloutScenarioInfo"/> for this instance
+        /// </summary>
+        protected CalloutScenarioInfo ScenarioInfo { get; set; }
+
+        /// <summary>
         /// Constructor
         /// </summary>
-        public CalloutScenario(XmlNode scenarioNode)
+        public CalloutScenario(CalloutScenarioInfo scenarioInfo)
         {
             Parser = new ExpressionParser();
-            Parser.SetParamater("Weather", new WeatherInfo());
+            Parser.SetParamater("Weather", GameWorld.GetWeatherSnapshot());
             Parser.SetParamater("Call", Dispatch.PlayerActiveCall);
+            ScenarioInfo = scenarioInfo;
 
             // Select a random FlowOutcome for this scenario
-            FlowOutcome = GetRandomFlowOutcome(scenarioNode);
+            if (!ScenarioInfo.GetRandomFlowOutcome(Parser, out FlowOutcome flowOutcome))
+            {
+                throw new Exception($"Unable to select a FlowOutcome for callout scenario {ScenarioInfo.Name}");
+            }
+
+            FlowOutcome = flowOutcome;
         }
 
         /// <summary>
@@ -81,127 +93,6 @@ namespace AgencyDispatchFramework.Callouts
             }
 
             throw new Exception($"[ERROR] AgencyCalloutsPlus: Scenario FlowSequence file does not exist: '{path}'");
-        }
-
-        /// <summary>
-        /// Fethes a random <see cref="VehicleClass"/> using the probabilites set in the
-        /// CalloutMeta.xml
-        /// </summary>
-        /// <param name="nodes"></param>
-        /// <returns></returns>
-        protected VehicleClass GetRandomVehicleType(XmlNodeList nodes)
-        {
-            // Create a new spawn generator
-            var generator = new ProbabilityGenerator<VehicleSpawn>();
-
-            // Add each item
-            foreach (XmlNode n in nodes)
-            {
-                // Ensure we have attributes
-                if (n.Attributes == null)
-                {
-                    Log.Warning($"Scenario VehicleTypes item has no attributes in 'CalloutMeta.xml->Sceanrios'");
-                    continue;
-                }
-
-                // Try and extract type value
-                if (!Enum.TryParse(n.InnerText, out VehicleClass vehicleType))
-                {
-                    Log.Warning($"Unable to extract VehicleType value in 'CalloutMeta.xml'");
-                    continue;
-                }
-
-                // Try and extract probability value
-                if (n.Attributes["probability"]?.Value == null || !int.TryParse(n.Attributes["probability"].Value, out int probability))
-                {
-                    Log.Warning($"Unable to extract VehicleType probability value in 'CalloutMeta.xml'");
-                    continue;
-                }
-
-                // Add vehicle type
-                generator.Add(new VehicleSpawn() { Probability = probability, Type = vehicleType });
-            }
-
-            return generator.Spawn().Type;
-        }
-
-        /// <summary>
-        /// Fethes a random <see cref="VehicleClass"/> using the probabilites set in the
-        /// CalloutMeta.xml
-        /// </summary>
-        /// <param name="nodes">An <see cref="XmlNodeList"/> containing the "FlowOutcome" nodes</param>
-        /// <returns></returns>
-        protected FlowOutcome GetRandomFlowOutcome(XmlNode scenarioNode)
-        {
-            // We must have a scenario XmlNode
-            if (scenarioNode == null)
-            {
-                throw new ArgumentNullException(nameof(scenarioNode));
-            }
-
-            // Create a new spawn generator
-            var generator = new ProbabilityGenerator<FlowOutcome>();
-
-            // Fetch each FlowOutcome item
-            var nodes = scenarioNode.SelectSingleNode("FlowSequence")?.SelectNodes("FlowOutcome");
-
-            // Evaluate each flow outcome, and add it to the probability generator
-            foreach (XmlNode n in nodes)
-            {
-                // Ensure we have attributes
-                if (n.Attributes == null)
-                {
-                    Log.Warning($"Scenario FlowOutcome item has no attributes in 'CalloutMeta.xml->FlowSequence'");
-                    continue;
-                }
-
-                // Try and extract type value
-                if (n.Attributes["id"]?.Value == null)
-                {
-                    Log.Warning($"Unable to extract the 'id' attribute value in 'CalloutMeta.xml->FlowSequence'");
-                    continue;
-                }
-
-                // Try and extract probability value
-                if (n.Attributes["probability"]?.Value == null || !int.TryParse(n.Attributes["probability"].Value, out int probability))
-                {
-                    Log.Warning($"Unable to extract VehicleType probability value in 'CalloutMeta.xml'");
-                    continue;
-                }
-
-                // See if we have an IF statement, and if we do have a condition statement,
-                // and evaluate the condition. The FlowOutcome is added to the list if
-                // the condition evaluates to true
-                if (!String.IsNullOrEmpty(n.Attributes["if"]?.Value))
-                {
-                    // Do we have a parser?
-                    if (Parser == null)
-                    {
-                        string id = n.Attributes["id"].Value;
-                        Log.Warning($"FlowOutcome with ID '{id}' has 'if' statement in 'CalloutMeta.xml', but no ExpressionParser is defined... Skipping");
-                        continue;
-                    }
-
-                    // evaluate the expression. This will return false if the return value is not a bool
-                    if (!Parser.Evaluate<bool>(n.Attributes["if"].Value))
-                    {
-                        // If we failed to evaluate to true, skip this FlowOutcome
-                        continue;
-                    }
-                }
-
-                // Add vehicle type
-                generator.Add(new FlowOutcome() { Probability = probability, Id = n.Attributes["id"].Value });
-            }
-
-            return generator.Spawn();
-        }
-
-        private class VehicleSpawn : ISpawnable
-        {
-            public int Probability { get; set; }
-
-            public VehicleClass Type { get; set; }
         }
     }
 }

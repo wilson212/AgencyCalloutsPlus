@@ -9,6 +9,9 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Xml;
+using AgencyDispatchFramework.Dispatching;
+using System.IO;
+using AgencyDispatchFramework.Xml;
 
 namespace AgencyDispatchFramework.Callouts.DomesticViolence
 {
@@ -31,12 +34,12 @@ namespace AgencyDispatchFramework.Callouts.DomesticViolence
 
         protected UIMenuItem KnockButton { get; set; }
 
-        private Ped Victim;
+        private GamePed Victim;
         private PedGender VictimGender;
         private bool InitialPedWasVictim = false;
         private Blip VictimBlip;
 
-        private Ped Suspect;
+        private GamePed Suspect;
         private PedGender SuspectGender;
         private Blip SuspectBlip;
 
@@ -52,10 +55,12 @@ namespace AgencyDispatchFramework.Callouts.DomesticViolence
         private bool ForceFacing = false;
 
         private CalloutInteractionMenu Menu;
+        private FlowSequence SuspectSeq;
+        private FlowSequence VictimSeq;
 
-        private Blip AddressBlip;
+        private Blip AddressBlip; 
 
-        public ReportsOfArguingThreats(Controller callout, XmlNode scenarioNode) : base(scenarioNode)
+        public ReportsOfArguingThreats(Controller callout, CalloutScenarioInfo scenarioInfo) : base(scenarioInfo)
         {
             // Set internals
             Callout = callout;
@@ -119,41 +124,45 @@ namespace AgencyDispatchFramework.Callouts.DomesticViolence
 
             // Create Victim
             Victim = v;
-            Victim.IsPersistent = true;
-            Victim.BlockPermanentEvents = true;
+            Victim.Ped.IsPersistent = true;
+            Victim.Ped.BlockPermanentEvents = true;
 
             // Create suspect
             Suspect = s;
-            Suspect.IsPersistent = true;
-            Suspect.BlockPermanentEvents = true;
+            Suspect.Ped.IsPersistent = true;
+            Suspect.Ped.BlockPermanentEvents = true;
 
             // Add parser variables
-            var suspect = new GamePed(Suspect);
-            var victim = new GamePed(Victim);
-            Parser.SetParamater("Victim", victim);
-            Parser.SetParamater("Suspect", suspect);
+            Parser.SetParamater("Victim", Victim);
+            Parser.SetParamater("Suspect", Suspect);
+
+            // Register menu
+            Menu = new CalloutInteractionMenu("Domestic Violence", "Domestic Arguing Only");
 
             // Create variable dictionary
             var variables = new Dictionary<string, object>()
             {
-                { "SuspectTitle", $"{suspect.GenderTitle}. {suspect.Persona.Surname}" },
-                { "VictimTitle", $"{victim.GenderTitle}. {victim.Persona.Surname}" },
+                { "SuspectTitle", $"{Suspect.GenderTitle}. {Suspect.Persona.Surname}" },
+                { "VictimTitle", $"{Victim.GenderTitle}. {Victim.Persona.Surname}" },
             };
 
             // Load converation flow sequence for the suspect
-            var document = LoadFlowSequenceFile("DomesticViolence", "FlowSequence", nameof(ReportsOfArguingThreats), "Suspect.xml");
-            var suspectSeq = new FlowSequence("Suspect", Suspect, FlowOutcome, document, Parser);
-            suspectSeq.SetVariableDictionary(variables);
+            var path = Path.Combine(Main.FrameworkFolderPath, "Callouts", "DomesticViolence", "FlowSequence", nameof(ReportsOfArguingThreats), "Suspect.xml");
+            using (var file = new FlowSequenceFile(path))
+            {
+                SuspectSeq = file.Parse("Suspect", FlowOutcome, Suspect, Parser);
+                SuspectSeq.SetVariableDictionary(variables);
+                Menu.RegisterPedConversation(Suspect, SuspectSeq);
+            }
 
             // Load converation flow sequence for the victim
-            document = LoadFlowSequenceFile("DomesticViolence", "FlowSequence", nameof(ReportsOfArguingThreats), "Victim.xml");
-            var victimSeq = new FlowSequence("Victim", Victim, FlowOutcome, document, Parser);
-            victimSeq.SetVariableDictionary(variables);
-
-            // Register menu
-            Menu = new CalloutInteractionMenu("Domestic Violence", "Domestic Arguing Only");
-            Menu.RegisterPedConversation(Suspect, suspectSeq);
-            Menu.RegisterPedConversation(Victim, victimSeq);
+            path = Path.Combine(Main.FrameworkFolderPath, "Callouts", "DomesticViolence", "FlowSequence", nameof(ReportsOfArguingThreats), "Victim.xml");
+            using (var file = new FlowSequenceFile(path))
+            {
+                VictimSeq = file.Parse("Victim", FlowOutcome, Victim, Parser);
+                VictimSeq.SetVariableDictionary(variables);
+                Menu.RegisterPedConversation(Victim, VictimSeq);
+            }
 
             // Create menu button
             KnockButton = new UIMenuItem("Knock on the Door");
@@ -218,18 +227,18 @@ namespace AgencyDispatchFramework.Callouts.DomesticViolence
                     // Spawn a Ped out of view close by... prevents ped from falling down when 
                     // their position is changed to the front door directly
                     var ped = new CryptoRandom().PickOne(Suspect, Victim);
-                    ped.Position = Residence.GetSpawnPositionById(ResidencePosition.BackYardPedGroup);
+                    ped.Ped.Position = Residence.GetSpawnPositionById(ResidencePosition.BackYardPedGroup);
 
                     // Wait for an answer
                     GameFiber.Wait(3000);
 
                     // Spawn a Ped at the door
-                    ped.Position = Residence.GetSpawnPositionById(ResidencePosition.FrontDoorPed1);
+                    ped.Ped.Position = Residence.GetSpawnPositionById(ResidencePosition.FrontDoorPed1);
 
                     // Attach Blip
                     if (ped == Suspect)
                     {
-                        SuspectBlip = Suspect.AttachBlip();
+                        SuspectBlip = Suspect.Ped.AttachBlip();
                         SuspectBlip.Sprite = BlipSprite.Friend;
 
                         // Roll to see if the suspect attacks
@@ -237,7 +246,7 @@ namespace AgencyDispatchFramework.Callouts.DomesticViolence
                     else
                     {
                         InitialPedWasVictim = true;
-                        VictimBlip = Victim.AttachBlip();
+                        VictimBlip = Victim.Ped.AttachBlip();
                         VictimBlip.Sprite = BlipSprite.Friend;
                     }
 
@@ -262,10 +271,10 @@ namespace AgencyDispatchFramework.Callouts.DomesticViolence
             Menu?.Dispose();
             Menu = null;
 
-            Victim?.Cleanup();
+            Victim?.Ped?.Cleanup();
             Victim = null;
 
-            Suspect?.Cleanup();
+            Suspect?.Ped?.Cleanup();
             Suspect = null;
 
             if (VictimBlip.Exists() && VictimBlip.IsValid())
@@ -283,6 +292,9 @@ namespace AgencyDispatchFramework.Callouts.DomesticViolence
             // Erase the checkpoint if it exists
             if (SceneProgress == ScenarioProgress.BeforeArrival)
                 GameWorld.DeleteCheckpoint(CheckpointHandle);
+
+            SuspectSeq?.Dispose();
+            VictimSeq?.Dispose();
         }
 
         /// <summary>

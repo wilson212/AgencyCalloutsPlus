@@ -1,4 +1,6 @@
-﻿using AgencyDispatchFramework.Game.Locations;
+﻿using AgencyDispatchFramework.Conversation;
+using AgencyDispatchFramework.Game.Locations;
+using System.Collections.Generic;
 
 namespace AgencyDispatchFramework.Dispatching
 {
@@ -106,5 +108,29 @@ namespace AgencyDispatchFramework.Dispatching
         /// Gets the ideal <see cref="OfficerUnit"/> count to handle this call.
         /// </summary>
         public int UnitCount { get; internal set; } = 1;
+
+        /// <summary>
+        /// Contains a list of <see cref="FlowOutcome"/> from the CalloutMeta.xml
+        /// </summary>
+        public FlowOutcome[] FlowOutcomes { get; internal set; }
+
+        /// <summary>
+        /// Selects a random <see cref="FlowOutcome"/>, using an <see cref="ExpressionParser"/>
+        /// to evaluate acceptable <see cref="FlowOutcome"/>s based on the variables set
+        /// </summary>
+        /// <param name="parser"></param>
+        public bool GetRandomFlowOutcome(ExpressionParser parser, out FlowOutcome selected)
+        {
+            var gen = new ProbabilityGenerator<FlowOutcome>();
+            foreach (var outcome in FlowOutcomes)
+            {
+                if (outcome.Evaluate(parser))
+                {
+                    gen.Add(outcome);
+                }
+            }
+
+            return gen.TrySpawn(out selected);
+        }
     }
 }

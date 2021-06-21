@@ -145,9 +145,6 @@ namespace AgencyDispatchFramework.Game
             {
                 try
                 {
-                    // Do dispatching stuff
-                    Dispatch.ProcessDispatchLogic();
-
                     // Update weather
                     var currentWeather = GetCurrentWeather();
                     if (currentWeather != CurrentWeather)
@@ -291,12 +288,12 @@ namespace AgencyDispatchFramework.Game
         }
 
         /// <summary>
-        /// Gets the current world <see cref="WeatherInfo" />
+        /// Gets the current world <see cref="WeatherSnapshot" />
         /// </summary>
         /// <returns></returns>
-        public static WeatherInfo GetWeatherInfo()
+        public static WeatherSnapshot GetWeatherSnapshot()
         {
-            return new WeatherInfo();
+            return new WeatherSnapshot();
         }
 
         #region Spawning Entity Methods 

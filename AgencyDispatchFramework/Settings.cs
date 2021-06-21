@@ -73,6 +73,11 @@ namespace AgencyDispatchFramework
         internal static int TimeScaleMultiplier { get; set; } = 30;
 
         /// <summary>
+        /// Gets or sets the time out in seconds between dispatching the player to calls
+        /// </summary>
+        internal static int TimeoutBetweenCalloutAttempts { get; set; } = 30;
+
+        /// <summary>
         /// Loads the user settings from the ini file
         /// </summary>
         internal static void Initialize()
@@ -100,6 +105,7 @@ namespace AgencyDispatchFramework
             LogLevel = ini.ReadEnum("GENERAL", "LogLevel", LogLevel.DEBUG);
             PostalsFileName = ini.ReadString("GENERAL", "PostalsFilename", "old-postals");
             //EnableFullSimulation = ini.ReadBoolean("SIMULATION", "EnableFullSimulation", false);
+            TimeoutBetweenCalloutAttempts = ini.ReadInt32("GENERAL", "TimeoutBetweenCalloutAttempts", 30);
 
             // Read player settings
             AudioDivision = ini.ReadInt32("PLAYER", "Division", 1);

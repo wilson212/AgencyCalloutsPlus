@@ -14,23 +14,30 @@ General Information:
 			- Mod RageMenu (1): Used to handle menu processing for the RageNativeUI menu of the mod
 		Sometimes Running:
 			- CalloutInteractionMenu (1): Used to handle menu processing for a RageNativeUI used by a Callout
+			- Scanner (variable): Used to handle scanner audio messages from dispatch
 			- SubTitleQueue (variable): Used to properly display multiple simultaneous subtitles without overlap or interuption
 
-
-Radio traffic with Dispatch and AI (handshake for accepting calls):
-	- Dispatch assigns a primary officers
-	- Radio message is queued to call for officers ("Attention unit A 1 18")
-	- An event is fired on the primary officer unit to asnwer the dispatcher
-	- Radio message is queued by the primary officer with a response ("Dispatch this is A 1 18")
-	- Radio message is played by the dispatcher with the call details ("We have a... on... Please respond code..")
-	- An event is fired on the primary officer, call assigned awaiting confirmation
-	- The AI accepts or denies the call, and queues a radio message (signals back to the Dispatch class)
 
  Location types:
 	- RoadShoulder: Used for pullovers, and simple accidents
 	- Road: Used for more serious accidents where Peds wont pull off the road. Used to spawn moving vehicles for crimes
-	- Intersection: Used for crimes that happen at an intersection
+	- Intersection: Used for crimes that happen in an intersection
 	- Residence: Used for crimes that happen at a residence
 	- Business: Used for robberies or public altercations
 	- ParkingLot: Used for some crimes
 	- SecludedSpot: Used for crimes that require privacy, such as public indecency or prostitution
+
+
+Event planning:
+	- Difference between an Event and Callout:
+		Callout:
+			- Requires the player to accept it before any entities are spawned into the world
+			- Ends when the player ignores it, and gets cleaned up immediatly
+		Event:
+			- Spawns entities near the player, and a crime is commited. The player can choose to ignore
+				or participate in the event without requiring a "Press {insertbuttonhere} to accept"
+			- An event keeps playing until a player moves out of range
+	- 3 Difference Callout Sources:
+		- Incoming 911 call from civilian (AgencyCallout)
+		- AI officer scripted event turned into a CalloutScenario (AiScriptedEvent) (Think "shots fired at officers" during a traffic stop)
+		- Ambient event ignored by player, turns into a CalloutScenario (AmbientEvent)

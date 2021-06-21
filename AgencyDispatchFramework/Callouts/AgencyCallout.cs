@@ -82,36 +82,33 @@ namespace AgencyDispatchFramework.Callouts
 
             // Tell dispatch
             Dispatch.CalloutAccepted(ActiveCall, this);
-
-            // Update computer plus
-            if (ComputerPlusRunning)
-            {
-                ComputerPlusAPI.SetCalloutStatusToUnitResponding(CalloutID);
-                Rage.Game.DisplayHelp("Further details about this call can be checked using ~b~Computer+.");
-            }
             
+            // Base must be called last!
             return base.OnCalloutAccepted();
         }
 
         public override void OnCalloutNotAccepted()
         {
-            base.OnCalloutNotAccepted();
-
             // Did the callout do thier ONE AND ONLY TASK???
+            // If not, its not the end of the world because Dispatch is keeping watch but... 
+            // still alert the author
             if (ActiveCall == null)
-                throw new ArgumentNullException(nameof(ActiveCall));
+            {
+                Log.Error("AgencyCallout.OnCalloutNotAccepted: Unable to clear active call because ActiveCall is null!");
+                return;
+            }
 
             // Tell dispatch
             Dispatch.CalloutNotAccepted(ActiveCall);
 
-            /*
-            // Update computer plus!
-            if (ComputerPlusRunning)
-            {
-                Functions.PlayScannerAudio("OTHER_UNIT_TAKING_CALL");
-                ComputerPlusAPI.AssignCallToAIUnit(CalloutID);
-            }
-            */
+            // Base must be called last!
+            base.OnCalloutNotAccepted();
+        }
+
+        public override void End()
+        {
+            Dispatch.RegisterCallComplete(ActiveCall);
+            base.End();
         }
     }
 }

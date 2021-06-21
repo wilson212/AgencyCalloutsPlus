@@ -28,11 +28,6 @@ namespace AgencyDispatchFramework.Callouts.DomesticViolence
         private CalloutScenario Scenario;
 
         /// <summary>
-        /// Stores the selected random scenario XmlNode
-        /// </summary>
-        private XmlNode ScenarioNode;
-
-        /// <summary>
         /// Event called right before the Callout is displayed to the player
         /// </summary>
         /// <remarks>
@@ -42,25 +37,35 @@ namespace AgencyDispatchFramework.Callouts.DomesticViolence
         public override bool OnBeforeCalloutDisplayed()
         {
             // Grab the priority call dispatched to player
-            PriorityCall call = Dispatch.RequestPlayerCallInfo(typeof(Controller));
+            PriorityCall call = Dispatch.RequestPlayerCallInfo(this);
             if (call == null)
             {
                 Log.Error("AgencyCallout.DomesticViolence: This is awkward... No PriorityCall of this type for player");
                 return false;
             }
 
-            // Store data
-            ActiveCall = call;
-            Location = call.Location as Residence;
-            ScenarioNode = LoadScenarioNode(call.ScenarioInfo);
+            try
+            {
+                // Store data
+                ActiveCall = call;
+                Location = call.Location as Residence;
 
-            // Create scenario class handler
-            Scenario = CreateScenarioInstance();
+                // Create scenario class handler
+                Scenario = CreateScenarioInstance();
 
-            // Show are blip and message
-            ShowCalloutAreaBlipBeforeAccepting(Location.Position, 40f);
-            CalloutMessage = call.ScenarioInfo.IncidentText;
-            CalloutPosition = Location.Position;
+                // Show are blip and message
+                ShowCalloutAreaBlipBeforeAccepting(Location.Position, 40f);
+                CalloutMessage = call.ScenarioInfo.IncidentText;
+                CalloutPosition = Location.Position;
+            }
+            catch (Exception e)
+            {
+                // Log exception
+                Log.Exception(e);
+
+                // Tell LSPDFR we failed to setup correctly
+                return false;
+            }
 
             // Return base
             return base.OnBeforeCalloutDisplayed();
@@ -110,8 +115,8 @@ namespace AgencyDispatchFramework.Callouts.DomesticViolence
         /// </summary>
         public override void Process()
         {
-            base.Process();
             Scenario.Process();
+            base.Process();
         }
 
         /// <summary>
@@ -132,7 +137,7 @@ namespace AgencyDispatchFramework.Callouts.DomesticViolence
             switch (ActiveCall.ScenarioInfo.Name)
             {
                 case "ReportsOfArguingThreats":
-                    return new ReportsOfArguingThreats(this, ScenarioNode);
+                    return new ReportsOfArguingThreats(this, ActiveCall.ScenarioInfo);
                 default:
                     throw new Exception($"Unsupported DomesticViolence Scenario '{ActiveCall.ScenarioInfo.Name}'");
             }

@@ -1,0 +1,19 @@
+﻿* Added properties to Rage.Ped.Metadata by this mod
+
+- bool ContrabandInjected : A bool indicating whether contraband items have been added into StopThePed's
+							search string (Ped.Metadata.serachPed)
+
+- List<ContrabandItems> Contraband : A list of added contraband items. Please note, weapons added here do not get added to the
+									peds weapon inventory.
+
+- float BAC : Gets the BAC reading of the ped. This value may not exist, or will be 0.0 unless GamePed.IsDrunk is set to true.
+
+- GamePed GamePedInstance : The Game.GamePed instance for this ped. Its recommended to never touch this property, but instead
+							cast the Rage.Ped instance to a GamePed (var ped = (GamePed)Ped)
+
+
+* Properties used and modified by this mod, added by StopThePed
+
+- string searchPed : A string containing the list of contraband items on the ped.
+- bool stpAlcoholDetected : While not directly used or modified, instead using the API functions to modify this value
+- bool stpDrugsDetected : While not directly used or modified, instead using the API functions to modify this value
