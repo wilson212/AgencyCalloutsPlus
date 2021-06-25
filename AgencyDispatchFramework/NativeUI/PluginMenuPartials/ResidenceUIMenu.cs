@@ -42,7 +42,7 @@ namespace AgencyDispatchFramework.NativeUI
 
         private Dictionary<ResidenceFlags, UIMenuCheckboxItem> ResidenceFlagsItems { get; set; }
 
-        private Dictionary<ResidencePosition, MyUIMenuItem<SpawnPoint>> ResidenceSpawnPointItems { get; set; }
+        private Dictionary<ResidencePosition, UIMenuItem<SpawnPoint>> ResidenceSpawnPointItems { get; set; }
 
         /// <summary>
         /// Builds the menu and its buttons
@@ -158,11 +158,11 @@ namespace AgencyDispatchFramework.NativeUI
             }
 
             // Add positions
-            ResidenceSpawnPointItems = new Dictionary<ResidencePosition, MyUIMenuItem<SpawnPoint>>();
+            ResidenceSpawnPointItems = new Dictionary<ResidencePosition, UIMenuItem<SpawnPoint>>();
             foreach (ResidencePosition flag in Enum.GetValues(typeof(ResidencePosition)))
             {
                 var name = Enum.GetName(typeof(ResidencePosition), flag);
-                var item = new MyUIMenuItem<SpawnPoint>(name, "Activate to set position. Character facing is important");
+                var item = new UIMenuItem<SpawnPoint>(name, "Activate to set position. Character facing is important");
                 item.Activated += ResidenceSpawnPointButton_Activated;
                 ResidenceSpawnPointItems.Add(flag, item);
 
@@ -204,7 +204,7 @@ namespace AgencyDispatchFramework.NativeUI
             }
 
             // Reset spawn points
-            foreach (MyUIMenuItem<SpawnPoint> item in ResidenceSpawnPointItems.Values)
+            foreach (UIMenuItem<SpawnPoint> item in ResidenceSpawnPointItems.Values)
             {
                 item.Tag = null;
                 item.RightBadge = UIMenuItem.BadgeStyle.None;
@@ -254,8 +254,9 @@ namespace AgencyDispatchFramework.NativeUI
             ResidencePositionButton.RightBadge = UIMenuItem.BadgeStyle.Tick;
 
             // Create checkpoint here
-            var pos = new Vector3(NewLocationPosition.Position.X, NewLocationPosition.Position.Y, NewLocationPosition.Position.Z - 2);
-            NewLocationCheckpointHandle = GameWorld.CreateCheckpoint(pos, Color.Purple);
+            var pos = GamePed.Player.Position;
+            var cpPos = new Vector3(pos.X, pos.Y, pos.Z - ZCorrection);
+            NewLocationCheckpointHandle = GameWorld.CreateCheckpoint(cpPos, Color.Purple);
 
             // Set street name default
             var streetName = GameWorld.GetStreetNameAtLocation(GamePed.Player.Position);
@@ -275,7 +276,7 @@ namespace AgencyDispatchFramework.NativeUI
             var pos = GamePed.Player.Position;
             var value = (ResidencePosition)Enum.Parse(typeof(ResidencePosition), selectedItem.Text);
             int index = (int)value;
-            var menuItem = (MyUIMenuItem<SpawnPoint>)selectedItem;
+            var menuItem = (UIMenuItem<SpawnPoint>)selectedItem;
 
             // Check, do we have a check point already for this position?
             if (SpawnPointHandles.ContainsKey(index))
@@ -285,8 +286,7 @@ namespace AgencyDispatchFramework.NativeUI
             }
 
             // Create new checkpoint !!important, need to subtract 2 from the Z since checkpoints spawn at waist level
-            var cpPos = pos;
-            cpPos.Z -= 2;
+            var cpPos = new Vector3(pos.X, pos.Y, pos.Z - ZCorrection);
             handle = GameWorld.CreateCheckpoint(cpPos, GetResidencePositionColor(value), radius: 1f);
             if (SpawnPointHandles.ContainsKey(index))
                 SpawnPointHandles[index] = handle;
@@ -294,12 +294,12 @@ namespace AgencyDispatchFramework.NativeUI
                 SpawnPointHandles.Add(index, handle);
 
             // Create spawn point
-            menuItem.Tag = new SpawnPoint(pos, GamePed.Player.Heading);
+            menuItem.Tag = new SpawnPoint(cpPos, GamePed.Player.Heading);
             menuItem.RightBadge = UIMenuItem.BadgeStyle.Tick;
 
             // Are we complete
             bool complete = true;
-            foreach (MyUIMenuItem<SpawnPoint> item in ResidenceSpawnPointItems.Values)
+            foreach (UIMenuItem<SpawnPoint> item in ResidenceSpawnPointItems.Values)
             {
                 if (item.Tag == null)
                 {

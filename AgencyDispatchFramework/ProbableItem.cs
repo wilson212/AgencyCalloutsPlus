@@ -3,7 +3,7 @@
 namespace AgencyDispatchFramework
 {
     /// <summary>
-    /// A container class for a <see cref="ProbabilityGenerator{T}"/>
+    /// A container class for <typeparamref name="T"/> in a <see cref="ProbabilityGenerator{T}"/>
     /// </summary>
     /// <typeparam name="T"></typeparam>
     public class ProbableItem<T> where T : ISpawnable

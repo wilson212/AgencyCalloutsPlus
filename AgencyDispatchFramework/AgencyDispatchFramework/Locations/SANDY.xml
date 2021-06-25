@@ -77,7 +77,7 @@
       
     </Businesses>
     <RoadShoulders>
-      <Location coordinates="1744.697, 3668.555, 34.64974" heading="118.858">
+      <Location coordinates="1744.697, 3668.555, 33.64974" heading="118.858">
         <Street>Zancudo Ave</Street>
         <Hint>near Lolita Ave</Hint>
         <Speed>25</Speed>
@@ -87,8 +87,8 @@
           <AfterIntersection>CrossIntersection, RightOfWayYield</AfterIntersection>
         </Flags>
         <Positions>
-          <SpawnPoint id="SidewalkGroup1" coordinates="1741.578, 3672.83, 34.61052" heading="298.858" />
-          <SpawnPoint id="SidewalkGroup2" coordinates="1747.21, 3675.891, 34.55115" heading="125.5519" />
+          <SpawnPoint id="SidewalkGroup1" coordinates="1741.578, 3672.83, 33.61052" heading="298.858" />
+          <SpawnPoint id="SidewalkGroup2" coordinates="1747.21, 3675.891, 33.55115" heading="125.5519" />
         </Positions>
       </Location>
     </RoadShoulders>

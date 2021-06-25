@@ -1,10 +1,12 @@
-﻿using Rage;
+﻿using AgencyDispatchFramework.Game;
+using Rage;
 using System;
+using System.Collections.Generic;
 
 namespace AgencyDispatchFramework.Conversation
 {
     /// <summary>
-    /// Represents a line to be displayed in game in the <see cref="SubtitleQueue"/>
+    /// Represents a line of text to be displayed in game in the <see cref="SubtitleQueue"/>
     /// </summary>
     public class Subtitle
     {
@@ -29,14 +31,21 @@ namespace AgencyDispatchFramework.Conversation
         public Ped Speaker { get; set; }
 
         /// <summary>
-        /// Gets or sets the animation dictionary name
+        /// Gets or sets an animation <see cref="TaskSequence"/> to be played
+        /// on the <see cref="Speaker"/> while the text displays on the screen.
         /// </summary>
-        public string AnimationDictionaryName { get; set; }
+        public List<PedAnimation> AnimationSequence { get; set; }
 
         /// <summary>
-        /// Gets or sets an animation to play while this <see cref="Subtitle"/> is displayed
+        /// Gets or sets whether to loop the animation <see cref="TaskSequence"/>
         /// </summary>
-        public string AnimationName { get; set; }
+        public bool LoopAnimation { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether to cancel the current animation the <see cref="Ped"/>
+        /// is playing when this <see cref="Subtitle"/> has elapsed
+        /// </summary>
+        public bool TerminateAnimation { get; set; } = true;
 
         /// <summary>
         /// Event fired as the message is being displayed on screen
@@ -49,24 +58,26 @@ namespace AgencyDispatchFramework.Conversation
         public event SubtitleEventHandler Elapsed;
 
         /// <summary>
-        /// Determines whether a animation name and dictionary are set
-        /// </summary>
-        private bool AnimationAppearsValid
-        {
-            get => (!String.IsNullOrWhiteSpace(AnimationDictionaryName) && !String.IsNullOrWhiteSpace(AnimationName));
-        }
-
-        /// <summary>
         /// Determines whether the <see cref="Ped"/> is valid to play an animation on
         /// </summary>
         private bool SpeakerAppearsValid
         {
-            get => (Speaker?.Exists() ?? false && Speaker.IsAlive && Speaker.IsVisible);
+            get => (Speaker?.Exists() ?? false && Speaker.IsAlive);
+        }
+
+        /// <summary>
+        /// Creates a new instance of <see cref="Subtitle"/>
+        /// </summary>
+        public Subtitle(string text, int duration)
+        {
+            Text = text;
+            Duration = duration;
+            AnimationSequence = new List<PedAnimation>();
         }
 
         /// <summary>
         /// Displays this sentance on screen and then waits
-        /// for the time specified in <see cref="Sentance.Time"/>.
+        /// for the time specified in <see cref="Subtitle.Time"/>.
         /// ONLY CALL THIS METHOD FROM A CHILD <see cref="GameFiber"/>
         /// </summary>
         public void Display()
@@ -82,13 +93,21 @@ namespace AgencyDispatchFramework.Conversation
             }
 
             // Invoke animaiton?
-            if (AnimationAppearsValid && SpeakerAppearsValid)
+            TaskSequence taskSequence = null;
+            if (AnimationSequence.Count > 0 && SpeakerAppearsValid)
             {
                 try
                 {
-                    // Clear animation if its still playing
-                    //Speaker.Tasks.ClearSecondary();
-                    Speaker.Tasks.PlayAnimation(AnimationDictionaryName, AnimationName, 1f, AnimationFlags.SecondaryTask);
+                    // Try and create a new sequence
+                    taskSequence = new TaskSequence(Speaker);
+                    foreach (var anim in AnimationSequence)
+                    {
+                        taskSequence.Tasks.PlayAnimation(anim.Dictionary, anim.Name, 1f, AnimationFlags.SecondaryTask);
+                    }
+
+                    // Play animation
+                    Log.Debug($"Executing {AnimationSequence.Count} animation tasks on ped during conversation");
+                    taskSequence.Execute(LoopAnimation);
                 }
                 catch (Exception e)
                 {
@@ -104,6 +123,13 @@ namespace AgencyDispatchFramework.Conversation
 
             // Fire event
             Elapsed?.Invoke(this);
+
+            // Cancel animation if its on a loop
+            if (TerminateAnimation && taskSequence != null)
+            {
+                Speaker.Tasks.ClearSecondary();
+                taskSequence.Dispose();
+            }
         }
     }
 }

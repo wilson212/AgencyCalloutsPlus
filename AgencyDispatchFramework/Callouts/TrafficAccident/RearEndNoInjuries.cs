@@ -128,7 +128,7 @@ namespace AgencyDispatchFramework.Callouts.TrafficAccident
             // Create suspect
             Suspect = SuspectVehicle.CreateRandomDriver();
             Suspect.Ped.MakeMissionPed(true);
-            Suspect.Ped.StartScenario("WORLD_HUMAN_STAND_IMPATIENT");
+            //Suspect.Ped.StartScenario("WORLD_HUMAN_STAND_IMPATIENT");
 
             // Set victim location
             location = Location.GetSpawnPositionById(RoadShoulderPosition.SidewalkGroup2);
@@ -164,18 +164,18 @@ namespace AgencyDispatchFramework.Callouts.TrafficAccident
             var path = Path.Combine(Main.FrameworkFolderPath, "Callouts", "TrafficAccident", "FlowSequence", nameof(RearEndNoInjuries), "Suspect.xml");
             using (var file = new FlowSequenceFile(path))
             {
-                SuspectSeq = file.Parse("Suspect", FlowOutcome, Suspect, Parser);
+                SuspectSeq = file.Parse(FlowOutcome, Suspect, Parser);
                 SuspectSeq.SetVariableDictionary(variables);
-                Menu.RegisterPedConversation(Suspect, SuspectSeq);
+                Menu.AddConversation(SuspectSeq);
             }
 
             // Load converation flow sequence for the victim
             path = Path.Combine(Main.FrameworkFolderPath, "Callouts", "TrafficAccident", "FlowSequence", nameof(RearEndNoInjuries), "Victim.xml");
             using (var file = new FlowSequenceFile(path))
             {
-                VictimSeq = file.Parse("Victim", FlowOutcome, Victim, Parser);
+                VictimSeq = file.Parse(FlowOutcome, Victim, Parser);
                 VictimSeq.SetVariableDictionary(variables);
-                Menu.RegisterPedConversation(Victim, VictimSeq);
+                Menu.AddConversation(VictimSeq);
             }
         }
 

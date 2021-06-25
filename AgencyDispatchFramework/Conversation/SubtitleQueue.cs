@@ -108,7 +108,7 @@ namespace AgencyDispatchFramework.Conversation
         {
             lock (_threadLock)
             {
-                LineQueue.Enqueue(new Subtitle() { Text = line, Duration = timeMS });
+                LineQueue.Enqueue(new Subtitle(line, timeMS ));
             }
 
             if (!IsBusy) Begin();

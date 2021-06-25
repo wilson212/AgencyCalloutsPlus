@@ -1,6 +1,5 @@
 ﻿using AgencyDispatchFramework.Conversation;
 using AgencyDispatchFramework.Game.Locations;
-using System.Collections.Generic;
 
 namespace AgencyDispatchFramework.Dispatching
 {
@@ -116,15 +115,16 @@ namespace AgencyDispatchFramework.Dispatching
 
         /// <summary>
         /// Selects a random <see cref="FlowOutcome"/>, using an <see cref="ExpressionParser"/>
-        /// to evaluate acceptable <see cref="FlowOutcome"/>s based on the variables set
+        /// to evaluate acceptable <see cref="FlowOutcome"/>s based on the conditions set for
+        /// each <see cref="FlowOutcome"/>
         /// </summary>
-        /// <param name="parser"></param>
-        public bool GetRandomFlowOutcome(ExpressionParser parser, out FlowOutcome selected)
+        /// <param name="evaluator"></param>
+        public bool GetRandomFlowOutcome(ExpressionParser evaluator, out FlowOutcome selected)
         {
             var gen = new ProbabilityGenerator<FlowOutcome>();
             foreach (var outcome in FlowOutcomes)
             {
-                if (outcome.Evaluate(parser))
+                if (outcome.Evaluate(evaluator))
                 {
                     gen.Add(outcome);
                 }

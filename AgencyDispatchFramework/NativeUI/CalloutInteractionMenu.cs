@@ -288,75 +288,59 @@ namespace AgencyDispatchFramework.NativeUI
         }
 
         /// <summary>
-        /// Disposes this instance and all <see cref="FlowSequence"/> instances
-        /// </summary>
-        public void Dispose()
-        {
-            foreach (var kvp in Conversations)
-            {
-                kvp.Value.Dispose();
-            }
-
-            foreach (var kvp in ConversationsById)
-            {
-                kvp.Value.Dispose();
-            }
-
-            AllMenus.CloseAllMenus();
-            AllMenus.Clear();
-            AllMenus = null;
-        }
-
-        /// <summary>
         /// Registers a <see cref="Ped"/> that can be questioned by this Menu given
         /// the supplied <see cref="FlowSequence"/>
         /// </summary>
         /// <param name="ped"></param>
-        public void RegisterPedConversation(Ped ped, FlowSequence sequence)
+        public void AddConversation(FlowSequence sequence)
         {
-            Peds.Add(ped, false);
-            Conversations.Add(ped, sequence);
-            ConversationsById.Add(sequence.SequenceId, sequence);
+            Ped ped = sequence.SubjectPed ?? throw new ArgumentNullException(nameof(sequence.SubjectPed));
+            if (!Conversations.ContainsKey(ped))
+            {
+                Peds.Add(ped, false);
+                Conversations.Add(ped, sequence);
+                ConversationsById.Add(sequence.SequenceId, sequence);
 
-            // Fire event on PedResponse
-            sequence.OnPedResponse += FlowSequence_OnPedResponse;
+                // Fire event on PedResponse
+                sequence.OnPedResponse += FlowSequence_OnPedResponse;
+            }
         }
 
         /// <summary>
         /// Displays the specified hidden menu items 
         /// </summary>
-        /// <param name="menuPaths"></param>
+        /// <param name="questionIds"></param>
         /// <param name="defaultSequence"></param>
-        private void ShowMenuItems(string[] menuPaths, FlowSequence defaultSequence)
+        private void ShowQuestionsById(string[] questionIds, FlowSequence defaultSequence)
         {
             string referenceMenuId = defaultSequence.SequenceId;
-            string buttonId = String.Empty;
+            string questionId = String.Empty;
 
-            foreach (string id in menuPaths)
+            foreach (string id in questionIds)
             {
                 // Extract full name of the menu
                 if (id.Contains("."))
                 {
                     var path = id.Split(new[] { '.' }, 2, StringSplitOptions.RemoveEmptyEntries);
                     referenceMenuId = path[0];
-                    buttonId = path[1];
+                    questionId = path[1];
                 }
                 else
                 {
-                    buttonId = id;
+                    questionId = id;
                 }
 
                 // Grab FlowSequence by ID
                 if (!ConversationsById.TryGetValue(referenceMenuId, out FlowSequence referenceMenu))
                 {
-                    Log.Debug($"InteractionMenu.ShowMenuItems: Reference FlowSequence menu with ID '{id}' does not exist");
+                    Log.Debug($"CalloutInteractionMenu.ShowQuestionsById(): Reference FlowSequence menu with ID '{id}' does not exist");
                     continue;
                 }
 
                 // Debug logging
-                if (!referenceMenu.ShowMenuItem(buttonId))
+                if (!referenceMenu.ShowQuestionById(questionId))
                 {
-                    Log.Debug($"InteractionMenu.ShowMenuItems: Failed to show button with ID '{id}'");
+                    Log.Debug($"CalloutInteractionMenu.ShowQuestionsById(): Failed to show question with ID '{id}'");
                 }
             }
         }
@@ -364,38 +348,38 @@ namespace AgencyDispatchFramework.NativeUI
         /// <summary>
         /// Hides the specified menu items
         /// </summary>
-        /// <param name="menuPaths"></param>
+        /// <param name="questionIds"></param>
         /// <param name="defaultSequence"></param>
-        private void HideMenuItems(string[] menuPaths, FlowSequence defaultSequence)
+        private void HideQuestionsById(string[] questionIds, FlowSequence defaultSequence)
         {
             string referenceMenuId = defaultSequence.SequenceId;
-            string buttonId = String.Empty;
+            string questionId = String.Empty;
 
-            foreach (string id in menuPaths)
+            foreach (string id in questionIds)
             {
                 // Extract full name of the menu
                 if (id.Contains("."))
                 {
                     var path = id.Split(new[] { '.' }, 2, StringSplitOptions.RemoveEmptyEntries);
                     referenceMenuId = path[0];
-                    buttonId = path[1];
+                    questionId = path[1];
                 }
                 else
                 {
-                    buttonId = id;
+                    questionId = id;
                 }
 
                 // Grab FlowSequence by ID
                 if (!ConversationsById.TryGetValue(referenceMenuId, out FlowSequence referenceMenu))
                 {
-                    Log.Debug($"InteractionMenu.HideMenuItems: Reference FlowSequence menu with ID '{id}' does not exist");
+                    Log.Debug($"CalloutInteractionMenu.HideQuestionsById(): Reference FlowSequence menu with ID '{id}' does not exist");
                     continue;
                 }
 
                 // Debug logging
-                if (!referenceMenu.HideMenuItem(buttonId))
+                if (!referenceMenu.HideQuestionById(questionId))
                 {
-                    Log.Debug($"InteractionMenu.HideMenuItems: Failed to show button with ID '{id}'");
+                    Log.Debug($"CalloutInteractionMenu.HideQuestionsById(): Failed to show question with ID '{id}'");
                 }
             }
         }
@@ -407,28 +391,28 @@ namespace AgencyDispatchFramework.NativeUI
         /// <param name="sender"></param>
         /// <param name="response"></param>
         /// <param name="statement"></param>
-        private void FlowSequence_OnPedResponse(FlowSequence sender, PedResponse response, Statement statement)
+        private void FlowSequence_OnPedResponse(FlowSequence sender, Question question, PedResponse response, Dialog statement)
         {
             // Does this change visibility of a menu option?
-            if (response.ShowMenuItems.Length > 0)
+            if (response.ShowQuestionIds.Length > 0)
             {
-                ShowMenuItems(response.ShowMenuItems, sender);
+                ShowQuestionsById(response.ShowQuestionIds, sender);
             }
 
-            if (statement.ShowMenuItems.Length > 0)
+            if (statement.ShowsQuestionIds.Length > 0)
             {
-                ShowMenuItems(statement.ShowMenuItems, sender);
+                ShowQuestionsById(statement.ShowsQuestionIds, sender);
             }
 
             // Does this change visibility of a menu option?
-            if (response.HidesMenuItems.Length > 0)
+            if (response.HideQuestionIds.Length > 0)
             {
-                HideMenuItems(response.HidesMenuItems, sender);
+                HideQuestionsById(response.HideQuestionIds, sender);
             }
 
-            if (statement.HidesMenuItems.Length > 0)
+            if (statement.HidesQuestionIds.Length > 0)
             {
-                HideMenuItems(statement.HidesMenuItems, sender);
+                HideQuestionsById(statement.HidesQuestionIds, sender);
             }
         }
 
@@ -458,6 +442,26 @@ namespace AgencyDispatchFramework.NativeUI
 
             // Close current menu
             AllMenus.CloseAllMenus();
+        }
+
+        /// <summary>
+        /// Disposes this instance and all <see cref="FlowSequence"/> instances
+        /// </summary>
+        public void Dispose()
+        {
+            foreach (var kvp in Conversations)
+            {
+                kvp.Value.Dispose();
+            }
+
+            foreach (var kvp in ConversationsById)
+            {
+                kvp.Value.Dispose();
+            }
+
+            AllMenus.CloseAllMenus();
+            AllMenus.Clear();
+            AllMenus = null;
         }
     }
 }

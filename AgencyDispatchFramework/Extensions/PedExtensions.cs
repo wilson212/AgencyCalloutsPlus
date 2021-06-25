@@ -1,6 +1,7 @@
 ﻿using Rage;
 using AgencyDispatchFramework.Integration;
 using static Rage.Native.NativeFunction;
+using System;
 
 namespace AgencyDispatchFramework.Extensions
 {
@@ -42,56 +43,109 @@ namespace AgencyDispatchFramework.Extensions
         }
 
         /// <summary>
+        /// Gets a value indicating whether this <see cref="Ped"/> is under the influence of alcohol
+        /// </summary>
+        /// <param name="ped"></param>
+        /// <returns></returns>
+        public static bool GetIsDrunk(this Ped ped)
+        {
+            return StopThePedAPI.IsPedDrunk(ped);
+        }
+
+        /// <summary>
+        /// Sets whether the <see cref="Ped"/> is under the influence of alcohol
+        /// </summary>
+        /// <param name="ped"></param>
+        /// <param name="isDrunk">if true, the <see cref="Ped"/> will be marked as Drunk, and given a new movement clipset.</param>
+        public static void SetIsDrunk(this Ped ped, bool isDrunk)
+        {
+            if (isDrunk)
+            {
+                // Determine a random alcohol level
+                var level = new CryptoRandom().Next(60, 200);
+                float bac = level / 1000f;
+                SetAlcoholLevel(ped, bac);
+            }
+            else
+            {
+                // Reset
+                Natives.ResetPedMovementClipset(ped, 0.0f);
+                ped.Metadata.stpAlcoholDetected = false;
+                ped.Metadata.stpAlcoholLevel = 0f;
+                ped.Metadata.BAC = 0f;
+            }
+        }
+
+        /// <summary>
         /// Sets whether the <see cref="Ped"/> is under the influence of alcohol
         /// </summary>
         /// <param name="ped"></param>
         /// <param name="isDrunk"></param>
-        public static void SetIsDrunk(this Ped ped, bool isDrunk)
+        /// <param name="bacLevel">Sets a real BAC level (0.08 is the legal limit) on the <see cref="Ped"/>. Value should be between 0.00 and 0.20</param>
+        public static void SetAlcoholLevel(this Ped ped, float bacLevel)
         {
             // Alert stop the ped
             bool wasDrunk = GetIsDrunk(ped);
+            bool isDrunk = bacLevel > 0.059;
             StopThePedAPI.SetPedIsDrunk(ped, isDrunk);
             
-            // Applu movement sets and BAC reading
+            // Apply movement sets and BAC reading
             if (isDrunk)
             {
-                // Determine a random alcohol level
-                var level = new CryptoRandom().Next(800, 1700);
-                float fl = level / 1000f;
-
                 string GetAnimaionString()
                 {
-                    if (level > 1300)
+                    if (bacLevel > 0.129)
                     {
                         return "MOVE_M@DRUNK@VERYDRUNK";
                     }
-                    else if (level > 1100)
+                    else if (bacLevel > 0.099)
                     {
-                        return "MOVE_M@DRUNK@MODERATEDRUNK";
+                        return "MOVE_M@DRUNK@MODERATEDRUNK_HEAD_UP";
                     }
-                    else
+                    else if (bacLevel > 0.059)
                     {
                         return "MOVE_M@DRUNK@SLIGHTLYDRUNK";
                     }
+                    else return null;
                 }
 
+                // Get movement animation set based on drunk level
                 var animation = GetAnimaionString();
-                // This was returning null, so added null opperator
-                if (!(Natives.HasAnimSetLoaded<bool>(animation) ?? false))
+                if (!String.IsNullOrEmpty(animation))
                 {
-                    Natives.RequestAnimSet(animation);
+                    // This was returning null, so added null opperator
+                    if (!(Natives.HasAnimSetLoaded<bool>(animation) ?? false))
+                    {
+                        Natives.RequestAnimSet(animation);
+                    }
+
+                    // Play movement animation set
+                    Natives.SetPedMovementClipset(ped, animation, 1f);
                 }
 
-                // Play
-                Natives.SetPedMovementClipset(ped, animation, 1f);
-                ped.Metadata.BAC = fl;
+                // Set metadata
+                ped.Metadata.stpAlcoholLevel = bacLevel;
+                ped.Metadata.BAC = bacLevel;
             }
             else if (wasDrunk)
             {
                 // Reset
                 Natives.ResetPedMovementClipset(ped, 0.0f);
+                ped.Metadata.stpAlcoholDetected = false;
+                ped.Metadata.stpAlcoholLevel = 0f;
                 ped.Metadata.BAC = 0f;
             }
+        }
+
+        /// <summary>
+        /// Gets a value indicating the BAC level of this <see cref="Ped"/>
+        /// </summary>
+        /// <param name="ped"></param>
+        /// <returns></returns>
+        public static float GetAlcoholLevel(this Ped ped)
+        {
+            var metaObject = (MetadataObject)ped.Metadata;
+            return (metaObject.Contains("stpAlcoholLevel")) ? ped.Metadata.stpAlcoholLevel : 0.00f;
         }
 
         /// <summary>
@@ -102,16 +156,6 @@ namespace AgencyDispatchFramework.Extensions
         public static void SetIsUnderDrugInfluence(this Ped ped, bool isInfluenced)
         {
             StopThePedAPI.SetPedIsDrugInfluenced(ped, isInfluenced);
-        }
-
-        /// <summary>
-        /// Gets a value indicating whether this <see cref="Ped"/> is under the influence of alcohol
-        /// </summary>
-        /// <param name="ped"></param>
-        /// <returns></returns>
-        public static bool GetIsDrunk(this Ped ped)
-        {
-            return StopThePedAPI.IsPedDrunk(ped);
         }
 
         /// <summary>

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace AgencyDispatchFramework.Events.TrafficStop
 {
-    internal class SupervisorRequestEvent : AiScriptedEvent 
+    internal class SupervisorRequestEvent : AiOfficerEvent 
     {
     }
 }

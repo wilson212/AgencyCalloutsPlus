@@ -1,8 +1,8 @@
 ﻿ToDO:
-	- AISceneSimulation
 	- Finish the CAD
 	- Finish adding "Add x location" for each location types in the plugin menu
 	- Code scenarios for callouts
+	- Plan on the implementation of AmbientEvents as well as AiOfficerEvents
  
 
 General Information:
@@ -29,15 +29,17 @@ General Information:
 
 
 Event planning:
-	- Difference between an Event and Callout:
+	- Difference between an Events and Callouts:
 		Callout:
 			- Requires the player to accept it before any entities are spawned into the world
 			- Ends when the player ignores it, and gets cleaned up immediatly
-		Event:
+		AmbientEvent:
 			- Spawns entities near the player, and a crime is commited. The player can choose to ignore
 				or participate in the event without requiring a "Press {insertbuttonhere} to accept"
 			- An event keeps playing until a player moves out of range
+		AiOfficerEvent:
+			- 
 	- 3 Difference Callout Sources:
-		- Incoming 911 call from civilian (AgencyCallout)
-		- AI officer scripted event turned into a CalloutScenario (AiScriptedEvent) (Think "shots fired at officers" during a traffic stop)
-		- Ambient event ignored by player, turns into a CalloutScenario (AmbientEvent)
+		- Incoming 911 call from civilian (Callout)
+		- AI officer scripted event turned into a CalloutScenario (AiOfficerEvent) (Think "shots fired at officers" during a traffic stop)
+		- Ambient event ignored by player, turns into a CalloutScenario (AmbientEvent) sometimes

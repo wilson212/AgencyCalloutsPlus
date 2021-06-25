@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
@@ -54,7 +55,7 @@ namespace AgencyDispatchFramework
         /// Appends the log file with a message at the <see cref="LogLevel.INFO"/> level
         /// </summary>
         /// <param name="message">The message to add to the log file</param>
-        public static void Info(string message)
+        public static void Info(params string[] message)
         {
             if (LogLevel.INFO >= LoggingLevel)
                 Write(message, LogLevel.INFO);
@@ -64,7 +65,7 @@ namespace AgencyDispatchFramework
         /// Appends the log file with a message at the <see cref="LogLevel.WARN"/> level
         /// </summary>
         /// <param name="message">The message to add to the log file</param>
-        public static void Warning(string message)
+        public static void Warning(params string[] message)
         {
             if (LogLevel.WARN >= LoggingLevel)
                 Write(message, LogLevel.WARN);
@@ -74,7 +75,7 @@ namespace AgencyDispatchFramework
         /// Appends the log file with a message at the <see cref="LogLevel.ERROR"/> level
         /// </summary>
         /// <param name="message">The message to add to the log file</param>
-        public static void Error(string message)
+        public static void Error(params string[] message)
         {
             if (LogLevel.ERROR >= LoggingLevel)
                 Write(message, LogLevel.ERROR);
@@ -84,7 +85,7 @@ namespace AgencyDispatchFramework
         /// Appends the log file with a message at the <see cref="LogLevel.DEBUG"/> level
         /// </summary>
         /// <param name="message">The message to add to the log file</param>
-        public static void Debug(string message)
+        public static void Debug(params string[] message)
         {
             if (LogLevel.DEBUG >= LoggingLevel)
                 Write(message, LogLevel.DEBUG);
@@ -97,20 +98,43 @@ namespace AgencyDispatchFramework
         /// <param name="optionMessage"></param>
         public static void Exception(Exception exception, string optionMessage = null)
         {
+            var data = new Dictionary<string, string>(1);
+
+            if (!String.IsNullOrEmpty(optionMessage))
+                data.Add("Message", optionMessage);
+
+            Exception(exception, data);
+        }
+
+        /// <summary>
+        /// Appends the log file with exception tracing information
+        /// </summary>
+        /// <param name="exception"></param>
+        /// <param name="data"></param>
+        public static void Exception(Exception exception, Dictionary<string, string> data)
+        {
             // Only allow 1 thread at a time do these operations
             lock (_threadSync)
             {
                 // Write the header data
                 LogStream.WriteLine("-------- AgencyDispatchFramework Exception Trace Entry --------");
-                if (!String.IsNullOrEmpty(optionMessage))
-                    LogStream.WriteLine("Message: " + optionMessage);
+
+                // Log details
                 LogStream.WriteLine("Exception Date: " + DateTime.Now.ToString());
                 LogStream.WriteLine("Os Version: " + Environment.OSVersion.VersionString);
                 LogStream.WriteLine("Architecture: " + ((Environment.Is64BitOperatingSystem) ? "x64" : "x86"));
+
+                // Add additional data
+                foreach (var item in data)
+                {
+                    LogStream.WriteLine($"{item.Key}: {item.Value}");
+                }
+
+                // Start logging all levels of the exception
                 LogStream.WriteLine();
                 LogStream.WriteLine("-------- Exception --------");
 
-                // Log each exception
+                // Log each inner exception
                 int i = 0;
                 while (true)
                 {
@@ -154,12 +178,14 @@ namespace AgencyDispatchFramework
         /// Adds a message to the queue, to be written to the log file
         /// </summary>
         /// <param name="message">The message to write to the log</param>
-        private static void Write(string message, LogLevel level)
+        private static void Write(string[] messages, LogLevel level)
         {
             // Only allow 1 thread at a time do these operations
             lock (_threadSync)
             {
-                LogStream.WriteLine(String.Format("{0}: [{2}] {1}", DateTime.Now, message, level));
+                foreach (var message in messages)
+                    LogStream.WriteLine(String.Format("{0}: [{2}] {1}", DateTime.Now, message, level));
+
                 LogStream.Flush();
             }
         }

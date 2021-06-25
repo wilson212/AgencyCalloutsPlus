@@ -5,6 +5,6 @@
     /// </summary>
     /// <param name="sender">The <see cref="FlowSequence"/> that triggered the <see cref="PedResponse"/></param>
     /// <param name="r">The <see cref="PedResponse"/> instance</param>
-    /// <param name="s">The displayed <see cref="Statement"/> to the player in game</param>
-    public delegate void PedResponseEventHandler(FlowSequence sender, PedResponse r, Statement s);
+    /// <param name="d">The displayed <see cref="Dialog"/> to the player in game</param>
+    public delegate void PedResponseEventHandler(FlowSequence sender, Question q, PedResponse r, Dialog d);
 }

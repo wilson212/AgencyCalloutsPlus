@@ -19,11 +19,26 @@ using static Rage.Native.NativeFunction;
 namespace AgencyDispatchFramework.NativeUI
 {
     /// <summary>
-    /// Represents a basic <see cref="MenuPool"/> for questioning peds during a callout
+    /// Represents a basic <see cref="MenuPool"/> for the Agency Dispatch Framework Plugin
     /// </summary>
     internal partial class PluginMenu
     {
+        /// <summary>
+        /// Gets the banner menu name to display on all banners on all submenus
+        /// </summary>
         private const string MENU_NAME = "ADF";
+
+        /// <summary>
+        /// When fetching the player position, the Z vector is set at the players waist level.
+        /// To get the ground level <see cref="Vector3.Z"/>, subtract this value from the players
+        /// <see cref="Vector3.Z"/> position.
+        /// </summary>
+        /// <remarks>Every charcter in GTA is 6' feet tall, or 1.8288m. This value is half of that.</remarks>
+        public static readonly float ZCorrection = 0.9144f;
+
+        #region Menus
+
+        private MenuPool AllMenus;
 
         private UIMenu MainUIMenu;
         private UIMenu DispatchUIMenu;
@@ -42,9 +57,7 @@ namespace AgencyDispatchFramework.NativeUI
         private UIMenu ResidenceSpawnPointsUIMenu;
         private UIMenu ResidenceFlagsUIMenu;
 
-        private MenuPool AllMenus;
-
-        private GameFiber ListenFiber { get; set; }
+        #endregion Menus
 
         #region Main Menu Buttons
 
@@ -103,13 +116,24 @@ namespace AgencyDispatchFramework.NativeUI
         /// </summary>
         private Dictionary<int, int> SpawnPointHandles { get; set; }
 
+        /// <summary>
+        /// Gets a list of all currently active <see cref="Blip"/>s in this <see cref="WorldZone"/>
+        /// </summary>
         private List<Blip> ZoneBlips { get; set; }
 
+        /// <summary>
+        /// Gets a list of all currently active checkpoint handles in this <see cref="WorldZone"/>
+        /// </summary>
         private List<int> ZoneCheckpoints { get; set; }
 
-
+        /// <summary>
+        /// Gets or sets the current coordinates of the location we are editing
+        /// </summary>
         private SpawnPoint NewLocationPosition { get; set; }
 
+        /// <summary>
+        /// Gets or sets the checkpoint handle that marks the current location being edited in game
+        /// </summary>
         private int NewLocationCheckpointHandle { get; set; }
 
         /// <summary>
@@ -121,6 +145,11 @@ namespace AgencyDispatchFramework.NativeUI
         /// Indicates whether this menu is actively listening for key events
         /// </summary>
         internal bool IsListening { get; set; }
+
+        /// <summary>
+        /// Gets the <see cref="GameFiber"/> for this set of menus
+        /// </summary>
+        private GameFiber ListenFiber { get; set; }
 
         /// <summary>
         /// Creates a new isntance of <see cref="PluginMenu"/>
@@ -639,11 +668,11 @@ namespace AgencyDispatchFramework.NativeUI
         /// <param name="document"></param>
         /// <param name="items"></param>
         /// <returns></returns>
-        private static XmlElement CreatePositionsNodeWithSpawnPoints<T>(XmlDocument document, Dictionary<T, MyUIMenuItem<SpawnPoint>> items)
+        private static XmlElement CreatePositionsNodeWithSpawnPoints<T>(XmlDocument document, Dictionary<T, UIMenuItem<SpawnPoint>> items)
         {
             // Add spawn points
             var positionsNode = document.CreateElement("Positions");
-            foreach (MyUIMenuItem<SpawnPoint> p in items.Values)
+            foreach (UIMenuItem<SpawnPoint> p in items.Values)
             {
                 var spawnPointNode = document.CreateElement("SpawnPoint");
 

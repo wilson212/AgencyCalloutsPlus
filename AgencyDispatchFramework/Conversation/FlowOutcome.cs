@@ -10,7 +10,7 @@ namespace AgencyDispatchFramework.Conversation
         /// <summary>
         /// Gets the probability of spawning this <see cref="FlowOutcome"/>
         /// </summary>
-        public int Probability { get; set; }
+        public int Probability { get; set; } = 1;
 
         /// <summary>
         /// Gets or sets the name of this <see cref="FlowOutcome"/>
@@ -31,10 +31,23 @@ namespace AgencyDispatchFramework.Conversation
         /// <returns></returns>
         public bool Evaluate(ExpressionParser parser)
         {
+            // If the condition statement is empty, just return true then
             if (String.IsNullOrWhiteSpace(ConditionStatement))
+            {
                 return true;
+            }
 
-            return parser.Evaluate<bool>(ConditionStatement);
+            // Execute the condition statement
+            var result = parser.Execute<bool>(ConditionStatement);
+            if (result.Success)
+            {
+                return result.Value;
+            }
+            else
+            {
+                result.LogResult();
+                return false;
+            }
         }
     }
 }

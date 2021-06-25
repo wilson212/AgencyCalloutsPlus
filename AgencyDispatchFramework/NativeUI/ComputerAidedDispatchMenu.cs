@@ -147,10 +147,10 @@ namespace AgencyDispatchFramework.NativeUI
             var iList = new List<TabInteractiveListItem>();
             foreach (var scenes in ScenarioPool.ScenariosByAssembly)
             {
-                var menuItems = new List<MyUIMenuItem<CalloutScenarioInfo>>(scenes.Value.Count);
+                var menuItems = new List<UIMenuItem<CalloutScenarioInfo>>(scenes.Value.Count);
                 foreach (var scenario in scenes.Value)
                 {
-                    var item = new MyUIMenuItem<CalloutScenarioInfo>(scenario.Name)
+                    var item = new UIMenuItem<CalloutScenarioInfo>(scenario.Name)
                     {
                         Tag = scenario
                     };
@@ -177,7 +177,7 @@ namespace AgencyDispatchFramework.NativeUI
         private static void ScenarioItem_Activated(UIMenu sender, UIMenuItem selectedItem)
         {
             // Get our scenario info
-            var item = selectedItem as MyUIMenuItem<CalloutScenarioInfo>;
+            var item = selectedItem as UIMenuItem<CalloutScenarioInfo>;
             var call = Dispatch.CrimeGenerator.CreateCallFromScenario(item.Tag);
 
             // Add call to dispatch

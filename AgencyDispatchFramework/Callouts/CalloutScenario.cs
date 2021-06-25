@@ -1,7 +1,6 @@
 ﻿using AgencyDispatchFramework.Conversation;
 using AgencyDispatchFramework.Dispatching;
 using AgencyDispatchFramework.Game;
-using Rage;
 using System;
 using System.IO;
 using System.Xml;
@@ -14,9 +13,10 @@ namespace AgencyDispatchFramework.Callouts
     internal abstract class CalloutScenario
     {
         /// <summary>
-        /// Contains the 
+        /// Contains the <see cref="ExpressionParser"/> used to parse the expression strings
+        /// in the "if" attributes on <see cref="XmlNode"/>s
         /// </summary>
-        internal ExpressionParser Parser { get; set; }
+        protected ExpressionParser Parser { get; set; }
 
         /// <summary>
         /// Gets the randomly selected <see cref="FlowOutcome"/>

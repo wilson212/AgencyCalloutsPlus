@@ -52,7 +52,7 @@ namespace AgencyDispatchFramework.NativeUI
 
         private UIMenuItem RoadShoulderSpawnPointsButton { get; set; }
 
-        private Dictionary<RoadShoulderPosition, MyUIMenuItem<SpawnPoint>> RoadShoulderSpawnPointItems { get; set; }
+        private Dictionary<RoadShoulderPosition, UIMenuItem<SpawnPoint>> RoadShoulderSpawnPointItems { get; set; }
 
         /// <summary>
         /// Builds the menu and its buttons
@@ -206,11 +206,11 @@ namespace AgencyDispatchFramework.NativeUI
             RoadShoulderFlagsUIMenu.BindMenuToItem(RoadShoulderAfterFlagsUIMenu, RoadShoulderAfterFlagsButton);
 
             // Add positions
-            RoadShoulderSpawnPointItems = new Dictionary<RoadShoulderPosition, MyUIMenuItem<SpawnPoint>>();
+            RoadShoulderSpawnPointItems = new Dictionary<RoadShoulderPosition, UIMenuItem<SpawnPoint>>();
             foreach (RoadShoulderPosition flag in Enum.GetValues(typeof(RoadShoulderPosition)))
             {
                 var name = Enum.GetName(typeof(RoadShoulderPosition), flag);
-                var item = new MyUIMenuItem<SpawnPoint>(name, "Activate to set position. ~y~Ensure there is proper space to spawn a group of Peds at this location");
+                var item = new UIMenuItem<SpawnPoint>(name, "Activate to set position. ~y~Ensure there is proper space to spawn a group of Peds at this location");
                 item.Activated += RoadShoulderSpawnPointButton_Activated;
                 RoadShoulderSpawnPointItems.Add(flag, item);
 
@@ -252,8 +252,9 @@ namespace AgencyDispatchFramework.NativeUI
 
             // Grab player location
             var pos = Rage.Game.LocalPlayer.Character.Position;
+            var cpPos = new Vector3(pos.X, pos.Y, pos.Z - ZCorrection);
             var heading = Rage.Game.LocalPlayer.Character.Heading;
-            RoadShoulderLocation = new SpawnPoint(pos, heading);
+            RoadShoulderLocation = new SpawnPoint(cpPos, heading);
 
             // Reset road shoulder flags
             foreach (var cb in RoadShouldFlagsItems.Values)
@@ -262,7 +263,7 @@ namespace AgencyDispatchFramework.NativeUI
             }
 
             // Reset spawn points
-            foreach (MyUIMenuItem<SpawnPoint> item in RoadShoulderSpawnPointItems.Values)
+            foreach (UIMenuItem<SpawnPoint> item in RoadShoulderSpawnPointItems.Values)
             {
                 item.Tag = null;
                 item.RightBadge = UIMenuItem.BadgeStyle.None;
@@ -278,7 +279,7 @@ namespace AgencyDispatchFramework.NativeUI
             RoadShoulderAfterListButton.Index = 0;
 
             // Create checkpoint at the player location
-            NewLocationCheckpointHandle = GameWorld.CreateCheckpoint(pos, Color.Red, forceGround: true);
+            NewLocationCheckpointHandle = GameWorld.CreateCheckpoint(cpPos, Color.Red);
 
             // Get current Postal
             RoadShoulderPostalButton.Collection.Clear();
@@ -333,7 +334,7 @@ namespace AgencyDispatchFramework.NativeUI
             var heading = GamePed.Player.Heading;
             var value = (RoadShoulderPosition)Enum.Parse(typeof(RoadShoulderPosition), selectedItem.Text);
             int index = (int)value;
-            var menuItem = (MyUIMenuItem<SpawnPoint>)selectedItem;
+            var menuItem = (UIMenuItem<SpawnPoint>)selectedItem;
 
             // Check, do we have a check point already for this position?
             if (SpawnPointHandles.ContainsKey(index))
@@ -343,8 +344,7 @@ namespace AgencyDispatchFramework.NativeUI
             }
 
             // Create new checkpoint !!important, need to subtract 2 from the Z since checkpoints spawn at waist level
-            var cpPos = pos;
-            cpPos.Z -= 2;
+            var cpPos = new Vector3(pos.X, pos.Y, pos.Z - ZCorrection);
             handle = GameWorld.CreateCheckpoint(cpPos, Color.Yellow, radius: 5f);
             if (SpawnPointHandles.ContainsKey(index))
                 SpawnPointHandles[index] = handle;
@@ -352,12 +352,12 @@ namespace AgencyDispatchFramework.NativeUI
                 SpawnPointHandles.Add(index, handle);
 
             // Create spawn point
-            menuItem.Tag = new SpawnPoint(pos, heading);
+            menuItem.Tag = new SpawnPoint(cpPos, heading);
             menuItem.RightBadge = UIMenuItem.BadgeStyle.Tick;
 
             // Are we complete
             bool complete = true;
-            foreach (MyUIMenuItem<SpawnPoint> item in RoadShoulderSpawnPointItems.Values)
+            foreach (UIMenuItem<SpawnPoint> item in RoadShoulderSpawnPointItems.Values)
             {
                 if (item.Tag == null)
                 {

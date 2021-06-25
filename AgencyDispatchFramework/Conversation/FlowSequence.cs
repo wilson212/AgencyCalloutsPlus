@@ -1,7 +1,6 @@
 ﻿using AgencyDispatchFramework.Extensions;
 using AgencyDispatchFramework.Game;
 using AgencyDispatchFramework.NativeUI;
-using LSPD_First_Response.Engine.Scripting.Entities;
 using Rage;
 using RAGENativeUI;
 using RAGENativeUI.Elements;
@@ -9,12 +8,12 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Text.RegularExpressions;
-using System.Xml;
 
 namespace AgencyDispatchFramework.Conversation
 {
     /// <summary>
-    /// Represents a conversation flow for a <see cref="Rage.Ped"/> based on menu input by the player
+    /// Represents a conversation flow sequence between a <see cref="Ped"/> and the <see cref="Player"/>
+    /// using <see cref="RAGENativeUI"/> <see cref="UIMenu"/>s
     /// </summary>
     public class FlowSequence : IDisposable
     {
@@ -46,13 +45,7 @@ namespace AgencyDispatchFramework.Conversation
         /// <summary>
         /// Contains a list of flow return menu's by name
         /// </summary>
-        internal Dictionary<string, UIMenu> FlowReturnMenus { get; set; }
-
-        /// <summary>
-        /// Contains a list of <see cref="UIMenuItem"/>s by id
-        /// that it belongs to
-        /// </summary>
-        internal Dictionary<string, UIMenuItem> MenuButtonsById { get; set; }
+        internal Dictionary<string, UIMenu> MenusById { get; set; }
 
         /// <summary>
         /// Contains a list of flow return menu items that are initially no visible
@@ -65,14 +58,14 @@ namespace AgencyDispatchFramework.Conversation
         internal Dictionary<string, Action> Callbacks { get; set; }
 
         /// <summary>
-        /// Contains our <see cref="ResponseSet"/> for this <see cref="FlowSequence"/>
+        /// Contains our <see cref="PedResponse"/>s for this <see cref="FlowSequence"/>
         /// </summary>
-        internal ResponseSet PedResponses { get; set; }
+        internal Dictionary<string, PedResponse> PedResponses { get; set; }
 
         /// <summary>
         /// Contains officer dialogs attached to each menu option
         /// </summary>
-        internal Dictionary<string, Subtitle[]> OfficerDialogs { get; set; }
+        internal Dictionary<string, UIMenuItem<Question>> Questions { get; set; }
 
         /// <summary>
         /// Contains string replacements in the Output strings
@@ -82,7 +75,7 @@ namespace AgencyDispatchFramework.Conversation
         /// <summary>
         /// Gets the FlowOutcome name selected for this conversation event
         /// </summary>
-        public string FlowOutcomeId { get; protected set; }
+        public FlowOutcome FlowOutcome { get; protected set; }
 
         /// <summary>
         /// Event fired whenever a <see cref="PedResponse"/> is displayed
@@ -100,15 +93,15 @@ namespace AgencyDispatchFramework.Conversation
             // Set internals
             SequenceId = sequenceId;
             SubjectPed = ped;
-            FlowOutcomeId = outcome.Id;
+            FlowOutcome = outcome;
 
             // Create empty containers
             AllMenus = new MenuPool();
-            FlowReturnMenus = new Dictionary<string, UIMenu>();
-            OfficerDialogs = new Dictionary<string, Subtitle[]>();
+            MenusById = new Dictionary<string, UIMenu>();
+            PedResponses = new Dictionary<string, PedResponse>();
+            Questions = new Dictionary<string, UIMenuItem<Question>>();
             Variables = new Dictionary<string, object>();
             HiddenMenuItems = new Dictionary<string, UIMenuItem>();
-            MenuButtonsById = new Dictionary<string, UIMenuItem>();
             Callbacks = new Dictionary<string, Action>();
         }
 
@@ -138,30 +131,18 @@ namespace AgencyDispatchFramework.Conversation
         }
 
         /// <summary>
-        /// Indicates whether the <see cref="Player"/> is within talking distance of this <see cref="SubjectPed"/>
-        /// </summary>
-        /// <param name="player">The <see cref="Player"/> instance</param>
-        /// <returns></returns>
-        private bool InTalkingDistance(Ped player)
-        {
-            // Is player within 3m of the ped?
-            if (player.Position.DistanceTo(SubjectPed.Ped.Position) > 3f)
-            {
-                // too far away
-                return false;
-            }
-
-            return true;
-        }
-
-        /// <summary>
         /// Gets the <see cref="Ped"/> response to the question
         /// </summary>
         /// <param name="text"></param>
         /// <returns></returns>
-        public PedResponse GetResponseToQuestionId(string text)
+        public PedResponse GetResponseToQuestionId(string statementId)
         {
-            return PedResponses.GetResponseTo(text);
+            if (!PedResponses.TryGetValue(statementId, out PedResponse response))
+            {
+                return null;
+            }
+
+            return response;
         }
 
         /// <summary>
@@ -190,7 +171,7 @@ namespace AgencyDispatchFramework.Conversation
         }
 
         /// <summary>
-        /// Registers a callack listener on certain <see cref="Statement"/>s
+        /// Registers a callack listener on certain <see cref="Dialog"/>s
         /// </summary>
         /// <param name="id"></param>
         /// <param name="action"></param>
@@ -200,41 +181,6 @@ namespace AgencyDispatchFramework.Conversation
                 Callbacks[id] = action;
             else
                 Callbacks.Add(id, action);
-        }
-
-        /// <summary>
-        /// Dispose method to clear memory
-        /// </summary>
-        public void Dispose()
-        {
-            if (AllMenus != null)
-            {
-                AllMenus.CloseAllMenus();
-                AllMenus.Clear();
-                AllMenus = null;
-
-                foreach (var menu in FlowReturnMenus)
-                {
-                    menu.Value.Clear();
-                }
-
-                FlowReturnMenus.Clear();
-                FlowReturnMenus = null;
-
-                MenuButtonsById.Clear();
-                MenuButtonsById = null;
-
-                HiddenMenuItems.Clear();
-                SubjectPed = null;
-
-                Callbacks.Clear();
-                Callbacks = null;
-
-                OfficerDialogs = null;
-
-                Variables.Clear();
-                Variables = null;
-            }
         }
 
         /// <summary>
@@ -251,25 +197,25 @@ namespace AgencyDispatchFramework.Conversation
             else if (visible && !isAnyOpen)
             {
                 // Open default menu
-                FlowReturnMenus[InitialMenuName].Visible = true;
+                MenusById[InitialMenuName].Visible = true;
             }
         }
 
         /// <summary>
         /// Hides a questioning menu item by id
         /// </summary>
-        /// <param name="buttonId">the button id to hide</param>
-        public bool HideMenuItem(string buttonId)
+        /// <param name="questionId">the button id to hide</param>
+        public bool HideQuestionById(string questionId)
         {
             // Already hidden?
-            if (HiddenMenuItems.ContainsKey(buttonId) || !MenuButtonsById.ContainsKey(buttonId))
+            if (HiddenMenuItems.ContainsKey(questionId) || !Questions.ContainsKey(questionId))
                 return false;
 
             // Grab menu ID for this item ID
-            var menuItem = MenuButtonsById[buttonId];
+            var menuItem = Questions[questionId];
 
             // Add to hidden items
-            HiddenMenuItems.Add(buttonId, menuItem);
+            HiddenMenuItems.Add(questionId, menuItem);
 
             // Remove Item
             int index = menuItem.Parent.MenuItems.IndexOf(menuItem);
@@ -281,22 +227,104 @@ namespace AgencyDispatchFramework.Conversation
         /// <summary>
         /// Displays a hidden questioning menu item by id
         /// </summary>
-        /// <param name="buttonId">the button id to show</param>
-        public bool ShowMenuItem(string buttonId)
+        /// <param name="questionId">the button id to show</param>
+        public bool ShowQuestionById(string questionId)
         {
             // Already being displayed?
-            if (!HiddenMenuItems.ContainsKey(buttonId))
+            if (!HiddenMenuItems.ContainsKey(questionId) || !Questions.ContainsKey(questionId))
                 return false;
 
             // Grab menu ID for this item ID
-            var menuItem = HiddenMenuItems[buttonId];
+            var menuItem = HiddenMenuItems[questionId];
 
             // Add Item
             menuItem.Parent.AddItem(menuItem);
             menuItem.Parent.RefreshIndex();
 
             // Remove from hidden items
-            HiddenMenuItems.Remove(buttonId);
+            HiddenMenuItems.Remove(questionId);
+            return true;
+        }
+
+        /// <summary>
+        /// Adds a question menu item to the internal list, and registers for the click event
+        /// </summary>
+        /// <param name="question"></param>
+        /// <param name="visible">Indicates whether this <see cref="UIMenuItem{T}"/> is initially visible</param>
+        public void AddQuestion(UIMenuItem<Question> question, bool visible)
+        {
+            // Register for event
+            question.Activated += On_QuestionActivate;
+
+            // Add named item to our hash table
+            if (!Questions.ContainsKey(question.Tag.Id))
+            {
+                Questions.Add(question.Tag.Id, question);
+            }
+
+            // Handle item visibility
+            if (!visible)
+            {
+                // Store for later
+                HiddenMenuItems.Add(question.Tag.Id, question);
+            }
+            else
+            {
+                question.Parent.AddItem(question);
+            }
+        }
+
+        /// <summary>
+        /// Adds a <see cref="PedResponse"/> to a <see cref="Question"/>
+        /// </summary>
+        /// <param name="questionId"></param>
+        /// <param name="response"></param>
+        /// <returns>
+        /// False if the question does not exist in the officer dialog, or if the <see cref="PedResponse"/> has already been added. 
+        /// True otherwise
+        /// </returns>
+        public bool AddPedResponse(string questionId, PedResponse response)
+        {
+            // Ensure the question exists, and not a duplicate
+            if (!Questions.ContainsKey(questionId) || PedResponses.ContainsKey(questionId))
+            {
+                return false;
+            }
+
+            PedResponses.Add(questionId, response);
+            return true;
+        }
+
+        /// <summary>
+        /// Adds a menu with the unique menu id
+        /// </summary>
+        /// <param name="menuId"></param>
+        /// <param name="menu"></param>
+        public void AddQuestioningSubMenu(string menuId, UIMenu menu)
+        {
+            if (!MenusById.ContainsKey(menuId))
+            {
+                AllMenus.Add(menu);
+                MenusById.Add(menuId, menu);
+
+                AllMenus.RefreshIndex();
+            }
+        }
+
+        /// <summary>
+        /// Indicates whether the <see cref="Player"/> is within talking distance of this <see cref="SubjectPed"/>
+        /// </summary>
+        /// <param name="player">The <see cref="Player"/> instance</param>
+        /// <returns></returns>
+        private bool InTalkingDistance(Ped player)
+        {
+            // Is player within 3m of the ped?
+            if (player.Position.DistanceTo(SubjectPed.Ped.Position) > 3f)
+            {
+                // too far away
+                return false;
+            }
+
             return true;
         }
 
@@ -329,59 +357,53 @@ namespace AgencyDispatchFramework.Conversation
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="selectedItem"></param>
-        private void On_ItemActivated(UIMenu sender, UIMenuItem selectedMenuItem)
+        private void On_QuestionActivate(UIMenu sender, UIMenuItem selectedMenuItem)
         {
             // Convert to my menu item
-            var selectedItem = selectedMenuItem as MyUIMenuItem<string>;
-            if (selectedMenuItem == null)
-            {
-                return;
-            }
+            var selectedItem = selectedMenuItem as UIMenuItem<Question>;
+            if (selectedMenuItem == null) return;
 
             // Disable button from spam clicks
             selectedItem.Enabled = false;
+            var question = selectedItem.Tag;
 
             // Dont do anything right now!
-            var response = GetResponseToQuestionId(selectedItem.Tag);
+            var response = GetResponseToQuestionId(question.Id);
             if (response == null)
             {
-                Rage.Game.DisplayNotification($"~r~No XML Response[@to='~b~{selectedItem.Tag}~r~'] node for this Ped.");
+                Rage.Game.DisplayNotification($"~r~No XML Response[@to='~b~{question.Id}~r~'] node for this Ped.");
                 return;
             }
 
-            // Grab dialog
-            var statement = response.GetStatement();
-            if (statement == null || statement.Subtitles.Length == 0)
+            // Grab dialog for player
+            var officerDialog = question.GetRandomDialog();
+            if (officerDialog == null || officerDialog.Subtitles.Length == 0)
             {
-                Log.Error($"FlowSequence.Item_Activated: Response to '{selectedItem.Tag}' has no lines");
+                Log.Error($"FlowSquence.On_QuestionActivated: Question '{question.Id}' has no Dialog");
+                return;
+            }
+
+            // Grab dialog for ped
+            var pedDialog = response.GetPersistantDialog();
+            if (pedDialog == null || pedDialog.Subtitles.Length == 0)
+            {
+                Log.Error($"FlowSquence.On_QuestionActivate: Response to '{question.Id}' has no Dialog");
                 return;
             }
 
             // Clear any queued messages
             SubtitleQueue.Clear();
-            var player = Rage.Game.LocalPlayer.Character;
 
             // Officer Dialogs first
-            foreach (Subtitle line in OfficerDialogs[selectedItem.Tag])
-            {
-                // Set ped in statement to allow animations
-                line.Speaker = player;
-                line.PrefixText = "~y~You~w~:";
-                line.Text = VariableExpression.ReplaceTokens(line.Text, Variables);
-
-                // Add line
-                SubtitleQueue.Add(line);
-            }
+            PlayDialog(officerDialog, Rage.Game.LocalPlayer.Character, "~y~You~w~:");
 
             // Has the player asked this question already?
             if (selectedItem.ForeColor == Color.Gray)
             {
-                var line = new Subtitle()
+                var line = new Subtitle(GetRepeatPrefixText(), 2500)
                 {
                     PrefixText = $"~y~{SubjectPed.Persona.Forename}~w~:",
-                    Speaker = SubjectPed.Ped,
-                    Text = GetRepeatPrefixText(),
-                    Duration = 2500
+                    Speaker = SubjectPed.Ped
                 };
 
                 // Add line
@@ -389,97 +411,126 @@ namespace AgencyDispatchFramework.Conversation
             }
 
             // Add Ped response
-            int index = 0;
-            int lastIndex = statement.Subtitles.Length - 1;
-            foreach (Subtitle line in statement.Subtitles)
-            {
-                // Do we have a callback for "onFirstShown" ?
-                if (index == 0 && !String.IsNullOrEmpty(statement.CallOnFirstShown))
-                {
-                    if (Callbacks.TryGetValue(statement.CallOnFirstShown, out Action action))
-                    {
-                        void handler(Subtitle s)
-                        {
-                            line.OnDisplayed -= handler;
-                            action.Invoke();
-                        }
-
-                        line.OnDisplayed += handler;
-                    }
-                }
-
-                // Check for last subtitle events
-                if (index == lastIndex)
-                {
-                    // Do we have a callback for "onLastShown" ?
-                    if (!String.IsNullOrEmpty(statement.CallOnLastShown) && Callbacks.TryGetValue(statement.CallOnLastShown, out Action action))
-                    {
-                        void handler(Subtitle s)
-                        {
-                            line.OnDisplayed -= handler;
-                            action.Invoke();
-                        }
-
-                        line.OnDisplayed += handler;
-                    }
-
-                    // Do we have a callback for "elapsed" ?
-                    if (!String.IsNullOrEmpty(statement.CallOnElapsed) && Callbacks.TryGetValue(statement.CallOnElapsed, out Action action2))
-                    {
-                        void handler(Subtitle s)
-                        {
-                            line.Elapsed -= handler;
-                            action2.Invoke();
-                        }
-
-                        line.Elapsed += handler;
-                    }
-                }
-
-                // Set ped in statement to allow animations
-                line.Speaker = SubjectPed.Ped;
-                line.PrefixText = $"~y~{SubjectPed.Persona.Forename}~w~:";
-                line.Text = VariableExpression.ReplaceTokens(line.Text, Variables);
-
-                // Add line
-                SubtitleQueue.Add(line);
-                index++;
-            }
+            PlayDialog(pedDialog, SubjectPed, $"~y~{SubjectPed.Persona.Forename}~w~:");
 
             // Enable button and change font color to show its been clicked before
             selectedItem.Enabled = true;
             selectedItem.ForeColor = Color.Gray;
 
             // Fire off event
-            OnPedResponse(this, response, statement);
+            OnPedResponse(this, question, response, pedDialog);
         }
 
         /// <summary>
-        /// Adds a menu button to the internal list, and registers for the click event
+        /// Plays the dialog
         /// </summary>
-        /// <param name="buttonId"></param>
-        /// <param name="item"></param>
-        /// <param name="visible"></param>
-        internal void AddMenuButton(string buttonId, MyUIMenuItem<string> item, bool visible)
+        /// <param name="dialog"></param>
+        /// <param name="Speaker"></param>
+        /// <param name="prefix"></param>
+        private void PlayDialog(Dialog dialog, Ped Speaker, string prefix)
         {
-            // Register for event
-            item.Activated += On_ItemActivated;
+            // Add Ped response
+            int index = 0;
+            int lastIndex = dialog.Subtitles.Length - 1;
+            foreach (Subtitle line in dialog.Subtitles)
+            {
+                // Do we have a callback for "onFirstShown" ?
+                if (index == 0)
+                {
+                    AttachCallbackAction_OnDisplayed(dialog.CallOnFirstShown, line);
+                }
 
-            // Add named item to our hash table
-            if (!MenuButtonsById.ContainsKey(buttonId))
-            {
-                MenuButtonsById.Add(buttonId, item);
-            }
+                // Check for last subtitle events
+                if (index == lastIndex)
+                {
+                    // Do we have a callback for "onLastShown" ?
+                    AttachCallbackAction_OnDisplayed(dialog.CallOnLastShown, line);
 
-            // Handle item visibility
-            if (!visible)
-            {
-                // Store for later
-                HiddenMenuItems.Add(buttonId, item);
+                    // Do we have a callback for "elapsed" ?
+                    AttachedCallbackAction_OnElapsed(dialog.CallOnElapsed, line);
+                }
+
+                // Set ped in statement to allow animations
+                line.Speaker = Speaker;
+                line.PrefixText = prefix;
+                line.Text = VariableExpression.ReplaceTokens(line.Text, Variables);
+
+                // Add line
+                SubtitleQueue.Add(line);
+                index++;
             }
-            else
+        }
+
+        /// <summary>
+        /// Adds the callback action to the <see cref="SubtitleEventHandler"/>
+        /// </summary>
+        /// <param name="callbackName">The name of the callback</param>
+        /// <param name="subtitle">The <see cref="Subtitle"/></param>
+        private void AttachCallbackAction_OnDisplayed(string callbackName, Subtitle subtitle)
+        {
+            // Do we have a callback for "elapsed" ?
+            if (!String.IsNullOrEmpty(callbackName) && Callbacks.TryGetValue(callbackName, out Action action2))
             {
-                item.Parent.AddItem(item);
+                void handler(Subtitle s)
+                {
+                    subtitle.Elapsed -= handler;
+                    action2.Invoke();
+                }
+
+                subtitle.OnDisplayed += handler;
+            }
+        }
+
+        /// <summary>
+        /// Adds the callback action to the <see cref="SubtitleEventHandler"/>
+        /// </summary>
+        /// <param name="callbackName">The name of the callback</param>
+        /// <param name="subtitle">The <see cref="Subtitle"/></param>
+        private void AttachedCallbackAction_OnElapsed(string callbackName, Subtitle subtitle)
+        {
+            // Do we have a callback for "elapsed" ?
+            if (!String.IsNullOrEmpty(callbackName) && Callbacks.TryGetValue(callbackName, out Action action))
+            {
+                void handler(Subtitle s)
+                {
+                    subtitle.Elapsed -= handler;
+                    action.Invoke();
+                }
+
+                subtitle.Elapsed += handler;
+            }
+        }
+
+        /// <summary>
+        /// Dispose method to clear memory
+        /// </summary>
+        public void Dispose()
+        {
+            if (AllMenus != null)
+            {
+                AllMenus.CloseAllMenus();
+                AllMenus.Clear();
+                AllMenus = null;
+
+                foreach (var menu in MenusById)
+                {
+                    menu.Value.Clear();
+                }
+
+                MenusById.Clear();
+                MenusById = null;
+
+                HiddenMenuItems.Clear();
+                SubjectPed = null;
+
+                Callbacks.Clear();
+                Callbacks = null;
+
+                Questions.Clear();
+                Questions = null;
+
+                Variables.Clear();
+                Variables = null;
             }
         }
     }

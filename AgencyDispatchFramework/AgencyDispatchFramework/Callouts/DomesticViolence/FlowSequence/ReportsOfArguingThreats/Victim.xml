@@ -1,26 +1,30 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <!--
-  Defined Variables for string replacement:
+  Defined Variables for string replacement (ex: $varName$)
     - SuspectVehicleType  : Gets the name of the suspects vehicle type (ex: car, truck, motorcycle etc)
     - VictimVehicleType   : Gets the name of the victims vehicle type (ex: car, truck, motorcycle etc)
     - SuspectTitle        : Gets the title and surname of the suspect (ex: Mr. Smith)
     - VictimTitle         : Gets the title and surname of the victim (ex: Ms. Clark)
     
   Condition Statement Defined Variables:
-    - Victim    -> [T:AgencyCalloutsPlus.Mod.GamePed]  (source: https://github.com/wilson212/AgencyCalloutsPlus/blob/master/AgencyCalloutsPlus/Mod/GamePed.cs)
-    - Suspect   -> [T:AgencyCalloutsPlus.Mod.GamePed]  (source: https://github.com/wilson212/AgencyCalloutsPlus/blob/master/AgencyCalloutsPlus/Mod/GamePed.cs)
-    - Weather   -> [T:AgencyCalloutsPlus.Mod.WeatherInfo] (source: https://github.com/wilson212/AgencyCalloutsPlus/blob/master/AgencyCalloutsPlus/Mod/WeatherInfo.cs)
+    - Victim    -> [T:AgencyDispatchFramework.Game.GamePed]  (source: https://github.com/wilson212/AgencyCalloutsPlus/blob/master/AgencyDispatchFramework/Game/GamePed.cs)
+    - Suspect   -> [T:AgencyDispatchFramework.Game.GamePed]  (source: https://github.com/wilson212/AgencyCalloutsPlus/blob/master/AgencyDispatchFramework/Game/GamePed.cs)
+    - Weather   -> [T:AgencyDispatchFramework.Game.WeatherSnapshot] (source: https://github.com/wilson212/AgencyCalloutsPlus/blob/master/AgencyDispatchFramework/Game/WeatherSnapshot.cs)
 -->
 <FlowSequence>
   <Input>
     <!-- Initial Questioning Menu -->
     <Menu id="main">
-      <MenuItem id="ok" buttonText="Do you need medical?" visible="true">
-        <Subtitle time="2000">Do you require any medical attention?</Subtitle>
-      </MenuItem>
-      <MenuItem id="how" buttonText="How did this happen?" visible="true">
-        <Subtitle time="2000">Can you tell me how this happened?</Subtitle>
-      </MenuItem>
+      <Question id="ok" buttonText="Do you need medical?">
+        <Dialog probability="100">
+          <Subtitle time="2000">Do you require any medical attention?</Subtitle>
+        </Dialog>
+      </Question>
+      <Question id="how" buttonText="How did this happen?">
+        <Dialog probability="100">
+          <Subtitle time="2000">How did this happen?</Subtitle>
+        </Dialog>
+      </Question>
     </Menu>
   </Input>
   <Output>
@@ -38,26 +42,26 @@
       </Ped>
       <Responses>
         <Response to="ok" returnMenu="main">
-          <Statement probability="100">
+          <Dialog probability="100">
             <Subtitle time="3000">No, I seem to be ok...</Subtitle>
-          </Statement>
-          <Statement probability="100">
+          </Dialog>
+          <Dialog probability="100">
             <Subtitle time="3000">No, I am ok officer</Subtitle>
-          </Statement>
-          <Statement probability="50">
+          </Dialog>
+          <Dialog probability="50">
             <Subtitle time="3000">Nope</Subtitle>
-          </Statement>
+          </Dialog>
         </Response>
         <Response to="how" returnMenu="main">
-          <Statement probability="100" if="Suspect.Ped.IsMale == true">
+          <Dialog probability="100" if="Suspect.Ped.IsMale == true">
             <Subtitle time="4000">I was just driving my $VictimVehicleType$ when this jackass rear-ended me.</Subtitle>
-          </Statement>
-          <Statement probability="100" if="Suspect.Ped.IsFemale == true">
+          </Dialog>
+          <Dialog probability="100" if="Suspect.Ped.IsFemale == true">
             <Subtitle time="4000">I was just driving my $VictimVehicleType$ when this bitch rear-ended me.</Subtitle>
-          </Statement>
-          <Statement probability="50">
+          </Dialog>
+          <Dialog probability="50">
             <Subtitle time="4000">I was just driving my $VictimVehicleType$. All the sudden this $SuspectVehicleType$ just crashed into the back of me!</Subtitle>
-          </Statement>
+          </Dialog>
         </Response>
       </Responses>
     </FlowOutcome>

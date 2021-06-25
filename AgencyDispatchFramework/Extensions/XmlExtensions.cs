@@ -1,15 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Xml;
 
 namespace AgencyDispatchFramework.Extensions
 {
     public static class XmlExtensions
     {
-        // Get the node full path
+        /// <summary>
+        /// Gets the full path to the specified <see cref="XmlNode"/>
+        /// </summary>
         public static string GetFullPath(this XmlNode node)
         {
             string path = node.Name;

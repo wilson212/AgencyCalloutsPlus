@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace AgencyDispatchFramework.Events.TrafficStop
 {
-    internal class BackupRequested : AiScriptedEvent
+    internal class BackupRequested : AiOfficerEvent
     {
 
     }

@@ -61,6 +61,16 @@ namespace AgencyDispatchFramework.Game
         }
 
         /// <summary>
+        /// Gets or sets the BAC level of this <see cref="Rage.Ped"/>. Value should range from
+        /// 0.00 to 0.20.
+        /// </summary>
+        public float AlcoholLevel
+        {
+            get => Ped.GetAlcoholLevel();
+            set => Ped.SetAlcoholLevel(value);
+        }
+
+        /// <summary>
         /// Gets or sets whether this <see cref="Rage.Ped"/> is high on drugs
         /// </summary>
         public bool IsHigh

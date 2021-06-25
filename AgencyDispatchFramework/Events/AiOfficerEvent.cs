@@ -10,8 +10,10 @@ namespace AgencyDispatchFramework.Events
     /// Represents a base class for AI officer scripted events, leading into a callout
     /// that the player can then respond to as backup
     /// </summary>
-    public abstract class AiScriptedEvent
+    public abstract class AiOfficerEvent : AmbientEvent
     {
-
+        protected AiOfficerEvent()
+        {
+        }
     }
 }

@@ -121,7 +121,7 @@ namespace AgencyDispatchFramework.Extensions
         /// <seealso cref="http://www.dev-c.com/nativedb/func/info/2aa720e4287bf269"/>
         public static void ToggleNeonLight(this Vehicle vehicle, ENeonLights neonLight, bool toggle)
         {
-            Natives._SET_VEHICLE_NEON_LIGHT_ENABLED(vehicle, (int)neonLight, toggle);
+            Natives.SetVehicleNeonLightEnabled(vehicle, (int)neonLight, toggle);
         }
 
         /// <summary>
@@ -131,7 +131,7 @@ namespace AgencyDispatchFramework.Extensions
         /// <param name="color">Color to set</param>
         public static void SetNeonLightsColor(this Vehicle vehicle, Color color)
         {
-            Natives._SET_VEHICLE_NEON_LIGHTS_COLOUR(vehicle, (int)color.R, (int)color.G, (int)color.B);
+            Natives.SetVehicleNeonLightsColour(vehicle, (int)color.R, (int)color.G, (int)color.B);
         }
 
         /// <summary>
@@ -142,7 +142,7 @@ namespace AgencyDispatchFramework.Extensions
         /// <returns>true if the neon light is enabled</returns>
         public static bool IsNeonLightEnable(this Vehicle vehicle, ENeonLights neonLight)
         {
-            return Natives._IS_VEHICLE_NEON_LIGHT_ENABLED<bool>(vehicle, (int)neonLight);
+            return Natives.IsVehicleNeonLightEnabled<bool>(vehicle, (int)neonLight);
         }
 
         /// <summary>

@@ -69,6 +69,10 @@ namespace AgencyDispatchFramework
         /// <param name="objects"></param>
         public void AddRange(IEnumerable<T> objects)
         {
+            // Dont allow a null pass
+            if (objects == null)
+                throw new ArgumentNullException(nameof(objects));
+
             foreach (var o in objects)
             {
                 var spawnable = new ProbableItem<T>(this, o, CumulativeProbability);
@@ -101,6 +105,27 @@ namespace AgencyDispatchFramework
         public void Clear()
         {
             Items.Clear();
+        }
+
+        /// <summary>
+        /// Filters the items within this <see cref="ProbabilityGenerator{T}"/> based on the predicate
+        /// </summary>
+        /// <param name="predicate">The condition to apply</param>
+        /// <returns>A new <see cref="ProbabilityGenerator{T}"/> containing only the items that satisfies the condition</returns>
+        public ProbabilityGenerator<T> Where(Func<ProbableItem<T>, bool> predicate)
+        {
+            var items = Items.Where(predicate).Select(x => x.Item).ToArray();
+            return (items == null) ? new ProbabilityGenerator<T>() : new ProbabilityGenerator<T>(items);
+        }
+
+        /// <summary>
+        /// Determines whether any item within this <see cref="ProbabilityGenerator{T}"/> satisfies the condition
+        /// </summary>
+        /// <param name="predicate">The condition to apply</param>
+        /// <returns>A bool indicating whether any item satisfies the condition</returns>
+        public bool Any(Func<ProbableItem<T>, bool> predicate)
+        {
+            return Items.Any(predicate);
         }
 
         /// <summary>

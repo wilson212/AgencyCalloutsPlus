@@ -150,18 +150,18 @@ namespace AgencyDispatchFramework.Callouts.DomesticViolence
             var path = Path.Combine(Main.FrameworkFolderPath, "Callouts", "DomesticViolence", "FlowSequence", nameof(ReportsOfArguingThreats), "Suspect.xml");
             using (var file = new FlowSequenceFile(path))
             {
-                SuspectSeq = file.Parse("Suspect", FlowOutcome, Suspect, Parser);
+                SuspectSeq = file.Parse(FlowOutcome, Suspect, Parser);
                 SuspectSeq.SetVariableDictionary(variables);
-                Menu.RegisterPedConversation(Suspect, SuspectSeq);
+                Menu.AddConversation(SuspectSeq);
             }
 
             // Load converation flow sequence for the victim
             path = Path.Combine(Main.FrameworkFolderPath, "Callouts", "DomesticViolence", "FlowSequence", nameof(ReportsOfArguingThreats), "Victim.xml");
             using (var file = new FlowSequenceFile(path))
             {
-                VictimSeq = file.Parse("Victim", FlowOutcome, Victim, Parser);
+                VictimSeq = file.Parse(FlowOutcome, Victim, Parser);
                 VictimSeq.SetVariableDictionary(variables);
-                Menu.RegisterPedConversation(Victim, VictimSeq);
+                Menu.AddConversation(VictimSeq);
             }
 
             // Create menu button
