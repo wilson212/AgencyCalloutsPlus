@@ -1,34 +1,34 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
-<!-- A FlowSquence represents a conversation flow sequence between a Ped and the Player -->
-<FlowSequence>
+<!-- A Dialogue represents a conversation flow sequence between a Ped and the Player -->
+<Dialogue id="Suspect">
 
-  <!-- The Input node builds a RageNativeUI questioning menu in which to interact with a Ped -->
-  <Input>
+  <!-- The Menus node builds a RageNativeUI questioning menu in which to interact with a Ped -->
+  <Menus>
     
     <!-- Initial RageNativeUI Questioning Menu should always be named "main" -->
     <Menu id="main">
       
       <!-- 
         A Question node describes a question that can be asked, and is displayed as a RageNativeUI button 
-        The "id" attribute defines a question ID, that the code uses to find an answer from a FlowOutcome.
+        The "id" attribute defines a question ID, that the code uses to find an answer from a Scenario.
         
         NOTE: The "id" attribute must be unique for this entire file, not just this "Menu"!
       -->
       <Question id="ok" buttonText="Do you need medical?">
-        <Dialog probability="10">
+        <Sequence probability="10">
           <!-- 
             A subtitle is just that, a single line displayed on screen for the "time" in milliseconds.
             Multiple Subtitle nodes can be present, and each one will be displayed in order.
           -->
           <Subtitle time="2000">Do you require any medical attention?</Subtitle>
-        </Dialog>
+        </Sequence>
       </Question>
       
       <!-- Another question with the unique id of "how", displaying for 2 seconds -->
       <Question id="how" buttonText="How did this happen?">
-        <Dialog probability="10">
+        <Sequence probability="10">
           <Subtitle time="2000">How did this happen?</Subtitle>
-        </Dialog>
+        </Sequence>
       </Question>
       
       <!-- 
@@ -37,29 +37,29 @@
         shown later by a subtitle
       -->
       <Question id="tailgate" buttonText="Tailgating?" visible="false">
-        <Dialog probability="10">
+        <Sequence probability="10">
           <!-- 
           As you can see we have a variable in the text labeled "$...$".
-          These variables are set in the callout file using an the FlowSequence.SetVariable() method
+          These variables are set in the callout file using an the Dialogue.SetVariable() method
         -->
           <Subtitle time="3000">$VictimName$ stated that you were tailgating. Is this a true statement?</Subtitle>
-        </Dialog>
+        </Sequence>
       </Question>
     </Menu>
-  </Input>
+  </Menus>
 
-  <!-- The Output node has a set of different response sets to inputs from the RageNativeUI Menus -->
-  <Output>
+  <!-- The Scenarios node has a set of different response sets to Menuss from the RageNativeUI Menus -->
+  <Scenarios>
     
     <!-- 
-      A Flow outcome is essentially an organized set of responses to the questions defined in the Input node, which
+      A Flow outcome is essentially an organized set of responses to the questions defined in the Menus node, which
       sets up the official statement for the Ped. 
       
-      A CalloutMeta file defines all the posible FlowOutcomes, with the probability to select each one.
+      A CalloutMeta file defines all the posible Scenarios, with the probability to select each one.
       
-      A FlowOutcome node must define an initialMenu to display, and must have a unique ID from other FlowOutcome nodes
+      A Scenario node must define an initialMenu to display, and must have a unique ID from other Scenario nodes
     -->
-    <FlowOutcome id="uniqueIdHere" initialMenu="main">
+    <Scenario id="uniqueIdHere" initialMenu="main">
       
       <!-- 
         The <Ped> node is used as a config to set the chances of the Ped being drunk,
@@ -138,26 +138,26 @@
           
           <!-- 
             In this initial dialog (if selected at random based on the "probability"), we have 3 callbacks we can hook into
-            within the CalloutScenario using the following method: FlowSequence.RegisterCallback(name, Action);
+            within the CalloutScenario using the following method: Dialogue.RegisterCallback(name, Action);
             
             For all intents and purposes, a callback is basically just an event created dynamically, and calls on the Action
             supplied when the callback is registered in the CalloutScenario. Callbacks are not required to be defined.
             
             The "onFirstShown" callback gets fired when the first <Subtitle> node is displayed in game, calling the action
-            registered as "First_Shown" ( FlowSequence.RegisterCallback("First_Shown", Action) ) 
+            registered as "First_Shown" ( Dialogue.RegisterCallback("First_Shown", Action) ) 
             
             The "onLastShown" callback gets fired when the last <Subtitle> node is displayed in game, calling the action
-            registered as "Last_Shown" ( FlowSequence.RegisterCallback("Last_Shown", Action) ) 
+            registered as "Last_Shown" ( Dialogue.RegisterCallback("Last_Shown", Action) ) 
             
             The "elapsed" callback gets fired when the last <Subtitle> node has finished displaying in game, calling the action
-            registered as "Elapsed_Shown" ( FlowSequence.RegisterCallback("Elapsed_Shown", Action) )  
+            registered as "Elapsed_Shown" ( Dialogue.RegisterCallback("Elapsed_Shown", Action) )  
             
             A good use of callbacks would be to initiate a gun fight with the player after a subtitle is displayed, or run away
             from the officer, or making the ped preform a scenario. Really the posibilities are endless here.
           -->
-          <Dialog probability="100" onFirstShown="First_Shown" onLastShown="Last_Shown" elapsed="Elapsed_Shown">
+          <Sequence probability="100" onFirstShown="First_Shown" onLastShown="Last_Shown" elapsed="Elapsed_Shown">
             <Subtitle time="3000">No, I seem to be ok...</Subtitle>
-          </Dialog>
+          </Sequence>
           
           <!--
             In this dialog, we see an example of a condition statement (this "if" attribute).
@@ -169,7 +169,7 @@
             In this example, the "Victim" object is defined in the CalloutScenario as so:
             ExpressionParser.SetParamater("Victim", (AgencyDispatchFramework.Game.GamePed)Rage.Ped);
           -->
-          <Dialog probability="100" if="Victim.Ped.IsMale == true">
+          <Sequence probability="100" if="Victim.Ped.IsMale == true">
             
             <Subtitle time="3000">
               <!-- 
@@ -202,7 +202,7 @@
               <Text>I am ok officer</Text>
             </Subtitle>
             
-          </Dialog>
+          </Sequence>
         </Response>
         
         <!-- Response when the MenuItem with id "how" is selected by the player -->
@@ -213,15 +213,15 @@
             When this statement is shown, it un-hides that menu's button for the 
             player to then ask a new question. The format is always as follows:
             
-            "FlowSequenceID" (then a period) "." (Then the button name) "MenuItem[id]"
+            "DialogueID" (then a period) "." (Then the button name) "MenuItem[id]"
           -->
-          <Dialog probability="100" if="Suspect.Ped.IsMale == true" show="FlowSequenceID.tailgate">
+          <Sequence probability="100" if="Suspect.Ped.IsMale == true" show="DialogueID.tailgate">
             <Subtitle time="4000">I noticed that this dude was tailgating me before he rear-ended me.</Subtitle>
-          </Dialog>
+          </Sequence>
           <!-- More Statements to the question ID of "how" -->
         </Response>
       </Responses>
-    </FlowOutcome>
+    </Scenario>
 
-  </Output>
-</FlowSequence>
+  </Scenarios>
+</Dialogue>

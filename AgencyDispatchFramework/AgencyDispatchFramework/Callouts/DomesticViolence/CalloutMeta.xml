@@ -66,9 +66,9 @@ RP STATED ONE OF THE SCREAMS WAS SOMEONE STATING THEY WERE GOING TO KILL SOMEONE
           
         </Escalation>
       </Simulation>
-      <FlowSequence>
-        <FlowOutcome id="cheating" probability="10" />
-      </FlowSequence> 
+      <DialogueScenarios>
+        <Scenario id="cheating" probability="10" />
+      </DialogueScenarios>
     </ReportsOfArguingThreats>
 
   </Scenarios>

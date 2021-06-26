@@ -2,7 +2,7 @@
 
 namespace AgencyDispatchFramework.Game
 {
-    public class PedAnimation
+    public class AnimationData
     {
         /// <summary>
         /// Gets or sets the animation dictionary name

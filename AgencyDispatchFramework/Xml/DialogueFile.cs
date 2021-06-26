@@ -12,61 +12,67 @@ using System.Xml;
 namespace AgencyDispatchFramework.Xml
 {
     /// <summary>
-    /// A class used to parse Flow Sequence XML files and create <see cref="FlowSequence"/> instances
+    /// A class used to parse Flow Sequence XML files and create <see cref="Dialogue"/> instances
     /// using the data in the file
     /// </summary>
-    public class FlowSequenceFile : XmlFileBase
+    public class DialogueFile : XmlFileBase
     {
         /// <summary>
-        /// Creates a new instance of <see cref="FlowSequenceFile"/> using the specified
+        /// Creates a new instance of <see cref="DialogueFile"/> using the specified
         /// file path
         /// </summary>
         /// <param name="filePath">The full file path to the FlowSequence xml file</param>
-        public FlowSequenceFile(string filePath) : base(filePath)
+        public DialogueFile(string filePath) : base(filePath)
         {
             // === Document loaded successfully by base class if we are here === //
             // 
         }
 
         /// <summary>
-        /// Parses the flow sequence xml file returns a new <see cref="FlowSequence"/>
+        /// Parses the flow sequence xml file returns a new <see cref="Dialogue"/>
         /// </summary>
-        /// <param name="outcome">
-        /// The <see cref="FlowOutcome"/> selected for this conversation sequence. Only this <see cref="FlowOutcome"/> will be parsed.
+        /// <param name="scenario">
+        /// The <see cref="DialogScenario"/> selected for this conversation sequence. Only this <see cref="DialogScenario"/> will be parsed.
         /// </param>
         /// <param name="ped">The ped that will respond with the answers in this sequence</param>
         /// <param name="parser">The <see cref="ExpressionParser"/> used for evaluating expression strings in the XML "if" attributes</param>
-        /// <returns>A <see cref="FlowSequence"/> instance</returns>
+        /// <returns>A <see cref="Dialogue"/> instance</returns>
         /// <exception cref="ArgumentException" />
         /// <exception cref="ArgumentNullException" />
-        public FlowSequence Parse(FlowOutcome outcome, GamePed ped, ExpressionParser parser)
+        public Dialogue Parse(DialogScenario scenario, GamePed ped, ExpressionParser parser)
         {
-            string sequenceId = Path.GetFileNameWithoutExtension(FilePath);
-            var sequence = new FlowSequence(sequenceId, ped, outcome);
-            var documentRoot = Document.SelectSingleNode("FlowSequence");
+            // Validate and extract attributes
+            var documentRoot = Document.SelectSingleNode("Dialogue");
+            if (!documentRoot.TryGetAttribute("id", out string sequenceId))
+            {
+                Log.Warning($"DialogueFile.Parse(): Dialogue node has no 'id' attribute");
+                sequenceId = Path.GetFileNameWithoutExtension(FilePath);
+            }
 
             // ====================================================
             // Load input flow return menus
             // ====================================================
-            XmlNode catagoryNode = documentRoot.SelectSingleNode("Input");
+            XmlNode catagoryNode = documentRoot.SelectSingleNode("Menus");
             if (catagoryNode == null || !catagoryNode.HasChildNodes)
             {
-                throw new ArgumentNullException("Input");
+                throw new ArgumentNullException("Menus", "Menu node has no child nodes or is null");
             }
 
-            // Load FlowReturn items
+            // Create dialog instance
+            var dialogue = new Dialogue(sequenceId, ped, scenario);
             int i = 0;
+
+            // Load FlowReturn items
             foreach (XmlNode n in catagoryNode.SelectNodes("Menu"))
             {
                 // Validate and extract attributes
-                if (n.Attributes == null || n.Attributes["id"]?.Value == null)
+                if (!n.TryGetAttribute("id", out string menuId))
                 {
-                    Log.Warning($"FlowSequenceFile.Parse(): Menu node has no 'id' attribute");
+                    Log.Warning($"DialogueFile.Parse(): Menu node has no 'id' attribute");
                     continue;
                 }
 
-                // Create
-                string menuId = n.Attributes["id"].Value;
+                // Create Menu
                 var menu = new UIMenu("Ped Interaction", $"~y~{ped.Persona.FullName}");
 
                 // Extract Officer dialogs
@@ -75,7 +81,7 @@ namespace AgencyDispatchFramework.Xml
                     // Extract attributes
                     if (questionNode.Attributes == null)
                     {
-                        Log.Error($"FlowSequenceFile.Parse(): Menu -> MenuItem has no attributes");
+                        Log.Error($"DialogueFile.Parse(): Menu -> MenuItem has no attributes");
                         continue;
                     }
 
@@ -83,14 +89,14 @@ namespace AgencyDispatchFramework.Xml
                     string questionId = questionNode.Attributes["id"]?.Value;
                     if (String.IsNullOrWhiteSpace(questionId))
                     {
-                        Log.Error($"FlowSequenceFile.Parse(): Menu -> MenuItem has no or empty 'id' attribute");
+                        Log.Error($"DialogueFile.Parse(): Menu -> MenuItem has no or empty 'id' attribute");
                         continue;
                     }
 
                     // Ensure ID is unique
-                    if (sequence.Questions.ContainsKey(questionId))
+                    if (dialogue.Questions.ContainsKey(questionId))
                     {
-                        Log.Error($"FlowSequenceFile.Parse(): Menu -> Question 'id' attribute is not unique");
+                        Log.Error($"DialogueFile.Parse(): Menu -> Question 'id' attribute is not unique");
                         continue;
                     }
 
@@ -98,7 +104,7 @@ namespace AgencyDispatchFramework.Xml
                     string text = questionNode.Attributes["buttonText"]?.Value;
                     if (String.IsNullOrWhiteSpace(text))
                     {
-                        Log.Error($"FlowSequenceFile.Parse(): Menu -> MenuItem has no or empty 'buttonText' attribute");
+                        Log.Error($"DialogueFile.Parse(): Menu -> MenuItem has no or empty 'buttonText' attribute");
                         continue;
                     }
 
@@ -110,47 +116,47 @@ namespace AgencyDispatchFramework.Xml
                         if (!bool.TryParse(val, out isVisible))
                         {
                             isVisible = true;
-                            Log.Warning($"FlowSequenceFile.Parse(): Menu -> MenuItem attribute 'visible' attribute is not correctly formatted");
+                            Log.Warning($"DialogueFile.Parse(): Menu -> MenuItem attribute 'visible' attribute is not correctly formatted");
                         }
                     }
 
                     // Ensure we have lines to read
                     if (!questionNode.HasChildNodes)
                     {
-                        Log.Error($"FlowSequenceFile.Parse(): Menu -> MenuItem has no Line child nodes");
+                        Log.Error($"DialogueFile.Parse(): Menu -> MenuItem has no Line child nodes");
                         continue;
                     }
 
                     // Load dialog for officer
                     var question = new Question(questionId);
-                    var subNodes = questionNode.SelectNodes("Dialog");
-                    foreach (XmlNode dialogNode in subNodes)
+                    var subNodes = questionNode.SelectNodes("Sequence");
+                    foreach (XmlNode seqNode in subNodes)
                     {
-                        if (TryParseDialogNode(dialogNode, parser, out Dialog dialog))
+                        if (TryParseSequenceNode(seqNode, parser, out CommunicationSequence seq))
                         {
-                            question.AddDialog(dialog);
+                            question.AddSequence(seq);
                         }
                     }
                     
                     // If we failed to parse any dialog nodes, cancel this question
-                    if (question.DialogCount == 0)
+                    if (question.Count == 0)
                     {
                         // Log
-                        Log.Warning("FlowSequenceFile.Parse(): Menu -> Question node has no dialogs");
+                        Log.Warning("DialogueFile.Parse(): Menu -> Question node has no dialogs");
                         continue;
                     }
 
                     // Add button
-                    sequence.AddQuestion(new UIMenuItem<Question>(text) { Tag = question, Parent = menu }, isVisible);
+                    dialogue.AddQuestion(new UIMenuItem<Question>(text) { Tag = question, Parent = menu }, isVisible);
                 }
 
                 // Add menu
-                sequence.AddQuestioningSubMenu(menuId, menu);
+                dialogue.AddQuestioningSubMenu(menuId, menu);
 
                 // Ensure to set an initial opening menu
                 if (i == 0)
                 {
-                    sequence.InitialMenuName = menuId;
+                    dialogue.InitialMenuName = menuId;
                 }
 
                 i++;
@@ -158,12 +164,12 @@ namespace AgencyDispatchFramework.Xml
 
             // Load all flow outcome id's
             var mapping = new Dictionary<string, XmlNode>();
-            foreach (XmlNode node in documentRoot.SelectNodes("Output/FlowOutcome"))
+            foreach (XmlNode node in documentRoot.SelectNodes("Scenarios/Scenario"))
             {
                 var ids = node.GetAttribute("id")?.Split(',');
                 if (ids == null || ids.Length == 0)
                 {
-                    throw new ArgumentNullException("Output", $"Scenario FlowOutcome does not contain any id's");
+                    throw new ArgumentNullException("Scenario", $"Scenario does not contain an id attribute");
                 }
 
                 foreach (string name in ids)
@@ -173,18 +179,18 @@ namespace AgencyDispatchFramework.Xml
             }
 
             // Ensure flow outcome ID exists
-            if (!mapping.ContainsKey(outcome.Id))
+            if (!mapping.ContainsKey(scenario.Id))
             {
-                throw new ArgumentNullException("Output", $"Scenario FlowOutcome does not exist '{outcome.Id}'");
+                throw new ArgumentNullException("Scenario", $"Scenario does not exist '{scenario.Id}'");
             }
 
             // ====================================================
             // Load response sequences
             // ====================================================
-            catagoryNode = mapping[outcome.Id];
+            catagoryNode = mapping[scenario.Id];
             if (catagoryNode == null || !catagoryNode.HasChildNodes)
             {
-                throw new ArgumentNullException("Output", $"Scenario FlowOutcome does not exist '{outcome.Id}'");
+                throw new ArgumentNullException("Scenario", $"Scenario does not exist '{scenario.Id}'");
             }
 
             // Validate and extract attributes
@@ -192,27 +198,27 @@ namespace AgencyDispatchFramework.Xml
             {
                 // Ensure menu exists
                 var menuName = catagoryNode.Attributes["initialMenu"].Value;
-                if (sequence.MenusById.ContainsKey(menuName))
+                if (dialogue.MenusById.ContainsKey(menuName))
                 {
-                    sequence.InitialMenuName = menuName;
+                    dialogue.InitialMenuName = menuName;
                 }
                 else
                 {
                     // Log as warning and continue
-                    Log.Warning($"FlowSequenceFile.Parse(): Specified initial menu for FlowOutcome '{outcome.Id}' does not exist!");
+                    Log.Warning($"DialogueFile.Parse(): Specified initial menu for Scenario '{scenario.Id}' does not exist!");
                 }
             }
             else
             {
                 // Log as warning and continue
-                Log.Warning($"FlowSequenceFile.Parse(): FlowOutcome '{outcome.Id}' does not have an 'initialMenu' attribute!");
+                Log.Warning($"DialogueFile.Parse(): Scenario '{scenario.Id}' does not have an 'initialMenu' attribute!");
             }
 
             // Extract Ped data
             var subNode = catagoryNode.SelectSingleNode("Ped");
             if (subNode == null || !subNode.HasChildNodes)
             {
-                throw new ArgumentNullException("Output", $"Scenario FlowOutcome '{outcome.Id}' does not contain a Ped node");
+                throw new ArgumentNullException("Scenario", $"Scenario '{scenario.Id}' does not contain a Ped node");
             }
 
             // Extract drunk attribute
@@ -289,7 +295,7 @@ namespace AgencyDispatchFramework.Xml
                     if (!Enum.TryParse(n.Attributes["type"]?.Value, out ContrabandType type))
                     {
                         // Log as warning and continue
-                        Log.Warning($"FlowSequenceFile.Parse(): Unable to parse FlowOutcome['{outcome.Id}']->Ped->Inventory->Contraband type attribute");
+                        Log.Warning($"DialogueFile.Parse(): Unable to parse FlowOutcome['{scenario.Id}']->Ped->Inventory->Contraband type attribute");
                         continue;
                     }
 
@@ -298,7 +304,7 @@ namespace AgencyDispatchFramework.Xml
                     if (subItems.Count == 0)
                     {
                         // Log as warning and continue
-                        Log.Warning($"FlowSequenceFile.Parse(): FlowOutcome['{outcome.Id}']->Ped->Inventory->Contraband has no Item nodes");
+                        Log.Warning($"DialogueFile.Parse(): FlowOutcome['{scenario.Id}']->Ped->Inventory->Contraband has no Item nodes");
                         continue;
                     }
 
@@ -310,7 +316,7 @@ namespace AgencyDispatchFramework.Xml
                         if (!Int32.TryParse(item.Attributes["probability"]?.Value, out int prob))
                         {
                             // Log as warning and continue
-                            Log.Warning($"FlowSequenceFile.Parse(): Unable to parse FlowOutcome['{outcome.Id}']->Ped->Inventory->Contraband->Item probability attribute value");
+                            Log.Warning($"DialogueFile.Parse(): Unable to parse FlowOutcome['{scenario.Id}']->Ped->Inventory->Contraband->Item probability attribute value");
                             continue;
                         }
 
@@ -320,7 +326,7 @@ namespace AgencyDispatchFramework.Xml
                             // Do we have a parser?
                             if (parser == null)
                             {
-                                Log.Warning($"FlowSequenceFile.Parse(): Statement from FlowOutcome['{outcome.Id}']->Ped->Inventory->Contraband->Item has 'if' statement but no ExpressionParser is defined... Skipping");
+                                Log.Warning($"DialogueFile.Parse(): Statement from FlowOutcome['{scenario.Id}']->Ped->Inventory->Contraband->Item has 'if' statement but no ExpressionParser is defined... Skipping");
                                 continue;
                             }
 
@@ -373,7 +379,7 @@ namespace AgencyDispatchFramework.Xml
                     if (subItems.Count == 0)
                     {
                         // Log as warning and continue
-                        Log.Warning($"FlowSequenceFile.Parse(): FlowOutcome['{outcome.Id}']->Ped->Inventory->Contraband has no Item nodes");
+                        Log.Warning($"DialogueFile.Parse(): Scenario['{scenario.Id}']->Ped->Inventory->Contraband has no Item nodes");
                         continue;
                     }
 
@@ -385,7 +391,7 @@ namespace AgencyDispatchFramework.Xml
                         if (!Int32.TryParse(item.Attributes["probability"]?.Value, out int prob))
                         {
                             // Log as warning and continue
-                            Log.Warning($"FlowSequenceFile.Parse(): Unable to parse FlowOutcome['{outcome.Id}']->Ped->Inventory->Weapon->Item probability attribute value");
+                            Log.Warning($"DialogueFile.Parse(): Unable to parse Scenario['{scenario.Id}']->Ped->Inventory->Weapon->Item probability attribute value");
                             continue;
                         }
 
@@ -395,7 +401,7 @@ namespace AgencyDispatchFramework.Xml
                             // Do we have a parser?
                             if (parser == null)
                             {
-                                Log.Warning($"FlowSequenceFile.Parse(): Statement from FlowOutcome['{outcome.Id}']->Ped->Inventory->Weapon->Item has 'if' statement but no ExpressionParser is defined... Skipping");
+                                Log.Warning($"DialogueFile.Parse(): Statement from Scenario['{scenario.Id}']->Ped->Inventory->Weapon->Item has 'if' statement but no ExpressionParser is defined... Skipping");
                                 continue;
                             }
 
@@ -417,7 +423,7 @@ namespace AgencyDispatchFramework.Xml
                         // See if we have an IF statement
                         if (String.IsNullOrEmpty(item.Attributes["id"]?.Value))
                         {
-                            Log.Warning($"FlowSequenceFile.Parse(): Empty or missing FlowOutcome['{outcome.Id}']->Ped->Inventory->Weapon->Item id attribute value");
+                            Log.Warning($"DialogueFile.Parse(): Empty or missingScenario['{scenario.Id}']->Ped->Inventory->Weapon->Item id attribute value");
                             continue;
                         }
 
@@ -425,7 +431,7 @@ namespace AgencyDispatchFramework.Xml
                         if (!short.TryParse(item.Attributes["ammo"]?.Value, out short ammo))
                         {
                             // Log as warning and continue
-                            Log.Warning($"FlowSequenceFile.Parse(): Unable to parse FlowOutcome['{outcome.Id}']->Ped->Inventory->Weapon->Item ammo attribute value");
+                            Log.Warning($"DialogueFile.Parse(): Unable to parse Scenario['{scenario.Id}']->Ped->Inventory->Weapon->Item ammo attribute value");
                             continue;
                         }
 
@@ -454,7 +460,7 @@ namespace AgencyDispatchFramework.Xml
             if (subNode == null || items.Count == 0)
             {
                 // Log as warning and continue
-                Log.Debug($"FlowSequenceFile.Parse(): FlowOutcome '{outcome.Id}' does not have a Ped->Presentation node");
+                Log.Debug($"DialogueFile.Parse(): Scenario '{scenario.Id}' does not have a Ped->Presentation node");
                 ped.Demeanor = PedDemeanor.Calm;
             }
             else
@@ -466,7 +472,7 @@ namespace AgencyDispatchFramework.Xml
                     if (!Enum.TryParse(item.InnerText, out PedDemeanor demeanor))
                     {
                         // Log as warning and continue
-                        Log.Warning($"FlowSequenceFile.Parse(): Unable to parse FlowOutcome['{outcome.Id}'] Ped->Presentation->Demeanor node value");
+                        Log.Warning($"DialogueFile.Parse(): Unable to parse Scenario['{scenario.Id}']->Ped->Presentation->Demeanor node value");
                         continue;
                     }
 
@@ -474,7 +480,7 @@ namespace AgencyDispatchFramework.Xml
                     if (!Int32.TryParse(item.Attributes["probability"]?.Value, out int prob))
                     {
                         // Log as warning and continue
-                        Log.Warning($"FlowSequenceFile.Parse(): Unable to parse FlowOutcome['{outcome.Id}'] Ped->Presentation->Demeanor probability attribute value");
+                        Log.Warning($"DialogueFile.Parse(): Unable to parse Scenario['{scenario.Id}']->Ped->Presentation->Demeanor probability attribute value");
                         continue;
                     }
 
@@ -484,7 +490,7 @@ namespace AgencyDispatchFramework.Xml
                         // Do we have a parser?
                         if (parser == null)
                         {
-                            Log.Warning($"FlowSequenceFile.Parse(): Statement from FlowOutcome['{outcome.Id}']->Ped->Presentation->Demeanor has 'if' statement but no ExpressionParser is defined... Skipping");
+                            Log.Warning($"DialogueFile.Parse(): Statement from Scenario['{scenario.Id}']->Ped->Presentation->Demeanor has 'if' statement but no ExpressionParser is defined... Skipping");
                             continue;
                         }
 
@@ -518,7 +524,7 @@ namespace AgencyDispatchFramework.Xml
             XmlNodeList responses = catagoryNode.SelectSingleNode("Responses")?.SelectNodes("Response");
             if (responses == null || responses.Count == 0)
             {
-                throw new ArgumentNullException("Response", "FlowOutcome has no Response nodes.");
+                throw new ArgumentNullException("Response", $"Scenario '{scenario.Id}' has no Response nodes.");
             }
 
             // Each Response Node
@@ -527,22 +533,22 @@ namespace AgencyDispatchFramework.Xml
                 // Validate and extract attributes
                 if (responseNode.Attributes == null || responseNode.Attributes["to"]?.Value == null)
                 {
-                    Log.Error($"FlowSequenceFile.Parse(): Response has no 'to' attribute");
+                    Log.Error($"DialogueFile.Parse(): Response has no 'to' attribute");
                     continue;
                 }
 
                 // Validate and extract attributes
                 if (responseNode.Attributes["returnMenu"]?.Value == null)
                 {
-                    Log.Error($"FlowSequenceFile.Parse(): Response has no 'returnMenu' attribute");
+                    Log.Error($"DialogueFile.Parse(): Response has no 'returnMenu' attribute");
                     continue;
                 }
 
                 // Check for line sets
-                var dialogNodes = responseNode.SelectNodes("Dialog");
-                if (dialogNodes == null || dialogNodes.Count == 0)
+                var seqNodes = responseNode.SelectNodes("Sequence");
+                if (seqNodes == null || seqNodes.Count == 0)
                 {
-                    Log.Error($"FlowSequenceFile.Parse(): Response has no Dialog child nodes");
+                    Log.Error($"DialogueFile.Parse(): Response has no Sequence child nodes");
                     continue;
                 }
 
@@ -573,63 +579,63 @@ namespace AgencyDispatchFramework.Xml
                 }
 
                 // Each LineSet
-                foreach (XmlNode dialogNode in dialogNodes)
+                foreach (XmlNode seqNode in seqNodes)
                 {
-                    if (TryParseDialogNode(dialogNode, parser, out Dialog statement))
+                    if (TryParseSequenceNode(seqNode, parser, out CommunicationSequence seq))
                     {
-                        response.AddDialog(statement);
+                        response.AddSequence(seq);
                     }
                 }
 
                 // Add final response
-                if (!sequence.AddPedResponse(questionId, response))
+                if (!dialogue.AddPedResponse(questionId, response))
                 {
-                    Log.Warning($"FlowSequenceFile.Parse(): Duplicate Response node detected to Question id '{questionId}'");
+                    Log.Warning($"DialogueFile.Parse(): Duplicate Response node detected to Question id '{questionId}'");
                 }
             }
 
             // return
-            return sequence;
+            return dialogue;
         }
 
         /// <summary>
         /// Parses a {Dialog} node within a FlowSquence xml file and returns the result
         /// </summary>
-        /// <param name="dialogNode"></param>
+        /// <param name="sequenceNode"></param>
         /// <param name="parser"></param>
-        /// <param name="dialog"></param>
+        /// <param name="sequence"></param>
         /// <returns></returns>
-        private static bool TryParseDialogNode(XmlNode dialogNode, ExpressionParser parser, out Dialog dialog)
+        private static bool TryParseSequenceNode(XmlNode sequenceNode, ExpressionParser parser, out CommunicationSequence sequence)
         {
             // Set default value
-            dialog = null;
+            sequence = null;
 
             // Ensure we have lines to read
-            if (!dialogNode.HasChildNodes)
+            if (!sequenceNode.HasChildNodes)
             {
-                Log.Error($"FlowSequenceFile.Parse(): Statement has no Sentance child nodes");
+                Log.Error($"DialogueFile.Parse(): Sequence has no Subtitle child nodes");
                 return false;
             }
 
             // Validate and extract attributes
-            if (dialogNode.Attributes == null || !Int32.TryParse(dialogNode.Attributes["probability"]?.Value, out int prob))
+            if (sequenceNode.Attributes == null || !Int32.TryParse(sequenceNode.Attributes["probability"]?.Value, out int prob))
             {
-                Log.Error($"FlowSequenceFile.Parse(): Statement has no attributes or cannot parse 'id' attribute");
+                Log.Error($"DialogueFile.Parse(): Sequence has no attributes or cannot parse 'id' attribute");
                 return false;
             }
 
             // See if we have an IF statement
-            if (dialogNode.Attributes["if"]?.Value != null)
+            if (sequenceNode.Attributes["if"]?.Value != null)
             {
                 // Do we have a parser?
                 if (parser == null)
                 {
-                    Log.Warning($"FlowSequenceFile.Parse(): Dialog from Response has 'if' statement but no ExpressionParser is defined... Skipping");
+                    Log.Warning($"DialogueFile.Parse(): Sequence has 'if' statement but no ExpressionParser is defined... Skipping");
                     return false;
                 }
 
                 // Execute the expression
-                var result = parser.Execute<bool>(dialogNode.Attributes["if"].Value);
+                var result = parser.Execute<bool>(sequenceNode.Attributes["if"].Value);
                 if (!result.Success)
                 {
                     // If we failed to evaluate to true, skip
@@ -644,38 +650,38 @@ namespace AgencyDispatchFramework.Xml
             }
 
             // Create LineSet
-            dialog = new Dialog(prob);
+            sequence = new CommunicationSequence(prob);
 
             // See if we have an hide statement to hide menuitems
-            if (dialogNode.Attributes["hide"]?.Value != null)
+            if (sequenceNode.Attributes["hide"]?.Value != null)
             {
-                var menuItems = dialogNode.Attributes["hide"].Value.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
-                dialog.HidesQuestionIds = menuItems;
+                var menuItems = sequenceNode.Attributes["hide"].Value.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+                sequence.HidesQuestionIds = menuItems;
             }
             else
             {
-                dialog.HidesQuestionIds = new string[0];
+                sequence.HidesQuestionIds = new string[0];
             }
 
             // See if we have an unhide statement to hide menuitems
-            if (dialogNode.Attributes["show"]?.Value != null)
+            if (sequenceNode.Attributes["show"]?.Value != null)
             {
-                var menuItems = dialogNode.Attributes["show"].Value.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
-                dialog.ShowsQuestionIds = menuItems;
+                var menuItems = sequenceNode.Attributes["show"].Value.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+                sequence.ShowsQuestionIds = menuItems;
             }
             else
             {
-                dialog.ShowsQuestionIds = new string[0];
+                sequence.ShowsQuestionIds = new string[0];
             }
 
             // Load callbacks
-            dialog.CallOnFirstShown = dialogNode.GetAttribute("onFirstShown");
-            dialog.CallOnLastShown = dialogNode.GetAttribute("onLastShown");
-            dialog.CallOnElapsed = dialogNode.GetAttribute("elapsed");
+            sequence.CallOnFirstShown = sequenceNode.GetAttribute("onFirstShown");
+            sequence.CallOnLastShown = sequenceNode.GetAttribute("onLastShown");
+            sequence.CallOnElapsed = sequenceNode.GetAttribute("elapsed");
 
             // Fetch response lines
-            List<Subtitle> lines = new List<Subtitle>(dialogNode.ChildNodes.Count);
-            foreach (XmlNode subTitleNode in dialogNode.SelectNodes("Subtitle"))
+            List<PedCommunication> lines = new List<PedCommunication>(sequenceNode.ChildNodes.Count);
+            foreach (XmlNode subTitleNode in sequenceNode.SelectNodes("Subtitle"))
             {
                 // Validate and extract attributes
                 if (!subTitleNode.TryGetAttribute("time", out int time))
@@ -688,11 +694,11 @@ namespace AgencyDispatchFramework.Xml
                 if (textNode != null)
                 {
                     // Check for animations
-                    var subtitle = new Subtitle(textNode.InnerText, time);
+                    var subtitle = new PedCommunication(textNode.InnerText, time);
 
                     // Do we play an animation
-                    var sequenceNode = subTitleNode.SelectSingleNode("AnimationSequence");
-                    var animationNodes = sequenceNode?.SelectNodes("Animation");
+                    var aSequenceNode = subTitleNode.SelectSingleNode("AnimationSequence");
+                    var animationNodes = aSequenceNode?.SelectNodes("Animation");
                     if (animationNodes != null)
                     {
                         foreach (XmlNode aNode in animationNodes)
@@ -701,7 +707,7 @@ namespace AgencyDispatchFramework.Xml
                             if (aNode.TryGetAttribute("dictionary", out string dic))
                             {
                                 // Create
-                                subtitle.AnimationSequence.Add(new PedAnimation()
+                                subtitle.Animations.Add(new AnimationData()
                                 {
                                     Dictionary = dic,
                                     Name = aNode.InnerText
@@ -712,13 +718,13 @@ namespace AgencyDispatchFramework.Xml
                         // Check for loop attribute value
                         if (sequenceNode.TryGetAttribute("repeat", out bool loop))
                         {
-                            subtitle.LoopAnimation = loop;
+                            subtitle.Animations.LoopAnimations = loop;
                         }
 
                         // Check for terminate attribute value
                         if (sequenceNode.TryGetAttribute("terminate", out bool terminate))
                         {
-                            subtitle.TerminateAnimation = terminate;
+                            subtitle.StopAnimationsOnElapsed = terminate;
                         }
                     }
                     // Add
@@ -727,12 +733,12 @@ namespace AgencyDispatchFramework.Xml
                 else // The inner text is the text. No animation
                 {
                     // Add
-                    lines.Add(new Subtitle(subTitleNode.InnerText, time));
+                    lines.Add(new PedCommunication(subTitleNode.InnerText, time));
                 }
             }
 
             // Save lines
-            dialog.Subtitles = lines.ToArray();
+            sequence.Communications = lines.ToArray();
             return true;
         } 
     }

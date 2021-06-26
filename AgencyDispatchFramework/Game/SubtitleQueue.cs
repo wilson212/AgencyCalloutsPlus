@@ -1,7 +1,7 @@
 ﻿using Rage;
 using System.Collections.Generic;
 
-namespace AgencyDispatchFramework.Conversation
+namespace AgencyDispatchFramework.Game
 {
     /// <summary>
     /// Represents a Queue for sub titles to display on screen. Unliked <see cref="Rage.Game.DisplaySubtitle(string)"/>,

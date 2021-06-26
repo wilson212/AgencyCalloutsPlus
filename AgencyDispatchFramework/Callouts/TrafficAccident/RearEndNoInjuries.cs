@@ -52,8 +52,8 @@ namespace AgencyDispatchFramework.Callouts.TrafficAccident
         private VehicleClass SuspectVehicleType;
         private Vehicle SuspectVehicle;
         private Blip SuspectBlip;
-        private FlowSequence SuspectSeq;
-        private FlowSequence VictimSeq;
+        private Dialogue SuspectSeq;
+        private Dialogue VictimSeq;
 
         #endregion
 
@@ -161,21 +161,21 @@ namespace AgencyDispatchFramework.Callouts.TrafficAccident
             };
 
             // Load converation flow sequence for the suspect
-            var path = Path.Combine(Main.FrameworkFolderPath, "Callouts", "TrafficAccident", "FlowSequence", nameof(RearEndNoInjuries), "Suspect.xml");
-            using (var file = new FlowSequenceFile(path))
+            var path = Path.Combine(Main.FrameworkFolderPath, "Callouts", "TrafficAccident", nameof(RearEndNoInjuries), "Suspect.xml");
+            using (var file = new DialogueFile(path))
             {
                 SuspectSeq = file.Parse(FlowOutcome, Suspect, Parser);
                 SuspectSeq.SetVariableDictionary(variables);
-                Menu.AddConversation(SuspectSeq);
+                Menu.AddDialogue(SuspectSeq);
             }
 
             // Load converation flow sequence for the victim
-            path = Path.Combine(Main.FrameworkFolderPath, "Callouts", "TrafficAccident", "FlowSequence", nameof(RearEndNoInjuries), "Victim.xml");
-            using (var file = new FlowSequenceFile(path))
+            path = Path.Combine(Main.FrameworkFolderPath, "Callouts", "TrafficAccident", nameof(RearEndNoInjuries), "Victim.xml");
+            using (var file = new DialogueFile(path))
             {
                 VictimSeq = file.Parse(FlowOutcome, Victim, Parser);
                 VictimSeq.SetVariableDictionary(variables);
-                Menu.AddConversation(VictimSeq);
+                Menu.AddDialogue(VictimSeq);
             }
         }
 

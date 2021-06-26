@@ -55,8 +55,8 @@ namespace AgencyDispatchFramework.Callouts.DomesticViolence
         private bool ForceFacing = false;
 
         private CalloutInteractionMenu Menu;
-        private FlowSequence SuspectSeq;
-        private FlowSequence VictimSeq;
+        private Dialogue SuspectDialogue;
+        private Dialogue VictimDialogue;
 
         private Blip AddressBlip; 
 
@@ -147,21 +147,21 @@ namespace AgencyDispatchFramework.Callouts.DomesticViolence
             };
 
             // Load converation flow sequence for the suspect
-            var path = Path.Combine(Main.FrameworkFolderPath, "Callouts", "DomesticViolence", "FlowSequence", nameof(ReportsOfArguingThreats), "Suspect.xml");
-            using (var file = new FlowSequenceFile(path))
+            var path = Path.Combine(Main.FrameworkFolderPath, "Callouts", "DomesticViolence", nameof(ReportsOfArguingThreats), "Suspect.xml");
+            using (var file = new DialogueFile(path))
             {
-                SuspectSeq = file.Parse(FlowOutcome, Suspect, Parser);
-                SuspectSeq.SetVariableDictionary(variables);
-                Menu.AddConversation(SuspectSeq);
+                SuspectDialogue = file.Parse(FlowOutcome, Suspect, Parser);
+                SuspectDialogue.SetVariableDictionary(variables);
+                Menu.AddDialogue(SuspectDialogue);
             }
 
             // Load converation flow sequence for the victim
-            path = Path.Combine(Main.FrameworkFolderPath, "Callouts", "DomesticViolence", "FlowSequence", nameof(ReportsOfArguingThreats), "Victim.xml");
-            using (var file = new FlowSequenceFile(path))
+            path = Path.Combine(Main.FrameworkFolderPath, "Callouts", "DomesticViolence", nameof(ReportsOfArguingThreats), "Victim.xml");
+            using (var file = new DialogueFile(path))
             {
-                VictimSeq = file.Parse(FlowOutcome, Victim, Parser);
-                VictimSeq.SetVariableDictionary(variables);
-                Menu.AddConversation(VictimSeq);
+                VictimDialogue = file.Parse(FlowOutcome, Victim, Parser);
+                VictimDialogue.SetVariableDictionary(variables);
+                Menu.AddDialogue(VictimDialogue);
             }
 
             // Create menu button
@@ -293,8 +293,8 @@ namespace AgencyDispatchFramework.Callouts.DomesticViolence
             if (SceneProgress == ScenarioProgress.BeforeArrival)
                 GameWorld.DeleteCheckpoint(CheckpointHandle);
 
-            SuspectSeq?.Dispose();
-            VictimSeq?.Dispose();
+            SuspectDialogue?.Dispose();
+            VictimDialogue?.Dispose();
         }
 
         /// <summary>

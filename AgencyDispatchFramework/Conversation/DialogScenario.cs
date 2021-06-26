@@ -3,17 +3,17 @@
 namespace AgencyDispatchFramework.Conversation
 {
     /// <summary>
-    /// Represents a conversation flow outcome for a scenario
+    /// Represents a scenario for a series of <see cref="PedResponse"/>s
     /// </summary>
-    public class FlowOutcome : ISpawnable
+    public class DialogScenario : ISpawnable
     {
         /// <summary>
-        /// Gets the probability of spawning this <see cref="FlowOutcome"/>
+        /// Gets the probability of spawning this <see cref="DialogScenario"/>
         /// </summary>
         public int Probability { get; set; } = 1;
 
         /// <summary>
-        /// Gets or sets the name of this <see cref="FlowOutcome"/>
+        /// Gets or sets the name of this <see cref="DialogScenario"/>
         /// </summary>
         public string Id { get; set; }
 

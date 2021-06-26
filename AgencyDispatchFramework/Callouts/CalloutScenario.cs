@@ -21,7 +21,7 @@ namespace AgencyDispatchFramework.Callouts
         /// <summary>
         /// Gets the randomly selected <see cref="FlowOutcome"/>
         /// </summary>
-        protected FlowOutcome FlowOutcome { get; set; }
+        protected DialogScenario FlowOutcome { get; set; }
 
         /// <summary>
         /// Gets the <see cref="CalloutScenarioInfo"/> for this instance
@@ -39,7 +39,7 @@ namespace AgencyDispatchFramework.Callouts
             ScenarioInfo = scenarioInfo;
 
             // Select a random FlowOutcome for this scenario
-            if (!ScenarioInfo.GetRandomFlowOutcome(Parser, out FlowOutcome flowOutcome))
+            if (!ScenarioInfo.GetRandomFlowOutcome(Parser, out DialogScenario flowOutcome))
             {
                 throw new Exception($"Unable to select a FlowOutcome for callout scenario {ScenarioInfo.Name}");
             }

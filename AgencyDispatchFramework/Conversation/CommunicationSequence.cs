@@ -3,9 +3,9 @@
 namespace AgencyDispatchFramework.Conversation
 {
     /// <summary>
-    /// Represents a series of words spoken to display in a <see cref="Subtitle"/>
+    /// Represents a series of words spoken to display in a <see cref="Game.Subtitle"/>
     /// </summary>
-    public class Dialog : ISpawnable
+    public class CommunicationSequence : ISpawnable
     {
         #region Event Fields
         internal string CallOnFirstShown = String.Empty;
@@ -14,33 +14,33 @@ namespace AgencyDispatchFramework.Conversation
         #endregion Event Fields
 
         /// <summary>
-        /// Gets or sets the probability of this <see cref="Dialog"/> being selected against
-        /// other <see cref="Dialog"/>s in the <see cref="ResponseSet"/>
+        /// Gets or sets the probability of this <see cref="CommunicationSequence"/> being selected against
+        /// other <see cref="CommunicationSequence"/>s in the <see cref="ResponseSet"/>
         /// </summary>
         public int Probability { get; set; }
 
         /// <summary>
         /// Gets or sets the lines to display in the Subtitles
         /// </summary>
-        public Subtitle[] Subtitles { get; set; }
+        public PedCommunication[] Communications { get; set; }
 
         /// <summary>
         /// Contains an array of <see cref="RAGENativeUI.Elements.UIMenuItem"/> names to hide
-        /// if this <see cref="Dialog"/> is displayed
+        /// if this <see cref="CommunicationSequence"/> is displayed
         /// </summary>
         public string[] HidesQuestionIds { get; set; }
 
         /// <summary>
         /// Contains an array of <see cref="RAGENativeUI.Elements.UIMenuItem"/> names to unhide
-        /// if this <see cref="Dialog"/> is displayed
+        /// if this <see cref="CommunicationSequence"/> is displayed
         /// </summary>
         public string[] ShowsQuestionIds { get; set; }
 
         /// <summary>
-        /// Creates a new instance of <see cref="Dialog"/> with the specified probability
+        /// Creates a new instance of <see cref="CommunicationSequence"/> with the specified probability
         /// </summary>
         /// <param name="probability"></param>
-        public Dialog(int probability)
+        public CommunicationSequence(int probability)
         {
             Probability = probability;
         }

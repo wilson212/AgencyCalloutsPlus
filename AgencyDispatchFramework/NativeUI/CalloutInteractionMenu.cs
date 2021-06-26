@@ -1,5 +1,5 @@
-﻿using AgencyDispatchFramework.Extensions;
-using AgencyDispatchFramework.Conversation;
+﻿using AgencyDispatchFramework.Conversation;
+using AgencyDispatchFramework.Extensions;
 using Rage;
 using RAGENativeUI;
 using RAGENativeUI.Elements;
@@ -18,7 +18,7 @@ namespace AgencyDispatchFramework.NativeUI
         private MenuPool AllMenus;
         
         /// <summary>
-        /// 
+        /// Indicates whether the key to open has a modifier key
         /// </summary>
         public bool HasModifier { get; private set; }
 
@@ -47,13 +47,13 @@ namespace AgencyDispatchFramework.NativeUI
         /// Contains a list of <see cref="Ped"/> entities that this menu can be used with.
         /// The bool value indicates wether the Ped has been spoken with yet.
         /// </summary>
-        private Dictionary<Ped, FlowSequence> Conversations { get; set; }
+        private Dictionary<Ped, Dialogue> Conversations { get; set; }
 
         /// <summary>
         /// Contains a list of <see cref="Ped"/> entities that this menu can be used with.
         /// The bool value indicates wether the Ped has been spoken with yet.
         /// </summary>
-        private Dictionary<string, FlowSequence> ConversationsById { get; set; }
+        private Dictionary<string, Dialogue> ConversationsById { get; set; }
 
         /// <summary>
         /// Gets the Ped that was last within range and angle to have a conversation with
@@ -61,14 +61,14 @@ namespace AgencyDispatchFramework.NativeUI
         private Ped CurrentPed { get; set; }
 
         /// <summary>
-        /// Indicates whether this menu can be opened by the player
+        /// Indicates whether this menu is running can be opened by the player
         /// </summary>
-        public bool Enabled { get; protected set; } = false;
+        public bool Enabled { get; protected set; } = true;
 
         /// <summary>
-        /// Gets or sets the current open FlowSequence Meny
+        /// Gets or sets the current open <see cref="Dialogue"/>
         /// </summary>
-        protected FlowSequence CurrentSequence { get; set; }
+        protected Dialogue CurrentDialogue { get; set; }
 
         /// <summary>
         /// Indicates whether a menu is open
@@ -78,7 +78,7 @@ namespace AgencyDispatchFramework.NativeUI
             get
             {
                 // Check if child sequence menu is open
-                if (CurrentSequence != null && CurrentSequence.AllMenus.IsAnyMenuOpen())
+                if (CurrentDialogue != null && CurrentDialogue.AllMenus.IsAnyMenuOpen())
                     return true;
 
                 return AllMenus.IsAnyMenuOpen();
@@ -114,8 +114,8 @@ namespace AgencyDispatchFramework.NativeUI
 
             // internals
             Peds = new Dictionary<Ped, bool>();
-            Conversations = new Dictionary<Ped, FlowSequence>();
-            ConversationsById = new Dictionary<string, FlowSequence>();
+            Conversations = new Dictionary<Ped, Dialogue>();
+            ConversationsById = new Dictionary<string, Dialogue>();
             HasModifier = (Settings.OpenCalloutMenuModifierKey != Keys.None);
             OpenMenuKeyString = $"~{Settings.OpenCalloutMenuKey.GetInstructionalId()}~";
             OpenMenuModifierKeyString = $"~{Settings.OpenCalloutMenuModifierKey.GetInstructionalId()}~";
@@ -126,6 +126,8 @@ namespace AgencyDispatchFramework.NativeUI
         /// </summary>
         public void Process()
         {
+            if (!Enabled) return;
+
             // Process menus
             AllMenus.ProcessMenus();
 
@@ -133,11 +135,11 @@ namespace AgencyDispatchFramework.NativeUI
             var player = Rage.Game.LocalPlayer.Character;
 
             // If a FlowSequence is open, process that!
-            if (CurrentSequence != null)
+            if (CurrentDialogue != null)
             {
-                if (CurrentSequence.AllMenus.IsAnyMenuOpen())
+                if (CurrentDialogue.AllMenus.IsAnyMenuOpen())
                 {
-                    CurrentSequence.Process(player);
+                    CurrentDialogue.Process(player);
                     return;
                 }
             }
@@ -166,6 +168,9 @@ namespace AgencyDispatchFramework.NativeUI
                 {
                     // Let player know they can open the menu
                     DisplayMenuHelpMessage();
+
+                    // Only show once per Ped
+                    //Peds[CurrentPed] = true;
                 }
 
                 // If menu key is pressed, show menu
@@ -191,10 +196,10 @@ namespace AgencyDispatchFramework.NativeUI
                 if (SpeakWithButton.Enabled == false)
                 {
                     // If a FlowSequence is open, close it
-                    if (CurrentSequence != null && CurrentSequence.AllMenus.IsAnyMenuOpen())
+                    if (CurrentDialogue != null && CurrentDialogue.AllMenus.IsAnyMenuOpen())
                     {
-                        CurrentSequence.AllMenus.CloseAllMenus();
-                        CurrentSequence = null;
+                        CurrentDialogue.AllMenus.CloseAllMenus();
+                        CurrentDialogue = null;
                     }
                 }
             }
@@ -233,7 +238,7 @@ namespace AgencyDispatchFramework.NativeUI
                 if (!subject.Exists()) continue;
 
                 // Is player within 3m of the ped?
-                if (player.Position.DistanceTo(subject.Position) > 3f)
+                if (player.Position.DistanceTo(subject.Position) > 2f)
                 {
                     // too far away
                     continue;
@@ -281,28 +286,34 @@ namespace AgencyDispatchFramework.NativeUI
         /// <summary>
         /// Adds the <see cref="UIMenuItem"/> to the main <see cref="UIMenu"/>
         /// </summary>
-        /// <param name="item"></param>
-        public void AddMenuItem(UIMenuItem item)
+        /// <param name="item">The menu item to add to the Main UI menu</param>
+        /// <param name="bindTo">if not null, then the <paramref name="item"/> will be bound to open the specified <see cref="UIMenu"/></param>
+        public void AddMenuItem(UIMenuItem item, UIMenu bindTo = null)
         {
             MainUIMenu.AddItem(item);
+
+            if (bindTo != null)
+            {
+                MainUIMenu.BindMenuToItem(bindTo, item);
+            }
         }
 
         /// <summary>
         /// Registers a <see cref="Ped"/> that can be questioned by this Menu given
-        /// the supplied <see cref="FlowSequence"/>
+        /// the supplied <see cref="Dialogue"/>
         /// </summary>
         /// <param name="ped"></param>
-        public void AddConversation(FlowSequence sequence)
+        public void AddDialogue(Dialogue conversation)
         {
-            Ped ped = sequence.SubjectPed ?? throw new ArgumentNullException(nameof(sequence.SubjectPed));
+            Ped ped = conversation.SubjectPed ?? throw new ArgumentNullException(nameof(conversation.SubjectPed));
             if (!Conversations.ContainsKey(ped))
             {
                 Peds.Add(ped, false);
-                Conversations.Add(ped, sequence);
-                ConversationsById.Add(sequence.SequenceId, sequence);
+                Conversations.Add(ped, conversation);
+                ConversationsById.Add(conversation.SequenceId, conversation);
 
                 // Fire event on PedResponse
-                sequence.OnPedResponse += FlowSequence_OnPedResponse;
+                conversation.OnPedResponse += Dialogue_OnPedResponse;
             }
         }
 
@@ -310,10 +321,10 @@ namespace AgencyDispatchFramework.NativeUI
         /// Displays the specified hidden menu items 
         /// </summary>
         /// <param name="questionIds"></param>
-        /// <param name="defaultSequence"></param>
-        private void ShowQuestionsById(string[] questionIds, FlowSequence defaultSequence)
+        /// <param name="defaultDialogue"></param>
+        private void ShowQuestionsById(string[] questionIds, Dialogue defaultDialogue)
         {
-            string referenceMenuId = defaultSequence.SequenceId;
+            string referenceMenuId = defaultDialogue.SequenceId;
             string questionId = String.Empty;
 
             foreach (string id in questionIds)
@@ -331,7 +342,7 @@ namespace AgencyDispatchFramework.NativeUI
                 }
 
                 // Grab FlowSequence by ID
-                if (!ConversationsById.TryGetValue(referenceMenuId, out FlowSequence referenceMenu))
+                if (!ConversationsById.TryGetValue(referenceMenuId, out Dialogue referenceMenu))
                 {
                     Log.Debug($"CalloutInteractionMenu.ShowQuestionsById(): Reference FlowSequence menu with ID '{id}' does not exist");
                     continue;
@@ -349,10 +360,10 @@ namespace AgencyDispatchFramework.NativeUI
         /// Hides the specified menu items
         /// </summary>
         /// <param name="questionIds"></param>
-        /// <param name="defaultSequence"></param>
-        private void HideQuestionsById(string[] questionIds, FlowSequence defaultSequence)
+        /// <param name="defaultDialog"></param>
+        private void HideQuestionsById(string[] questionIds, Dialogue defaultDialog)
         {
-            string referenceMenuId = defaultSequence.SequenceId;
+            string referenceMenuId = defaultDialog.SequenceId;
             string questionId = String.Empty;
 
             foreach (string id in questionIds)
@@ -370,7 +381,7 @@ namespace AgencyDispatchFramework.NativeUI
                 }
 
                 // Grab FlowSequence by ID
-                if (!ConversationsById.TryGetValue(referenceMenuId, out FlowSequence referenceMenu))
+                if (!ConversationsById.TryGetValue(referenceMenuId, out Dialogue referenceMenu))
                 {
                     Log.Debug($"CalloutInteractionMenu.HideQuestionsById(): Reference FlowSequence menu with ID '{id}' does not exist");
                     continue;
@@ -391,7 +402,7 @@ namespace AgencyDispatchFramework.NativeUI
         /// <param name="sender"></param>
         /// <param name="response"></param>
         /// <param name="statement"></param>
-        private void FlowSequence_OnPedResponse(FlowSequence sender, Question question, PedResponse response, Dialog statement)
+        private void Dialogue_OnPedResponse(Dialogue sender, Question question, PedResponse response, CommunicationSequence statement)
         {
             // Does this change visibility of a menu option?
             if (response.ShowQuestionIds.Length > 0)
@@ -431,21 +442,21 @@ namespace AgencyDispatchFramework.NativeUI
             Peds[CurrentPed] = true;
 
             // Check for an open FlowSequence menu!
-            if (CurrentSequence != null)
+            if (CurrentDialogue != null)
             {
-                CurrentSequence.SetMenuVisible(false);
+                CurrentDialogue.SetMenuVisible(false);
             }
 
             // Open flow sequence main menu
-            CurrentSequence = Conversations[CurrentPed];
-            CurrentSequence.SetMenuVisible(true);
+            CurrentDialogue = Conversations[CurrentPed];
+            CurrentDialogue.SetMenuVisible(true);
 
             // Close current menu
             AllMenus.CloseAllMenus();
         }
 
         /// <summary>
-        /// Disposes this instance and all <see cref="FlowSequence"/> instances
+        /// Disposes this instance and all <see cref="Dialogue"/> instances
         /// </summary>
         public void Dispose()
         {

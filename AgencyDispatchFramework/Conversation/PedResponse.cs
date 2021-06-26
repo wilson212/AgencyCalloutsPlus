@@ -1,9 +1,9 @@
 ﻿namespace AgencyDispatchFramework.Conversation
 {
     /// <summary>
-    /// A class that contains response data to a player's questions from a <see cref="FlowSequence"/>
+    /// A class that contains response data to a player's questions from a <see cref="Dialogue"/>
     /// </summary>
-    public sealed class PedResponse : DialogCollection
+    public sealed class PedResponse : SequenceCollection
     {
         /// <summary>
         /// Gets the name of the menu to display once this <see cref="PedResponse"/> is displayed

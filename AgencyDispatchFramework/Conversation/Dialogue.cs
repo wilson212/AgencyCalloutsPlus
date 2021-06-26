@@ -15,7 +15,7 @@ namespace AgencyDispatchFramework.Conversation
     /// Represents a conversation flow sequence between a <see cref="Ped"/> and the <see cref="Player"/>
     /// using <see cref="RAGENativeUI"/> <see cref="UIMenu"/>s
     /// </summary>
-    public class FlowSequence : IDisposable
+    public class Dialogue : IDisposable
     {
         /// <summary>
         /// Contains the regular expression to replace variables within Ped responses
@@ -28,7 +28,7 @@ namespace AgencyDispatchFramework.Conversation
         public string SequenceId { get; private set; }
 
         /// <summary>
-        /// Gets the <see cref="Rage.Ped"/> this <see cref="FlowSequence"/> is attacthed to
+        /// Gets the <see cref="Rage.Ped"/> this <see cref="Dialogue"/> is attacthed to
         /// </summary>
         public GamePed SubjectPed { get; private set; }
 
@@ -38,7 +38,7 @@ namespace AgencyDispatchFramework.Conversation
         internal string InitialMenuName { get; set; }
 
         /// <summary>
-        /// A <see cref="MenuPool"/> that contains all of this <see cref="FlowSequence"/> <see cref="UIMenu"/>s
+        /// A <see cref="MenuPool"/> that contains all of this <see cref="Dialogue"/> <see cref="UIMenu"/>s
         /// </summary>
         internal MenuPool AllMenus { get; set; }
 
@@ -58,7 +58,7 @@ namespace AgencyDispatchFramework.Conversation
         internal Dictionary<string, Action> Callbacks { get; set; }
 
         /// <summary>
-        /// Contains our <see cref="PedResponse"/>s for this <see cref="FlowSequence"/>
+        /// Contains our <see cref="PedResponse"/>s for this <see cref="Dialogue"/>
         /// </summary>
         internal Dictionary<string, PedResponse> PedResponses { get; set; }
 
@@ -75,7 +75,7 @@ namespace AgencyDispatchFramework.Conversation
         /// <summary>
         /// Gets the FlowOutcome name selected for this conversation event
         /// </summary>
-        public FlowOutcome FlowOutcome { get; protected set; }
+        public DialogScenario FlowOutcome { get; protected set; }
 
         /// <summary>
         /// Event fired whenever a <see cref="PedResponse"/> is displayed
@@ -83,12 +83,12 @@ namespace AgencyDispatchFramework.Conversation
         public event PedResponseEventHandler OnPedResponse;
 
         /// <summary>
-        /// Creates a new <see cref="FlowSequence"/> instance
+        /// Creates a new <see cref="Dialogue"/> instance
         /// </summary>
         /// <param name="sequenceId">The unique name of this sequence. Usually the filename without extension</param>
         /// <param name="ped">The conversation subject ped</param>
         /// <param name="outcome">The selected outcome <see cref="ResponseSet"/></param>
-        internal FlowSequence(string sequenceId, GamePed ped, FlowOutcome outcome)
+        internal Dialogue(string sequenceId, GamePed ped, DialogScenario outcome)
         {
             // Set internals
             SequenceId = sequenceId;
@@ -171,7 +171,7 @@ namespace AgencyDispatchFramework.Conversation
         }
 
         /// <summary>
-        /// Registers a callack listener on certain <see cref="Dialog"/>s
+        /// Registers a callack listener on certain <see cref="CommunicationSequence"/>s
         /// </summary>
         /// <param name="id"></param>
         /// <param name="action"></param>
@@ -184,7 +184,7 @@ namespace AgencyDispatchFramework.Conversation
         }
 
         /// <summary>
-        /// Sets the visibility of the <see cref="FlowSequence"/> <see cref="UIMenu"/>
+        /// Sets the visibility of the <see cref="Dialogue"/> <see cref="UIMenu"/>
         /// </summary>
         /// <param name="visible">if true, the menu is shown, otherwise menu is closed</param>
         public void SetMenuVisible(bool visible)
@@ -376,16 +376,16 @@ namespace AgencyDispatchFramework.Conversation
             }
 
             // Grab dialog for player
-            var officerDialog = question.GetRandomDialog();
-            if (officerDialog == null || officerDialog.Subtitles.Length == 0)
+            var officerSequence = question.GetRandomSequence();
+            if (officerSequence == null || officerSequence.Communications.Length == 0)
             {
                 Log.Error($"FlowSquence.On_QuestionActivated: Question '{question.Id}' has no Dialog");
                 return;
             }
 
             // Grab dialog for ped
-            var pedDialog = response.GetPersistantDialog();
-            if (pedDialog == null || pedDialog.Subtitles.Length == 0)
+            var pedSequence = response.GetPersistantSequence();
+            if (pedSequence == null || pedSequence.Communications.Length == 0)
             {
                 Log.Error($"FlowSquence.On_QuestionActivate: Response to '{question.Id}' has no Dialog");
                 return;
@@ -395,12 +395,12 @@ namespace AgencyDispatchFramework.Conversation
             SubtitleQueue.Clear();
 
             // Officer Dialogs first
-            PlayDialog(officerDialog, Rage.Game.LocalPlayer.Character, "~y~You~w~:");
+            PlaySequence(officerSequence, Rage.Game.LocalPlayer.Character, "~y~You~w~:");
 
             // Has the player asked this question already?
             if (selectedItem.ForeColor == Color.Gray)
             {
-                var line = new Subtitle(GetRepeatPrefixText(), 2500)
+                var line = new PedCommunication(GetRepeatPrefixText(), 2500)
                 {
                     PrefixText = $"~y~{SubjectPed.Persona.Forename}~w~:",
                     Speaker = SubjectPed.Ped
@@ -411,43 +411,43 @@ namespace AgencyDispatchFramework.Conversation
             }
 
             // Add Ped response
-            PlayDialog(pedDialog, SubjectPed, $"~y~{SubjectPed.Persona.Forename}~w~:");
+            PlaySequence(pedSequence, SubjectPed, $"~y~{SubjectPed.Persona.Forename}~w~:");
 
             // Enable button and change font color to show its been clicked before
             selectedItem.Enabled = true;
             selectedItem.ForeColor = Color.Gray;
 
             // Fire off event
-            OnPedResponse(this, question, response, pedDialog);
+            OnPedResponse(this, question, response, pedSequence);
         }
 
         /// <summary>
         /// Plays the dialog
         /// </summary>
-        /// <param name="dialog"></param>
+        /// <param name="sequence"></param>
         /// <param name="Speaker"></param>
         /// <param name="prefix"></param>
-        private void PlayDialog(Dialog dialog, Ped Speaker, string prefix)
+        private void PlaySequence(CommunicationSequence sequence, Ped Speaker, string prefix)
         {
             // Add Ped response
             int index = 0;
-            int lastIndex = dialog.Subtitles.Length - 1;
-            foreach (Subtitle line in dialog.Subtitles)
+            int lastIndex = sequence.Communications.Length - 1;
+            foreach (PedCommunication line in sequence.Communications)
             {
                 // Do we have a callback for "onFirstShown" ?
                 if (index == 0)
                 {
-                    AttachCallbackAction_OnDisplayed(dialog.CallOnFirstShown, line);
+                    AttachCallbackAction_OnDisplayed(sequence.CallOnFirstShown, line);
                 }
 
                 // Check for last subtitle events
                 if (index == lastIndex)
                 {
                     // Do we have a callback for "onLastShown" ?
-                    AttachCallbackAction_OnDisplayed(dialog.CallOnLastShown, line);
+                    AttachCallbackAction_OnDisplayed(sequence.CallOnLastShown, line);
 
                     // Do we have a callback for "elapsed" ?
-                    AttachedCallbackAction_OnElapsed(dialog.CallOnElapsed, line);
+                    AttachedCallbackAction_OnElapsed(sequence.CallOnElapsed, line);
                 }
 
                 // Set ped in statement to allow animations
