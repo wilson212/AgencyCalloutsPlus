@@ -109,24 +109,24 @@ namespace AgencyDispatchFramework.Dispatching
         public int UnitCount { get; internal set; } = 1;
 
         /// <summary>
-        /// Contains a list of <see cref="DialogScenario"/> from the CalloutMeta.xml
+        /// Contains a list of <see cref="DialogueScenario"/> from the CalloutMeta.xml
         /// </summary>
-        public DialogScenario[] DialogScenarios { get; internal set; }
+        public DialogueScenario[] DialogScenarios { get; internal set; }
 
         /// <summary>
-        /// Selects a random <see cref="DialogScenario"/>, using an <see cref="ExpressionParser"/>
-        /// to evaluate acceptable <see cref="DialogScenario"/>s based on the conditions set for
-        /// each <see cref="DialogScenario"/>
+        /// Selects a random <see cref="DialogueScenario"/>, using an <see cref="ExpressionParser"/>
+        /// to evaluate acceptable <see cref="DialogueScenario"/>s based on the conditions set for
+        /// each <see cref="DialogueScenario"/>
         /// </summary>
-        /// <param name="evaluator"></param>
-        public bool GetRandomFlowOutcome(ExpressionParser evaluator, out DialogScenario selected)
+        /// <param name="parser"></param>
+        public bool GetRandomDialogScenario(ExpressionParser parser, out DialogueScenario selected)
         {
-            var gen = new ProbabilityGenerator<DialogScenario>();
-            foreach (var outcome in DialogScenarios)
+            var gen = new ProbabilityGenerator<DialogueScenario>();
+            foreach (var scenario in DialogScenarios)
             {
-                if (outcome.Evaluate(evaluator))
+                if (scenario.Evaluate(parser))
                 {
-                    gen.Add(outcome);
+                    gen.Add(scenario);
                 }
             }
 

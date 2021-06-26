@@ -421,7 +421,7 @@ namespace AgencyDispatchFramework.Xml
                 }
 
                 // Evaluate each flow outcome, and add it to the probability generator
-                List<DialogScenario> outcomes = new List<DialogScenario>();
+                List<DialogueScenario> outcomes = new List<DialogueScenario>();
                 foreach (XmlNode n in scenarioNodes)
                 {
                     // Ensure we have attributes
@@ -446,10 +446,8 @@ namespace AgencyDispatchFramework.Xml
                     }
 
                     // Add
-                    outcomes.Add(new DialogScenario()
+                    outcomes.Add(new DialogueScenario(n.Attributes["id"].Value, probability)
                     {
-                        Id = n.Attributes["id"].Value,
-                        Probability = probability,
                         ConditionStatement = n.Attributes["if"]?.Value ?? String.Empty
                     });
                 }

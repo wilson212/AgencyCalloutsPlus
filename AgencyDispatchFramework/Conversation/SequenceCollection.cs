@@ -1,12 +1,13 @@
 ﻿namespace AgencyDispatchFramework.Conversation
 {
     /// <summary>
-    /// A class that represents a single collection of <see cref="CommunicationSequence"/> instances
+    /// A class that represents a collection of similar <see cref="CommunicationSequence"/> 
+    /// instances that can be used as a response or inquery by a <see cref="Rage.Ped"/>
     /// </summary>
     public abstract class SequenceCollection
     {
         /// <summary>
-        /// Gets the question id of this <see cref="SequenceCollection"/>
+        /// Gets the id of this <see cref="SequenceCollection"/>
         /// </summary>
         public string Id { get; }
 
@@ -19,7 +20,7 @@
         /// Contains the selected response to the question. This does not
         /// change once selected!
         /// </summary>
-        protected CommunicationSequence SelectedDialog { get; set; }
+        protected CommunicationSequence SelectedSequence { get; set; }
 
         /// <summary>
         /// Gets the number of <see cref="CommunicationSequence"/> instances in this container
@@ -53,12 +54,12 @@
         public virtual CommunicationSequence GetPersistantSequence()
         {
             // Spawn a response if we have not selected one yet
-            if (SelectedDialog == null)
+            if (SelectedSequence == null)
             {
-                SelectedDialog = Sequences.Spawn();
+                SelectedSequence = Sequences.Spawn();
             }
 
-            return SelectedDialog;
+            return SelectedSequence;
         }
 
         /// <summary>

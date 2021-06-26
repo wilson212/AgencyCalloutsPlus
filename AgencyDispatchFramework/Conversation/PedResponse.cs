@@ -11,13 +11,13 @@
         public string ReturnMenuId { get; private set; }
 
         /// <summary>
-        /// Contains an array of <see cref="RAGENativeUI.Elements.UIMenuItem"/> names to hide
+        /// Contains an array of <see cref="Question"/> Ids to hide
         /// once this <see cref="PedResponse"/> is displayed
         /// </summary>
         public string[] HideQuestionIds { get; set; }
 
         /// <summary>
-        /// Contains an array of <see cref="RAGENativeUI.Elements.UIMenuItem"/> names to unhide
+        /// Contains an array of <see cref="Question"/> Ids to unhide
         /// once this <see cref="PedResponse"/> is displayed
         /// </summary>
         public string[] ShowQuestionIds { get; set; }

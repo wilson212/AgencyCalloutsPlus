@@ -30,7 +30,12 @@ namespace AgencyDispatchFramework.Conversation
         /// <summary>
         /// Gets the <see cref="Rage.Ped"/> this <see cref="Dialogue"/> is attacthed to
         /// </summary>
-        public GamePed SubjectPed { get; private set; }
+        public GamePed SubjectPed { get; protected set; }
+
+        /// <summary>
+        /// Gets the <see cref="DialogueScenario"/> selected for this <see cref="Dialogue"/>
+        /// </summary>
+        public DialogueScenario Scenario { get; protected set; }
 
         /// <summary>
         /// Contains the main menu string name
@@ -45,37 +50,32 @@ namespace AgencyDispatchFramework.Conversation
         /// <summary>
         /// Contains a list of flow return menu's by name
         /// </summary>
-        internal Dictionary<string, UIMenu> MenusById { get; set; }
+        protected Dictionary<string, UIMenu> MenusById { get; set; }
 
         /// <summary>
         /// Contains a list of flow return menu items that are initially no visible
         /// </summary>
-        internal Dictionary<string, UIMenuItem> HiddenMenuItems { get; set; }
+        protected Dictionary<string, UIMenuItem> HiddenMenuItems { get; set; }
 
         /// <summary>
         /// Contains a list of flow return menu items that are initially no visible
         /// </summary>
-        internal Dictionary<string, Action> Callbacks { get; set; }
+        protected Dictionary<string, Action> Callbacks { get; set; }
 
         /// <summary>
         /// Contains our <see cref="PedResponse"/>s for this <see cref="Dialogue"/>
         /// </summary>
-        internal Dictionary<string, PedResponse> PedResponses { get; set; }
+        protected Dictionary<string, PedResponse> PedResponses { get; set; }
 
         /// <summary>
         /// Contains officer dialogs attached to each menu option
         /// </summary>
-        internal Dictionary<string, UIMenuItem<Question>> Questions { get; set; }
+        protected Dictionary<string, UIMenuItem<Question>> Questions { get; set; }
 
         /// <summary>
         /// Contains string replacements in the Output strings
         /// </summary>
         protected Dictionary<string, object> Variables { get; set; }
-
-        /// <summary>
-        /// Gets the FlowOutcome name selected for this conversation event
-        /// </summary>
-        public DialogScenario FlowOutcome { get; protected set; }
 
         /// <summary>
         /// Event fired whenever a <see cref="PedResponse"/> is displayed
@@ -87,13 +87,13 @@ namespace AgencyDispatchFramework.Conversation
         /// </summary>
         /// <param name="sequenceId">The unique name of this sequence. Usually the filename without extension</param>
         /// <param name="ped">The conversation subject ped</param>
-        /// <param name="outcome">The selected outcome <see cref="ResponseSet"/></param>
-        internal Dialogue(string sequenceId, GamePed ped, DialogScenario outcome)
+        /// <param name="scenario">The selected outcome <see cref="ResponseSet"/></param>
+        internal Dialogue(string sequenceId, GamePed ped, DialogueScenario scenario)
         {
             // Set internals
             SequenceId = sequenceId;
             SubjectPed = ped;
-            FlowOutcome = outcome;
+            Scenario = scenario;
 
             // Create empty containers
             AllMenus = new MenuPool();
@@ -143,6 +143,17 @@ namespace AgencyDispatchFramework.Conversation
             }
 
             return response;
+        }
+
+        /// <summary>
+        /// Determines whether this <see cref="Dialogue"/> contains a question
+        /// with the specified key
+        /// </summary>
+        /// <param name="questionId"></param>
+        /// <returns></returns>
+        public bool ContainsQuestionById(string questionId)
+        {
+            return Questions.ContainsKey(questionId);
         }
 
         /// <summary>

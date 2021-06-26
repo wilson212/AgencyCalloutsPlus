@@ -32,14 +32,14 @@ namespace AgencyDispatchFramework.Xml
         /// Parses the flow sequence xml file returns a new <see cref="Dialogue"/>
         /// </summary>
         /// <param name="scenario">
-        /// The <see cref="DialogScenario"/> selected for this conversation sequence. Only this <see cref="DialogScenario"/> will be parsed.
+        /// The <see cref="DialogueScenario"/> selected for this conversation sequence. Only this <see cref="DialogueScenario"/> will be parsed.
         /// </param>
         /// <param name="ped">The ped that will respond with the answers in this sequence</param>
         /// <param name="parser">The <see cref="ExpressionParser"/> used for evaluating expression strings in the XML "if" attributes</param>
         /// <returns>A <see cref="Dialogue"/> instance</returns>
         /// <exception cref="ArgumentException" />
         /// <exception cref="ArgumentNullException" />
-        public Dialogue Parse(DialogScenario scenario, GamePed ped, ExpressionParser parser)
+        public Dialogue Parse(DialogueScenario scenario, GamePed ped, ExpressionParser parser)
         {
             // Validate and extract attributes
             var documentRoot = Document.SelectSingleNode("Dialogue");

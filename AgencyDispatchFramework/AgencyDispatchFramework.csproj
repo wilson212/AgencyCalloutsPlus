@@ -174,7 +174,7 @@
     <Compile Include="Game\PedInfo.cs" />
     <Compile Include="Game\PedModelMeta.cs" />
     <Compile Include="Game\WeatherSnapshot.cs" />
-    <Compile Include="Conversation\DialogScenario.cs" />
+    <Compile Include="Conversation\DialogueScenario.cs" />
     <Compile Include="Extensions\ColorExtensions.cs" />
     <Compile Include="Extensions\RegexExtensions.cs" />
     <Compile Include="Linq\DynamicLinq.cs" />

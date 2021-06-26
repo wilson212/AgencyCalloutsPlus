@@ -5,8 +5,12 @@ using System;
 namespace AgencyDispatchFramework.Conversation
 {
     /// <summary>
-    /// Represents an advanced <see cref="Subtitle"/> with animation support
+    /// Represents a single verbal and/or non-verbal form of communication to be played by a
+    /// <see cref="Rage.Ped"/> when conversing in a <see cref="Dialogue"/> with the Player.
     /// </summary>
+    /// <remarks>
+    /// To be used in a <see cref="CommunicationSequence"/>
+    /// </remarks>
     public class PedCommunication : Subtitle
     {
         /// <summary>

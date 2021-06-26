@@ -19,9 +19,9 @@ namespace AgencyDispatchFramework.Callouts
         protected ExpressionParser Parser { get; set; }
 
         /// <summary>
-        /// Gets the randomly selected <see cref="FlowOutcome"/>
+        /// Gets the randomly selected <see cref="DialogueScenario"/>
         /// </summary>
-        protected DialogScenario FlowOutcome { get; set; }
+        protected DialogueScenario DialogueScenario { get; set; }
 
         /// <summary>
         /// Gets the <see cref="CalloutScenarioInfo"/> for this instance
@@ -39,12 +39,12 @@ namespace AgencyDispatchFramework.Callouts
             ScenarioInfo = scenarioInfo;
 
             // Select a random FlowOutcome for this scenario
-            if (!ScenarioInfo.GetRandomFlowOutcome(Parser, out DialogScenario flowOutcome))
+            if (!ScenarioInfo.GetRandomDialogScenario(Parser, out DialogueScenario flowOutcome))
             {
-                throw new Exception($"Unable to select a FlowOutcome for callout scenario {ScenarioInfo.Name}");
+                throw new Exception($"Unable to select a DialogScenario for callout scenario {ScenarioInfo.Name}");
             }
 
-            FlowOutcome = flowOutcome;
+            DialogueScenario = flowOutcome;
         }
 
         /// <summary>
@@ -68,16 +68,18 @@ namespace AgencyDispatchFramework.Callouts
         public abstract void Cleanup();
 
         /// <summary>
-        /// Loads an xml file and returns the XML document back as an object
+        /// Loads an xml file and returns the XML document back as a <see cref="XmlDocument"/>
         /// </summary>
-        /// <param name="paths">The path to the f</param>
-        /// <returns></returns>
-        protected static XmlDocument LoadFlowSequenceFile(params string[] paths)
+        /// <param name="paths">The relative paths to the file, starting from the Frameworks callout folder</param>
+        /// <returns>if the file exists, returns a <see cref="XmlDocument"/> instance. Returns null on failure</returns>
+        protected static XmlDocument LoadCalloutXmlDocument(params string[] paths)
         {
-            // Create file path
+            // Create full file path
             string path = Path.Combine(Main.FrameworkFolderPath, "Callouts");
             foreach (string p in paths)
+            {
                 path = Path.Combine(path, p);
+            }
 
             // Ensure file exists
             if (File.Exists(path))
@@ -92,7 +94,25 @@ namespace AgencyDispatchFramework.Callouts
                 return document;
             }
 
-            throw new Exception($"[ERROR] AgencyCalloutsPlus: Scenario FlowSequence file does not exist: '{path}'");
+            return null;
+        }
+
+        /// <summary>
+        /// Loads a callout file and returns the <see cref="FileStream"/>
+        /// </summary>
+        /// <param name="paths">The relative paths to the file, starting from the Frameworks callout folder</param>
+        /// <returns>if the file exists, returns a <see cref="FileStream"/> instance. Returns null on failure</returns>
+        protected static FileStream GetCalloutFile(params string[] paths)
+        {
+            // Create full file path
+            string path = Path.Combine(Main.FrameworkFolderPath, "Callouts");
+            foreach (string p in paths)
+            {
+                path = Path.Combine(path, p);
+            }
+
+            // Ensure file exists
+            return (File.Exists(path)) ?  new FileStream(path, FileMode.Open) : null;
         }
     }
 }

@@ -3,8 +3,12 @@
 namespace AgencyDispatchFramework.Conversation
 {
     /// <summary>
-    /// Represents a series of words spoken to display in a <see cref="Game.Subtitle"/>
+    /// Represents a series verbal and/or non-verbal forms of communication to be played in a particular order
+    /// by a <see cref="Rage.Ped"/> when in a <see cref="Dialogue"/> with a another <see cref="Rage.Ped"/>
     /// </summary>
+    /// <remarks>
+    /// Used in a <see cref="ProbabilityGenerator{T}"/> by a <see cref="SequenceCollection"/>
+    /// </remarks>
     public class CommunicationSequence : ISpawnable
     {
         #region Event Fields
@@ -15,7 +19,7 @@ namespace AgencyDispatchFramework.Conversation
 
         /// <summary>
         /// Gets or sets the probability of this <see cref="CommunicationSequence"/> being selected against
-        /// other <see cref="CommunicationSequence"/>s in the <see cref="ResponseSet"/>
+        /// other <see cref="CommunicationSequence"/>s in a <see cref="SequenceCollection"/>
         /// </summary>
         public int Probability { get; set; }
 
@@ -25,13 +29,13 @@ namespace AgencyDispatchFramework.Conversation
         public PedCommunication[] Communications { get; set; }
 
         /// <summary>
-        /// Contains an array of <see cref="RAGENativeUI.Elements.UIMenuItem"/> names to hide
+        /// Contains an array of <see cref="Question"/> Ids to hide
         /// if this <see cref="CommunicationSequence"/> is displayed
         /// </summary>
         public string[] HidesQuestionIds { get; set; }
 
         /// <summary>
-        /// Contains an array of <see cref="RAGENativeUI.Elements.UIMenuItem"/> names to unhide
+        /// Contains an array of <see cref="Question"/> Ids to unhide
         /// if this <see cref="CommunicationSequence"/> is displayed
         /// </summary>
         public string[] ShowsQuestionIds { get; set; }
