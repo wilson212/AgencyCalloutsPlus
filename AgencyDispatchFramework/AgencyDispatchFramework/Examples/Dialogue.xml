@@ -1,5 +1,13 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
-<!-- A Dialogue represents a conversation flow sequence between a Ped and the Player -->
+<!-- 
+  Here is an example Dialogue file. I have provided detailed explainations on how to design your 
+  own Dialogues, and what each node does.
+  
+  A Dialogue represents a conversation flow between a Ped and the Player during a Callout Scenario.
+  
+  The "id" attribute must be defined, and must be unique to each Callout Scenario,
+  because other loaded dialogues can reference the Menus in this dialogue by the ID.
+-->
 <Dialogue id="Suspect">
 
   <!-- The Menus node builds a RageNativeUI questioning menu in which to interact with a Ped -->
@@ -10,15 +18,32 @@
       
       <!-- 
         A Question node describes a question that can be asked, and is displayed as a RageNativeUI button 
-        The "id" attribute defines a question ID, that the code uses to find an answer from a Scenario.
         
-        NOTE: The "id" attribute must be unique for this entire file, not just this "Menu"!
+        The "id" attribute defines a question ID, that the code uses to find an answer from a Circumstance.
+        
+        NOTE: The "id" attribute must be unique for THIS entire file, not just this "Menu"!
       -->
       <Question id="ok" buttonText="Do you need medical?">
+        
+        <!--
+          A <Sequence> node defines one or more Subtitle elements. Each Subtitle element will be played in
+          the order defined below. Each <Question> and <Response> node can contain multiple <Sequence> nodes.
+          One <Sequence> node will be chosen at random when the <Quesion[id]> is chosen, based on the 
+          "probability" attribute value.
+          
+          Each <Sequence> should contain a similar response, statement or question but worded differently from eachother.
+          Example: 1 <Sequence> could be a "Hello, how are you?", while the second <Sequence> could be "Hi, how have you been?".  
+                   Both <Sequence> nodes portray the same message, but are just worded differently.
+          
+          The probability is the likelihood of an item being chosen over other probable items, based on the cumulative probability.
+          Example: If 3 <Sequence> nodes all have a probability of "10", then each <Sequence> node has a 33% chance of being selected.
+                   If one <Sequence> node has a probability of 20, now it has double the chance of being chosed over a <Sequence>
+                   element with a probability of 10.
+        -->
         <Sequence probability="10">
           <!-- 
             A subtitle is just that, a single line displayed on screen for the "time" in milliseconds.
-            Multiple Subtitle nodes can be present, and each one will be displayed in order.
+            Multiple Subtitle nodes can be present, and each one will be displayed in order (sequence).
           -->
           <Subtitle time="2000">Do you require any medical attention?</Subtitle>
         </Sequence>
@@ -28,6 +53,11 @@
       <Question id="how" buttonText="How did this happen?">
         <Sequence probability="10">
           <Subtitle time="2000">How did this happen?</Subtitle>
+        </Sequence>
+        
+        <!-- Example of a second <Sequence> element, asking the same question just worded differently -->
+        <Sequence probability="10">
+          <Subtitle time="2000">Can you explain how this happened?</Subtitle>
         </Sequence>
       </Question>
       
@@ -39,27 +69,31 @@
       <Question id="tailgate" buttonText="Tailgating?" visible="false">
         <Sequence probability="10">
           <!-- 
-          As you can see we have a variable in the text labeled "$...$".
-          These variables are set in the callout file using an the Dialogue.SetVariable() method
-        -->
+            As you can see we have a variable in the text labeled "$...$".
+            These variables are set in the callout file using an the Dialogue.SetVariable() method
+          -->
           <Subtitle time="3000">$VictimName$ stated that you were tailgating. Is this a true statement?</Subtitle>
         </Sequence>
       </Question>
     </Menu>
   </Menus>
 
-  <!-- The Scenarios node has a set of different response sets to Menuss from the RageNativeUI Menus -->
-  <Scenarios>
+  <!-- 
+    The Circumstances node has a set of different "response sequences" to Questions asked by the player 
+    
+    These Circumstances can be used to change the "story" within the callout scenario
+  -->
+  <Circumstances>
     
     <!-- 
-      A Flow outcome is essentially an organized set of responses to the questions defined in the Menus node, which
+      A Circumstance is essentially an organized set of responses to the questions defined in the Menus node, which
       sets up the official statement for the Ped. 
       
-      A CalloutMeta file defines all the posible Scenarios, with the probability to select each one.
+      A CalloutMeta file defines all the posible Circumstances, with the probability to select each one.
       
-      A Scenario node must define an initialMenu to display, and must have a unique ID from other Scenario nodes
+      A Circumstance node must define an initialMenu to display, and must have a unique ID from other Circumstance nodes
     -->
-    <Scenario id="uniqueIdHere" initialMenu="main">
+    <Circumstance id="uniqueIdHere" initialMenu="main">
       
       <!-- 
         The <Ped> node is used as a config to set the chances of the Ped being drunk,
@@ -137,7 +171,7 @@
         <Response to="ok" returnMenu="main">
           
           <!-- 
-            In this initial dialog (if selected at random based on the "probability"), we have 3 callbacks we can hook into
+            In this initial Sequence (if selected at random based on the "probability"), we have 3 callbacks we can hook into
             within the CalloutScenario using the following method: Dialogue.RegisterCallback(name, Action);
             
             For all intents and purposes, a callback is basically just an event created dynamically, and calls on the Action
@@ -160,7 +194,7 @@
           </Sequence>
           
           <!--
-            In this dialog, we see an example of a condition statement (this "if" attribute).
+            In this Sequence, we see an example of a condition statement (this "if" attribute).
             In this example, if the Victim ped is a female, this dialog will not be
             selected as a potential statement for the ped.
             
@@ -221,7 +255,7 @@
           <!-- More Statements to the question ID of "how" -->
         </Response>
       </Responses>
-    </Scenario>
+    </Circumstance>
 
-  </Scenarios>
+  </Circumstances>
 </Dialogue>

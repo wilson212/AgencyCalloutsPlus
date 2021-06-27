@@ -33,9 +33,9 @@ namespace AgencyDispatchFramework.Conversation
         public GamePed SubjectPed { get; protected set; }
 
         /// <summary>
-        /// Gets the <see cref="DialogueScenario"/> selected for this <see cref="Dialogue"/>
+        /// Gets the <see cref="Conversation.Circumstance"/> selected for this <see cref="Dialogue"/>
         /// </summary>
-        public DialogueScenario Scenario { get; protected set; }
+        public Circumstance Circumstance { get; protected set; }
 
         /// <summary>
         /// Contains the main menu string name
@@ -88,12 +88,12 @@ namespace AgencyDispatchFramework.Conversation
         /// <param name="sequenceId">The unique name of this sequence. Usually the filename without extension</param>
         /// <param name="ped">The conversation subject ped</param>
         /// <param name="scenario">The selected outcome <see cref="ResponseSet"/></param>
-        internal Dialogue(string sequenceId, GamePed ped, DialogueScenario scenario)
+        internal Dialogue(string sequenceId, GamePed ped, Circumstance scenario)
         {
             // Set internals
             SequenceId = sequenceId;
             SubjectPed = ped;
-            Scenario = scenario;
+            Circumstance = scenario;
 
             // Create empty containers
             AllMenus = new MenuPool();
@@ -154,6 +154,15 @@ namespace AgencyDispatchFramework.Conversation
         public bool ContainsQuestionById(string questionId)
         {
             return Questions.ContainsKey(questionId);
+        }
+
+        /// <summary>
+        /// Determines whether this <see cref="Dialogue"/> contains a menu
+        /// with the specified key
+        /// </summary>
+        public bool ContainsMenuById(string menuId)
+        {
+            return MenusById.ContainsKey(menuId);
         }
 
         /// <summary>
@@ -388,7 +397,7 @@ namespace AgencyDispatchFramework.Conversation
 
             // Grab dialog for player
             var officerSequence = question.GetRandomSequence();
-            if (officerSequence == null || officerSequence.Communications.Length == 0)
+            if (officerSequence == null || officerSequence.Elements.Length == 0)
             {
                 Log.Error($"FlowSquence.On_QuestionActivated: Question '{question.Id}' has no Dialog");
                 return;
@@ -396,7 +405,7 @@ namespace AgencyDispatchFramework.Conversation
 
             // Grab dialog for ped
             var pedSequence = response.GetPersistantSequence();
-            if (pedSequence == null || pedSequence.Communications.Length == 0)
+            if (pedSequence == null || pedSequence.Elements.Length == 0)
             {
                 Log.Error($"FlowSquence.On_QuestionActivate: Response to '{question.Id}' has no Dialog");
                 return;
@@ -411,7 +420,7 @@ namespace AgencyDispatchFramework.Conversation
             // Has the player asked this question already?
             if (selectedItem.ForeColor == Color.Gray)
             {
-                var line = new PedCommunication(GetRepeatPrefixText(), 2500)
+                var line = new CommunicationElement(GetRepeatPrefixText(), 2500)
                 {
                     PrefixText = $"~y~{SubjectPed.Persona.Forename}~w~:",
                     Speaker = SubjectPed.Ped
@@ -442,8 +451,8 @@ namespace AgencyDispatchFramework.Conversation
         {
             // Add Ped response
             int index = 0;
-            int lastIndex = sequence.Communications.Length - 1;
-            foreach (PedCommunication line in sequence.Communications)
+            int lastIndex = sequence.Elements.Length - 1;
+            foreach (CommunicationElement line in sequence.Elements)
             {
                 // Do we have a callback for "onFirstShown" ?
                 if (index == 0)

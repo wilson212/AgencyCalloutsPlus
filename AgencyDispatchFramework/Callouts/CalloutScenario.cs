@@ -19,9 +19,9 @@ namespace AgencyDispatchFramework.Callouts
         protected ExpressionParser Parser { get; set; }
 
         /// <summary>
-        /// Gets the randomly selected <see cref="DialogueScenario"/>
+        /// Gets the randomly selected <see cref="SelectedCircumstance"/>
         /// </summary>
-        protected DialogueScenario DialogueScenario { get; set; }
+        protected Circumstance SelectedCircumstance { get; set; }
 
         /// <summary>
         /// Gets the <see cref="CalloutScenarioInfo"/> for this instance
@@ -39,12 +39,12 @@ namespace AgencyDispatchFramework.Callouts
             ScenarioInfo = scenarioInfo;
 
             // Select a random FlowOutcome for this scenario
-            if (!ScenarioInfo.GetRandomDialogScenario(Parser, out DialogueScenario flowOutcome))
+            if (!ScenarioInfo.GetRandomCircumstance(Parser, out Circumstance circ))
             {
                 throw new Exception($"Unable to select a DialogScenario for callout scenario {ScenarioInfo.Name}");
             }
 
-            DialogueScenario = flowOutcome;
+            SelectedCircumstance = circ;
         }
 
         /// <summary>

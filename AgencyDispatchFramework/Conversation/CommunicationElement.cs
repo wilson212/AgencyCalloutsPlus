@@ -5,13 +5,14 @@ using System;
 namespace AgencyDispatchFramework.Conversation
 {
     /// <summary>
-    /// Represents a single verbal and/or non-verbal form of communication to be played by a
-    /// <see cref="Rage.Ped"/> when conversing in a <see cref="Dialogue"/> with the Player.
+    /// Represents a single verbal and/or non-verbal form of communication to be used in a
+    /// <see cref="CommunicationSequence"/> when a <see cref="Rage.Ped"/> when conversing in 
+    /// a <see cref="Dialogue"/> with the Player.
     /// </summary>
     /// <remarks>
     /// To be used in a <see cref="CommunicationSequence"/>
     /// </remarks>
-    public class PedCommunication : Subtitle
+    public class CommunicationElement : Subtitle
     {
         /// <summary>
         /// Gets or sets the <see cref="Ped"/> to run the <see cref="AnimationTask"/> on if any
@@ -46,11 +47,11 @@ namespace AgencyDispatchFramework.Conversation
         public override event SubtitleEventHandler Elapsed;
 
         /// <summary>
-        /// Creates a new instance of <see cref="PedCommunication"/>
+        /// Creates a new instance of <see cref="CommunicationElement"/>
         /// </summary>
         /// <param name="text"></param>
         /// <param name="duration"></param>
-        public PedCommunication(string text, int duration) : base(text, duration)
+        public CommunicationElement(string text, int duration) : base(text, duration)
         {
             Animations = new AnimationSequence();
         }

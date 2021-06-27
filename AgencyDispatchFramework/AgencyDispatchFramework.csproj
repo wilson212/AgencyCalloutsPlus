@@ -87,7 +87,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Conversation\PedCommunication.cs" />
+    <Compile Include="Conversation\CommunicationElement.cs" />
     <Compile Include="Conversation\SequenceCollection.cs" />
     <Compile Include="Conversation\PedResponseEventHandler.cs" />
     <Compile Include="Conversation\Question.cs" />
@@ -160,7 +160,7 @@
     <Compile Include="Game\Enums\PedVariantGroup.cs" />
     <Compile Include="Game\Enums\Weather.cs" />
     <Compile Include="Game\GameWorld.cs" />
-    <Compile Include="Game\SubtitleEventHandler.cs" />
+    <Compile Include="Game\Delegates\SubtitleEventHandler.cs" />
     <Compile Include="Game\Locations\Enums\RoadShoulderPosition.cs" />
     <Compile Include="Game\Delegates\TimeScaleChangedEventHandler.cs" />
     <Compile Include="LogLevel.cs" />
@@ -174,7 +174,7 @@
     <Compile Include="Game\PedInfo.cs" />
     <Compile Include="Game\PedModelMeta.cs" />
     <Compile Include="Game\WeatherSnapshot.cs" />
-    <Compile Include="Conversation\DialogueScenario.cs" />
+    <Compile Include="Conversation\Circumstance.cs" />
     <Compile Include="Extensions\ColorExtensions.cs" />
     <Compile Include="Extensions\RegexExtensions.cs" />
     <Compile Include="Linq\DynamicLinq.cs" />

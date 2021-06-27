@@ -34,10 +34,10 @@
     </Menu>
   </Menus>
   
-  <Scenarios>
+  <Circumstances>
 
     <!-- Default Outcome: Victim2 is at fault for texting and driving -->
-    <Scenario id="distracted" initialMenu="main">
+    <Circumstance id="distracted" initialMenu="main">
       <Ped drunkChance="3" highChance="3">
         <Inventory></Inventory>
         <Presentation>
@@ -82,10 +82,10 @@
           </Sequence>
         </Response>
       </Responses>
-    </Scenario>
+    </Circumstance>
 
     <!-- Outcome: Victim2 is at fault for eating and driving -->
-    <Scenario id="eating" initialMenu="main">
+    <Circumstance id="eating" initialMenu="main">
       <Ped drunkChance="3" highChance="7">
         <Inventory></Inventory>
         <Presentation>
@@ -126,10 +126,10 @@
           </Sequence>
         </Response>
       </Responses>
-    </Scenario>
+    </Circumstance>
 
     <!-- Outcome: Victim2 is at fault for tailgating -->
-    <Scenario id="tailgating" initialMenu="main">
+    <Circumstance id="tailgating" initialMenu="main">
       <Ped drunkChance="5" highChance="5">
         <Inventory></Inventory>
         <Presentation>
@@ -187,10 +187,10 @@
           </Sequence>
         </Response>
       </Responses>
-    </Scenario>
+    </Circumstance>
 
     <!-- Outcome: Victim2 is at fault for tailgating -->
-    <Scenario id="wetRoads,snowing" initialMenu="main">
+    <Circumstance id="wetRoads,snowing" initialMenu="main">
       <Ped drunkChance="3" highChance="3">
         <Inventory></Inventory>
         <Presentation>
@@ -232,7 +232,7 @@
           </Sequence>
         </Response>
       </Responses>
-    </Scenario>
+    </Circumstance>
 
-  </Scenarios>
+  </Circumstances>
 </Dialogue>

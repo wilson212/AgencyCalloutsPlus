@@ -76,9 +76,9 @@ namespace AgencyDispatchFramework.Callouts.DomesticViolence
         public override void Setup()
         {
             // Ensure our FlowOutcome is not null
-            if (DialogueScenario == null)
+            if (SelectedCircumstance == null)
             {
-                throw new ArgumentNullException(nameof(DialogueScenario));
+                throw new ArgumentNullException(nameof(SelectedCircumstance));
             }
 
             // Show player notification
@@ -150,7 +150,7 @@ namespace AgencyDispatchFramework.Callouts.DomesticViolence
             var path = Path.Combine(Main.FrameworkFolderPath, "Callouts", "DomesticViolence", nameof(ReportsOfArguingThreats), "Suspect.xml");
             using (var file = new DialogueFile(path))
             {
-                SuspectDialogue = file.Parse(DialogueScenario, Suspect, Parser);
+                SuspectDialogue = file.Parse(SelectedCircumstance, Suspect, Parser);
                 SuspectDialogue.SetVariableDictionary(variables);
                 Menu.AddDialogue(SuspectDialogue);
             }
@@ -159,7 +159,7 @@ namespace AgencyDispatchFramework.Callouts.DomesticViolence
             path = Path.Combine(Main.FrameworkFolderPath, "Callouts", "DomesticViolence", nameof(ReportsOfArguingThreats), "Victim.xml");
             using (var file = new DialogueFile(path))
             {
-                VictimDialogue = file.Parse(DialogueScenario, Victim, Parser);
+                VictimDialogue = file.Parse(SelectedCircumstance, Victim, Parser);
                 VictimDialogue.SetVariableDictionary(variables);
                 Menu.AddDialogue(VictimDialogue);
             }

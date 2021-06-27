@@ -29,10 +29,10 @@
     </Menu>
   </Menus>
   
-  <Scenarios>
+  <Circumstances>
     
     <!-- Default Statement -->
-    <Scenario id="distracted,eating" initialMenu="main">
+    <Circumstance id="distracted,eating" initialMenu="main">
       <Ped drunkChance="3" highChance="3">
         <Inventory></Inventory>
         <Presentation>
@@ -67,10 +67,10 @@
           </Sequence>
         </Response>
       </Responses>
-    </Scenario>
+    </Circumstance>
 
     <!-- Tailgating Statement -->
-    <Scenario id="tailgating" initialMenu="main">
+    <Circumstance id="tailgating" initialMenu="main">
       <Ped drunkChance="3" highChance="3">
         <Inventory></Inventory>
         <Presentation>
@@ -110,10 +110,10 @@
           </Sequence>
         </Response>
       </Responses>
-    </Scenario>
+    </Circumstance>
 
     <!-- Raining / Snowing Statement -->
-    <Scenario id="wetRoads,snowing" initialMenu="main">
+    <Circumstance id="wetRoads,snowing" initialMenu="main">
       <Ped drunkChance="3" highChance="3">
         <Inventory></Inventory>
         <Presentation>
@@ -149,7 +149,7 @@
           </Sequence>
         </Response>
       </Responses>
-    </Scenario>
+    </Circumstance>
     
-  </Scenarios>
+  </Circumstances>
 </Dialogue>

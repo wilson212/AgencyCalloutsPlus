@@ -31,21 +31,21 @@ namespace AgencyDispatchFramework.Xml
         /// <summary>
         /// Parses the flow sequence xml file returns a new <see cref="Dialogue"/>
         /// </summary>
-        /// <param name="scenario">
-        /// The <see cref="DialogueScenario"/> selected for this conversation sequence. Only this <see cref="DialogueScenario"/> will be parsed.
+        /// <param name="circumstance">
+        /// The <see cref="Circumstance"/> selected for this conversation sequence. Only this <see cref="Circumstance"/> will be parsed.
         /// </param>
         /// <param name="ped">The ped that will respond with the answers in this sequence</param>
         /// <param name="parser">The <see cref="ExpressionParser"/> used for evaluating expression strings in the XML "if" attributes</param>
         /// <returns>A <see cref="Dialogue"/> instance</returns>
         /// <exception cref="ArgumentException" />
         /// <exception cref="ArgumentNullException" />
-        public Dialogue Parse(DialogueScenario scenario, GamePed ped, ExpressionParser parser)
+        public Dialogue Parse(Circumstance circumstance, GamePed ped, ExpressionParser parser)
         {
             // Validate and extract attributes
             var documentRoot = Document.SelectSingleNode("Dialogue");
             if (!documentRoot.TryGetAttribute("id", out string sequenceId))
             {
-                Log.Warning($"DialogueFile.Parse(): Dialogue node has no 'id' attribute");
+                Log.Warning($"DialogueFile.Parse(): Dialogue node has no 'id' attribute. Using file name as default.");
                 sequenceId = Path.GetFileNameWithoutExtension(FilePath);
             }
 
@@ -59,7 +59,7 @@ namespace AgencyDispatchFramework.Xml
             }
 
             // Create dialog instance
-            var dialogue = new Dialogue(sequenceId, ped, scenario);
+            var dialogue = new Dialogue(sequenceId, ped, circumstance);
             int i = 0;
 
             // Load FlowReturn items
@@ -81,7 +81,7 @@ namespace AgencyDispatchFramework.Xml
                     // Extract attributes
                     if (questionNode.Attributes == null)
                     {
-                        Log.Error($"DialogueFile.Parse(): Menu -> MenuItem has no attributes");
+                        Log.Error($"DialogueFile.Parse(): Menu['{menuId}']->Question has no attributes");
                         continue;
                     }
 
@@ -89,14 +89,14 @@ namespace AgencyDispatchFramework.Xml
                     string questionId = questionNode.Attributes["id"]?.Value;
                     if (String.IsNullOrWhiteSpace(questionId))
                     {
-                        Log.Error($"DialogueFile.Parse(): Menu -> MenuItem has no or empty 'id' attribute");
+                        Log.Error($"DialogueFile.Parse(): Menu['{menuId}']->Question['{questionId}'] has no or empty 'id' attribute");
                         continue;
                     }
 
                     // Ensure ID is unique
-                    if (dialogue.Questions.ContainsKey(questionId))
+                    if (dialogue.ContainsQuestionById(questionId))
                     {
-                        Log.Error($"DialogueFile.Parse(): Menu -> Question 'id' attribute is not unique");
+                        Log.Error($"DialogueFile.Parse(): Menu['{menuId}']->Question['{questionId}'] attribute is not unique");
                         continue;
                     }
 
@@ -104,7 +104,7 @@ namespace AgencyDispatchFramework.Xml
                     string text = questionNode.Attributes["buttonText"]?.Value;
                     if (String.IsNullOrWhiteSpace(text))
                     {
-                        Log.Error($"DialogueFile.Parse(): Menu -> MenuItem has no or empty 'buttonText' attribute");
+                        Log.Error($"DialogueFile.Parse(): Menu['{menuId}']->Question['{questionId}'] has no or empty 'buttonText' attribute");
                         continue;
                     }
 
@@ -116,14 +116,14 @@ namespace AgencyDispatchFramework.Xml
                         if (!bool.TryParse(val, out isVisible))
                         {
                             isVisible = true;
-                            Log.Warning($"DialogueFile.Parse(): Menu -> MenuItem attribute 'visible' attribute is not correctly formatted");
+                            Log.Warning($"DialogueFile.Parse(): Menu['{menuId}']->Question['{questionId}'] attribute 'visible' attribute is not correctly formatted");
                         }
                     }
 
                     // Ensure we have lines to read
                     if (!questionNode.HasChildNodes)
                     {
-                        Log.Error($"DialogueFile.Parse(): Menu -> MenuItem has no Line child nodes");
+                        Log.Error($"DialogueFile.Parse(): Menu['{menuId}']->Question['{questionId}'] has no Line child nodes");
                         continue;
                     }
 
@@ -142,7 +142,7 @@ namespace AgencyDispatchFramework.Xml
                     if (question.Count == 0)
                     {
                         // Log
-                        Log.Warning("DialogueFile.Parse(): Menu -> Question node has no dialogs");
+                        Log.Warning($"DialogueFile.Parse(): Menu['{menuId}']->Question['{questionId}'] node has no dialogs");
                         continue;
                     }
 
@@ -164,12 +164,12 @@ namespace AgencyDispatchFramework.Xml
 
             // Load all flow outcome id's
             var mapping = new Dictionary<string, XmlNode>();
-            foreach (XmlNode node in documentRoot.SelectNodes("Scenarios/Scenario"))
+            foreach (XmlNode node in documentRoot.SelectNodes("Circumstances/Circumstance"))
             {
                 var ids = node.GetAttribute("id")?.Split(',');
                 if (ids == null || ids.Length == 0)
                 {
-                    throw new ArgumentNullException("Scenario", $"Scenario does not contain an id attribute");
+                    throw new ArgumentNullException("Circumstance", $"Circumstance node does not contain an id attribute");
                 }
 
                 foreach (string name in ids)
@@ -179,18 +179,18 @@ namespace AgencyDispatchFramework.Xml
             }
 
             // Ensure flow outcome ID exists
-            if (!mapping.ContainsKey(scenario.Id))
+            if (!mapping.ContainsKey(circumstance.Id))
             {
-                throw new ArgumentNullException("Scenario", $"Scenario does not exist '{scenario.Id}'");
+                throw new ArgumentNullException("Circumstance", $"Circumstance['{circumstance.Id}'] does not exist");
             }
 
             // ====================================================
             // Load response sequences
             // ====================================================
-            catagoryNode = mapping[scenario.Id];
+            catagoryNode = mapping[circumstance.Id];
             if (catagoryNode == null || !catagoryNode.HasChildNodes)
             {
-                throw new ArgumentNullException("Scenario", $"Scenario does not exist '{scenario.Id}'");
+                throw new ArgumentNullException("Circumstance", $"Circumstance['{circumstance.Id}'] does not exist");
             }
 
             // Validate and extract attributes
@@ -198,27 +198,27 @@ namespace AgencyDispatchFramework.Xml
             {
                 // Ensure menu exists
                 var menuName = catagoryNode.Attributes["initialMenu"].Value;
-                if (dialogue.MenusById.ContainsKey(menuName))
+                if (dialogue.ContainsMenuById(menuName))
                 {
                     dialogue.InitialMenuName = menuName;
                 }
                 else
                 {
                     // Log as warning and continue
-                    Log.Warning($"DialogueFile.Parse(): Specified initial menu for Scenario '{scenario.Id}' does not exist!");
+                    Log.Warning($"DialogueFile.Parse(): Specified 'initialMenu' for Circumstance['{circumstance.Id}'] does not exist!");
                 }
             }
             else
             {
                 // Log as warning and continue
-                Log.Warning($"DialogueFile.Parse(): Scenario '{scenario.Id}' does not have an 'initialMenu' attribute!");
+                Log.Warning($"DialogueFile.Parse(): Circumstance['{circumstance.Id}'] does not have an 'initialMenu' attribute!");
             }
 
             // Extract Ped data
             var subNode = catagoryNode.SelectSingleNode("Ped");
             if (subNode == null || !subNode.HasChildNodes)
             {
-                throw new ArgumentNullException("Scenario", $"Scenario '{scenario.Id}' does not contain a Ped node");
+                throw new ArgumentNullException("Circumstance", $"Circumstance['{circumstance.Id}'] does not contain a Ped node");
             }
 
             // Extract drunk attribute
@@ -295,7 +295,7 @@ namespace AgencyDispatchFramework.Xml
                     if (!Enum.TryParse(n.Attributes["type"]?.Value, out ContrabandType type))
                     {
                         // Log as warning and continue
-                        Log.Warning($"DialogueFile.Parse(): Unable to parse FlowOutcome['{scenario.Id}']->Ped->Inventory->Contraband type attribute");
+                        Log.Warning($"DialogueFile.Parse(): Unable to parse Circumstance['{circumstance.Id}']->Ped->Inventory->Contraband type attribute");
                         continue;
                     }
 
@@ -304,7 +304,7 @@ namespace AgencyDispatchFramework.Xml
                     if (subItems.Count == 0)
                     {
                         // Log as warning and continue
-                        Log.Warning($"DialogueFile.Parse(): FlowOutcome['{scenario.Id}']->Ped->Inventory->Contraband has no Item nodes");
+                        Log.Warning($"DialogueFile.Parse(): Circumstance['{circumstance.Id}']->Ped->Inventory->Contraband has no Item nodes");
                         continue;
                     }
 
@@ -316,7 +316,7 @@ namespace AgencyDispatchFramework.Xml
                         if (!Int32.TryParse(item.Attributes["probability"]?.Value, out int prob))
                         {
                             // Log as warning and continue
-                            Log.Warning($"DialogueFile.Parse(): Unable to parse FlowOutcome['{scenario.Id}']->Ped->Inventory->Contraband->Item probability attribute value");
+                            Log.Warning($"DialogueFile.Parse(): Unable to parse Circumstance['{circumstance.Id}']->Ped->Inventory->Contraband->Item probability attribute value");
                             continue;
                         }
 
@@ -326,7 +326,7 @@ namespace AgencyDispatchFramework.Xml
                             // Do we have a parser?
                             if (parser == null)
                             {
-                                Log.Warning($"DialogueFile.Parse(): Statement from FlowOutcome['{scenario.Id}']->Ped->Inventory->Contraband->Item has 'if' statement but no ExpressionParser is defined... Skipping");
+                                Log.Warning($"DialogueFile.Parse(): Statement from Circumstance['{circumstance.Id}']->Ped->Inventory->Contraband->Item has 'if' statement but no ExpressionParser is defined... Skipping");
                                 continue;
                             }
 
@@ -379,7 +379,7 @@ namespace AgencyDispatchFramework.Xml
                     if (subItems.Count == 0)
                     {
                         // Log as warning and continue
-                        Log.Warning($"DialogueFile.Parse(): Scenario['{scenario.Id}']->Ped->Inventory->Contraband has no Item nodes");
+                        Log.Warning($"DialogueFile.Parse(): Circumstance['{circumstance.Id}']->Ped->Inventory->Contraband has no Item nodes");
                         continue;
                     }
 
@@ -391,7 +391,7 @@ namespace AgencyDispatchFramework.Xml
                         if (!Int32.TryParse(item.Attributes["probability"]?.Value, out int prob))
                         {
                             // Log as warning and continue
-                            Log.Warning($"DialogueFile.Parse(): Unable to parse Scenario['{scenario.Id}']->Ped->Inventory->Weapon->Item probability attribute value");
+                            Log.Warning($"DialogueFile.Parse(): Unable to parse Circumstance['{circumstance.Id}']->Ped->Inventory->Weapon->Item probability attribute value");
                             continue;
                         }
 
@@ -401,7 +401,7 @@ namespace AgencyDispatchFramework.Xml
                             // Do we have a parser?
                             if (parser == null)
                             {
-                                Log.Warning($"DialogueFile.Parse(): Statement from Scenario['{scenario.Id}']->Ped->Inventory->Weapon->Item has 'if' statement but no ExpressionParser is defined... Skipping");
+                                Log.Warning($"DialogueFile.Parse(): Statement from Circumstance['{circumstance.Id}']->Ped->Inventory->Weapon->Item has 'if' statement but no ExpressionParser is defined... Skipping");
                                 continue;
                             }
 
@@ -423,7 +423,7 @@ namespace AgencyDispatchFramework.Xml
                         // See if we have an IF statement
                         if (String.IsNullOrEmpty(item.Attributes["id"]?.Value))
                         {
-                            Log.Warning($"DialogueFile.Parse(): Empty or missingScenario['{scenario.Id}']->Ped->Inventory->Weapon->Item id attribute value");
+                            Log.Warning($"DialogueFile.Parse(): Empty or missing Circumstance['{circumstance.Id}']->Ped->Inventory->Weapon->Item id attribute value");
                             continue;
                         }
 
@@ -431,7 +431,7 @@ namespace AgencyDispatchFramework.Xml
                         if (!short.TryParse(item.Attributes["ammo"]?.Value, out short ammo))
                         {
                             // Log as warning and continue
-                            Log.Warning($"DialogueFile.Parse(): Unable to parse Scenario['{scenario.Id}']->Ped->Inventory->Weapon->Item ammo attribute value");
+                            Log.Warning($"DialogueFile.Parse(): Unable to parse Circumstance['{circumstance.Id}']->Ped->Inventory->Weapon->Item ammo attribute value");
                             continue;
                         }
 
@@ -460,7 +460,7 @@ namespace AgencyDispatchFramework.Xml
             if (subNode == null || items.Count == 0)
             {
                 // Log as warning and continue
-                Log.Debug($"DialogueFile.Parse(): Scenario '{scenario.Id}' does not have a Ped->Presentation node");
+                Log.Debug($"DialogueFile.Parse(): Scenario '{circumstance.Id}' does not have a Ped->Presentation node");
                 ped.Demeanor = PedDemeanor.Calm;
             }
             else
@@ -472,7 +472,7 @@ namespace AgencyDispatchFramework.Xml
                     if (!Enum.TryParse(item.InnerText, out PedDemeanor demeanor))
                     {
                         // Log as warning and continue
-                        Log.Warning($"DialogueFile.Parse(): Unable to parse Scenario['{scenario.Id}']->Ped->Presentation->Demeanor node value");
+                        Log.Warning($"DialogueFile.Parse(): Unable to parse Circumstance['{circumstance.Id}']->Ped->Presentation->Demeanor node value");
                         continue;
                     }
 
@@ -480,7 +480,7 @@ namespace AgencyDispatchFramework.Xml
                     if (!Int32.TryParse(item.Attributes["probability"]?.Value, out int prob))
                     {
                         // Log as warning and continue
-                        Log.Warning($"DialogueFile.Parse(): Unable to parse Scenario['{scenario.Id}']->Ped->Presentation->Demeanor probability attribute value");
+                        Log.Warning($"DialogueFile.Parse(): Unable to parse Circumstance['{circumstance.Id}']->Ped->Presentation->Demeanor probability attribute value");
                         continue;
                     }
 
@@ -490,7 +490,7 @@ namespace AgencyDispatchFramework.Xml
                         // Do we have a parser?
                         if (parser == null)
                         {
-                            Log.Warning($"DialogueFile.Parse(): Statement from Scenario['{scenario.Id}']->Ped->Presentation->Demeanor has 'if' statement but no ExpressionParser is defined... Skipping");
+                            Log.Warning($"DialogueFile.Parse(): Statement from Circumstance['{circumstance.Id}']->Ped->Presentation->Demeanor has 'if' statement but no ExpressionParser is defined... Skipping");
                             continue;
                         }
 
@@ -524,7 +524,7 @@ namespace AgencyDispatchFramework.Xml
             XmlNodeList responses = catagoryNode.SelectSingleNode("Responses")?.SelectNodes("Response");
             if (responses == null || responses.Count == 0)
             {
-                throw new ArgumentNullException("Response", $"Scenario '{scenario.Id}' has no Response nodes.");
+                throw new ArgumentNullException("Response", $"Circumstance['{circumstance.Id}'] has no Response nodes.");
             }
 
             // Each Response Node
@@ -533,14 +533,14 @@ namespace AgencyDispatchFramework.Xml
                 // Validate and extract attributes
                 if (responseNode.Attributes == null || responseNode.Attributes["to"]?.Value == null)
                 {
-                    Log.Error($"DialogueFile.Parse(): Response has no 'to' attribute");
+                    Log.Error($"DialogueFile.Parse(): Circumstance['{circumstance.Id}']->Responses->Response has no 'to' attribute");
                     continue;
                 }
 
                 // Validate and extract attributes
                 if (responseNode.Attributes["returnMenu"]?.Value == null)
                 {
-                    Log.Error($"DialogueFile.Parse(): Response has no 'returnMenu' attribute");
+                    Log.Error($"DialogueFile.Parse(): Circumstance['{circumstance.Id}']->Responses->Response has no 'returnMenu' attribute");
                     continue;
                 }
 
@@ -548,7 +548,7 @@ namespace AgencyDispatchFramework.Xml
                 var seqNodes = responseNode.SelectNodes("Sequence");
                 if (seqNodes == null || seqNodes.Count == 0)
                 {
-                    Log.Error($"DialogueFile.Parse(): Response has no Sequence child nodes");
+                    Log.Error($"DialogueFile.Parse(): Circumstance['{circumstance.Id}']->Responses->Response has no Sequence child nodes");
                     continue;
                 }
 
@@ -590,7 +590,7 @@ namespace AgencyDispatchFramework.Xml
                 // Add final response
                 if (!dialogue.AddPedResponse(questionId, response))
                 {
-                    Log.Warning($"DialogueFile.Parse(): Duplicate Response node detected to Question id '{questionId}'");
+                    Log.Warning($"DialogueFile.Parse(): Duplicate Response node detected to Question['{questionId}'] in Circumstance['{circumstance.Id}']");
                 }
             }
 
@@ -680,7 +680,7 @@ namespace AgencyDispatchFramework.Xml
             sequence.CallOnElapsed = sequenceNode.GetAttribute("elapsed");
 
             // Fetch response lines
-            List<PedCommunication> lines = new List<PedCommunication>(sequenceNode.ChildNodes.Count);
+            List<CommunicationElement> lines = new List<CommunicationElement>(sequenceNode.ChildNodes.Count);
             foreach (XmlNode subTitleNode in sequenceNode.SelectNodes("Subtitle"))
             {
                 // Validate and extract attributes
@@ -694,7 +694,7 @@ namespace AgencyDispatchFramework.Xml
                 if (textNode != null)
                 {
                     // Check for animations
-                    var subtitle = new PedCommunication(textNode.InnerText, time);
+                    var subtitle = new CommunicationElement(textNode.InnerText, time);
 
                     // Do we play an animation
                     var aSequenceNode = subTitleNode.SelectSingleNode("AnimationSequence");
@@ -733,12 +733,12 @@ namespace AgencyDispatchFramework.Xml
                 else // The inner text is the text. No animation
                 {
                     // Add
-                    lines.Add(new PedCommunication(subTitleNode.InnerText, time));
+                    lines.Add(new CommunicationElement(subTitleNode.InnerText, time));
                 }
             }
 
             // Save lines
-            sequence.Communications = lines.ToArray();
+            sequence.Elements = lines.ToArray();
             return true;
         } 
     }

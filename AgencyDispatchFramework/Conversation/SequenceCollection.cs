@@ -12,9 +12,9 @@
         public string Id { get; }
 
         /// <summary>
-        /// Contains our possible responses
+        /// Contains our possible responses that we will randomly select from
         /// </summary>
-        protected ProbabilityGenerator<CommunicationSequence> Sequences { get; set; }
+        protected ProbabilityGenerator<CommunicationSequence> SequencePool { get; set; }
 
         /// <summary>
         /// Contains the selected response to the question. This does not
@@ -25,24 +25,24 @@
         /// <summary>
         /// Gets the number of <see cref="CommunicationSequence"/> instances in this container
         /// </summary>
-        public int Count => Sequences.ItemCount;
+        public int Count => SequencePool.ItemCount;
 
         /// <summary>
         /// Creates a new instance of <see cref="SequenceCollection"/>
         /// </summary>
         public SequenceCollection(string id)
         {
-            Sequences = new ProbabilityGenerator<CommunicationSequence>();
+            SequencePool = new ProbabilityGenerator<CommunicationSequence>();
             Id = id;
         }
 
         /// <summary>
         /// Adds a lineset to the internal <see cref="ProbabilityGenerator{T}"/>
         /// </summary>
-        /// <param name="discourse"></param>
-        public virtual void AddSequence(CommunicationSequence discourse)
+        /// <param name="sequence"></param>
+        public virtual void AddSequence(CommunicationSequence sequence)
         {
-            Sequences.Add(discourse);
+            SequencePool.Add(sequence);
         }
 
         /// <summary>
@@ -56,7 +56,7 @@
             // Spawn a response if we have not selected one yet
             if (SelectedSequence == null)
             {
-                SelectedSequence = Sequences.Spawn();
+                SelectedSequence = SequencePool.Spawn();
             }
 
             return SelectedSequence;
@@ -68,7 +68,7 @@
         /// <returns></returns>
         public virtual CommunicationSequence GetRandomSequence()
         {
-            return Sequences.Spawn();
+            return SequencePool.Spawn();
         }
     }
 }

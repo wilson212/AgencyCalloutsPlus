@@ -413,40 +413,40 @@ namespace AgencyDispatchFramework.Xml
                 }
 
                 // Fetch each FlowOutcome item
-                var scenarioNodes = scenarioNode.SelectSingleNode("DialogScenarios")?.SelectNodes("Scenario");
+                var scenarioNodes = scenarioNode.SelectSingleNode("Circumstances")?.SelectNodes("Circumstance");
                 if (scenarioNodes == null || scenarioNodes.Count == 0)
                 {
-                    Log.Error($"CalloutMetaFile.Parse(): Unable to load FlowSquence nodes in CalloutMeta for '{calloutDirName}'");
+                    Log.Error($"CalloutMetaFile.Parse(): Unable to load Circumstance nodes in CalloutMeta for '{calloutDirName}'");
                     continue;
                 }
 
                 // Evaluate each flow outcome, and add it to the probability generator
-                List<DialogueScenario> outcomes = new List<DialogueScenario>();
+                List<Circumstance> outcomes = new List<Circumstance>();
                 foreach (XmlNode n in scenarioNodes)
                 {
                     // Ensure we have attributes
                     if (n.Attributes == null)
                     {
-                        Log.Warning($"Scenario item has no attributes in 'CalloutMeta.xml->FlowSequence'");
+                        Log.Warning($"Circumstance item has no attributes in 'CalloutMeta.xml->FlowSequence'");
                         continue;
                     }
 
                     // Try and extract type value
                     if (n.Attributes["id"]?.Value == null)
                     {
-                        Log.Warning($"Unable to extract the 'id' attribute value in 'CalloutMeta.xml->DialogScenarios'");
+                        Log.Warning($"Unable to extract the 'id' attribute value in 'CalloutMeta.xml->Circumstances'");
                         continue;
                     }
 
                     // Try and extract probability value
                     if (n.Attributes["probability"]?.Value == null || !int.TryParse(n.Attributes["probability"].Value, out int probability))
                     {
-                        Log.Warning($"Unable to extract probability value of a DialogScenario in 'CalloutMeta.xml'");
+                        Log.Warning($"Unable to extract probability value of a Circumstance in 'CalloutMeta.xml'");
                         continue;
                     }
 
                     // Add
-                    outcomes.Add(new DialogueScenario(n.Attributes["id"].Value, probability)
+                    outcomes.Add(new Circumstance(n.Attributes["id"].Value, probability)
                     {
                         ConditionStatement = n.Attributes["if"]?.Value ?? String.Empty
                     });
@@ -475,7 +475,7 @@ namespace AgencyDispatchFramework.Xml
                     CADSpriteTextureDict = textDict,
                     SimulationTime = new Range<int>(min, max),
                     AgencyTypes = agencies.ToArray(),
-                    DialogScenarios = outcomes.ToArray()
+                    Circumstances = outcomes.ToArray()
                 };
 
                 // Add scenario to the pools

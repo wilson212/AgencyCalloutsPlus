@@ -3,20 +3,20 @@
 namespace AgencyDispatchFramework.Conversation
 {
     /// <summary>
-    /// Represents scenario information uses a series of sensible <see cref="PedResponse"/>s 
-    /// to be used in a <see cref="Dialogue"/> when talking with the player. 
-    /// To be chosen at random using a <see cref="ProbabilityGenerator{T}"/>
+    /// A class used to identify a circumstance ID for a <see cref="Callouts.CalloutScenario"/>. The
+    /// circumstance ID is used to defines a series of sensible <see cref="PedResponse"/>s 
+    /// to be used in a <see cref="Dialogue"/>, related to the situation.
     /// </summary>
-    public class DialogueScenario : ISpawnable
+    public class Circumstance : ISpawnable
     {
         /// <summary>
-        /// Gets the probability of spawning this <see cref="DialogueScenario"/> in a
+        /// Gets the probability of spawning this <see cref="Circumstance"/> in a
         /// <see cref="ProbabilityGenerator{T}"/>
         /// </summary>
         public int Probability { get; private set; }
 
         /// <summary>
-        /// Gets or sets the name of this <see cref="DialogueScenario"/>
+        /// Gets or sets the name of this <see cref="Circumstance"/>
         /// </summary>
         public string Id { get; set; }
 
@@ -28,10 +28,10 @@ namespace AgencyDispatchFramework.Conversation
         public string ConditionStatement { get; set; }
 
         /// <summary>
-        /// Creates a new instance of <see cref="DialogueScenario"/>
+        /// Creates a new instance of <see cref="Circumstance"/>
         /// </summary>
         /// <param name="probability"></param>
-        public DialogueScenario(string id, int probability)
+        public Circumstance(string id, int probability)
         {
             Id = id ?? throw new ArgumentNullException(nameof(id));
             Probability = probability;

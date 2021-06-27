@@ -3,8 +3,8 @@
 namespace AgencyDispatchFramework.Conversation
 {
     /// <summary>
-    /// Represents a series verbal and/or non-verbal forms of communication to be played in a particular order
-    /// by a <see cref="Rage.Ped"/> when in a <see cref="Dialogue"/> with a another <see cref="Rage.Ped"/>
+    /// Represents a sequence of verbal and/or non-verbal forms of communication to be played in a particular 
+    /// order by a <see cref="Rage.Ped"/> when in a <see cref="Dialogue"/> with a another <see cref="Rage.Ped"/>
     /// </summary>
     /// <remarks>
     /// Used in a <see cref="ProbabilityGenerator{T}"/> by a <see cref="SequenceCollection"/>
@@ -26,7 +26,7 @@ namespace AgencyDispatchFramework.Conversation
         /// <summary>
         /// Gets or sets the lines to display in the Subtitles
         /// </summary>
-        public PedCommunication[] Communications { get; set; }
+        public CommunicationElement[] Elements { get; set; }
 
         /// <summary>
         /// Contains an array of <see cref="Question"/> Ids to hide

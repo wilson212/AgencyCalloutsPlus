@@ -60,19 +60,19 @@
         <Arrests></Arrests>
         <Escalation chance="0" />
       </Simulation>
-      <DialogScenarios>
-        <Scenario id="distracted" probability="10" />
-        <Scenario id="eating" probability="3" />
-        <Scenario id="tailgating" probability="50000" /> <!-- Testing purposes -->
-        <Scenario id="wetRoads" probability="7" if="Weather.RoadsAreWet == true and Weather.IsSnowing == false"/>
-        <Scenario id="snowing" probability="15" if="Weather.IsSnowing == true"/>
+      <Circumstances>
+        <Circumstance id="distracted" probability="10" />
+        <Circumstance id="eating" probability="3" />
+        <Circumstance id="tailgating" probability="50000" /> <!-- Testing purposes -->
+        <Circumstance id="wetRoads" probability="7" if="Weather.RoadsAreWet == true and Weather.IsSnowing == false"/>
+        <Circumstance id="snowing" probability="15" if="Weather.IsSnowing == true"/>
         <!-- 
-        <Scenario id="drunkDriver" probability="2" />
-        <Scenario id="impaired" probability="2" />
-        <Scenario id="speeding" probability="5" />
-        <Scenario id="mechanicalFailure" probability="2" />
+        <Circumstance id="drunkDriver" probability="2" />
+        <Circumstance id="impaired" probability="2" />
+        <Circumstance id="speeding" probability="5" />
+        <Circumstance id="mechanicalFailure" probability="2" />
         -->
-      </DialogScenarios>
+      </Circumstances>
     </RearEndNoInjuries>
     
   </Scenarios>

@@ -164,7 +164,7 @@ namespace AgencyDispatchFramework.Callouts.TrafficAccident
             var path = Path.Combine(Main.FrameworkFolderPath, "Callouts", "TrafficAccident", nameof(RearEndNoInjuries), "Suspect.xml");
             using (var file = new DialogueFile(path))
             {
-                SuspectSeq = file.Parse(DialogueScenario, Suspect, Parser);
+                SuspectSeq = file.Parse(SelectedCircumstance, Suspect, Parser);
                 SuspectSeq.SetVariableDictionary(variables);
                 Menu.AddDialogue(SuspectSeq);
             }
@@ -173,7 +173,7 @@ namespace AgencyDispatchFramework.Callouts.TrafficAccident
             path = Path.Combine(Main.FrameworkFolderPath, "Callouts", "TrafficAccident", nameof(RearEndNoInjuries), "Victim.xml");
             using (var file = new DialogueFile(path))
             {
-                VictimSeq = file.Parse(DialogueScenario, Victim, Parser);
+                VictimSeq = file.Parse(SelectedCircumstance, Victim, Parser);
                 VictimSeq.SetVariableDictionary(variables);
                 Menu.AddDialogue(VictimSeq);
             }

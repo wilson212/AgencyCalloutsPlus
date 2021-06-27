@@ -27,10 +27,10 @@
       </Question>
     </Menu>
   </Menus>
-  <Scenarios>
+  <Circumstances>
 
     <!-- Default Outcome: Victim2 is at fault for texting and driving -->
-    <Scenario id="cheating" initialMenu="main">
+    <Circumstance id="cheating" initialMenu="main">
       <Ped drunkChance="3" highChance="3">
         <Inventory></Inventory>
         <Presentation>
@@ -76,7 +76,7 @@
           </Sequence>
         </Response>
       </Responses>
-    </Scenario>
+    </Circumstance>
 
-  </Scenarios>
+  </Circumstances>
 </Dialogue>
