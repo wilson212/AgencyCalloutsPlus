@@ -38,10 +38,10 @@ namespace AgencyDispatchFramework.Callouts
             Parser.SetParamater("Call", Dispatch.PlayerActiveCall);
             ScenarioInfo = scenarioInfo;
 
-            // Select a random FlowOutcome for this scenario
+            // Select a random Circumstance for this scenario
             if (!ScenarioInfo.GetRandomCircumstance(Parser, out Circumstance circ))
             {
-                throw new Exception($"Unable to select a DialogScenario for callout scenario {ScenarioInfo.Name}");
+                throw new Exception($"Unable to select a Circumstance for callout scenario {ScenarioInfo.Name}");
             }
 
             SelectedCircumstance = circ;

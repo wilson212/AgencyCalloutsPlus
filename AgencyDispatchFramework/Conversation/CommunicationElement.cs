@@ -96,7 +96,7 @@ namespace AgencyDispatchFramework.Conversation
             if (StopAnimationsOnElapsed && taskSequence != null)
             {
                 Speaker.Tasks.ClearSecondary();
-                taskSequence.Dispose();
+                //taskSequence.Dispose();
             }
         }
     }

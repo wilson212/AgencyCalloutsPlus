@@ -243,13 +243,13 @@
         <Response to="how" returnMenu="main">
           
           <!-- 
-            Here we can see the attribute show="FlowSquenceName.MenuItemName"
+            Here we can see the attribute show="Dialogue[id].Question[id]"
             When this statement is shown, it un-hides that menu's button for the 
             player to then ask a new question. The format is always as follows:
             
-            "DialogueID" (then a period) "." (Then the button name) "MenuItem[id]"
+            "Dialogue ID" (then a period) "." (then) "Question id"
           -->
-          <Sequence probability="100" if="Suspect.Ped.IsMale == true" show="DialogueID.tailgate">
+          <Sequence probability="100" if="Suspect.Ped.IsMale == true" show="DialogueID.QuestionID">
             <Subtitle time="4000">I noticed that this dude was tailgating me before he rear-ended me.</Subtitle>
           </Sequence>
           <!-- More Statements to the question ID of "how" -->

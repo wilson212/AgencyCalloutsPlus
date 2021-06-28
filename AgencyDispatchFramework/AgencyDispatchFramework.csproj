@@ -95,6 +95,7 @@
     <Compile Include="Dispatching\Assignments\BusinessCheck.cs" />
     <Compile Include="Dispatching\Assignments\FelonyTrafficStop.cs" />
     <Compile Include="Dispatching\Assignments\PrisonerTransport.cs" />
+    <Compile Include="Dispatching\Assignments\PropertyCheck.cs" />
     <Compile Include="Dispatching\Assignments\TrafficEnforcement.cs" />
     <Compile Include="Dispatching\Delegates\BeforeRadioPlayedHandler.cs" />
     <Compile Include="Dispatching\Delegates\CallEndedHandler.cs" />
@@ -134,6 +135,7 @@
     <Compile Include="Events\Ambient\PeopleFightingEvent.cs" />
     <Compile Include="Events\Ambient\RecklessDriverEvent.cs" />
     <Compile Include="Events\Ambient\SuspiciousVehicleEvent.cs" />
+    <Compile Include="Game\AnimationMeta.cs" />
     <Compile Include="Game\AnimationSequence.cs" />
     <Compile Include="Game\AnimationData.cs" />
     <Compile Include="Linq\ExpressionResult.cs" />
@@ -143,7 +145,6 @@
     <Compile Include="Extensions\IEnumerableExtensions.cs" />
     <Compile Include="Extensions\ListExtensions.cs" />
     <Compile Include="Extensions\StringBuilderExtensions.cs" />
-    <Compile Include="Game\CommonAnimations.cs" />
     <Compile Include="Game\ContrabandItem.cs" />
     <Compile Include="Game\Delegates\TimePeriodChangedEventHandler.cs" />
     <Compile Include="Game\Delegates\WeatherChangedEventHandler.cs" />

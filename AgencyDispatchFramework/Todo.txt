@@ -16,6 +16,7 @@ General Information:
 			- CalloutInteractionMenu (1): Used to handle menu processing for a RageNativeUI used by a Callout
 			- Scanner (variable): Used to handle scanner audio messages from dispatch
 			- SubTitleQueue (variable): Used to properly display multiple simultaneous subtitles without overlap or interuption
+			- AnimationSequence (variable): Used to play a sequence of animations, one right after another
 
 
  Location types:

@@ -154,10 +154,10 @@
         <Response to="how" returnMenu="main">
           <!-- Honest 1 -->
           <Sequence probability="100000000"> <!-- testing -->
-            <Subtitle time="3000">
+            <Subtitle time="4000">
               <Text>Well officer, Ill be honest... I was was in a hurry...</Text>
               <AnimationSequence repeat="false" terminate="true">
-                <Animation dictionary="friends@frj@ig_1">wave_c</Animation>
+                <Animation dictionary="missexile2">franklinwavetohelicopter</Animation>
                 <Animation dictionary="oddjobs@towingangryidle_a">idle_a</Animation>
               </AnimationSequence>
             </Subtitle>

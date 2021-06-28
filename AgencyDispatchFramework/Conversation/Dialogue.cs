@@ -166,6 +166,16 @@ namespace AgencyDispatchFramework.Conversation
         }
 
         /// <summary>
+        /// Returns the <see cref="UIMenu"/> with the provided key
+        /// </summary>
+        /// <param name="menuId"></param>
+        /// <returns></returns>
+        public UIMenu GetMenyById(string menuId)
+        {
+            return MenusById[menuId];
+        }
+
+        /// <summary>
         /// Sets a variable to be parsed on each conversation line
         /// </summary>
         /// <param name="name"></param>
