@@ -180,7 +180,7 @@ namespace AgencyDispatchFramework.NativeUI
             headerLoc = SafeSize.AddPoints(new Point(col2p, headerY));
             valueLoc = SafeSize.AddPoints(new Point(col2p, valueY));
             ResText.Draw("~y~Primary Officer", headerLoc, HeaderTextWeight, Color.FromArgb(alpha, Color.White), Common.EFont.ChaletComprimeCologne, a, true, true, new Size(250, 0));
-            ResText.Draw($"~w~{Call.PrimaryOfficer?.CallSign ?? "None"}", valueLoc, ValueTextWeight, Color.FromArgb(alpha, Color.White), Common.EFont.ChaletComprimeCologne, false);
+            ResText.Draw($"~w~{Call.PrimaryOfficer?.CallSign.Value ?? "None"}", valueLoc, ValueTextWeight, Color.FromArgb(alpha, Color.White), Common.EFont.ChaletComprimeCologne, false);
 
             // add Agency
             var agency = Call.PrimaryOfficer != null ? Call.PrimaryOfficer.Agency.ScriptName : Call.Location.Zone.PoliceAgencies[0].ScriptName;

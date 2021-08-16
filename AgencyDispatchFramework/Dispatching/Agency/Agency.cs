@@ -51,6 +51,12 @@ namespace AgencyDispatchFramework.Dispatching
         public AgencyType AgencyType { get; private set; }
 
         /// <summary>
+        /// Gets the <see cref="Dispatching.CallSignStyle"/> this department uses when assigning 
+        /// <see cref="CallSign/>s to <see cref="OfficerUnit"/>s
+        /// </summary>
+        public CallSignStyle CallSignStyle { get; protected set; }
+
+        /// <summary>
         /// Gets the funding level of this department. This will be used to determine
         /// how frequent callouts will be handled by the other AI officers.
         /// </summary>
@@ -171,18 +177,18 @@ namespace AgencyDispatchFramework.Dispatching
         /// <param name="name"></param>
         /// <param name="staffing"></param>
         /// <returns></returns>
-        internal static Agency CreateAgency(AgencyType type, string sname, string name, StaffLevel staffing)
+        internal static Agency CreateAgency(AgencyType type, string sname, string name, StaffLevel staffing, CallSignStyle signStyle)
         {
             switch (type)
             {
                 case AgencyType.CityPolice:
-                    return new CityPoliceAgency(sname, name, staffing);
+                    return new CityPoliceAgency(sname, name, staffing, signStyle);
                 case AgencyType.CountySheriff:
                 case AgencyType.StateParks:
-                    return new SheriffAgency(sname, name, staffing);
+                    return new SheriffAgency(sname, name, staffing, signStyle);
                 case AgencyType.StatePolice:
                 case AgencyType.HighwayPatrol:
-                    return new HighwayPatrolAgency(sname, name, staffing);
+                    return new HighwayPatrolAgency(sname, name, staffing, signStyle);
                 default:
                     throw new NotImplementedException($"The AgencyType '{type}' is yet supported");
             }
@@ -249,11 +255,12 @@ namespace AgencyDispatchFramework.Dispatching
         /// <param name="scriptName"></param>
         /// <param name="friendlyName"></param>
         /// <param name="staffLevel"></param>
-        internal Agency(string scriptName, string friendlyName, StaffLevel staffLevel)
+        internal Agency(string scriptName, string friendlyName, StaffLevel staffLevel, CallSignStyle signStyle)
         {
             ScriptName = scriptName ?? throw new ArgumentNullException(nameof(scriptName));
             FullName = friendlyName ?? throw new ArgumentNullException(nameof(friendlyName));
             StaffLevel = staffLevel;
+            CallSignStyle = signStyle;
 
             // Initiate vars
             Units = new Dictionary<UnitType, SpecializedUnit>();
@@ -281,7 +288,7 @@ namespace AgencyDispatchFramework.Dispatching
             if (IsActive) return;
 
             // Get our zones of jurisdiction, and ensure each zone has the primary agency set
-            Zones = GetZoneNamesByAgencyName(ScriptName).Select(x => WorldZone.GetZoneByName(x)).ToArray();
+            Zones = WorldZone.GetZonesByName(ZoneNames, out int loaded);
 
             // Load officers
             OfficersByShift = new Dictionary<TimePeriod, List<OfficerUnit>>();
@@ -318,12 +325,74 @@ namespace AgencyDispatchFramework.Dispatching
         }
 
         /// <summary>
+        /// Creates a new <see cref="AIOfficerUnit"/> and adds them to the roster
+        /// </summary>
+        /// <param name="supervisor"></param>
+        protected virtual AIOfficerUnit CreateOfficerUnit(bool supervisor, UnitType primaryType, TimePeriod shiftStart)
+        {
+            // Ensure unit type is supported
+            if (!Units.ContainsKey(primaryType))
+            {
+                return null;
+            }
+
+            // Grab specialized unit
+            var unit = Units[primaryType];
+            var generator = (supervisor) ? unit.SupervisorSets : unit.OfficerSets;
+
+            // Grab vehicle set
+            if (!generator.TrySpawn(out VehicleSet vehicleSet))
+            {
+                return null;
+            }
+
+            // Come up with a unique callsign for this unit
+            try
+            {
+                var callSign = GetNextCallSign(supervisor, primaryType);
+                var officer = new AIOfficerUnit(vehicleSet, this, callSign);
+
+                // Return the officer unit
+                return officer;
+            }
+            catch (Exception e)
+            {
+                Log.Exception(e);
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// @todo Creates the player <see cref="OfficerUnit"/> and adds them to this <see cref="Agency"/> roster.
+        /// </summary>
+        /// <returns></returns>
+        internal OfficerUnit AddPlayerUnit()
+        {
+            // @toto
+            CallSign.TryParse("1L-18", out CallSign callSign);
+            var playerUnit = new PlayerOfficerUnit(Rage.Game.LocalPlayer, this, callSign);
+
+            return playerUnit;
+        }
+
+        /// <summary>
+        /// Gets the next unique <see cref="CallSign"/> for this department
+        /// </summary>
+        /// <param name="unitType"></param>
+        /// <returns></returns>
+        protected CallSign GetNextCallSign(bool supervisor, UnitType unitType)
+        {
+            // @todo
+            return null;
+        }
+
+        /// <summary>
         /// Disposes and clears all AI units
         /// </summary>
         private void DisposeAIUnits()
         {
             // Clear old police units
-            if (OnDutyOfficers != null)
+            if (OfficersByShift != null)
             {
                 foreach (var officerUnits in OfficersByShift.Values)
                 foreach (var officer in officerUnits)
@@ -393,60 +462,6 @@ namespace AgencyDispatchFramework.Dispatching
             locs.Shuffle();
 
             return locs.Take(desiredCount).ToArray();
-        }
-
-        /// <summary>
-        /// Spawns a random police vehicle for this agency at the specified location. The vehicle
-        /// will not contain a police ped inside.
-        /// </summary>
-        /// <param name="type"></param>
-        /// <param name="spawnPoint"></param>
-        /// <returns></returns>
-        public Vehicle GetRandomPoliceVehicle(PatrolVehicleType type, SpawnPoint spawnPoint)
-        {
-            // Does this agency contain a patrol car of this type?
-            if (!Vehicles.ContainsKey(type))
-            {
-                return null;
-            }
-
-            // Try and spawn a police vehicle
-            if (!Vehicles[type].TrySpawn(out PoliceVehicleInfo info))
-            {
-                Log.Warning($"Agency.GetRandomPoliceVehicle(): unable to find vehicle for class {type}");
-                return null;
-            }
-
-            // Spawn vehicle
-            var vehicle = new Vehicle(info.ModelName, spawnPoint.Position, spawnPoint.Heading);
-
-            // Add any extras
-            if (info.Extras != null && info.Extras.Count > 0)
-            {
-                foreach (var extra in info.Extras)
-                {
-                    // Ensure this vehicle has this livery index
-                    if (!vehicle.DoesExtraExist(extra.Key))
-                        continue;
-
-                    // Enable
-                    vehicle.SetExtraEnabled(extra.Key, extra.Value);
-                }
-            }
-
-            // IS a spawn Color set?
-            if (info.SpawnColor != default(Color))
-            {
-                vehicle.PrimaryColor = info.SpawnColor;
-            }
-
-            // Livery?
-            if (info.Livery > 0)
-            {
-                vehicle.SetLivery(info.Livery);
-            }
-
-            return vehicle;
         }
 
         public override string ToString()

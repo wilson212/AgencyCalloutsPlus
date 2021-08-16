@@ -275,13 +275,13 @@ namespace AgencyDispatchFramework.NativeUI
 
             // Setup Patrol Menu
             SetRoleMenuButton = new UIMenuListItem("Primary Role", "Sets your role in the department. This will determine that types of calls you will recieve. Click to set.");
-            foreach (var role in Enum.GetValues(typeof(AgencyUnits)))
+            foreach (var role in Enum.GetValues(typeof(UnitType)))
             {
                 SetRoleMenuButton.Collection.Add(role, role.ToString());
             }
 
             DivisionMenuButton = new UIMenuListItem("Division", "Sets your division number. Click to set.");
-            DivisionMenuButton.Activated += (s, e) => Dispatch.SetPlayerDivisionId((int)DivisionMenuButton.SelectedValue);
+            //DivisionMenuButton.Activated += (s, e) => Dispatch.SetPlayerDivisionId((int)DivisionMenuButton.SelectedValue);
             for (int i = 1; i < 11; i++)
             {
                 string value = i.ToString();
@@ -296,7 +296,7 @@ namespace AgencyDispatchFramework.NativeUI
             }
 
             BeatMenuButton = new UIMenuListItem("Beat", "Sets your Beat number. Click to set.");
-            BeatMenuButton.Activated += (s, e) => Dispatch.SetPlayerBeat((int)BeatMenuButton.SelectedValue);
+            //BeatMenuButton.Activated += (s, e) => Dispatch.SetPlayerCallSign((int)BeatMenuButton.SelectedValue);
             for (int i = 1; i < 25; i++)
             {
                 string value = i.ToString();
@@ -311,7 +311,7 @@ namespace AgencyDispatchFramework.NativeUI
             }
 
             UnitTypeMenuButton = new UIMenuListItem("Unit Type", "Sets your unit type. Click to set.");
-            UnitTypeMenuButton.Activated += (s, e) => Dispatch.SetPlayerUnitType(UnitTypeMenuButton.Index + 1);
+            //UnitTypeMenuButton.Activated += (s, e) => Dispatch.SetPlayerUnitType(UnitTypeMenuButton.Index + 1);
             foreach (string value in Dispatch.LAPDphonetic)
             {
                 UnitTypeMenuButton.Collection.Add(value, value);

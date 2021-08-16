@@ -15,6 +15,11 @@ namespace AgencyDispatchFramework.Dispatching
         internal string RadioCallSign { get; set; } = String.Empty;
 
         /// <summary>
+        /// Defines the <see cref="CallSignStyle"/>
+        /// </summary>
+        public override CallSignStyle Style => CallSignStyle.Numeric;
+
+        /// <summary>
         /// 
         /// </summary>
         /// <param name="number"></param>

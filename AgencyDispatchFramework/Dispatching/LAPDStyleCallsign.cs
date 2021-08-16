@@ -20,6 +20,11 @@ namespace AgencyDispatchFramework.Dispatching
         public int Beat { get; internal set; }
 
         /// <summary>
+        /// Defines the <see cref="CallSignStyle"/>
+        /// </summary>
+        public override CallSignStyle Style => CallSignStyle.LAPD;
+
+        /// <summary>
         /// 
         /// </summary>
         /// <param name="division"></param>

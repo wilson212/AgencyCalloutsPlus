@@ -6,6 +6,11 @@ namespace AgencyDispatchFramework.Dispatching
     public abstract class CallSign
     {
         /// <summary>
+        /// Gets the <see cref="CallSignStyle"/>
+        /// </summary>
+        public abstract CallSignStyle Style { get; }
+
+        /// <summary>
         /// Gets the formatted Division-UnitType-Beat for this unit to be used in strings
         /// </summary>
         public string Value { get; internal set; }

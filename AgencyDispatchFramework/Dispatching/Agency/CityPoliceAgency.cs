@@ -9,8 +9,8 @@ namespace AgencyDispatchFramework.Dispatching
 {
     public class CityPoliceAgency : Agency
     {
-        internal CityPoliceAgency(string scriptName, string friendlyName, StaffLevel staffLevel) 
-            : base(scriptName, friendlyName, staffLevel)
+        internal CityPoliceAgency(string scriptName, string friendlyName, StaffLevel staffLevel, CallSignStyle signStyle) 
+            : base(scriptName, friendlyName, staffLevel, signStyle)
         {
             
         }
@@ -67,8 +67,10 @@ namespace AgencyDispatchFramework.Dispatching
                 for (int i = 0; i < aiPatrolCount; i++)
                 {
                     // Create instance
-                    var num = i + 10;
-                    var unit = new AIOfficerUnit(this, 1, 'A', num);
+                    var unit = CreateOfficerUnit(false, UnitType.Patrol, period);
+                    if (unit == null) break;
+
+                    // Add officer by shift
                     OfficersByShift[period].Add(unit);
 
                     // Start Duty

@@ -144,6 +144,7 @@ namespace AgencyDispatchFramework.Xml
                 string sname = agencyNode.SelectSingleNode("ScriptName")?.InnerText;
                 string atype = agencyNode.SelectSingleNode("AgencyType")?.InnerText;
                 string sLevel = agencyNode.SelectSingleNode("StaffLevel")?.InnerText;
+                string csStyle = agencyNode.SelectSingleNode("CallSignStyle")?.InnerText;
                 string county = agencyNode.SelectSingleNode("County")?.InnerText;
                 string customBackAgency = agencyNode.SelectSingleNode("CustomBackingAgency")?.InnerText;
                 XmlNode unitsNode = agencyNode.SelectSingleNode("Units");
@@ -172,9 +173,17 @@ namespace AgencyDispatchFramework.Xml
                     continue;
                 }
 
+                // Try and parse call sign style
+                if (String.IsNullOrWhiteSpace(csStyle) || !Enum.TryParse(csStyle, out CallSignStyle style))
+                {
+                    Log.Warning($"Agency.Initialize(): Unable to extract CallSignStyle value for '{sname}' in Agencies.xml");
+                    style = CallSignStyle.LAPD;
+                }
+
                 // Load vehicle sets
+                string[] catagories = { "Officer", "Supervisor" };
                 var unitMapping = new Dictionary<UnitType, SpecializedUnit>();
-                Agency agency = Agency.CreateAgency(type, sname, name, staffing);
+                Agency agency = Agency.CreateAgency(type, sname, name, staffing, style);
                 foreach (XmlNode unitNode in unitsNode.SelectNodes("Unit"))
                 {
                     // Get type attribute
@@ -184,68 +193,29 @@ namespace AgencyDispatchFramework.Xml
                         continue;
                     }
 
+                    // Create unit
+                    var unit = new SpecializedUnit(unitType);
+
                     // Get derives attribute
                     if (Enum.TryParse(unitNode.GetAttribute("derives"), out UnitType unitDerives))
                     {
                         // @todo
                     }
 
-                    // Create unit
-                    var unit = new SpecializedUnit(unitType);
-
                     // Load each catagory of vehicle sets
-                    string[] catagories = { "Officer", "Supervisor" };
-                    foreach (string catagory in catagories)
+                    for (int i = 0; i < catagories.Length; i++)
                     {
-                        var n = unitNode.SelectSingleNode(catagory);
-                        ParseVehicleSets(n, unit);
-                    }
+                        var n = unitNode.SelectSingleNode(catagories[i]);
+                        var sets = ParseVehicleSets(n, unit, agency);
 
-                    // Load each vehicle
-                    foreach (XmlNode vn in cn.ChildNodes)
-                    {
-                        // Ensure we have attributes
-                        if (vn.Attributes == null)
+                        if (i == 0)
                         {
-                            Log.Warning($"Agency.Initialize(): Vehicle item for '{sname}' has no attributes in Agencies.xml");
-                            continue;
+                            unit.OfficerSets.AddRange(sets);
                         }
-
-                        // Try and extract probability value
-                        if (vn.Attributes["probability"]?.Value == null || !int.TryParse(vn.Attributes["probability"].Value, out int probability))
+                        else
                         {
-                            Log.Warning($"Agency.Initialize(): Unable to extract vehicle probability value for '{sname}' in Agencies.xml");
-                            continue;
+                            unit.SupervisorSets.AddRange(sets);
                         }
-
-                        // Create vehicle info
-                        var info = new PoliceVehicleInfo()
-                        {
-                            ModelName = vn.InnerText,
-                            Probability = probability
-                        };
-
-                        // Try and extract livery value
-                        if (vn.Attributes["livery"]?.Value != null && int.TryParse(vn.Attributes["livery"].Value, out int livery))
-                        {
-                            info.Livery = livery;
-                        }
-
-                        // Extract extras
-                        if (!String.IsNullOrWhiteSpace(vn.Attributes["extras"]?.Value))
-                        {
-                            string extras = vn.Attributes["extras"].Value;
-                            info.Extras = ParseExtras(extras);
-                        }
-
-                        // Extract spawn color
-                        if (!String.IsNullOrWhiteSpace(vn.Attributes["color"]?.Value))
-                        {
-                            string color = vn.Attributes["color"].Value;
-                            info.SpawnColor = (Color)Enum.Parse(typeof(Color), color);
-                        }
-
-                        
                     }
                 }
 
@@ -270,13 +240,135 @@ namespace AgencyDispatchFramework.Xml
         /// </summary>
         /// <param name="n"></param>
         /// <param name="unit"></param>
-        private void ParseVehicleSets(XmlNode n, SpecializedUnit unit)
+        private List<VehicleSet> ParseVehicleSets(XmlNode n, SpecializedUnit unit, Agency agency)
         {
+            var sets = new List<VehicleSet>();
             var nodes = n.SelectNodes("VehicleSet");
-            foreach (XmlNode node in nodes)
+            foreach (XmlNode vn in nodes)
             {
+                // Ensure we have attributes
+                if (vn.Attributes == null)
+                {
+                    Log.Warning($"Agency.ParseVehicleSets(): Vehicle item for '{agency.ScriptName}' has no attributes in Agencies.xml");
+                    continue;
+                }
+
                 // Check for a chance attribute
+                if (vn.Attributes["chance"]?.Value == null || !int.TryParse(vn.Attributes["chance"].Value, out int probability))
+                {
+                    probability = 10;
+                }
+
+                // Create vehicle info
+                var set = new VehicleSet();
+
+                // Try and extract vehicles
+                if (!TryExtractVehicles(vn, set, agency))
+                {
+                    // Logging happens within the method
+                    continue;
+                }
+
+                // Try and extract Peds
+                if (!TryExtractPeds(vn, set, agency))
+                {
+                    // Logging happens within the method
+                    continue;
+                }
+
+                // Try and extract NonLethals
+                if (!TryExtractNonLethals(vn, set, agency))
+                {
+                    // Logging happens within the method
+                    continue;
+                }
+
+                // Try and extract Weapons
+                if (!TryExtractWeapons(vn, set, agency))
+                {
+                    // Logging happens within the method
+                    continue;
+                }
+
+                // Add vehicle set
+                sets.Add(set);
             }
+
+            return sets;
+        }
+
+        /// <summary>
+        /// Extracts the HandGuns and LongGuns data from a VehicleSet XML node
+        /// </summary>
+        /// <param name="vn">The VehicleSet xml node</param>
+        /// <param name="set">The <see cref="VehicleSet"/> to append the data to</param>
+        /// <param name="agency">The <see cref="Agency"/> we are currently extracting for</param>
+        /// <returns>true on success, false if the sub XML nodes doesnt exist</returns>
+        private bool TryExtractWeapons(XmlNode vn, VehicleSet set, Agency agency)
+        {
+            // Report success
+            return true;
+        }
+
+        /// <summary>
+        /// Extracts the Vehicles data from a VehicleSet XML node
+        /// </summary>
+        /// <param name="vn">The VehicleSet xml node</param>
+        /// <param name="set">The <see cref="VehicleSet"/> to append the data to</param>
+        /// <param name="agency">The <see cref="Agency"/> we are currently extracting for</param>
+        /// <returns>true on success, false if the sub XML nodes doesnt exist</returns>
+        private bool TryExtractVehicles(XmlNode vn, VehicleSet set, Agency agency)
+        {
+            /*
+            // Try and extract livery value
+            if (vn.Attributes["livery"]?.Value != null && int.TryParse(vn.Attributes["livery"].Value, out int livery))
+            {
+                set.Livery = livery;
+            }
+
+            // Extract extras
+            if (!String.IsNullOrWhiteSpace(vn.Attributes["extras"]?.Value))
+            {
+                string extras = vn.Attributes["extras"].Value;
+                set.Extras = ParseExtras(extras);
+            }
+
+            // Extract spawn color
+            if (!String.IsNullOrWhiteSpace(vn.Attributes["color"]?.Value))
+            {
+                string color = vn.Attributes["color"].Value;
+                set.SpawnColor = (Color)Enum.Parse(typeof(Color), color);
+            }
+            */
+
+            // Report success
+            return true;
+        }
+
+        /// <summary>
+        /// Extracts the Ped data from a VehicleSet XML node
+        /// </summary>
+        /// <param name="vn">The VehicleSet xml node</param>
+        /// <param name="set">The <see cref="VehicleSet"/> to append the data to</param>
+        /// <param name="agency">The <see cref="Agency"/> we are currently extracting for</param>
+        /// <returns>true on success, false if the sub XML nodes doesnt exist</returns>
+        private bool TryExtractPeds(XmlNode vn, VehicleSet set, Agency agency)
+        {
+            // Report success
+            return true;
+        }
+
+        /// <summary>
+        /// Extracts the NonLethals data from a VehicleSet XML node
+        /// </summary>
+        /// <param name="vn">The VehicleSet xml node</param>
+        /// <param name="set">The <see cref="VehicleSet"/> to append the data to</param>
+        /// <param name="agency">The <see cref="Agency"/> we are currently extracting for</param>
+        /// <returns>true on success, false if the sub XML nodes doesnt exist</returns>
+        private bool TryExtractNonLethals(XmlNode vn, VehicleSet set, Agency agency)
+        {
+            // Report success
+            return true;
         }
 
         /// <summary>

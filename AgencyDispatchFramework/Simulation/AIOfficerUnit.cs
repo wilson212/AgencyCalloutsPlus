@@ -3,6 +3,7 @@ using LSPD_First_Response;
 using LSPD_First_Response.Engine.Scripting.Entities;
 using Rage;
 using System;
+using System.Linq;
 
 namespace AgencyDispatchFramework.Simulation
 {
@@ -47,8 +48,26 @@ namespace AgencyDispatchFramework.Simulation
         /// </summary>
         /// <param name="startPosition"></param>
         /// <param name="unitString"></param>
-        internal AIOfficerUnit(OfficerModelMeta meta, Agency agency, CallSign callSign) : base(agency, callSign)
+        internal AIOfficerUnit(VehicleSet vehicleSet, Agency agency, CallSign callSign) : base(agency, callSign)
         {
+            // Grab officer Meta
+            if (!vehicleSet.OfficerMetas.TrySpawn(out OfficerModelMeta meta))
+            {
+                throw new Exception($"Unable to spawn an OfficerModelMeta for this AIOfficerUnit instance from agency {agency.ScriptName}");
+            }
+
+            // Grab vehicle Meta
+            if (!vehicleSet.VehicleMetas.TrySpawn(out VehicleModelMeta vehicle))
+            {
+                throw new Exception($"Unable to spawn an VehicleModelMeta for this AIOfficerUnit instance from agency {agency.ScriptName}");
+            }
+
+            // Grab HandGun Meta
+            if (!vehicleSet.HandGunMetas.TrySpawn(out WeaponMeta handGunMeta) || !vehicleSet.LongGunMetas.TrySpawn(out WeaponMeta longGunMeta))
+            {
+                throw new Exception($"Unable to spawn an WeaponMeta for this AIOfficerUnit instance from agency {agency.ScriptName}");
+            }
+
             // Create a randon
             var rnd = new CryptoRandom();
             var now = World.DateTime;
@@ -59,8 +78,14 @@ namespace AgencyDispatchFramework.Simulation
             var birthday = rnd.NextDateTime(now.AddYears(-50), now.AddYears(-22));
             var name = RandomNameGenerator.Generate(gender);
 
-            // Set properties
+            // Set meta properties
             PedMeta = meta;
+            VehicleMeta = vehicle;
+            HandGun = handGunMeta;
+            LongGun = longGunMeta;
+            NonLethalWeapons = vehicleSet.NonLethalWeapons.ToArray();
+
+            // Create persona and set callsign
             Persona = new Persona(name.Forename, name.Surname, gender, birthday, model)
             {
                 Wanted = false // Ensure this is always false

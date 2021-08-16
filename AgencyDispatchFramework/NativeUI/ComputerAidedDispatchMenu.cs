@@ -248,7 +248,7 @@ namespace AgencyDispatchFramework.NativeUI
                         // Add each unit
                         foreach (var unit in agency.OfficersByShift[period])
                         {
-                            items.Add(new UIMenuListScrollerItem<string>(unit.CallSign, "", new[] { unit.Status.ToString() }) { ScrollingEnabled = false });
+                            items.Add(new UIMenuListScrollerItem<string>(unit.CallSign.Value, "", new[] { unit.Status.ToString() }) { ScrollingEnabled = false });
                         }
 
                         DepartmentListTab.Items.Add(new TabInteractiveListItem(agency.FullName, items));

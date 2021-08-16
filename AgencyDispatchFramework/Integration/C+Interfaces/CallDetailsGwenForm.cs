@@ -85,7 +85,7 @@ namespace AgencyDispatchFramework.Integration
 
             // Only if the call is assigned
             if (Call.PrimaryOfficer != null)
-                text_unit.Text = Call.PrimaryOfficer.CallSign;
+                text_unit.Text = Call.PrimaryOfficer.CallSign.Value;
 
             // Register for events
             if (!Dispatch.CanInvokeAnyCalloutForPlayer())

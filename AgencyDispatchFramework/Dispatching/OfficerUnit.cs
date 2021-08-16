@@ -203,5 +203,10 @@ namespace AgencyDispatchFramework.Dispatching
         }
 
         internal abstract void AssignToCallWithRandomCompletion(PriorityCall call);
+
+        internal void SetCallSign(CallSign callSign)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

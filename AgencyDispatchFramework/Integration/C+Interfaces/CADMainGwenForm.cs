@@ -316,7 +316,7 @@ namespace AgencyDispatchFramework.Integration
                             timeSpan.ToString().PadRight(20),
                             call.OriginalPriority.ToString().PadRight(16),
                             call.CallStatus.ToString().PadRight(20),
-                            call.PrimaryOfficer?.CallSign.PadRight(20) ?? " ".PadRight(25),
+                            call.PrimaryOfficer?.CallSign.Value.PadRight(20) ?? " ".PadRight(25),
                             call.Location.Zone.ScriptName
                         )
                     );

@@ -240,6 +240,7 @@ namespace AgencyDispatchFramework
         /// <param name="status"></param>
         public static void SetPlayerStatus(OfficerStatus status)
         {
+            // Ensure we are on duty before we do anything
             if (!Main.OnDuty) return;
 
             // Update player status
@@ -260,46 +261,20 @@ namespace AgencyDispatchFramework
         }
 
         /// <summary>
-        /// Sets the division ID in the player's call sign. This number must be between 1 and 10.
+        /// Sets player's call sign.
         /// </summary>
-        /// <param name="division"></param>
-        public static void SetPlayerDivisionId(int division)
+        public static bool SetPlayerCallSign(CallSign callSign)
         {
-            // Ensure division ID is in range
-            if (!division.InRange(1, 10))
-                return;
+            // Ensure we are on duty before we do anything
+            if (!Main.OnDuty) return false;
+
+            // Get player Agency, and ensure call sign type matches
+            if (PlayerAgency.CallSignStyle != callSign.Style)
+                return false;
 
             // Set new callsign
-            PlayerUnit.SetCallSign(division, PlayerUnit.Unit[0], PlayerUnit.Beat);
-        }
-
-        /// <summary>
-        /// Sets the phonetic unit type in the player's call sign. This number must be between 1 and 26,
-        /// and is essentially the numberic ID of the alphabet (a = 1, b = 2, c = 3 etc etc).
-        /// </summary>
-        /// <param name="phoneticId"></param>
-        public static void SetPlayerUnitType(int phoneticId)
-        {
-            // Ensure division ID is in range
-            if (!phoneticId.InRange(1, 26))
-                return;
-
-            // Set new callsign
-            PlayerUnit.SetCallSign(PlayerUnit.Division, LAPDphonetic[phoneticId - 1][0], PlayerUnit.Beat);
-        }
-
-        /// <summary>
-        /// Sets the beat ID in the player's call sign. This number must be between 1 and 24.
-        /// </summary>
-        /// <param name="division"></param>
-        public static void SetPlayerBeat(int beat)
-        {
-            // Ensure division ID is in range
-            if (!beat.InRange(1, 24))
-                return;
-
-            // Set new callsign
-            PlayerUnit.SetCallSign(PlayerUnit.Division, PlayerUnit.Unit[0], beat);
+            PlayerUnit.SetCallSign(callSign);
+            return true;
         }
 
         /// <summary>
@@ -1170,7 +1145,7 @@ namespace AgencyDispatchFramework
                 GameFiber.Yield();
 
                 // Create player, and initialize all agencies
-                PlayerUnit = new PlayerOfficerUnit(Rage.Game.LocalPlayer, PlayerAgency);
+                PlayerUnit = PlayerAgency.AddPlayerUnit();
                 foreach (var a in AgenciesByName.Values)
                 {
                     a.Enable();
@@ -1195,9 +1170,6 @@ namespace AgencyDispatchFramework
                 // Loop through each time period and cache crime numbers
                 foreach (TimePeriod period in Enum.GetValues(typeof(TimePeriod)))
                 {
-                    // Add player before logging
-                    PlayerAgency.OfficersByShift[period].Add(PlayerUnit);
-
                     // Log crime logic
                     var crimeInfo = CrimeGenerator.RegionCrimeInfoByTimePeriod[period];
                     string name = Enum.GetName(typeof(TimePeriod), period);

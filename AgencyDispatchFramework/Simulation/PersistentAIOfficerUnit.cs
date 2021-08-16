@@ -54,23 +54,10 @@ namespace AgencyDispatchFramework.Simulation
         private TaskSignal NextTask { get; set; }
 
         /// <summary>
-        /// Creates a new instance of <see cref="OfficerUnit"/> for an AI unit
-        /// </summary>
-        /// <param name="isAiUnit"></param>
-        /// <param name="unitString"></param>
-        /// <param name="vehicle"></param>
-        internal PersistentAIOfficerUnit(Agency agency, Ped officer, Vehicle vehicle, int division, char unit, int beat) : base(agency, division, unit, beat)
-        {
-            PoliceCar = vehicle;
-            Officer = officer ?? throw new ArgumentNullException("officer");
-            NextTask = TaskSignal.Cruise;
-        }
-
-        /// <summary>
         /// Creates a new instance of <see cref="PersistentAIOfficerUnit"/> from a <see cref="AIOfficerUnit"/>
         /// </summary>
         /// <param name="virtualAI"></param>
-        internal PersistentAIOfficerUnit(AIOfficerUnit virtualAI) : base(virtualAI.Agency, virtualAI.Division, virtualAI.Unit[0], virtualAI.Beat)
+        internal PersistentAIOfficerUnit(AIOfficerUnit virtualAI) : base(virtualAI.Agency, virtualAI.CallSign)
         {
             // @todo
         }
@@ -278,7 +265,7 @@ namespace AgencyDispatchFramework.Simulation
                     var sp = new SpawnPoint(location);
 
                     // Create car
-                    PoliceCar = Dispatch.PlayerAgency.GetRandomPoliceVehicle(PatrolVehicleType.Marked, sp);
+                    PoliceCar = null; //Dispatch.PlayerAgency.GetRandomPoliceVehicle(PatrolVehicleType.Marked, sp);
                     PoliceCar.Model.LoadAndWait();
                     PoliceCar.MakePersistent();
 

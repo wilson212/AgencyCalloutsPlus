@@ -80,7 +80,7 @@ namespace AgencyDispatchFramework.Dispatching
         /// <param name="unit"></param>
         public void SetTarget(OfficerUnit unit)
         {
-            TargetCallsign = unit?.RadioCallSign ?? String.Empty;
+            TargetCallsign = unit?.CallSign.GetRadioString() ?? String.Empty;
         }
 
         /// <summary>
