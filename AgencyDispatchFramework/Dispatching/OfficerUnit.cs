@@ -1,5 +1,5 @@
 ﻿using AgencyDispatchFramework.Dispatching.Assignments;
-using AgencyDispatchFramework.Extensions;
+using LSPD_First_Response.Engine.Scripting.Entities;
 using Rage;
 using System;
 
@@ -22,34 +22,29 @@ namespace AgencyDispatchFramework.Dispatching
         public abstract bool IsAIUnit { get; }
 
         /// <summary>
-        /// Gets the <see cref="Agency"/> of this <see cref="OfficerUnit"/>
+        /// Gets the first name of this <see cref="OfficerUnit"/>
         /// </summary>
-        internal Agency Agency { get; set; }
+        public Persona Persona { get; internal set; }
 
         /// <summary>
-        /// Gets the Division-UnitType-Beat for this unit to be played over the radio
+        /// Gets the <see cref="Agency"/> of this <see cref="OfficerUnit"/>
         /// </summary>
-        public string RadioCallSign { get; internal set; }
+        public Agency Agency { get; internal set; }
 
         /// <summary>
         /// Gets the formatted Division-UnitType-Beat for this unit to be used in strings
         /// </summary>
-        public string CallSign { get; internal set; }
+        public CallSign CallSign { get; internal set; }
 
         /// <summary>
-        /// Gets the division this <see cref="OfficerUnit"/> is assigned to
+        /// 
         /// </summary>
-        public int Division { get; internal set; }
+        public UnitType PrimaryRole { get; internal set; }
 
         /// <summary>
-        /// Gets the unit this <see cref="OfficerUnit"/> is assigned to
+        /// 
         /// </summary>
-        public string Unit { get; internal set; }
-
-        /// <summary>
-        /// Gets the beat this <see cref="OfficerUnit"/> is assigned to
-        /// </summary>
-        public int Beat { get; internal set; }
+        public UnitType SecondaryRole { get; internal set; }
 
         /// <summary>
         /// Gets the officers current <see cref="OfficerStatus"/>
@@ -95,31 +90,10 @@ namespace AgencyDispatchFramework.Dispatching
         /// <summary>
         /// Creates a new instance of <see cref="OfficerUnit"/> for an AI unit
         /// </summary>
-        internal OfficerUnit(Agency agency, int division, char unit, int beat)
+        internal OfficerUnit(Agency agency, CallSign callSign)
         {
             Agency = agency;
-            SetCallSign(division, unit, beat);
-        }
-
-        /// <summary>
-        /// Modifies the call sign for this <see cref="OfficerUnit"/>
-        /// </summary>
-        /// <param name="division"></param>
-        /// <param name="unit"></param>
-        /// <param name="beat"></param>
-        internal void SetCallSign(int division, char unit, int beat)
-        {
-            Division = division;
-            Unit = unit.GetUnitStringFromChar();
-            Beat = beat;
-
-            unit = char.ToUpper(unit);
-            CallSign = $"{division}{unit}-{beat}";
-
-            // Pad zero
-            var divString = Division.ToString("D2");
-            var beatString = Beat.ToString("D2");
-            RadioCallSign = $"DIV_{divString} {Unit} BEAT_{beatString}";
+            CallSign = callSign;
         }
 
         /// <summary>

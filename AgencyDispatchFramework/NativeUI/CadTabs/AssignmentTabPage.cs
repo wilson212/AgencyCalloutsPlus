@@ -83,9 +83,9 @@ namespace AgencyDispatchFramework.NativeUI
                     Title = "Call Details"
                 }
 
-                // Add call updates
+                // Add call updates (Call Activity)
 
-                // Add attached units
+                // Add attached units (Attached Units)
             };
 
             // Set internal

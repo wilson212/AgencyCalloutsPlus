@@ -2,6 +2,7 @@
 using AgencyDispatchFramework.Game;
 using AgencyDispatchFramework.Game.Locations;
 using AgencyDispatchFramework.Simulation;
+using AgencyDispatchFramework.Xml;
 using LSPD_First_Response.Mod.API;
 using Rage;
 using System;
@@ -10,7 +11,6 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Xml;
 
 namespace AgencyDispatchFramework.Dispatching
 {
@@ -31,20 +31,6 @@ namespace AgencyDispatchFramework.Dispatching
         /// </summary>
         private static Dictionary<string, Agency> Agencies { get; set; }
 
-        /// <summary>
-        /// Containts a list of zones of jurisdiction by each agency
-        /// </summary>
-        /// <remarks>
-        /// [ AgencyScriptName => List of ZoneNames ]
-        /// </remarks>
-        private static Dictionary<string, HashSet<string>> AgencyZones { get; set; }
-
-        /// <summary>
-        /// A dictionary of agencies and thier <see cref="AgencyType"/>. This will be used
-        /// to determine which callouts are registered for the player in game
-        /// </summary>
-        private static Dictionary<string, AgencyType> AgencyTypes { get; set; }
-
         #endregion
 
         #region Instance Properties
@@ -52,7 +38,7 @@ namespace AgencyDispatchFramework.Dispatching
         /// <summary>
         /// Gets the full string name of this agency
         /// </summary>
-        public string FriendlyName { get; private set; }
+        public string FullName { get; private set; }
 
         /// <summary>
         /// Gets the full script name of this agency
@@ -62,7 +48,7 @@ namespace AgencyDispatchFramework.Dispatching
         /// <summary>
         /// Gets the <see cref="Dispatching.AgencyType"/> for this <see cref="Agency"/>
         /// </summary>
-        public AgencyType AgencyType => AgencyTypes[ScriptName];
+        public AgencyType AgencyType { get; private set; }
 
         /// <summary>
         /// Gets the funding level of this department. This will be used to determine
@@ -81,9 +67,14 @@ namespace AgencyDispatchFramework.Dispatching
         internal WorldZone[] Zones { get; set; }
 
         /// <summary>
-        /// Containts a <see cref="ProbabilityGenerator{T}"/> list of vehicles for this agency
+        /// Contains a list of zone names in this jurisdiction
         /// </summary>
-        private Dictionary<PatrolVehicleType, ProbabilityGenerator<PoliceVehicleInfo>> Vehicles { get; set; }
+        internal string[] ZoneNames { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private Dictionary<UnitType, SpecializedUnit> Units { get; set; }
 
         /// <summary>
         /// Contains a list of all active on duty officers
@@ -96,7 +87,7 @@ namespace AgencyDispatchFramework.Dispatching
         internal Dictionary<TimePeriod, List<OfficerUnit>> OfficersByShift { get; set; }
 
         /// <summary>
-        /// Gets or sets the <see cref="Dispatcher"/> for this <see cref="Agency"/>
+        /// Gets or sets the <see cref="Dispatching.Dispatcher"/> for this <see cref="Agency"/>
         /// </summary>
         internal Dispatcher Dispatcher { get; set; }
 
@@ -115,7 +106,7 @@ namespace AgencyDispatchFramework.Dispatching
         {
             get
             {
-                var type = AgencyTypes[ScriptName];
+                var type = AgencyType;
                 return (type == AgencyType.HighwayPatrol || type == AgencyType.StateParks || type == AgencyType.StatePolice);
             }
         }
@@ -130,7 +121,7 @@ namespace AgencyDispatchFramework.Dispatching
         {
             get
             {
-                var type = AgencyTypes[ScriptName];
+                var type = AgencyType;
                 return (
                     type == AgencyType.HighwayPatrol
                     || type == AgencyType.StateParks
@@ -160,223 +151,16 @@ namespace AgencyDispatchFramework.Dispatching
             // Set internal flag to initialize just once
             IsInitialized = true;
 
-            // Create collections
-            Agencies = new Dictionary<string, Agency>(5);
-            AgencyTypes = new Dictionary<string, AgencyType>(25);
-            AgencyZones = new Dictionary<string, HashSet<string>>();
-            var mapping = new Dictionary<string, string>();
-
-            // *******************************************
-            // Load backup.xml for agency backup mapping
-            // *******************************************
-            string rootPath = Path.Combine(Main.GTARootPath, "lspdfr", "data");
-            string path = Path.Combine(rootPath, "backup.xml");
-
-            // Load XML document
-            XmlDocument document = new XmlDocument();
-            using (var file = new FileStream(path, FileMode.Open))
+            // Load and parse the xml file
+            string path = Path.Combine(Main.FrameworkFolderPath, "Agencies.xml");
+            using (var file = new AgenciesFile(path))
             {
-                document.Load(file);
+                // Parse XML
+                file.Parse();
+
+                // Fetch data
+                Agencies = file.Agencies;
             }
-
-            // Allow other plugins time to do whatever
-            GameFiber.Yield();
-
-            // cycle through each child node 
-            foreach (XmlNode node in document.DocumentElement.SelectSingleNode("LocalPatrol").ChildNodes)
-            {
-                // Skip errors
-                if (!node.HasChildNodes) continue;
-
-                // extract needed data
-                string nodeName = node.LocalName;
-                string agency = node.FirstChild.InnerText.ToLowerInvariant();
-
-                // add
-                mapping.Add(nodeName, agency);
-            }
-
-            // *******************************************
-            // Load regions.xml for agency jurisdiction zones
-            // *******************************************
-            path = Path.Combine(rootPath, "regions.xml");
-            document = new XmlDocument();
-            using (var file = new FileStream(path, FileMode.Open))
-            {
-                document.Load(file);
-            }
-
-            // Allow other plugins time to do whatever
-            GameFiber.Yield();
-
-            // cycle though regions
-            foreach (XmlNode region in document.DocumentElement.ChildNodes)
-            {
-                string name = region.SelectSingleNode("Name").InnerText;
-                string agency = mapping[name];
-                var zones = new HashSet<string>();
-
-                // Make sure we have zones!
-                XmlNode node = region.SelectSingleNode("Zones");
-                if (!node.HasChildNodes)
-                {
-                    continue;
-                }
-
-                // Load all zones of jurisdiction
-                foreach (XmlNode zNode in node.ChildNodes)
-                {
-                    zones.Add(zNode.InnerText.ToUpperInvariant());
-                }
-
-                // Add or Update
-                if (AgencyZones.ContainsKey(agency))
-                {
-                    AgencyZones[agency].UnionWith(zones);
-                }
-                else
-                {
-                    AgencyZones.Add(agency, zones);
-                }
-                
-                WorldZone.AddRegion(name, zones.ToList());
-            }
-
-            // Add Highway to highway patrol
-            if (AgencyZones.ContainsKey("sahp"))
-            {
-                AgencyZones["sahp"].Add("HIGHWAY");
-            }
-            else
-            {
-                AgencyZones.Add("sahp", new HashSet<string>() { "HIGHWAY" });
-            }
-
-
-            // Load each custom agency XML to get police car names!
-            GameFiber.Yield();
-
-            // *******************************************
-            // Load Agencies.xml for agency types
-            // *******************************************
-            path = Path.Combine(Main.FrameworkFolderPath, "Agencies.xml");
-            document = new XmlDocument();
-            using (var file = new FileStream(path, FileMode.Open))
-            {
-                document.Load(file);
-            }
-
-            // Get names
-            string[] enumNames = Enum.GetNames(typeof(PatrolVehicleType));
-
-            // cycle though agencies
-            foreach (XmlNode n in document.DocumentElement.ChildNodes)
-            {
-                // Skip comments
-                if (n.NodeType == XmlNodeType.Comment)
-                    continue;
-
-                // extract data
-                string name = n.SelectSingleNode("Name")?.InnerText;
-                string sname = n.SelectSingleNode("ScriptName")?.InnerText;
-                string atype = n.SelectSingleNode("AgencyType")?.InnerText;
-                string sLevel = n.SelectSingleNode("StaffLevel")?.InnerText;
-                string county = n.SelectSingleNode("County")?.InnerText;
-                string customBackAgency = n.SelectSingleNode("CustomBackingAgency")?.InnerText;
-                XmlNode vehicleNode = n.SelectSingleNode("Vehicles");
-
-                // Check name
-                if (String.IsNullOrWhiteSpace(sname))
-                {
-                    Log.Warning($"Agency.Initialize(): Unable to extract ScriptName value for agency in Agencies.xml");
-                    continue;
-                }
-
-                // Try and parse agency type
-                if (String.IsNullOrWhiteSpace(atype) || !Enum.TryParse(atype, out AgencyType type))
-                {
-                    Log.Warning($"Agency.Initialize(): Unable to extract AgencyType value for '{sname}' in Agencies.xml");
-                    continue;
-                }
-
-                // Try and parse funding level
-                if (String.IsNullOrWhiteSpace(sLevel) || !Enum.TryParse(sLevel, out StaffLevel staffing))
-                {
-                    Log.Warning($"Agency.Initialize(): Unable to extract StaffLevel value for '{sname}' in Agencies.xml");
-                    continue;
-                }
-
-                // Load vehicles
-                Agency agency = CreateAgency(type, sname, name, staffing);
-                foreach (string ename in enumNames)
-                {
-                    // Try and extract patrol vehicle type
-                    XmlNode cn = vehicleNode.SelectSingleNode(ename);
-                    if (cn == null)
-                        continue;
-
-                    // Load each vehicle
-                    foreach (XmlNode vn in cn.ChildNodes)
-                    {
-                        // Ensure we have attributes
-                        if (vn.Attributes == null)
-                        {
-                            Log.Warning($"Agency.Initialize(): Vehicle item for '{sname}' has no attributes in Agencies.xml");
-                            continue;
-                        }
-
-                        // Try and extract probability value
-                        if (vn.Attributes["probability"]?.Value == null || !int.TryParse(vn.Attributes["probability"].Value, out int probability))
-                        {
-                            Log.Warning($"Agency.Initialize(): Unable to extract vehicle probability value for '{sname}' in Agencies.xml");
-                            continue;
-                        }
-
-                        // Create vehicle info
-                        var info = new PoliceVehicleInfo()
-                        {
-                            ModelName = vn.InnerText,
-                            Probability = probability
-                        };
-
-                        // Try and extract livery value
-                        if (vn.Attributes["livery"]?.Value != null && int.TryParse(vn.Attributes["livery"].Value, out int livery))
-                        {
-                            info.Livery = livery;
-                        }
-
-                        // Extract extras
-                        if (!String.IsNullOrWhiteSpace(vn.Attributes["extras"]?.Value))
-                        {
-                            string extras = vn.Attributes["extras"].Value;
-                            info.Extras = ParseExtras(extras);
-                        }
-
-                        // Extract spawn color
-                        if (!String.IsNullOrWhiteSpace(vn.Attributes["color"]?.Value))
-                        {
-                            string color = vn.Attributes["color"].Value;
-                            info.SpawnColor = (Color)Enum.Parse(typeof(Color), color);
-                        }
-
-                        // Add vehicle to agency
-                        agency.AddVehicle((PatrolVehicleType)Enum.Parse(typeof(PatrolVehicleType), ename), info);
-                    }
-                }
-
-                // Try and parse funding level
-                if (!String.IsNullOrWhiteSpace(county) && Enum.TryParse(county, out County c))
-                {
-                    agency.BackingCounty = c;
-                }
-
-                Agencies.Add(sname, agency);
-                AgencyTypes.Add(sname, type);
-            }
-
-            // Clean up!
-            GameFiber.Yield();
-            document = null;
         }
 
         /// <summary>
@@ -387,7 +171,7 @@ namespace AgencyDispatchFramework.Dispatching
         /// <param name="name"></param>
         /// <param name="staffing"></param>
         /// <returns></returns>
-        private static Agency CreateAgency(AgencyType type, string sname, string name, StaffLevel staffing)
+        internal static Agency CreateAgency(AgencyType type, string sname, string name, StaffLevel staffing)
         {
             switch (type)
             {
@@ -410,9 +194,9 @@ namespace AgencyDispatchFramework.Dispatching
         public static string[] GetCurrentAgencyZoneNames()
         {
             string name = Functions.GetCurrentAgencyScriptName().ToLowerInvariant();
-            if (AgencyZones.ContainsKey(name))
+            if (Agencies.ContainsKey(name))
             {
-                return AgencyZones[name].ToArray();
+                return Agencies[name].ZoneNames;
             }
 
             return null;
@@ -426,9 +210,9 @@ namespace AgencyDispatchFramework.Dispatching
         public static string[] GetZoneNamesByAgencyName(string name)
         {
             name = name.ToLowerInvariant();
-            if (AgencyZones.ContainsKey(name))
+            if (Agencies.ContainsKey(name))
             {
-                return AgencyZones[name].ToArray();
+                return Agencies[name].ZoneNames;
             }
 
             return null;
@@ -459,14 +243,20 @@ namespace AgencyDispatchFramework.Dispatching
 
         #region Instance Methods
 
+        /// <summary>
+        /// Creates a new instance of an <see cref="Agency"/>
+        /// </summary>
+        /// <param name="scriptName"></param>
+        /// <param name="friendlyName"></param>
+        /// <param name="staffLevel"></param>
         internal Agency(string scriptName, string friendlyName, StaffLevel staffLevel)
         {
             ScriptName = scriptName ?? throw new ArgumentNullException(nameof(scriptName));
-            FriendlyName = friendlyName ?? throw new ArgumentNullException(nameof(friendlyName));
+            FullName = friendlyName ?? throw new ArgumentNullException(nameof(friendlyName));
             StaffLevel = staffLevel;
 
             // Initiate vars
-            Vehicles = new Dictionary<PatrolVehicleType, ProbabilityGenerator<PoliceVehicleInfo>>();
+            Units = new Dictionary<UnitType, SpecializedUnit>();
         }
 
         /// <summary>
@@ -559,7 +349,7 @@ namespace AgencyDispatchFramework.Dispatching
                 b.Append(") to spawn AI officer units is less than the number of total AI officers (");
                 b.Append(aiPatrolCount);
                 b.Append(") for '");
-                b.Append(FriendlyName);
+                b.Append(FullName);
                 b.Append("' on ");
                 b.Append(Enum.GetName(typeof(TimePeriod), period));
                 b.Append(" shift.");
@@ -603,21 +393,6 @@ namespace AgencyDispatchFramework.Dispatching
             locs.Shuffle();
 
             return locs.Take(desiredCount).ToArray();
-        }
-
-        /// <summary>
-        /// Adds a vehicle to the list of vehicles that can be spawned from this agency
-        /// </summary>
-        /// <param name="type"></param>
-        /// <param name="info"></param>
-        internal void AddVehicle(PatrolVehicleType type, PoliceVehicleInfo info)
-        {
-            if (!Vehicles.ContainsKey(type))
-            {
-                Vehicles.Add(type, new ProbabilityGenerator<PoliceVehicleInfo>());
-            }
-
-            Vehicles[type].Add(info);
         }
 
         /// <summary>
@@ -674,62 +449,11 @@ namespace AgencyDispatchFramework.Dispatching
             return vehicle;
         }
 
-        /// <summary>
-        /// Parses the extras attribute into a hash table
-        /// </summary>
-        /// <param name="extras"></param>
-        /// <returns></returns>
-        private static Dictionary<int, bool> ParseExtras(string extras)
-        {
-            // No extras?
-            if (String.IsNullOrWhiteSpace(extras))
-            {
-                return new Dictionary<int, bool>();
-            }
-
-            string toParse = extras.Replace("extra", "").Replace(" ", String.Empty);
-            string[] parts = toParse.Split(',', '=');
-
-            // Ensure we have an even number of things
-            if (parts.Length % 2 != 0)
-            {
-                return new Dictionary<int, bool>();
-            }
-
-            // Parse items
-            var dic = new Dictionary<int, bool>(parts.Length / 2);
-            for (int i = 0; i < parts.Length - 1; i += 2)
-            {
-                if (!int.TryParse(parts[i], out int id))
-                    continue;
-
-                if (!bool.TryParse(parts[i + 1], out bool value))
-                    continue;
-
-                dic.Add(id, value);
-            }
-
-            return dic;
-        }
-
         public override string ToString()
         {
-            return FriendlyName;
+            return FullName;
         }
 
         #endregion
-
-        internal struct PoliceVehicleInfo : ISpawnable
-        {
-            public int Probability { get; set; }
-
-            public string ModelName { get; set; }
-
-            public int Livery { get; set; }
-
-            public Color SpawnColor { get; set; }
-
-            public Dictionary<int, bool> Extras { get; set; }
-        }
     }
 }

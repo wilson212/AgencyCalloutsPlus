@@ -53,7 +53,7 @@ namespace AgencyDispatchFramework.Dispatching
                     b.Append(") to spawn AI officer units is less than the number of total AI officers (");
                     b.Append(aiPatrolCount);
                     b.Append(") for '");
-                    b.Append(FriendlyName);
+                    b.Append(FullName);
                     b.Append("' on ");
                     b.Append(periodName);
                     b.Append(" shift.");
@@ -68,7 +68,7 @@ namespace AgencyDispatchFramework.Dispatching
                 {
                     // Create instance
                     var num = i + 10;
-                    var unit = new VirtualAIOfficerUnit(this, 1, 'A', num);
+                    var unit = new AIOfficerUnit(this, 1, 'A', num);
                     OfficersByShift[period].Add(unit);
 
                     // Start Duty
@@ -80,7 +80,7 @@ namespace AgencyDispatchFramework.Dispatching
                 }
 
                 // Log for debugging
-                Log.Debug($"Loaded {aiPatrolCount} Virtual AI officer units for agency '{FriendlyName}' on {periodName} shift");
+                Log.Debug($"Loaded {aiPatrolCount} Virtual AI officer units for agency '{FullName}' on {periodName} shift");
             }
         }
 

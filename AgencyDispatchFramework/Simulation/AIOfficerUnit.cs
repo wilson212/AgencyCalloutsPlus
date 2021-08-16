@@ -1,4 +1,6 @@
 ﻿using AgencyDispatchFramework.Dispatching;
+using LSPD_First_Response;
+using LSPD_First_Response.Engine.Scripting.Entities;
 using Rage;
 using System;
 
@@ -8,7 +10,7 @@ namespace AgencyDispatchFramework.Simulation
     /// Represents an <see cref="OfficerUnit"/> that is simulated virtually in memory
     /// and does not actually exist in the <see cref="Rage.World"/>
     /// </summary>
-    public class VirtualAIOfficerUnit : OfficerUnit
+    public class AIOfficerUnit : OfficerUnit
     {
         /// <summary>
         /// Indicates whether this is an AI player
@@ -16,13 +18,53 @@ namespace AgencyDispatchFramework.Simulation
         public override bool IsAIUnit => true;
 
         /// <summary>
-        /// Creates a new instance of <see cref="VirtualAIOfficerUnit"/>
+        /// Gets the meta data required to spawn this officer <see cref="Ped"/> in the game world.
+        /// </summary>
+        public OfficerModelMeta PedMeta { get; internal set; }
+
+        /// <summary>
+        /// Gets the meta data required to spawn this officer's vehicle in the game world.
+        /// </summary>
+        public VehicleModelMeta VehicleMeta { get; internal set; }
+
+        /// <summary>
+        /// Gets the handgun metadata this officer unit will spawn with in thier inventory.
+        /// </summary>
+        public string[] NonLethalWeapons { get; internal set; }
+
+        /// <summary>
+        /// Gets the handgun metadata this officer unit will spawn with in thier inventory.
+        /// </summary>
+        public WeaponMeta HandGun { get; internal set; }
+
+        /// <summary>
+        /// Gets the longgun metadata this officer unit will spawn with in thier inventory. 
+        /// </summary>
+        public WeaponMeta LongGun { get; internal set; }
+
+        /// <summary>
+        /// Creates a new instance of <see cref="AIOfficerUnit"/>
         /// </summary>
         /// <param name="startPosition"></param>
         /// <param name="unitString"></param>
-        public VirtualAIOfficerUnit(Agency agency, int division, char unit, int beat) : base(agency, division, unit, beat)
+        internal AIOfficerUnit(OfficerModelMeta meta, Agency agency, CallSign callSign) : base(agency, callSign)
         {
+            // Create a randon
+            var rnd = new CryptoRandom();
+            var now = World.DateTime;
 
+            // Create a persona
+            string model = meta.Model.ToString();
+            Gender gender = model.Contains("_f_") ? Gender.Female : Gender.Male;
+            var birthday = rnd.NextDateTime(now.AddYears(-50), now.AddYears(-22));
+            var name = RandomNameGenerator.Generate(gender);
+
+            // Set properties
+            PedMeta = meta;
+            Persona = new Persona(name.Forename, name.Surname, gender, birthday, model)
+            {
+                Wanted = false // Ensure this is always false
+            };
         }
 
         /// <summary>
@@ -47,6 +89,8 @@ namespace AgencyDispatchFramework.Simulation
                         break;
                 }
             }
+
+            // @todo Proactive Policing
         }
 
         /// <summary>
@@ -74,7 +118,7 @@ namespace AgencyDispatchFramework.Simulation
             // Tell dispatch we are done here
             if (CurrentCall.PrimaryOfficer == this)
             {
-                Log.Debug($"OfficerUnit {CallSign} of {Agency.FriendlyName} completed call '{CurrentCall.ScenarioInfo.Name}' with flag: {flag}");
+                Log.Debug($"OfficerUnit {CallSign} of {Agency.FullName} completed call '{CurrentCall.ScenarioInfo.Name}' with flag: {flag}");
                 Dispatch.RegisterCallComplete(CurrentCall);
             }
 
@@ -100,7 +144,7 @@ namespace AgencyDispatchFramework.Simulation
         private void DriveToCall()
         {
             // Close this task
-            Log.Debug($"OfficerUnit {CallSign} of {Agency.FriendlyName} responding to call '{CurrentCall.ScenarioInfo.Name}'");
+            Log.Debug($"OfficerUnit {CallSign} of {Agency.FullName} responding to call '{CurrentCall.ScenarioInfo.Name}'");
             int mins = 30;
 
             // Repond code 3?
@@ -125,7 +169,7 @@ namespace AgencyDispatchFramework.Simulation
         private void OnScene()
         {
             // Debug
-            Log.Debug($"OfficerUnit {CallSign} of {Agency.FriendlyName} arrived on scene");
+            Log.Debug($"OfficerUnit {CallSign} of {Agency.FullName} arrived on scene");
 
             // Telll dispatch we are on scene
             Dispatch.RegisterOnScene(this, CurrentCall);

@@ -1,7 +1,13 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <!--
-  This file contains a list of police agencies, defining thier agency type and which
-  vehicles will be spawned by callouts. Custom vehicle models are supported.
+  This file contains a list of police agencies that can be supported in game, and information that is used
+  to spawn a virtual agency complete with virtual staff that can be made persistent through mods such as
+  UltimateBackup. This file has been created with support for the Jurisdiction+ mod, but all "Unit" node 
+  values are defaulted to only support the base game as to remove any incompatabilites.
+  
+  Just because an agency is listed in this file, does not mean it will exist in game. This mod pulls which agencies
+  are enabled from the LSPDFR "lspdfr/data/backup.xml" and "lspdfr/data/agency.xml" files, as well as thier
+  primary jurisdiction zones.
   
   Important notes:
 
@@ -19,200 +25,702 @@
     # of officers it should have to police thier jurisdiction. The lower the staffing level, the more callouts
     # the player will be given within a span of time, as well as longer drive times. 
     # These are the support values (case sensitive):
-      - "VeryLow"   : [60%] Severely Understaffed. More calls come in than the department can handle, requiring help from other departments
+      - "VeryPoor"   : [60%] Severely Understaffed. More calls come in than the department can handle, requiring help from other departments
                       
-      - "Low"       : [75%] Understaffed. Never any available units. No traffic patrols
+      - "Poor"       : [75%] Understaffed. Never any available units. No traffic patrols
                       
       - "Fair"      : [90%] Slightly understaffed. Just enough patrols to cover the incoming calls. During peak times, no traffic patrols
       
-      - "High"      : [100%] Appropriately staffed. Some units available from time to time. Traffic patrols likely around the clock.
-      
-      - "VeryHigh"  : [110%] Overstaffed. Always units available. Traffic patrols always
-      
-    # The "Vehicle" entry has the following attributes:
-      - "probability" is the random probability for the vehicle model to be chosen relative to other vehicles probability
-      - "livery" the livery number on vehicle model (the first livery index is "1")
-      - "color" the color of the vehicle. It might be a "integer number" or "color name" (from https://docs.microsoft.com/en-us/dotnet/api/system.drawing.color?view=netframework-4.6.1 )
-      - "extras" specifies which extra's to enable/disable when spawned. Format: "extra1=true, extra2=false"
+      - "Full"      : [100%] Appropriately staffed. Some units available from time to time. Traffic patrols likely around the clock.
 -->
 <Agencies>
-  <!-- Police Departments -->
+  <!-- 
+      Police Departments 
+  -->
+  
+  <!-- Los Santos Police Department -->
   <Agency>
     <Name>Los Santos Police Department</Name>
     <ScriptName>lspd</ScriptName>
     <AgencyType>CityPolice</AgencyType>
     <StaffLevel>Fair</StaffLevel>
+    <CallSignStyle>LAPD</CallSignStyle>
     <County>LosSantos</County>
     <CustomBackingAgency />
-    <Vehicles>
-      <Marked>
-        <Vehicle probability="5">POLICE</Vehicle>
-        <Vehicle probability="5">POLICE2</Vehicle>
-        <Vehicle probability="5">POLICE3</Vehicle>
-      </Marked>
-      <UnMarked>
-        <Vehicle probability="5">POLICE4</Vehicle>
-      </UnMarked>
-    </Vehicles>  
+    <Units>
+      <!-- 
+          Only list the primary unit types that this agency has. If a department has only a Patrol unit, there should
+          be only one "Unit" node listed below with a "type" attribute value of "Patrol".
+          
+          Supported unit types:
+           - Patrol   : Primary duty is to handle the call queue and provide proactive policing.
+           - Traffic  : Primary duty is to handle traffic related calls, and reduce traffic accidents by searching for traffic violations.
+                        If a traffic unit is not specified, the patrol unit will pull the duties of a traffic unit when not busy with other priority calls.
+           - K9       : Primary duties of a K9 officer is to assist Traffic and Patrol units, especially when a police dog is needed,
+                        such as when a suspect is escaping on foot or narcotics may be involved.
+           - Swat     : Primary duties include protection, support, security, firepower, and rescue to police operations in high personal 
+                        risk situations where specialized tactics are necessary to minimize casualties.
+           - Air      : Primary duty is to provide air support for all other units.
+           
+           Each "Unit" node must contain a "type" attribute that defines the supported unit type. Duplicates will be ignored.
+           Supported attributes for the "Unit" nodes:
+            - type [required] : Defines what type of unit.
+            - derives [optional] : If specified, will copy all of the contents within the specified unit types node. Any nodes within this
+                                   node will now append what is copied from the derived node, unless specified within a node titled "Overrides".
+                                   
+          The contents of the "Unit" node are designed to be transferred from the UltimateBackup mode (DefaultRegions.xml and CustomRegions.xml).
+      -->
+      
+      <!-- LSPD does have a partol unit, so we list it here -->
+      <Unit type="Patrol">
+        <Officer>
+          <!-- The VehicleSet node is a direct copy of the format used in UltimateBackup for ease of transfer -->
+          <VehicleSet>
+            <Vehicles>
+              <Vehicle chance="33" pax="1" pax_chance="40">POLICE</Vehicle>
+              <Vehicle chance="33" pax="1" pax_chance="25">POLICE2</Vehicle>
+              <Vehicle chance="34" pax="1" pax_chance="25">POLICE3</Vehicle>
+            </Vehicles>
+            <Peds>
+              <Ped chance="40" comp_pants="36" comp_shoes="26" comp_accessories="59" comp_shirtoverlay="56">MP_M_FREEMODE_01</Ped>
+              <Ped chance="25" comp_shirt="2" comp_accessories="2" prop_hats="1" prop_glasses="4">S_M_Y_COP_01</Ped>
+              <Ped chance="25" random_props="True">S_M_Y_COP_01</Ped>
+              <Ped chance="5" comp_shirt="15" comp_pants="35" comp_shoes="26" comp_accessories="36" comp_shirtoverlay="49">MP_F_FREEMODE_01</Ped>
+              <Ped chance="5" comp_shirt="2" comp_accessories="2" prop_hats="0">S_F_Y_COP_01</Ped>
+
+              <!-- peds with rain outfit will be chosen when the weather is rainy. The chance is grouped separately -->
+              <Ped rain_outfit="true" chance="90" comp_pants="36" comp_shoes="26" comp_accessories="6" comp_shirtoverlay="218" tex_shirtoverlay="6" prop_hats="47">MP_M_FREEMODE_01</Ped>
+              <Ped rain_outfit="true" chance="10" comp_shirt="15" comp_pants="35" comp_shoes="26" comp_shirtoverlay="191" tex_shirtoverlay="4">MP_F_FREEMODE_01</Ped>
+
+              <!-- peds with snow outfit will be chosen when the weather is snowy. The chance is grouped separately -->
+              <Ped snow_outfit="true" chance="90" comp_shirt="18" comp_pants="36" comp_shoes="26" comp_accessories="28" comp_shirtoverlay="71" tex_shirtoverlay="10" prop_hats="47">MP_M_FREEMODE_01</Ped>
+              <Ped snow_outfit="true" chance="10" comp_shirt="15" comp_pants="35" comp_shoes="26" comp_accessories="102" comp_shirtoverlay="66" tex_shirtoverlay="11" prop_hats="47">MP_F_FREEMODE_01</Ped>
+            </Peds>
+            <NonLethals>
+              <NonLethal>WEAPON_STUNGUN</NonLethal>
+              <NonLethal>WEAPON_NIGHTSTICK</NonLethal>
+            </NonLethals>
+            <HandGuns>
+              <HandGun chance="90" comp_1="COMPONENT_AT_PI_FLSH">WEAPON_PISTOL</HandGun>
+              <HandGun chance="10" comp_1="COMPONENT_AT_PI_FLSH">WEAPON_COMBATPISTOL</HandGun>
+            </HandGuns>
+            <LongGuns>
+              <LongGun chance="67" comp_1="COMPONENT_AT_AR_FLSH">WEAPON_CARBINERIFLE</LongGun>
+              <LongGun chance="33" comp_1="COMPONENT_AT_AR_FLSH">WEAPON_PUMPSHOTGUN</LongGun>
+            </LongGuns>
+          </VehicleSet>
+        </Officer>
+        <Supervisor derives="Officer">
+          <!-- Copies from the unit sub-node specified in the "derives" attribute. -->
+        </Supervisor>
+      </Unit>
+      <!-- LSPD does have a traffic unit, so we list it here -->
+      <Unit type="Traffic" derives="Patrol">
+        <!-- Copies from the unit node specified in the "derives" attribute. Anything specified inside this node will append what is specified in the "derives" node. -->
+      </Unit>
+      <!-- LSPD does have a K9 unit, so we list it here -->
+      <Unit type="K9" derives="Patrol">
+        <!-- 
+            Copies from the unit node specified in the "derives" attribute. Anything specified inside this node will append what is specified in the "derives" node.
+            
+            ** Anything within the Overrides node will overwrite awhat is defined in the base, instead of appending to it **
+        -->
+        <Overrides>
+          <VehicleSet k9_model="SHEPHERD" k9_tex_face="1" k9_tex_shirt="1" k9_tex_accessories="1">
+            <Vehicles>
+              <Vehicle>POLICE3</Vehicle>
+            </Vehicles>
+            <Peds>
+              <Ped chance="90" comp_accessories="1" prop_glasses="4" >S_M_Y_COP_01</Ped>
+              <Ped chance="10">S_F_Y_COP_01</Ped>
+            </Peds>
+          </VehicleSet>
+        </Overrides>
+      </Unit>
+      <!-- LSPD does have a swat unit, so we list it here -->
+      <Unit type="Swat">
+        <VehicleSet>
+          <Vehicles>
+            <Vehicle pax="3" pax_chance="100" color="black">FBI2</Vehicle>
+          </Vehicles>
+          <Peds>
+            <Ped comp_decals="1" tex_decals="1" prop_hats="1">S_M_Y_SWAT_01</Ped>
+          </Peds>
+          <NonLethals>
+            <NonLethal>WEAPON_STUNGUN</NonLethal>
+            <NonLethal>WEAPON_NIGHTSTICK</NonLethal>
+          </NonLethals>
+          <HandGuns>
+            <HandGun chance="75">WEAPON_COMBATPISTOL</HandGun>
+            <HandGun chance="25">WEAPON_PISTOL</HandGun>
+          </HandGuns>
+          <LongGuns>
+            <LongGun chance="67">WEAPON_ADVANCEDRIFLE</LongGun>
+            <LongGun chance="33">WEAPON_ASSAULTSHOTGUN</LongGun>
+          </LongGuns>
+        </VehicleSet>
+      </Unit>
+      <!-- LSPD does have a Air unit, so we list it here -->
+      <Unit type="Air">
+        <VehicleSet>
+          <Vehicles>
+            <Vehicle livery="1" pax="1" pax_chance="100">POLMAV</Vehicle>
+          </Vehicles>
+          <Peds>
+            <Ped comp_tasks="2" prop_hats="1">S_M_Y_PILOT_01</Ped>
+          </Peds>
+        </VehicleSet>
+      </Unit>
+    </Units>
   </Agency>
+  
+  <!-- Del Parro Police Department -->
   <Agency>
     <Name>Del Parro Police Department</Name>
     <ScriptName>dppd</ScriptName>
     <AgencyType>CityPolice</AgencyType>
     <StaffLevel>Fair</StaffLevel>
+    <CallSignStyle>LAPD</CallSignStyle>
     <County>LosSantos</County>
     <CustomBackingAgency />
-    <Vehicles>
-      <Marked>
-        <Vehicle probability="5">POLICE</Vehicle>
-        <Vehicle probability="5">POLICE2</Vehicle>
-        <Vehicle probability="5">POLICE3</Vehicle>
-      </Marked>
-      <UnMarked>
-        <Vehicle probability="5">POLICE4</Vehicle>
-      </UnMarked>
-    </Vehicles>
+    <Units>
+      <Unit type="Patrol">
+        <Officer>
+          <VehicleSet>
+            <Vehicles>
+              <Vehicle chance="33" pax="1" pax_chance="40">POLICE</Vehicle>
+              <Vehicle chance="33" pax="1" pax_chance="25">POLICE2</Vehicle>
+              <Vehicle chance="34" pax="1" pax_chance="25">POLICE3</Vehicle>
+            </Vehicles>
+            <Peds>
+              <Ped chance="40" comp_pants="36" comp_shoes="26" comp_accessories="59" comp_shirtoverlay="56">MP_M_FREEMODE_01</Ped>
+              <Ped chance="25" comp_shirt="2" comp_accessories="2" prop_hats="1" prop_glasses="4">S_M_Y_COP_01</Ped>
+              <Ped chance="25" random_props="True">S_M_Y_COP_01</Ped>
+              <Ped chance="5" comp_shirt="15" comp_pants="35" comp_shoes="26" comp_accessories="36" comp_shirtoverlay="49">MP_F_FREEMODE_01</Ped>
+              <Ped chance="5" comp_shirt="2" comp_accessories="2" prop_hats="0">S_F_Y_COP_01</Ped>
+
+              <!-- peds with rain outfit will be chosen when the weather is rainy. The chance is grouped separately -->
+              <Ped rain_outfit="true" chance="90" comp_pants="36" comp_shoes="26" comp_accessories="6" comp_shirtoverlay="218" tex_shirtoverlay="6" prop_hats="47">MP_M_FREEMODE_01</Ped>
+              <Ped rain_outfit="true" chance="10" comp_shirt="15" comp_pants="35" comp_shoes="26" comp_shirtoverlay="191" tex_shirtoverlay="4">MP_F_FREEMODE_01</Ped>
+
+              <!-- peds with snow outfit will be chosen when the weather is snowy. The chance is grouped separately -->
+              <Ped snow_outfit="true" chance="90" comp_shirt="18" comp_pants="36" comp_shoes="26" comp_accessories="28" comp_shirtoverlay="71" tex_shirtoverlay="10" prop_hats="47">MP_M_FREEMODE_01</Ped>
+              <Ped snow_outfit="true" chance="10" comp_shirt="15" comp_pants="35" comp_shoes="26" comp_accessories="102" comp_shirtoverlay="66" tex_shirtoverlay="11" prop_hats="47">MP_F_FREEMODE_01</Ped>
+            </Peds>
+            <NonLethals>
+              <NonLethal>WEAPON_STUNGUN</NonLethal>
+              <NonLethal>WEAPON_NIGHTSTICK</NonLethal>
+            </NonLethals>
+            <HandGuns>
+              <HandGun chance="90" comp_1="COMPONENT_AT_PI_FLSH">WEAPON_PISTOL</HandGun>
+              <HandGun chance="10" comp_1="COMPONENT_AT_PI_FLSH">WEAPON_COMBATPISTOL</HandGun>
+            </HandGuns>
+            <LongGuns>
+              <LongGun chance="67" comp_1="COMPONENT_AT_AR_FLSH">WEAPON_CARBINERIFLE</LongGun>
+              <LongGun chance="33" comp_1="COMPONENT_AT_AR_FLSH">WEAPON_PUMPSHOTGUN</LongGun>
+            </LongGuns>
+          </VehicleSet>
+        </Officer>
+        <Supervisor derives="Officer" />
+      </Unit>
+      <Unit type="K9" derives="Patrol">
+        <Overrides>
+          <VehicleSet k9_model="SHEPHERD" k9_tex_face="1" k9_tex_shirt="1" k9_tex_accessories="1">
+            <Vehicles>
+              <Vehicle>POLICE3</Vehicle>
+            </Vehicles>
+            <Peds>
+              <Ped chance="90" comp_accessories="1" prop_glasses="4" >S_M_Y_COP_01</Ped>
+              <Ped chance="10">S_F_Y_COP_01</Ped>
+            </Peds>
+          </VehicleSet>
+        </Overrides>
+      </Unit>
+    </Units>
   </Agency>
+
+  <!-- Vespucci Police Department -->
   <Agency>
     <Name>Vespucci Police Department</Name>
     <ScriptName>vppd</ScriptName>
     <AgencyType>CityPolice</AgencyType>
-    <StaffLevel>High</StaffLevel>
+    <StaffLevel>Full</StaffLevel>
+    <CallSignStyle>LAPD</CallSignStyle>
     <County>LosSantos</County>
     <CustomBackingAgency />
-    <Vehicles>
-      <Marked>
-        <Vehicle probability="5">POLICE</Vehicle>
-        <Vehicle probability="5">POLICE2</Vehicle>
-        <Vehicle probability="5">POLICE3</Vehicle>
-      </Marked>
-      <UnMarked>
-        <Vehicle probability="5">POLICE4</Vehicle>
-      </UnMarked>
-    </Vehicles>
+    <Units>
+      <Unit type="Patrol">
+        <Officer>
+          <VehicleSet>
+            <Vehicles>
+              <Vehicle chance="33" pax="1" pax_chance="40">POLICE</Vehicle>
+              <Vehicle chance="33" pax="1" pax_chance="25">POLICE2</Vehicle>
+              <Vehicle chance="34" pax="1" pax_chance="25">POLICE3</Vehicle>
+            </Vehicles>
+            <Peds>
+              <Ped chance="40" comp_pants="36" comp_shoes="26" comp_accessories="59" comp_shirtoverlay="56">MP_M_FREEMODE_01</Ped>
+              <Ped chance="25" comp_shirt="2" comp_accessories="2" prop_hats="1" prop_glasses="4">S_M_Y_COP_01</Ped>
+              <Ped chance="25" random_props="True">S_M_Y_COP_01</Ped>
+              <Ped chance="5" comp_shirt="15" comp_pants="35" comp_shoes="26" comp_accessories="36" comp_shirtoverlay="49">MP_F_FREEMODE_01</Ped>
+              <Ped chance="5" comp_shirt="2" comp_accessories="2" prop_hats="0">S_F_Y_COP_01</Ped>
+
+              <!-- peds with rain outfit will be chosen when the weather is rainy. The chance is grouped separately -->
+              <Ped rain_outfit="true" chance="90" comp_pants="36" comp_shoes="26" comp_accessories="6" comp_shirtoverlay="218" tex_shirtoverlay="6" prop_hats="47">MP_M_FREEMODE_01</Ped>
+              <Ped rain_outfit="true" chance="10" comp_shirt="15" comp_pants="35" comp_shoes="26" comp_shirtoverlay="191" tex_shirtoverlay="4">MP_F_FREEMODE_01</Ped>
+
+              <!-- peds with snow outfit will be chosen when the weather is snowy. The chance is grouped separately -->
+              <Ped snow_outfit="true" chance="90" comp_shirt="18" comp_pants="36" comp_shoes="26" comp_accessories="28" comp_shirtoverlay="71" tex_shirtoverlay="10" prop_hats="47">MP_M_FREEMODE_01</Ped>
+              <Ped snow_outfit="true" chance="10" comp_shirt="15" comp_pants="35" comp_shoes="26" comp_accessories="102" comp_shirtoverlay="66" tex_shirtoverlay="11" prop_hats="47">MP_F_FREEMODE_01</Ped>
+            </Peds>
+            <NonLethals>
+              <NonLethal>WEAPON_STUNGUN</NonLethal>
+              <NonLethal>WEAPON_NIGHTSTICK</NonLethal>
+            </NonLethals>
+            <HandGuns>
+              <HandGun chance="90" comp_1="COMPONENT_AT_PI_FLSH">WEAPON_PISTOL</HandGun>
+              <HandGun chance="10" comp_1="COMPONENT_AT_PI_FLSH">WEAPON_COMBATPISTOL</HandGun>
+            </HandGuns>
+            <LongGuns>
+              <LongGun chance="67" comp_1="COMPONENT_AT_AR_FLSH">WEAPON_CARBINERIFLE</LongGun>
+              <LongGun chance="33" comp_1="COMPONENT_AT_AR_FLSH">WEAPON_PUMPSHOTGUN</LongGun>
+            </LongGuns>
+          </VehicleSet>
+        </Officer>
+        <Supervisor derives="Officer" />
+      </Unit>
+      <Unit type="K9" derives="Patrol">
+        <Overrides>
+          <VehicleSet k9_model="SHEPHERD" k9_tex_face="1" k9_tex_shirt="1" k9_tex_accessories="1">
+            <Vehicles>
+              <Vehicle>POLICE3</Vehicle>
+            </Vehicles>
+            <Peds>
+              <Ped chance="90" comp_accessories="1" prop_glasses="4" >S_M_Y_COP_01</Ped>
+              <Ped chance="10">S_F_Y_COP_01</Ped>
+            </Peds>
+          </VehicleSet>
+        </Overrides>
+      </Unit>
+    </Units>
   </Agency>
+  
+  <!-- Vinewood Police Department -->
   <Agency>
     <Name>Vinewood Police Department</Name>
     <ScriptName>vwpd</ScriptName>
     <AgencyType>CityPolice</AgencyType>
-    <StaffLevel>High</StaffLevel>
+    <StaffLevel>Full</StaffLevel>
+    <CallSignStyle>LAPD</CallSignStyle>
     <County>LosSantos</County>
     <CustomBackingAgency />
-    <Vehicles>
-      <Marked>
-        <Vehicle probability="5">POLICE</Vehicle>
-        <Vehicle probability="5">POLICE2</Vehicle>
-        <Vehicle probability="5">POLICE3</Vehicle>
-      </Marked>
-      <UnMarked>
-        <Vehicle probability="5">POLICE4</Vehicle>
-      </UnMarked>
-    </Vehicles>
+    <Units>
+      <Unit type="Patrol">
+        <Officer>
+          <VehicleSet>
+            <Vehicles>
+              <Vehicle chance="33" pax="1" pax_chance="40">POLICE</Vehicle>
+              <Vehicle chance="33" pax="1" pax_chance="25">POLICE2</Vehicle>
+              <Vehicle chance="34" pax="1" pax_chance="25">POLICE3</Vehicle>
+            </Vehicles>
+            <Peds>
+              <Ped chance="40" comp_pants="36" comp_shoes="26" comp_accessories="59" comp_shirtoverlay="56">MP_M_FREEMODE_01</Ped>
+              <Ped chance="25" comp_shirt="2" comp_accessories="2" prop_hats="1" prop_glasses="4">S_M_Y_COP_01</Ped>
+              <Ped chance="25" random_props="True">S_M_Y_COP_01</Ped>
+              <Ped chance="5" comp_shirt="15" comp_pants="35" comp_shoes="26" comp_accessories="36" comp_shirtoverlay="49">MP_F_FREEMODE_01</Ped>
+              <Ped chance="5" comp_shirt="2" comp_accessories="2" prop_hats="0">S_F_Y_COP_01</Ped>
+
+              <!-- peds with rain outfit will be chosen when the weather is rainy. The chance is grouped separately -->
+              <Ped rain_outfit="true" chance="90" comp_pants="36" comp_shoes="26" comp_accessories="6" comp_shirtoverlay="218" tex_shirtoverlay="6" prop_hats="47">MP_M_FREEMODE_01</Ped>
+              <Ped rain_outfit="true" chance="10" comp_shirt="15" comp_pants="35" comp_shoes="26" comp_shirtoverlay="191" tex_shirtoverlay="4">MP_F_FREEMODE_01</Ped>
+
+              <!-- peds with snow outfit will be chosen when the weather is snowy. The chance is grouped separately -->
+              <Ped snow_outfit="true" chance="90" comp_shirt="18" comp_pants="36" comp_shoes="26" comp_accessories="28" comp_shirtoverlay="71" tex_shirtoverlay="10" prop_hats="47">MP_M_FREEMODE_01</Ped>
+              <Ped snow_outfit="true" chance="10" comp_shirt="15" comp_pants="35" comp_shoes="26" comp_accessories="102" comp_shirtoverlay="66" tex_shirtoverlay="11" prop_hats="47">MP_F_FREEMODE_01</Ped>
+            </Peds>
+            <NonLethals>
+              <NonLethal>WEAPON_STUNGUN</NonLethal>
+              <NonLethal>WEAPON_NIGHTSTICK</NonLethal>
+            </NonLethals>
+            <HandGuns>
+              <HandGun chance="90" comp_1="COMPONENT_AT_PI_FLSH">WEAPON_PISTOL</HandGun>
+              <HandGun chance="10" comp_1="COMPONENT_AT_PI_FLSH">WEAPON_COMBATPISTOL</HandGun>
+            </HandGuns>
+            <LongGuns>
+              <LongGun chance="67" comp_1="COMPONENT_AT_AR_FLSH">WEAPON_CARBINERIFLE</LongGun>
+              <LongGun chance="33" comp_1="COMPONENT_AT_AR_FLSH">WEAPON_PUMPSHOTGUN</LongGun>
+            </LongGuns>
+          </VehicleSet>
+        </Officer>
+        <Supervisor derives="Officer" />
+      </Unit>
+      <Unit type="K9" derives="Patrol">
+        <Overrides>
+          <VehicleSet k9_model="SHEPHERD" k9_tex_face="1" k9_tex_shirt="1" k9_tex_accessories="1">
+            <Vehicles>
+              <Vehicle>POLICE3</Vehicle>
+            </Vehicles>
+            <Peds>
+              <Ped chance="90" comp_accessories="1" prop_glasses="4" >S_M_Y_COP_01</Ped>
+              <Ped chance="10">S_F_Y_COP_01</Ped>
+            </Peds>
+          </VehicleSet>
+        </Overrides>
+      </Unit>
+    </Units>
   </Agency>
+  
+  <!-- La Messa Police Department -->
   <Agency>
     <Name>La Messa Police Department</Name>
     <ScriptName>lmpd</ScriptName>
     <AgencyType>CityPolice</AgencyType>
     <StaffLevel>Fair</StaffLevel>
+    <CallSignStyle>LAPD</CallSignStyle>
     <County>LosSantos</County>
     <CustomBackingAgency />
-    <Vehicles>
-      <Marked>
-        <Vehicle probability="5">POLICE</Vehicle>
-        <Vehicle probability="5">POLICE2</Vehicle>
-        <Vehicle probability="5">POLICE3</Vehicle>
-      </Marked>
-      <UnMarked>
-        <Vehicle probability="5">POLICE4</Vehicle>
-      </UnMarked>
-    </Vehicles>   
+    <Units>
+      <Unit type="Patrol">
+        <Officer>
+          <VehicleSet>
+            <Vehicles>
+              <Vehicle chance="33" pax="1" pax_chance="40">POLICE</Vehicle>
+              <Vehicle chance="33" pax="1" pax_chance="25">POLICE2</Vehicle>
+              <Vehicle chance="34" pax="1" pax_chance="25">POLICE3</Vehicle>
+            </Vehicles>
+            <Peds>
+              <Ped chance="40" comp_pants="36" comp_shoes="26" comp_accessories="59" comp_shirtoverlay="56">MP_M_FREEMODE_01</Ped>
+              <Ped chance="25" comp_shirt="2" comp_accessories="2" prop_hats="1" prop_glasses="4">S_M_Y_COP_01</Ped>
+              <Ped chance="25" random_props="True">S_M_Y_COP_01</Ped>
+              <Ped chance="5" comp_shirt="15" comp_pants="35" comp_shoes="26" comp_accessories="36" comp_shirtoverlay="49">MP_F_FREEMODE_01</Ped>
+              <Ped chance="5" comp_shirt="2" comp_accessories="2" prop_hats="0">S_F_Y_COP_01</Ped>
+
+              <!-- peds with rain outfit will be chosen when the weather is rainy. The chance is grouped separately -->
+              <Ped rain_outfit="true" chance="90" comp_pants="36" comp_shoes="26" comp_accessories="6" comp_shirtoverlay="218" tex_shirtoverlay="6" prop_hats="47">MP_M_FREEMODE_01</Ped>
+              <Ped rain_outfit="true" chance="10" comp_shirt="15" comp_pants="35" comp_shoes="26" comp_shirtoverlay="191" tex_shirtoverlay="4">MP_F_FREEMODE_01</Ped>
+
+              <!-- peds with snow outfit will be chosen when the weather is snowy. The chance is grouped separately -->
+              <Ped snow_outfit="true" chance="90" comp_shirt="18" comp_pants="36" comp_shoes="26" comp_accessories="28" comp_shirtoverlay="71" tex_shirtoverlay="10" prop_hats="47">MP_M_FREEMODE_01</Ped>
+              <Ped snow_outfit="true" chance="10" comp_shirt="15" comp_pants="35" comp_shoes="26" comp_accessories="102" comp_shirtoverlay="66" tex_shirtoverlay="11" prop_hats="47">MP_F_FREEMODE_01</Ped>
+            </Peds>
+            <NonLethals>
+              <NonLethal>WEAPON_STUNGUN</NonLethal>
+              <NonLethal>WEAPON_NIGHTSTICK</NonLethal>
+            </NonLethals>
+            <HandGuns>
+              <HandGun chance="90" comp_1="COMPONENT_AT_PI_FLSH">WEAPON_PISTOL</HandGun>
+              <HandGun chance="10" comp_1="COMPONENT_AT_PI_FLSH">WEAPON_COMBATPISTOL</HandGun>
+            </HandGuns>
+            <LongGuns>
+              <LongGun chance="67" comp_1="COMPONENT_AT_AR_FLSH">WEAPON_CARBINERIFLE</LongGun>
+              <LongGun chance="33" comp_1="COMPONENT_AT_AR_FLSH">WEAPON_PUMPSHOTGUN</LongGun>
+            </LongGuns>
+          </VehicleSet>
+        </Officer>
+        <Supervisor derives="Officer" />
+      </Unit>
+      <Unit type="K9" derives="Patrol">
+        <Overrides>
+          <VehicleSet k9_model="SHEPHERD" k9_tex_face="1" k9_tex_shirt="1" k9_tex_accessories="1">
+            <Vehicles>
+              <Vehicle>POLICE3</Vehicle>
+            </Vehicles>
+            <Peds>
+              <Ped chance="90" comp_accessories="1" prop_glasses="4" >S_M_Y_COP_01</Ped>
+              <Ped chance="10">S_F_Y_COP_01</Ped>
+            </Peds>
+          </VehicleSet>
+        </Overrides>
+      </Unit>
+    </Units>  
   </Agency>
+  
+  <!-- Rockford Hills Police Department -->
   <Agency>
     <Name>Rockford Hills Police Department</Name>
     <ScriptName>rhpd</ScriptName>
     <AgencyType>CityPolice</AgencyType>
-    <StaffLevel>High</StaffLevel>
+    <StaffLevel>Full</StaffLevel>
+    <CallSignStyle>LAPD</CallSignStyle>
     <County>LosSantos</County>
     <CustomBackingAgency />
-    <Vehicles>
-      <Marked>
-        <Vehicle probability="5">POLICE</Vehicle>
-        <Vehicle probability="5">POLICE2</Vehicle>
-        <Vehicle probability="5">POLICE3</Vehicle>
-      </Marked>
-      <UnMarked>
-        <Vehicle probability="5">POLICE4</Vehicle>
-      </UnMarked>
-    </Vehicles>
+    <Units>
+      <Unit type="Patrol">
+        <Officer>
+          <VehicleSet>
+            <Vehicles>
+              <Vehicle chance="33" pax="1" pax_chance="40">POLICE</Vehicle>
+              <Vehicle chance="33" pax="1" pax_chance="25">POLICE2</Vehicle>
+              <Vehicle chance="34" pax="1" pax_chance="25">POLICE3</Vehicle>
+            </Vehicles>
+            <Peds>
+              <Ped chance="40" comp_pants="36" comp_shoes="26" comp_accessories="59" comp_shirtoverlay="56">MP_M_FREEMODE_01</Ped>
+              <Ped chance="25" comp_shirt="2" comp_accessories="2" prop_hats="1" prop_glasses="4">S_M_Y_COP_01</Ped>
+              <Ped chance="25" random_props="True">S_M_Y_COP_01</Ped>
+              <Ped chance="5" comp_shirt="15" comp_pants="35" comp_shoes="26" comp_accessories="36" comp_shirtoverlay="49">MP_F_FREEMODE_01</Ped>
+              <Ped chance="5" comp_shirt="2" comp_accessories="2" prop_hats="0">S_F_Y_COP_01</Ped>
+
+              <!-- peds with rain outfit will be chosen when the weather is rainy. The chance is grouped separately -->
+              <Ped rain_outfit="true" chance="90" comp_pants="36" comp_shoes="26" comp_accessories="6" comp_shirtoverlay="218" tex_shirtoverlay="6" prop_hats="47">MP_M_FREEMODE_01</Ped>
+              <Ped rain_outfit="true" chance="10" comp_shirt="15" comp_pants="35" comp_shoes="26" comp_shirtoverlay="191" tex_shirtoverlay="4">MP_F_FREEMODE_01</Ped>
+
+              <!-- peds with snow outfit will be chosen when the weather is snowy. The chance is grouped separately -->
+              <Ped snow_outfit="true" chance="90" comp_shirt="18" comp_pants="36" comp_shoes="26" comp_accessories="28" comp_shirtoverlay="71" tex_shirtoverlay="10" prop_hats="47">MP_M_FREEMODE_01</Ped>
+              <Ped snow_outfit="true" chance="10" comp_shirt="15" comp_pants="35" comp_shoes="26" comp_accessories="102" comp_shirtoverlay="66" tex_shirtoverlay="11" prop_hats="47">MP_F_FREEMODE_01</Ped>
+            </Peds>
+            <NonLethals>
+              <NonLethal>WEAPON_STUNGUN</NonLethal>
+              <NonLethal>WEAPON_NIGHTSTICK</NonLethal>
+            </NonLethals>
+            <HandGuns>
+              <HandGun chance="90" comp_1="COMPONENT_AT_PI_FLSH">WEAPON_PISTOL</HandGun>
+              <HandGun chance="10" comp_1="COMPONENT_AT_PI_FLSH">WEAPON_COMBATPISTOL</HandGun>
+            </HandGuns>
+            <LongGuns>
+              <LongGun chance="67" comp_1="COMPONENT_AT_AR_FLSH">WEAPON_CARBINERIFLE</LongGun>
+              <LongGun chance="33" comp_1="COMPONENT_AT_AR_FLSH">WEAPON_PUMPSHOTGUN</LongGun>
+            </LongGuns>
+          </VehicleSet>
+        </Officer>
+        <Supervisor derives="Officer" />
+      </Unit>
+      <Unit type="K9" derives="Patrol">
+        <Overrides>
+          <VehicleSet k9_model="SHEPHERD" k9_tex_face="1" k9_tex_shirt="1" k9_tex_accessories="1">
+            <Vehicles>
+              <Vehicle>POLICE3</Vehicle>
+            </Vehicles>
+            <Peds>
+              <Ped chance="90" comp_accessories="1" prop_glasses="4" >S_M_Y_COP_01</Ped>
+              <Ped chance="10">S_F_Y_COP_01</Ped>
+            </Peds>
+          </VehicleSet>
+        </Overrides>
+      </Unit>
+    </Units>
   </Agency>
+  
+  <!-- Port Authority Police -->
   <Agency>
     <Name>Port Authority Police (Los Santos)</Name>
     <ScriptName>pap</ScriptName>
     <AgencyType>CityPolice</AgencyType>
     <StaffLevel>Fair</StaffLevel>
+    <CallSignStyle>LAPD</CallSignStyle>
     <County>LosSantos</County>
     <CustomBackingAgency>lspd</CustomBackingAgency>
-    <Vehicles>
-      <Marked>
-        <Vehicle probability="5">POLICE</Vehicle>
-        <Vehicle probability="5">POLICE2</Vehicle>
-        <Vehicle probability="5">POLICE3</Vehicle>
-      </Marked>
-      <UnMarked>
-        <Vehicle probability="5">POLICE4</Vehicle>
-      </UnMarked>
-    </Vehicles>
+    <Units>
+      <Unit type="Patrol">
+        <Officer>
+          <VehicleSet>
+            <Vehicles>
+              <Vehicle chance="33" pax="1" pax_chance="40">POLICE</Vehicle>
+              <Vehicle chance="33" pax="1" pax_chance="25">POLICE2</Vehicle>
+              <Vehicle chance="34" pax="1" pax_chance="25">POLICE3</Vehicle>
+            </Vehicles>
+            <Peds>
+              <Ped chance="40" comp_pants="36" comp_shoes="26" comp_accessories="59" comp_shirtoverlay="56">MP_M_FREEMODE_01</Ped>
+              <Ped chance="25" comp_shirt="2" comp_accessories="2" prop_hats="1" prop_glasses="4">S_M_Y_COP_01</Ped>
+              <Ped chance="25" random_props="True">S_M_Y_COP_01</Ped>
+              <Ped chance="5" comp_shirt="15" comp_pants="35" comp_shoes="26" comp_accessories="36" comp_shirtoverlay="49">MP_F_FREEMODE_01</Ped>
+              <Ped chance="5" comp_shirt="2" comp_accessories="2" prop_hats="0">S_F_Y_COP_01</Ped>
+
+              <!-- peds with rain outfit will be chosen when the weather is rainy. The chance is grouped separately -->
+              <Ped rain_outfit="true" chance="90" comp_pants="36" comp_shoes="26" comp_accessories="6" comp_shirtoverlay="218" tex_shirtoverlay="6" prop_hats="47">MP_M_FREEMODE_01</Ped>
+              <Ped rain_outfit="true" chance="10" comp_shirt="15" comp_pants="35" comp_shoes="26" comp_shirtoverlay="191" tex_shirtoverlay="4">MP_F_FREEMODE_01</Ped>
+
+              <!-- peds with snow outfit will be chosen when the weather is snowy. The chance is grouped separately -->
+              <Ped snow_outfit="true" chance="90" comp_shirt="18" comp_pants="36" comp_shoes="26" comp_accessories="28" comp_shirtoverlay="71" tex_shirtoverlay="10" prop_hats="47">MP_M_FREEMODE_01</Ped>
+              <Ped snow_outfit="true" chance="10" comp_shirt="15" comp_pants="35" comp_shoes="26" comp_accessories="102" comp_shirtoverlay="66" tex_shirtoverlay="11" prop_hats="47">MP_F_FREEMODE_01</Ped>
+            </Peds>
+            <NonLethals>
+              <NonLethal>WEAPON_STUNGUN</NonLethal>
+              <NonLethal>WEAPON_NIGHTSTICK</NonLethal>
+            </NonLethals>
+            <HandGuns>
+              <HandGun chance="90" comp_1="COMPONENT_AT_PI_FLSH">WEAPON_PISTOL</HandGun>
+              <HandGun chance="10" comp_1="COMPONENT_AT_PI_FLSH">WEAPON_COMBATPISTOL</HandGun>
+            </HandGuns>
+            <LongGuns>
+              <LongGun chance="67" comp_1="COMPONENT_AT_AR_FLSH">WEAPON_CARBINERIFLE</LongGun>
+              <LongGun chance="33" comp_1="COMPONENT_AT_AR_FLSH">WEAPON_PUMPSHOTGUN</LongGun>
+            </LongGuns>
+          </VehicleSet>
+        </Officer>
+        <Supervisor derives="Officer" />
+      </Unit>
+      <Unit type="K9" derives="Patrol">
+        <Overrides>
+          <VehicleSet k9_model="SHEPHERD" k9_tex_face="1" k9_tex_shirt="1" k9_tex_accessories="1">
+            <Vehicles>
+              <Vehicle>POLICE3</Vehicle>
+            </Vehicles>
+            <Peds>
+              <Ped chance="90" comp_accessories="1" prop_glasses="4" >S_M_Y_COP_01</Ped>
+              <Ped chance="10">S_F_Y_COP_01</Ped>
+            </Peds>
+          </VehicleSet>
+        </Overrides>
+      </Unit>
+    </Units>
   </Agency>
+  
+  <!-- Grape Seed Police Department-->
   <Agency>
     <Name>Grape Seed Police Department</Name>
     <ScriptName>gspd</ScriptName>
     <AgencyType>CityPolice</AgencyType>
-    <StaffLevel>Low</StaffLevel>
+    <StaffLevel>Fair</StaffLevel>
+    <CallSignStyle>LAPD</CallSignStyle>
     <County>Blaine</County>
     <CustomBackingAgency />
-    <Vehicles>
-      <Marked>
-        <Vehicle probability="5">SHERIFF</Vehicle>
-        <Vehicle probability="5">SHERIFF2</Vehicle>
-      </Marked>
-      <UnMarked>
-        <Vehicle probability="5">POLICE4</Vehicle>
-      </UnMarked>
-    </Vehicles>
+    <Units>
+      <Unit type="Patrol">
+        <Officer>
+          <VehicleSet>
+            <Vehicles>
+              <Vehicle chance="50" pax="1" pax_chance="40">SHERIFF</Vehicle>
+              <Vehicle chance="50" pax="1" pax_chance="25">SHERIFF2</Vehicle>
+            </Vehicles>
+            <Peds>
+              <Ped chance="90" comp_shirt="2" prop_hats="1" prop_glasses="2">S_M_Y_SHERIFF_01</Ped>
+              <Ped chance="10" comp_shirt="2" prop_hats="1">S_F_Y_SHERIFF_01</Ped>
+            </Peds>
+            <NonLethals>
+              <NonLethal>WEAPON_STUNGUN</NonLethal>
+              <NonLethal>WEAPON_NIGHTSTICK</NonLethal>
+            </NonLethals>
+            <HandGuns>
+              <HandGun chance="90" comp_1="COMPONENT_AT_PI_FLSH">WEAPON_PISTOL</HandGun>
+              <HandGun chance="10" comp_1="COMPONENT_AT_PI_FLSH">WEAPON_COMBATPISTOL</HandGun>
+            </HandGuns>
+            <LongGuns>
+              <LongGun chance="67" comp_1="COMPONENT_AT_AR_FLSH">WEAPON_CARBINERIFLE</LongGun>
+              <LongGun chance="33" comp_1="COMPONENT_AT_AR_FLSH">WEAPON_PUMPSHOTGUN</LongGun>
+            </LongGuns>
+          </VehicleSet>
+        </Officer>
+        <Supervisor derives="Officer" />
+      </Unit>
+      <Unit type="K9" derives="Patrol">
+        <Overrides>
+          <VehicleSet k9_model="ROTTWEILER" k9_tex_face="1" k9_tex_shirt="1" k9_tex_accessories="1">
+            <Vehicles>
+              <Vehicle>SHERIFF2</Vehicle>
+            </Vehicles>
+            <Peds>
+              <Ped chance="90" prop_glasses="2">S_M_Y_SHERIFF_01</Ped>
+              <Ped chance="10">S_F_Y_SHERIFF_01</Ped>
+            </Peds>
+          </VehicleSet>
+        </Overrides>
+      </Unit>
+    </Units>
   </Agency>
+  
+  <!-- Sandy Shores Police Department -->
   <Agency>
     <Name>Sandy Shore Police Department</Name>
     <ScriptName>sspd</ScriptName>
     <AgencyType>CityPolice</AgencyType>
-    <StaffLevel>Low</StaffLevel>
+    <StaffLevel>Poor</StaffLevel>
+    <CallSignStyle>LAPD</CallSignStyle>
     <County>Blaine</County>
     <CustomBackingAgency />
-    <Vehicles>
-      <Marked>
-        <Vehicle probability="5">SHERIFF</Vehicle>
-        <Vehicle probability="5">SHERIFF2</Vehicle>
-      </Marked>
-      <UnMarked>
-        <Vehicle probability="5">POLICE4</Vehicle>
-      </UnMarked>
-    </Vehicles>
+    <Units>
+      <Unit type="Patrol">
+        <Officer>
+          <VehicleSet>
+            <Vehicles>
+              <Vehicle chance="50" pax="1" pax_chance="40">SHERIFF</Vehicle>
+              <Vehicle chance="50" pax="1" pax_chance="25">SHERIFF2</Vehicle>
+            </Vehicles>
+            <Peds>
+              <Ped chance="90" comp_shirt="2" prop_hats="1" prop_glasses="2">S_M_Y_SHERIFF_01</Ped>
+              <Ped chance="10" comp_shirt="2" prop_hats="1">S_F_Y_SHERIFF_01</Ped>
+            </Peds>
+            <NonLethals>
+              <NonLethal>WEAPON_STUNGUN</NonLethal>
+              <NonLethal>WEAPON_NIGHTSTICK</NonLethal>
+            </NonLethals>
+            <HandGuns>
+              <HandGun chance="90" comp_1="COMPONENT_AT_PI_FLSH">WEAPON_PISTOL</HandGun>
+              <HandGun chance="10" comp_1="COMPONENT_AT_PI_FLSH">WEAPON_COMBATPISTOL</HandGun>
+            </HandGuns>
+            <LongGuns>
+              <LongGun chance="67" comp_1="COMPONENT_AT_AR_FLSH">WEAPON_CARBINERIFLE</LongGun>
+              <LongGun chance="33" comp_1="COMPONENT_AT_AR_FLSH">WEAPON_PUMPSHOTGUN</LongGun>
+            </LongGuns>
+          </VehicleSet>
+        </Officer>
+        <Supervisor derives="Officer" />
+      </Unit>
+      <Unit type="K9" derives="Patrol">
+        <Overrides>
+          <VehicleSet k9_model="ROTTWEILER" k9_tex_face="1" k9_tex_shirt="1" k9_tex_accessories="1">
+            <Vehicles>
+              <Vehicle>SHERIFF2</Vehicle>
+            </Vehicles>
+            <Peds>
+              <Ped chance="90" prop_glasses="2">S_M_Y_SHERIFF_01</Ped>
+              <Ped chance="10">S_F_Y_SHERIFF_01</Ped>
+            </Peds>
+          </VehicleSet>
+        </Overrides>
+      </Unit>
+    </Units>
   </Agency>
+  
+  <!-- Paleto Bay Police Department -->
   <Agency>
     <Name>Paleto Bay Police Department</Name>
     <ScriptName>pbpd</ScriptName>
     <AgencyType>CityPolice</AgencyType>
     <StaffLevel>Fair</StaffLevel>
+    <CallSignStyle>LAPD</CallSignStyle>
     <County>Blaine</County>
     <CustomBackingAgency />
-    <Vehicles>
-      <Marked>
-        <Vehicle probability="5">SHERIFF</Vehicle>
-        <Vehicle probability="5">SHERIFF2</Vehicle>
-      </Marked>
-      <UnMarked>
-        <Vehicle probability="5">POLICE4</Vehicle>
-      </UnMarked>
-    </Vehicles>
+    <Units>
+      <Unit type="Patrol">
+        <Officer>
+          <VehicleSet>
+            <Vehicles>
+              <Vehicle chance="50" pax="1" pax_chance="40">SHERIFF</Vehicle>
+              <Vehicle chance="50" pax="1" pax_chance="25">SHERIFF2</Vehicle>
+            </Vehicles>
+            <Peds>
+              <Ped chance="90" comp_shirt="2" prop_hats="1" prop_glasses="2">S_M_Y_SHERIFF_01</Ped>
+              <Ped chance="10" comp_shirt="2" prop_hats="1">S_F_Y_SHERIFF_01</Ped>
+            </Peds>
+            <NonLethals>
+              <NonLethal>WEAPON_STUNGUN</NonLethal>
+              <NonLethal>WEAPON_NIGHTSTICK</NonLethal>
+            </NonLethals>
+            <HandGuns>
+              <HandGun chance="90" comp_1="COMPONENT_AT_PI_FLSH">WEAPON_PISTOL</HandGun>
+              <HandGun chance="10" comp_1="COMPONENT_AT_PI_FLSH">WEAPON_COMBATPISTOL</HandGun>
+            </HandGuns>
+            <LongGuns>
+              <LongGun chance="67" comp_1="COMPONENT_AT_AR_FLSH">WEAPON_CARBINERIFLE</LongGun>
+              <LongGun chance="33" comp_1="COMPONENT_AT_AR_FLSH">WEAPON_PUMPSHOTGUN</LongGun>
+            </LongGuns>
+          </VehicleSet>
+        </Officer>
+        <Supervisor derives="Officer" />
+      </Unit>
+      <Unit type="K9" derives="Patrol">
+        <Overrides>
+          <VehicleSet k9_model="ROTTWEILER" k9_tex_face="1" k9_tex_shirt="1" k9_tex_accessories="1">
+            <Vehicles>
+              <Vehicle>SHERIFF2</Vehicle>
+            </Vehicles>
+            <Peds>
+              <Ped chance="90" prop_glasses="2">S_M_Y_SHERIFF_01</Ped>
+              <Ped chance="10">S_F_Y_SHERIFF_01</Ped>
+            </Peds>
+          </VehicleSet>
+        </Overrides>
+      </Unit>
+    </Units>
   </Agency>
 
   <!-- Sheriff Departments -->
@@ -221,34 +729,167 @@
     <ScriptName>lssd</ScriptName>
     <AgencyType>CountySheriff</AgencyType>
     <StaffLevel>Fair</StaffLevel>
+    <CallSignStyle>LAPD</CallSignStyle>
     <County>LosSantos</County>
     <CustomBackingAgency />
-    <Vehicles>
-      <Marked>
-        <Vehicle probability="5">SHERIFF</Vehicle>
-        <Vehicle probability="5">SHERIFF2</Vehicle>
-      </Marked>
-      <UnMarked>
-        <Vehicle probability="5">POLICE4</Vehicle>
-      </UnMarked>
-    </Vehicles>
+    <Units>
+      <Unit type="Patrol">
+        <Officer>
+          <VehicleSet>
+            <Vehicles>
+              <Vehicle chance="50" pax="1" pax_chance="40">SHERIFF</Vehicle>
+              <Vehicle chance="50" pax="1" pax_chance="25">SHERIFF2</Vehicle>
+            </Vehicles>
+            <Peds>
+              <Ped chance="90" comp_shirt="2" prop_hats="1" prop_glasses="2">S_M_Y_SHERIFF_01</Ped>
+              <Ped chance="10" comp_shirt="2" prop_hats="1">S_F_Y_SHERIFF_01</Ped>
+            </Peds>
+            <NonLethals>
+              <NonLethal>WEAPON_STUNGUN</NonLethal>
+              <NonLethal>WEAPON_NIGHTSTICK</NonLethal>
+            </NonLethals>
+            <HandGuns>
+              <HandGun chance="90" comp_1="COMPONENT_AT_PI_FLSH">WEAPON_PISTOL</HandGun>
+              <HandGun chance="10" comp_1="COMPONENT_AT_PI_FLSH">WEAPON_COMBATPISTOL</HandGun>
+            </HandGuns>
+            <LongGuns>
+              <LongGun chance="67" comp_1="COMPONENT_AT_AR_FLSH">WEAPON_CARBINERIFLE</LongGun>
+              <LongGun chance="33" comp_1="COMPONENT_AT_AR_FLSH">WEAPON_PUMPSHOTGUN</LongGun>
+            </LongGuns>
+          </VehicleSet>
+        </Officer>
+        <Supervisor derives="Officer" />
+      </Unit>
+      <Unit type="K9" derives="Patrol">
+        <Overrides>
+          <VehicleSet k9_model="ROTTWEILER" k9_tex_face="1" k9_tex_shirt="1" k9_tex_accessories="1">
+            <Vehicles>
+              <Vehicle>SHERIFF2</Vehicle>
+            </Vehicles>
+            <Peds>
+              <Ped chance="90" prop_glasses="2">S_M_Y_SHERIFF_01</Ped>
+              <Ped chance="10">S_F_Y_SHERIFF_01</Ped>
+            </Peds>
+          </VehicleSet>
+        </Overrides>
+      </Unit>
+      <Unit type="Swat">
+        <VehicleSet>
+          <Vehicles>
+            <Vehicle pax="7" pax_chance="100">RIOT</Vehicle>
+          </Vehicles>
+          <Peds>
+            <Ped comp_decals="1" tex_decals="2" prop_hats="1">S_M_Y_SWAT_01</Ped>
+          </Peds>
+          <NonLethals>
+            <NonLethal>WEAPON_STUNGUN</NonLethal>
+            <NonLethal>WEAPON_NIGHTSTICK</NonLethal>
+          </NonLethals>
+          <HandGuns>
+            <HandGun chance="75">WEAPON_COMBATPISTOL</HandGun>
+            <HandGun chance="25">WEAPON_PISTOL</HandGun>
+          </HandGuns>
+          <LongGuns>
+            <LongGun chance="67">WEAPON_ADVANCEDRIFLE</LongGun>
+            <LongGun chance="33">WEAPON_ASSAULTSHOTGUN</LongGun>
+          </LongGuns>
+        </VehicleSet>
+      </Unit>
+      <Unit type="Air">
+        <VehicleSet>
+          <Vehicles>
+            <Vehicle livery="1" pax="1" pax_chance="100">POLMAV</Vehicle>
+          </Vehicles>
+          <Peds>
+            <Ped comp_tasks="2" prop_hats="1">S_M_Y_PILOT_01</Ped>
+          </Peds>
+        </VehicleSet>
+      </Unit>
+    </Units>
   </Agency>
+  
   <Agency>
     <Name>Blaine County Sheriff Office</Name>
     <ScriptName>bcso</ScriptName>
     <AgencyType>CountySheriff</AgencyType>
-    <StaffLevel>Low</StaffLevel>
+    <StaffLevel>Poor</StaffLevel>
+    <CallSignStyle>LAPD</CallSignStyle>
     <County>Blaine</County>
     <CustomBackingAgency />
-    <Vehicles>
-      <Marked>
-        <Vehicle probability="5">SHERIFF</Vehicle>
-        <Vehicle probability="5">SHERIFF2</Vehicle>
-      </Marked>
-      <UnMarked>
-        <Vehicle probability="5">POLICE4</Vehicle>
-      </UnMarked>
-    </Vehicles>
+    <Units>
+      <Unit type="Patrol">
+        <Officer>
+          <VehicleSet>
+            <Vehicles>
+              <Vehicle chance="50" pax="1" pax_chance="40">SHERIFF</Vehicle>
+              <Vehicle chance="50" pax="1" pax_chance="25">SHERIFF2</Vehicle>
+            </Vehicles>
+            <Peds>
+              <Ped chance="90" comp_shirt="2" prop_hats="1" prop_glasses="2">S_M_Y_SHERIFF_01</Ped>
+              <Ped chance="10" comp_shirt="2" prop_hats="1">S_F_Y_SHERIFF_01</Ped>
+            </Peds>
+            <NonLethals>
+              <NonLethal>WEAPON_STUNGUN</NonLethal>
+              <NonLethal>WEAPON_NIGHTSTICK</NonLethal>
+            </NonLethals>
+            <HandGuns>
+              <HandGun chance="90" comp_1="COMPONENT_AT_PI_FLSH">WEAPON_PISTOL</HandGun>
+              <HandGun chance="10" comp_1="COMPONENT_AT_PI_FLSH">WEAPON_COMBATPISTOL</HandGun>
+            </HandGuns>
+            <LongGuns>
+              <LongGun chance="67" comp_1="COMPONENT_AT_AR_FLSH">WEAPON_CARBINERIFLE</LongGun>
+              <LongGun chance="33" comp_1="COMPONENT_AT_AR_FLSH">WEAPON_PUMPSHOTGUN</LongGun>
+            </LongGuns>
+          </VehicleSet>
+        </Officer>
+        <Supervisor derives="Officer" />
+      </Unit>
+      <Unit type="K9" derives="Patrol">
+        <Overrides>
+          <VehicleSet k9_model="ROTTWEILER" k9_tex_face="1" k9_tex_shirt="1" k9_tex_accessories="1">
+            <Vehicles>
+              <Vehicle>SHERIFF2</Vehicle>
+            </Vehicles>
+            <Peds>
+              <Ped chance="90" prop_glasses="2">S_M_Y_SHERIFF_01</Ped>
+              <Ped chance="10">S_F_Y_SHERIFF_01</Ped>
+            </Peds>
+          </VehicleSet>
+        </Overrides>
+      </Unit>
+      <Unit type="Swat">
+        <VehicleSet>
+          <Vehicles>
+            <Vehicle pax="7" pax_chance="100">RIOT</Vehicle>
+          </Vehicles>
+          <Peds>
+            <Ped comp_decals="1" tex_decals="2" prop_hats="1">S_M_Y_SWAT_01</Ped>
+          </Peds>
+          <NonLethals>
+            <NonLethal>WEAPON_STUNGUN</NonLethal>
+            <NonLethal>WEAPON_NIGHTSTICK</NonLethal>
+          </NonLethals>
+          <HandGuns>
+            <HandGun chance="75">WEAPON_COMBATPISTOL</HandGun>
+            <HandGun chance="25">WEAPON_PISTOL</HandGun>
+          </HandGuns>
+          <LongGuns>
+            <LongGun chance="67">WEAPON_ADVANCEDRIFLE</LongGun>
+            <LongGun chance="33">WEAPON_ASSAULTSHOTGUN</LongGun>
+          </LongGuns>
+        </VehicleSet>
+      </Unit>
+      <Unit type="Air">
+        <VehicleSet>
+          <Vehicles>
+            <Vehicle livery="1" pax="1" pax_chance="100">POLMAV</Vehicle>
+          </Vehicles>
+          <Peds>
+            <Ped comp_tasks="2" prop_hats="1">S_M_Y_PILOT_01</Ped>
+          </Peds>
+        </VehicleSet>
+      </Unit>
+    </Units>
   </Agency>
   
   <!-- State Troopers -->
@@ -256,28 +897,101 @@
     <Name>San Andreas Highway Patrol</Name>
     <ScriptName>sahp</ScriptName>
     <AgencyType>HighwayPatrol</AgencyType>
-    <StaffLevel>Fair</StaffLevel>
+    <StaffLevel>Full</StaffLevel>
+    <CallSignStyle>LAPD</CallSignStyle>
     <County />
     <CustomBackingAgency />
-    <Vehicles>
-      <Marked>
-        <Vehicle probability="5">policeb</Vehicle>
-      </Marked>
-    </Vehicles>
+    <Units>
+      <Unit type="Traffic">
+        <Officer>
+          <VehicleSet chance="70">
+            <Vehicles>
+              <Vehicle chance="100" pax="1" pax_chance="25" color="Black">POLICE4</Vehicle>
+            </Vehicles>
+            <Peds>
+              <Ped comp_shirt="1" comp_pants="2" comp_decals="1" prop_glasses="2" tex_glasses="1" prop_hats="0">S_M_Y_HWAYCOP_01</Ped>
+            </Peds>
+          </VehicleSet>
+          <VehicleSet chance="30">
+            <Vehicles>
+              <Vehicle>POLICEB</Vehicle>
+            </Vehicles>
+            <Peds>
+              <Ped comp_shirt="2" comp_pants="1" comp_decals="2" prop_glasses="1" tex_glasses="2" prop_hats="1">S_M_Y_HWAYCOP_01</Ped>
+            </Peds>
+          </VehicleSet>
+        </Officer>
+        <Supervisor derives="Officer" />
+      </Unit>
+      <Unit type="K9" derives="Traffic">
+        <Overrides>
+          <VehicleSet k9_model="HUSKY" k9_tex_face="1" k9_tex_shirt="1" k9_tex_accessories="1">
+            <Vehicles>
+              <Vehicle>FBI2</Vehicle>
+            </Vehicles>
+            <Peds>
+              <Ped comp_pants="2" comp_decals="1" prop_hats="0">S_M_Y_HWAYCOP_01</Ped>
+            </Peds>
+          </VehicleSet>
+        </Overrides>
+      </Unit>
+      <Unit type="Air">
+        <VehicleSet>
+          <Vehicles>
+            <Vehicle livery="1" pax="1" pax_chance="100">POLMAV</Vehicle>
+          </Vehicles>
+          <Peds>
+            <Ped comp_tasks="2" prop_hats="1">S_M_Y_PILOT_01</Ped>
+          </Peds>
+        </VehicleSet>
+      </Unit>
+    </Units>
   </Agency>
+  
   <Agency>
     <Name>North Yankton State Patrol</Name>
     <ScriptName>nysp</ScriptName>
     <AgencyType>HighwayPatrol</AgencyType>
-    <StaffLevel>Fair</StaffLevel>
+    <StaffLevel>Full</StaffLevel>
     <County />
     <CustomBackingAgency />
-    <Vehicles>
-      <Marked>
-        <Vehicle probability="5">policeold1</Vehicle>
-        <Vehicle probability="5">policeold2</Vehicle>
-      </Marked>
-    </Vehicles>
+    <Units>
+      <Unit type="Traffic">
+        <Officer>
+          <VehicleSet>
+            <Vehicles>
+              <Vehicle>FBI2</Vehicle>
+            </Vehicles>
+            <Peds>
+              <Ped comp_pants="2" comp_decals="1" prop_hats="0">S_M_Y_HWAYCOP_01</Ped>
+            </Peds>
+          </VehicleSet>
+        </Officer>
+        <Supervisor derives="Officer" />
+      </Unit>
+      <Unit type="K9" derives="Traffic">
+        <Overrides>
+          <VehicleSet k9_model="HUSKY" k9_tex_face="1" k9_tex_shirt="1" k9_tex_accessories="1">
+            <Vehicles>
+              <Vehicle>FBI2</Vehicle>
+            </Vehicles>
+            <Peds>
+              <Ped comp_pants="2" comp_decals="1" prop_hats="0">S_M_Y_HWAYCOP_01</Ped>
+            </Peds>
+          </VehicleSet>
+        </Overrides>
+      </Unit>
+      <Unit type="Air">
+        <VehicleSet>
+          <Vehicles>
+            <Vehicle livery="1" pax="1" pax_chance="100">POLMAV</Vehicle>
+          </Vehicles>
+          <Peds>
+            <Ped comp_tasks="2" prop_hats="1">S_M_Y_PILOT_01</Ped>
+          </Peds>
+        </VehicleSet>
+      </Unit>
+    </Units>
   </Agency>
 
   <!-- Special Agents -->
@@ -285,7 +999,8 @@
     <Name>Federal Investigation Bureau</Name>
     <ScriptName>fib</ScriptName>
     <AgencyType>SpecialAgent</AgencyType>
-    <StaffLevel>VeryHigh</StaffLevel>
+    <StaffLevel>Full</StaffLevel>
+    <CallSignStyle>LAPD</CallSignStyle>
     <County />
     <CustomBackingAgency />
     <Vehicles>
@@ -295,11 +1010,13 @@
       </Marked>
     </Vehicles>
   </Agency>
+  
   <Agency>
     <Name>National Office of Security Enforcement</Name>
     <ScriptName>noose</ScriptName>
     <AgencyType>SpecialAgent</AgencyType>
-    <StaffLevel>High</StaffLevel>
+    <StaffLevel>Full</StaffLevel>
+    <CallSignStyle>LAPD</CallSignStyle>
     <County />
     <CustomBackingAgency />
     <Vehicles>
@@ -315,13 +1032,14 @@
     <Name>San Andreas Park Rangers</Name>
     <ScriptName>sapr</ScriptName>
     <AgencyType>ParkRanger</AgencyType>
-    <StaffLevel>Low</StaffLevel>
+    <StaffLevel>Fair</StaffLevel>
+    <CallSignStyle>LAPD</CallSignStyle>
     <County />
     <CustomBackingAgency />
     <Vehicles>
       <Marked>
         <Vehicle probability="5">FBI</Vehicle>
-        <Vehicle probability="5">FBI2</Vehicle>
+        <Vehicle probability="5">FBI2</Vehicle> 
       </Marked>
     </Vehicles>
   </Agency>

@@ -1,4 +1,5 @@
-﻿using Rage;
+﻿using LSPD_First_Response.Mod.API;
+using Rage;
 using System;
 
 namespace AgencyDispatchFramework.Dispatching
@@ -22,11 +23,13 @@ namespace AgencyDispatchFramework.Dispatching
         /// Creates a new instance of <see cref="OfficerUnit"/> for the player
         /// </summary>
         /// <param name="player"></param>
-        internal PlayerOfficerUnit(Player player, Agency agency) : base(agency, Settings.AudioDivision, Settings.AudioUnitType[0], Settings.AudioBeat)
+        internal PlayerOfficerUnit(Player player, Agency agency, CallSign callSign) : base(agency, callSign)
         {
             Officer = player ?? throw new ArgumentNullException("player");
             LastStatusChange = World.DateTime;
             Status = OfficerStatus.Available;
+
+            Persona = Functions.GetPersonaForPed(player.Character);
         }
 
         internal override void AssignToCall(PriorityCall call, bool forcePrimary = false)

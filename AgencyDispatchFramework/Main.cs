@@ -79,7 +79,7 @@ namespace AgencyDispatchFramework
             GTARootPath = Path.GetDirectoryName(Uri.UnescapeDataString(uri.Path));
             LSPDFRPluginPath = Path.Combine(GTARootPath, "Plugins", "lspdfr");
             FrameworkFolderPath = Path.Combine(GTARootPath, "Plugins", "lspdfr", "AgencyDispatchFramework");
-
+            
             // Dependency checks
             foreach (var dep in Dependencies)
             {
@@ -182,6 +182,9 @@ namespace AgencyDispatchFramework
                 {
                     // Load postals
                     Postal.Initialize();
+
+                    // Load name generator
+                    RandomNameGenerator.Initialize();
 
                     // Load our agencies and such (this will only initialize once per game session)
                     Agency.Initialize();

@@ -79,7 +79,7 @@ namespace AgencyDispatchFramework.NativeUI
                 // Setup the tab view
                 DispatchWindow = new TabView("~y~eForce ~w~Computer Aided Dispatch System");
                 DispatchWindow.Name = PlayerPersona.FullName;
-                DispatchWindow.Money = Dispatch.PlayerAgency.FriendlyName;
+                DispatchWindow.Money = Dispatch.PlayerAgency.FullName;
                 DispatchWindow.OnMenuClose += (s, e) => Rage.Game.IsPaused = false;
 
                 // BOLO'S ?
@@ -110,7 +110,7 @@ namespace AgencyDispatchFramework.NativeUI
 
                 // Setup the tab view
                 DispatchWindow.Name = PlayerPersona.FullName;
-                DispatchWindow.Money = Dispatch.PlayerAgency.FriendlyName;
+                DispatchWindow.Money = Dispatch.PlayerAgency.FullName;
 
                 // Build initial scnario page
                 BuildScenarioPage();
@@ -251,7 +251,7 @@ namespace AgencyDispatchFramework.NativeUI
                             items.Add(new UIMenuListScrollerItem<string>(unit.CallSign, "", new[] { unit.Status.ToString() }) { ScrollingEnabled = false });
                         }
 
-                        DepartmentListTab.Items.Add(new TabInteractiveListItem(agency.FriendlyName, items));
+                        DepartmentListTab.Items.Add(new TabInteractiveListItem(agency.FullName, items));
                     }
                 }
             }

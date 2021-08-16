@@ -100,9 +100,40 @@ namespace AgencyDispatchFramework
         /// <returns></returns>
         public Int32 Next(Range<int> range) => Next(range.Minimum, range.Maximum);
 
+        /// <summary>
+        /// Fills an array of bytes with a cryptographically strong sequence of random values.
+        /// </summary>
+        /// <param name="b"></param>
         public override void NextBytes(byte[] b)
         {
             RNG.GetBytes(b);
+        }
+
+        /// <summary>
+        /// Gets the next random <see cref="DateTime"/> within the specified range
+        /// </summary>
+        /// <param name="start">The earliest <see cref="DateTime"/> in range</param>
+        /// <param name="end">The latest <see cref="DateTime"/> in range</param>
+        /// <returns></returns>
+        public DateTime NextDateTime(DateTime start, DateTime end)
+        {
+            // Calculate cumulative number of seconds between two DateTimes
+            double seconds = end.Subtract(start).TotalSeconds;
+            if (seconds > Int32.MaxValue)
+            {
+                // Get a random 64 bit integer
+                byte[] uint64Buffer = new byte[8];
+                RNG.GetBytes(uint64Buffer);
+
+                double numberOfSecondsToAdd = Convert.ToInt64(uint64Buffer) & 0x7FFFFFFF;
+                return start.AddSeconds(numberOfSecondsToAdd);
+            }
+            else
+            {
+                // Add random number of seconds to dateTimeFrom
+                int numberOfSecondsToAdd = Next((int)seconds);
+                return start.AddSeconds(numberOfSecondsToAdd);
+            }
         }
     }
 }

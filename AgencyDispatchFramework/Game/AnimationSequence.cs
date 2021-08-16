@@ -187,6 +187,10 @@ namespace AgencyDispatchFramework.Game
                 // Log it
                 Log.Exception(e);
 
+                // Dispose
+                TokenSource.Dispose();
+                TokenSource = null;
+
                 // Flag
                 IsPlaying = false;
             }

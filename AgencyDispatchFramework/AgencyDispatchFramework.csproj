@@ -85,6 +85,9 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
+    <Reference Include="UltimateBackup">
+      <HintPath>..\..\__Dependencies\v2020\UltimateBackup.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Conversation\CommunicationElement.cs" />
@@ -92,11 +95,14 @@
     <Compile Include="Conversation\PedResponseEventHandler.cs" />
     <Compile Include="Conversation\Question.cs" />
     <Compile Include="Dispatching\Agency\SheriffAgency.cs" />
+    <Compile Include="Dispatching\Enums\CallSignStyle.cs" />
+    <Compile Include="Dispatching\NumberStyleCallsign.cs" />
     <Compile Include="Dispatching\Assignments\BusinessCheck.cs" />
     <Compile Include="Dispatching\Assignments\FelonyTrafficStop.cs" />
     <Compile Include="Dispatching\Assignments\PrisonerTransport.cs" />
     <Compile Include="Dispatching\Assignments\PropertyCheck.cs" />
     <Compile Include="Dispatching\Assignments\TrafficEnforcement.cs" />
+    <Compile Include="Dispatching\CallSign.cs" />
     <Compile Include="Dispatching\Delegates\BeforeRadioPlayedHandler.cs" />
     <Compile Include="Dispatching\Delegates\CallEndedHandler.cs" />
     <Compile Include="Dispatching\Delegates\CallListUpdateHandler.cs" />
@@ -110,6 +116,7 @@
     <Compile Include="Dispatching\Enums\DispatchPriority.cs" />
     <Compile Include="Dispatching\Enums\UnitType.cs" />
     <Compile Include="Dispatching\Dispatchers\PoliceDispatcher.cs" />
+    <Compile Include="Dispatching\LAPDStyleCallsign.cs" />
     <Compile Include="Dispatching\RadioMessage.cs" />
     <Compile Include="Dispatching\Delegates\ScenarioListUpdateHandler.cs" />
     <Compile Include="Dispatching\Enums\ResponseCode.cs" />
@@ -126,6 +133,7 @@
     <Compile Include="Dispatching\Assignments\StandardTrafficStop.cs" />
     <Compile Include="Events\AiOfficerEvent.cs" />
     <Compile Include="Events\AmbientEventHandler.cs" />
+    <Compile Include="Events\Ambient\DrunkDriver.cs" />
     <Compile Include="Events\TrafficStop\BackupRequested.cs" />
     <Compile Include="Events\TrafficStop\K9RequestEvent.cs" />
     <Compile Include="Events\TrafficStop\ShotsFiredEvent.cs" />
@@ -138,6 +146,9 @@
     <Compile Include="Game\AnimationMeta.cs" />
     <Compile Include="Game\AnimationSequence.cs" />
     <Compile Include="Game\AnimationData.cs" />
+    <Compile Include="Game\Enums\PedComponent.cs" />
+    <Compile Include="Game\Enums\PedPropIndex.cs" />
+    <Compile Include="Integration\UltimateBackupAPI.cs" />
     <Compile Include="Linq\ExpressionResult.cs" />
     <Compile Include="Extensions\CharExtensions.cs" />
     <Compile Include="Extensions\Enums\LogicOperator.cs" />
@@ -184,7 +195,6 @@
     <Compile Include="Integration\StopThePedAPI.cs" />
     <Compile Include="Callouts\AgencyCallout.cs" />
     <Compile Include="Dispatching\Agency\CityPoliceAgency.cs" />
-    <Compile Include="Dispatching\Enums\OfficerRole.cs" />
     <Compile Include="Dispatching\Agency\HighwayPatrolAgency.cs" />
     <Compile Include="Dispatching\PriorityCallDescription.cs" />
     <Compile Include="Dispatching\Enums\CallCloseFlag.cs" />
@@ -196,6 +206,8 @@
     <Compile Include="Dispatching\Enums\PatrolType.cs" />
     <Compile Include="Game\Enums\ZoneType.cs" />
     <Compile Include="ProbableItem.cs" />
+    <Compile Include="RandomName.cs" />
+    <Compile Include="RandomNameGenerator.cs" />
     <Compile Include="Simulation\AISceneSimulation.cs" />
     <Compile Include="Game\Locations\WorldLocation.cs" />
     <Compile Include="Game\Locations\Residence.cs" />
@@ -204,11 +216,15 @@
     <Compile Include="Dispatching\Enums\OfficerStatusColor.cs" />
     <Compile Include="Dispatching\OfficerUnit.cs" />
     <Compile Include="Dispatching\PlayerOfficerUnit.cs" />
+    <Compile Include="Simulation\OfficerModelMeta.cs" />
     <Compile Include="Simulation\PersistentAIOfficerUnit.cs" />
     <Compile Include="Dispatching\PriorityCall.cs" />
     <Compile Include="Game\Enums\SocialClass.cs" />
     <Compile Include="Dispatching\Enums\CallPriority.cs" />
-    <Compile Include="Simulation\VirtualAIOfficerUnit.cs" />
+    <Compile Include="Simulation\SpecializedUnit.cs" />
+    <Compile Include="Simulation\VehicleModelMeta.cs" />
+    <Compile Include="Simulation\VehicleSet.cs" />
+    <Compile Include="Simulation\AIOfficerUnit.cs" />
     <Compile Include="Callouts\DomesticViolence\Controller.cs" />
     <Compile Include="Callouts\DomesticViolence\ReportsOfArguingThreats.cs" />
     <Compile Include="Game\Enums\TimePeriod.cs" />
@@ -241,6 +257,7 @@
       <DependentUpon>CADMainGwenFormTemplate.cs</DependentUpon>
     </Compile>
     <Compile Include="Log.cs" />
+    <Compile Include="Simulation\WeaponMeta.cs" />
     <Compile Include="Spawnable.cs" />
     <Compile Include="Game\Locations\SpawnPoint.cs" />
     <Compile Include="Dispatching\Enums\StaffLevel.cs" />
@@ -283,6 +300,7 @@
     <Compile Include="WorldStateMultipliers.cs" />
     <Compile Include="WorldStateProbabilityGenerator.cs" />
     <Compile Include="Game\TimeScale.cs" />
+    <Compile Include="Xml\AgenciesFile.cs" />
     <Compile Include="Xml\CalloutMetaFile.cs" />
     <Compile Include="Xml\DialogueFile.cs" />
     <Compile Include="Xml\WorldZoneFile.cs" />
@@ -603,6 +621,7 @@
     <Content Include="AgencyDispatchFramework\Locations\ZQ_UAR.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="AgencyDispatchFramework\Names.xml" />
     <Content Include="AgencyDispatchFramework\PedModelMeta.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

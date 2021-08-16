@@ -55,6 +55,16 @@ namespace AgencyDispatchFramework.Game
             }
         }
 
+        /// <summary>
+        /// Gets the time since this <see cref="WeatherSnapshot"/> was taken from the current
+        /// </summary>
+        /// <returns></returns>
+        public TimeSpan GetAge()
+        {
+            var now = World.DateTime;
+            return now - DateTime;
+        }
+
         public override string ToString()
         {
             return Weather.ToString();

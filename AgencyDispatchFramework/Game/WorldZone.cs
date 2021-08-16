@@ -168,7 +168,7 @@ namespace AgencyDispatchFramework.Game
             // If we have no locations, return null
             if (locationPool == null || locationPool.Length == 0)
             {
-                Log.Debug($"ZoneInfo.GetRandomLocationFromPool<T>(): Unable to pull a {typeof(T).Name} from zone '{ScriptName}' because no locations were provided in the list");
+                Log.Debug($"WorldZone.GetRandomLocationFromPool<T>(): Unable to pull a {typeof(T).Name} from zone '{ScriptName}' because no locations were provided in the list");
                 return null;
             }
 
@@ -180,7 +180,7 @@ namespace AgencyDispatchFramework.Game
                 locationPool = locationPool.Filter(filters).ToArray();
                 if (locationPool.Length == 0)
                 {
-                    Log.Warning($"ZoneInfo.GetRandomLocationFromPool<T>(): There are no locations of type '{type}' in zone '{ScriptName}' using the following flags:");
+                    Log.Warning($"WorldZone.GetRandomLocationFromPool<T>(): There are no locations of type '{type}' in zone '{ScriptName}' using the following flags:");
                     Log.Warning($"\t{filters}");
                     return null;
                 }
@@ -196,7 +196,7 @@ namespace AgencyDispatchFramework.Game
                 }
                 catch (InvalidCastException ex)
                 {
-                    Log.Exception(ex, $"ZoneInfo.GetRandomLocationFromPool<T>(): Cast exception to {typeof(T).Name} from location pool. Logging exception data");
+                    Log.Exception(ex, $"WorldZone.GetRandomLocationFromPool<T>(): Cast exception to {typeof(T).Name} from location pool. Logging exception data");
                     return null;
                 }
             }
@@ -204,7 +204,7 @@ namespace AgencyDispatchFramework.Game
             // If no locations are available
             if (locationPool.Length == 0)
             {
-                Log.Debug($"ZoneInfo.GetRandomLocationFromPool<T>(): Unable to pull an available '{type}' location from zone '{ScriptName}' because they are all in use");
+                Log.Debug($"WorldZone.GetRandomLocationFromPool<T>(): Unable to pull an available '{type}' location from zone '{ScriptName}' because they are all in use");
                 return null;
             }
 
@@ -270,7 +270,7 @@ namespace AgencyDispatchFramework.Game
                 string path = Path.Combine(Main.FrameworkFolderPath, "Locations", $"{zoneName}.xml");
                 if (!File.Exists(path))
                 {
-                    Log.Warning($"ZoneInfo.LoadZones(): Missing xml file for zone '{zoneName}'");
+                    Log.Warning($"WorldZone.LoadZones(): Missing xml file for zone '{zoneName}'");
                     continue;
                 }
 
@@ -293,13 +293,13 @@ namespace AgencyDispatchFramework.Game
                 }
                 catch (ArgumentException e)
                 {
-                    Log.Error($"ZoneInfo.LoadZones(): Unable to load location data for zone '{zoneName}'. Missing node '{e.ParamName}'");
+                    Log.Error($"WorldZone.LoadZones(): Unable to load location data for zone '{zoneName}'. Missing node '{e.ParamName}'");
                     continue;
                 }
                 catch (Exception fe)
                 {
                     // Error should already
-                    Log.Error($"ZoneInfo.LoadZones(): {fe.Message}");
+                    Log.Error($"WorldZone.LoadZones(): {fe.Message}");
                     continue;
                 }
             }
@@ -319,9 +319,9 @@ namespace AgencyDispatchFramework.Game
         public static WorldZone GetZoneByName(string name)
         {
             // Ensure zone exists
-            if (ZoneCache.TryGetValue(name, out WorldZone locations))
+            if (ZoneCache.TryGetValue(name, out WorldZone zone))
             {
-                return locations;
+                return zone;
             }
 
             return null;

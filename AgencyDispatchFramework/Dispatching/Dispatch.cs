@@ -1186,7 +1186,7 @@ namespace AgencyDispatchFramework
 
                 // Debugging
                 Log.Debug("Starting duty with the following Player Agency data:");
-                Log.Debug($"\t\tAgency Name: {PlayerAgency.FriendlyName}");
+                Log.Debug($"\t\tAgency Name: {PlayerAgency.FullName}");
                 Log.Debug($"\t\tAgency Type: {PlayerAgency.AgencyType}");
                 Log.Debug($"\t\tAgency Staff Level: {PlayerAgency.StaffLevel}");
                 Log.Debug("Starting duty with the following Region data:");

@@ -275,7 +275,7 @@ namespace AgencyDispatchFramework.NativeUI
 
             // Setup Patrol Menu
             SetRoleMenuButton = new UIMenuListItem("Primary Role", "Sets your role in the department. This will determine that types of calls you will recieve. Click to set.");
-            foreach (var role in Enum.GetValues(typeof(OfficerRole)))
+            foreach (var role in Enum.GetValues(typeof(AgencyUnits)))
             {
                 SetRoleMenuButton.Collection.Add(role, role.ToString());
             }

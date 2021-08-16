@@ -94,11 +94,11 @@ namespace AgencyDispatchFramework.Extensions
             {
                 string GetAnimaionString()
                 {
-                    if (bacLevel > 0.129)
+                    if (bacLevel > 0.139)
                     {
                         return "MOVE_M@DRUNK@VERYDRUNK";
                     }
-                    else if (bacLevel > 0.099)
+                    else if (bacLevel > 0.109)
                     {
                         return "MOVE_M@DRUNK@MODERATEDRUNK_HEAD_UP";
                     }
@@ -187,6 +187,52 @@ namespace AgencyDispatchFramework.Extensions
         public static bool HasScenario(this Ped ped)
         {
             return Natives.PedHasUseScenarioTask<bool>(ped);
+        }
+
+        /// <summary>
+        /// Sets random props on this <see cref="Rage.Ped"/>
+        /// </summary>
+        /// <param name="ped">The ped handle.</param>
+        /// <seealso cref="https://docs.fivem.net/natives/?_0xC44AA05345C992C6"/>
+        public static void RandomizeProps(this Ped ped)
+        {
+            Natives.SetPedRandomProps(ped);
+        }
+
+        /// <summary>
+        /// Sets the prop variation on a ped. Components, drawables and textures IDs are related to the ped model.
+        /// </summary>
+        /// <param name="ped">The ped handle.</param>
+        /// <param name="componentId">The component that you want to set.</param>
+        /// <param name="drawableId">The drawable id that is going to be set.</param>
+        /// <param name="textureId">The texture id of the drawable.</param>
+        /// <param name="attach">Attached or not.</param>
+        /// <seealso cref="https://docs.fivem.net/natives/?_0x93376B65A266EB5F"/>
+        public static void SetPropIndex(this Ped ped, int componentId, int drawableId, int textureId, bool attach)
+        {
+            Natives.SetPedPropIndex(ped, componentId, drawableId, textureId, attach);
+        }
+
+        /// <summary>
+        /// Returns the number of drawable prop variations for this <see cref="Rage.Ped"/>
+        /// </summary>
+        /// <param name="ped">The ped handle.</param>
+        /// <returns></returns>
+        /// <seealso cref="https://docs.fivem.net/natives/?_0x5FAF9754E789FB47"/>
+        public static int GetNumberOfPropDrawableVariations(this Ped ped, int propId)
+        {
+            return Natives.GetNumberOfPedPropDrawableVariations<int>(ped, propId);
+        }
+
+        /// <summary>
+        /// Returns the number of texture variations of a drawable prop for this <see cref="Rage.Ped"/>
+        /// </summary>
+        /// <param name="ped">The ped handle.</param>
+        /// <returns></returns>
+        /// <seealso cref="https://docs.fivem.net/natives/?_0xA6E7F1CEB523E171"/>
+        public static int GetNumberOfPropTextureVariations(this Ped ped, int propId, int drawableId)
+        {
+            return Natives.GetNumberOfPedPropTextureVariations<int>(ped, propId, drawableId);
         }
     }
 }

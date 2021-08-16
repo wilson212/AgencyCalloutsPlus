@@ -2,14 +2,12 @@
 {
     public enum StaffLevel
     {
-        VeryLow = 60,
+        VeryPoor = 60,
 
-        Low = 75,
+        Poor = 75,
 
         Fair = 90,
 
-        High = 100,
-
-        VeryHigh = 110
+        Full = 100,
     }
 }
