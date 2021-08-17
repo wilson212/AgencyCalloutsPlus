@@ -6,7 +6,8 @@ using System;
 namespace AgencyDispatchFramework.Dispatching
 {
     /// <summary>
-    /// Represents an Officer unit that can respond to <see cref="PriorityCall"/>(s)
+    /// Represents an Officer unit that a <see cref="Dispatcher"/> will send to 
+    /// respond to <see cref="PriorityCall"/>(s)
     /// </summary>
     public abstract class OfficerUnit : IDisposable
     {
@@ -202,11 +203,9 @@ namespace AgencyDispatchFramework.Dispatching
             LastStatusChange = World.DateTime;
         }
 
-        internal abstract void AssignToCallWithRandomCompletion(PriorityCall call);
-
         internal void SetCallSign(CallSign callSign)
         {
-            throw new NotImplementedException();
+            CallSign = callSign;
         }
     }
 }

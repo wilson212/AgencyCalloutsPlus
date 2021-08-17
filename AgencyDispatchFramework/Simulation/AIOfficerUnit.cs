@@ -1,4 +1,6 @@
 ﻿using AgencyDispatchFramework.Dispatching;
+using AgencyDispatchFramework.Extensions;
+using AgencyDispatchFramework.Game.Locations;
 using LSPD_First_Response;
 using LSPD_First_Response.Engine.Scripting.Entities;
 using Rage;
@@ -17,6 +19,20 @@ namespace AgencyDispatchFramework.Simulation
         /// Indicates whether this is an AI player
         /// </summary>
         public override bool IsAIUnit => true;
+
+        /// <summary>
+        /// Gets a bool indicating whether this unit is existing in game
+        /// </summary>
+        private bool IsSpawned { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private Vehicle SpawnedVehicle { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        private Ped SpawnedPed { get; set; }
 
         /// <summary>
         /// Gets the meta data required to spawn this officer <see cref="Ped"/> in the game world.
@@ -90,6 +106,53 @@ namespace AgencyDispatchFramework.Simulation
             {
                 Wanted = false // Ensure this is always false
             };
+        }
+
+        /// <summary>
+        /// Spawns this <see cref="AIOfficerUnit"/> into the <see cref="World"/> if not already, 
+        /// and returns the <see cref="Ped"/> and <see cref="Vehicle"/> locations
+        /// </summary>
+        public void Spawn()
+        {
+            // @todo 
+            if (IsSpawned)
+            {
+
+            }
+            else
+            {
+                // Get location @todo Make better
+                var pos = Position;
+
+                // Spawn from persona
+                SpawnedPed = Persona.CreatePed(Persona, pos);
+
+                // Set component variations
+                foreach (var comp in PedMeta.Components)
+                {
+                    // Extract ids
+                    int id = (int)comp.Key;
+                    int drawId = comp.Value.Item1;
+                    int textId = comp.Value.Item2;
+
+                    // Set component variation
+                    SpawnedPed.SetVariation(id, drawId, textId);
+                }
+
+                // Set props or randomize
+                foreach (var prop in PedMeta.Props)
+                {
+                    // Extract ids
+                    int id = (int)prop.Key;
+                    int drawId = prop.Value.Item1;
+                    int textId = prop.Value.Item2;
+
+                    // Set component variation
+                    SpawnedPed.SetPropIndex(id, drawId, textId, true);
+                }
+
+                // @todo Spawn vehicle
+            }
         }
 
         /// <summary>
@@ -233,7 +296,16 @@ namespace AgencyDispatchFramework.Simulation
             NextStatusChange = LastStatusChange.AddMinutes(30);
         }
 
-        internal override void AssignToCallWithRandomCompletion(PriorityCall call)
+        /// <summary>
+        /// Assigns this <see cref="AIOfficerUnit"/> to a <see cref="PriorityCall"/> with
+        /// a random completion percentage. This method is to be called when the player goes
+        /// on duty, and only on officers that were part of the previous <see cref="Game.TimePeriod"/>
+        /// </summary>
+        /// <remarks>
+        /// This method helps going on shift feel more realistic
+        /// </remarks>
+        /// <param name="call">The call to assign to this instance</param>
+        internal void AssignToCallWithRandomCompletion(PriorityCall call)
         {
             // Assign ourselves
             base.AssignToCall(call, true);

@@ -32,9 +32,14 @@ namespace AgencyDispatchFramework.Dispatching
             Persona = Functions.GetPersonaForPed(player.Character);
         }
 
+        /// <summary>
+        /// Asigns the player unit to the call
+        /// </summary>
+        /// <param name="call"></param>
+        /// <param name="forcePrimary"></param>
         internal override void AssignToCall(PriorityCall call, bool forcePrimary = false)
         {
-            // === DO NOT CALL BASE === //
+            // === DO NOT CALL BASE FOR PLAYER === //
 
             // Set flags
             call.AssignOfficer(this, forcePrimary);
@@ -57,11 +62,6 @@ namespace AgencyDispatchFramework.Dispatching
         public override Vector3 GetPosition()
         {
             return Officer.Character.Position;
-        }
-
-        internal override void AssignToCallWithRandomCompletion(PriorityCall call)
-        {
-            
         }
     }
 }

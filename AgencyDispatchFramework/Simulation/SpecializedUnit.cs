@@ -2,6 +2,10 @@
 
 namespace AgencyDispatchFramework.Simulation
 {
+    /// <summary>
+    /// An object that provides an interface to spawn <see cref="VehicleSet"/>s based on the
+    /// <see cref="UnitType"/>
+    /// </summary>
     public class SpecializedUnit
     {
         /// <summary>

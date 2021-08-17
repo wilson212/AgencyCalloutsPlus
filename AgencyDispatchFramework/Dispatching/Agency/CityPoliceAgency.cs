@@ -1,9 +1,7 @@
-﻿using System;
+﻿using AgencyDispatchFramework.Game;
+using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using AgencyDispatchFramework.Game;
-using AgencyDispatchFramework.Simulation;
 
 namespace AgencyDispatchFramework.Dispatching
 {

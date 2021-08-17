@@ -123,7 +123,7 @@
         <!-- 
             Copies from the unit node specified in the "derives" attribute. Anything specified inside this node will append what is specified in the "derives" node.
             
-            ** Anything within the Overrides node will overwrite awhat is defined in the base, instead of appending to it **
+            ** Anything within the Overrides node will overwrite what is defined in the base, instead of appending to it **
         -->
         <Overrides>
           <VehicleSet k9_model="SHEPHERD" k9_tex_face="1" k9_tex_shirt="1" k9_tex_accessories="1">

@@ -205,6 +205,7 @@ namespace AgencyDispatchFramework.Xml
                     // Load each catagory of vehicle sets
                     for (int i = 0; i < catagories.Length; i++)
                     {
+                        // Officer or Supervisor node
                         var n = unitNode.SelectSingleNode(catagories[i]);
                         var sets = ParseVehicleSets(n, unit, agency);
 
@@ -238,12 +239,13 @@ namespace AgencyDispatchFramework.Xml
         /// <summary>
         /// Parses a VehicleSets node
         /// </summary>
-        /// <param name="n"></param>
+        /// <param name="n">The "Unit" node that contains the "VehicleSet" nodes</param>
         /// <param name="unit"></param>
+        /// <returns>A list of parsed <see cref="VehicleSet"/> objects</returns>
         private List<VehicleSet> ParseVehicleSets(XmlNode n, SpecializedUnit unit, Agency agency)
         {
             var sets = new List<VehicleSet>();
-            var nodes = n.SelectNodes("VehicleSet");
+            var nodes = n?.SelectNodes("VehicleSet");
             foreach (XmlNode vn in nodes)
             {
                 // Ensure we have attributes

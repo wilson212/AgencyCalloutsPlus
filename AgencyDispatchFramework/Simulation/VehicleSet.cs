@@ -2,6 +2,9 @@
 
 namespace AgencyDispatchFramework.Simulation
 {
+    /// <summary>
+    /// An object that provides an interface to spawn meta data used to create <see cref="AIOfficerUnit"/>s
+    /// </summary>
     public class VehicleSet : ISpawnable
     {
         /// <summary>
@@ -20,7 +23,7 @@ namespace AgencyDispatchFramework.Simulation
         public ProbabilityGenerator<OfficerModelMeta> OfficerMetas { get; set; }
 
         /// <summary>
-        /// Gets the handgun metadata this officer unit will spawn with in thier inventory.
+        /// Gets the names of the non-lethal weapons this officer unit will spawn with in thier inventory.
         /// </summary>
         public HashSet<string> NonLethalWeapons { get; internal set; }
 
