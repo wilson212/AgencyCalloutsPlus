@@ -1,17 +1,19 @@
 ﻿using AgencyDispatchFramework.Dispatching;
-using AgencyDispatchFramework.Game;
+using AgencyDispatchFramework.Extensions;
 using AgencyDispatchFramework.Game.Locations;
+using LSPD_First_Response.Engine.Scripting.Entities;
 using Rage;
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 
 namespace AgencyDispatchFramework.Simulation
 {
     /// <summary>
-    /// Represents an <see cref="OfficerUnit"/> that is simulated exists in the <see cref="Game"/>
+    /// Represents an <see cref="OfficerUnit"/> that  exists in the <see cref="World"/>
     /// as a <see cref="Ped"/> with a <see cref="Vehicle"/>
     /// </summary>
-    public class PersistentAIOfficerUnit : OfficerUnit
+    public class PersistentAIOfficerUnit : IDisposable
     {
         /// <summary>
         /// Travel speed as Code 2 in Meters per second
@@ -24,26 +26,6 @@ namespace AgencyDispatchFramework.Simulation
         private static readonly int Code3TravelSpeed = 20;
 
         /// <summary>
-        /// Indicates whether this is an AI player
-        /// </summary>
-        public override bool IsAIUnit => true;
-
-        /// <summary>
-        /// Gets the <see cref="Vehicle"/> this officer uses as his police cruiser
-        /// </summary>
-        internal Vehicle PoliceCar { get; set; }
-
-        /// <summary>
-        /// Gets the officer <see cref="Ped"/>
-        /// </summary>
-        internal Ped Officer { get; set; }
-
-        /// <summary>
-        /// Gets the <see cref="PoliceCar"/>'s <see cref="Blip"/>
-        /// </summary>
-        internal Blip VehicleBlip { get; set; }
-
-        /// <summary>
         /// The <see cref="GameFiber"/> that runs the logic for this AI unit
         /// </summary>
         private GameFiber AILogicFiber { get; set; }
@@ -54,126 +36,178 @@ namespace AgencyDispatchFramework.Simulation
         private TaskSignal NextTask { get; set; }
 
         /// <summary>
-        /// Creates a new instance of <see cref="PersistentAIOfficerUnit"/> from a <see cref="AIOfficerUnit"/>
+        /// Gets the <see cref="Vehicle"/> this officer uses as his police cruiser
+        /// </summary>
+        public Vehicle PoliceCar { get; private set; }
+
+        /// <summary>
+        /// Gets the officer <see cref="Ped"/>
+        /// </summary>
+        public Ped Officer { get; private set; }
+
+        /// <summary>
+        /// Gets the hand gun that is in this units inventory
+        /// </summary>
+        public WeaponDescriptor HandGun { get; private set; }
+
+        /// <summary>
+        /// Gets the long gun that is in this units inventory
+        /// </summary>
+        public WeaponDescriptor LongGun { get; private set; }
+
+        /// <summary>
+        /// Gets the non-lethal weapons that are in this units inventory
+        /// </summary>
+        public Dictionary<string, WeaponDescriptor> NonLethalWeapons { get; private set; }
+
+        /// <summary>
+        /// Gets the <see cref="PoliceCar"/>'s <see cref="Blip"/>
+        /// </summary>
+        public  Blip VehicleBlip { get; private set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public AIOfficerUnit VirtualUnit { get; private set; }
+
+        /// <summary>
+        /// Indicates whether this instance is disposed.
+        /// </summary>
+        public bool IsDisposed { get; private set; }
+
+        /// <summary>
+        /// Creates a new instance of <see cref="PersistentAIOfficerUnit"/> from a <see cref="VirtualUnit"/>
         /// </summary>
         /// <param name="virtualAI"></param>
-        internal PersistentAIOfficerUnit(AIOfficerUnit virtualAI) : base(virtualAI.Agency, virtualAI.CallSign)
+        internal PersistentAIOfficerUnit(AIOfficerUnit virtualAI)
         {
-            // @todo
-        }
+            // Get location @todo Make better
+            var pos = virtualAI.GetPosition();
 
-        /// <summary>
-        /// Starts the Task unit fiber for this AI Unit
-        /// </summary>
-        internal override void StartDuty(Vector3 startPosition)
-        {
-            // Call base
-            base.StartDuty(startPosition);
+            // Spawn using persona
+            Officer = Persona.CreatePed(virtualAI.Persona, pos);
+            Officer.IsPersistent = true;
+            Officer.BlockPermanentEvents = true;
+            Officer.RelationshipGroup = RelationshipGroup.Cop;
 
-            // Create AI thread
-            AILogicFiber = GameFiber.ExecuteNewWhile(delegate
+            // Set component variations
+            foreach (var comp in virtualAI.PedMeta.Components)
             {
-                // Check first if officer has died
-                if (Officer.IsDead)
-                {
-                    Dispatch.RegisterDeadOfficer(this);
-                }
-                else
-                {
-                    // Do we have a new task?
-                    switch (NextTask)
-                    {
-                        case TaskSignal.None:
-                            break;
-                        case TaskSignal.TakeABreak:
-                            TakeBreak();
-                            break;
-                        case TaskSignal.Cruise:
-                            Cruise();
-                            break;
-                        case TaskSignal.DriveToCall:
-                            DriveToCall();
-                            break;
-                        case TaskSignal.DoScene:
-                            break;
-                    }
-                }
-            }, $"AgencyCallouts+ Unit {CallSign} of {Agency.FullName} AI Thread", () => !IsDisposed);
+                // Extract ids
+                int id = (int)comp.Key;
+                int drawId = comp.Value.Item1;
+                int textId = comp.Value.Item2;
 
-            // Set blip
-            SetBlipColor(OfficerStatusColor.Available);
-        }
-
-        /// <summary>
-        /// Assigns this officer to the specified call
-        /// </summary>
-        /// <param name="call"></param>
-        internal override void AssignToCall(PriorityCall call, bool forcePrimary = false)
-        {
-            // Call base first
-            base.AssignToCall(call, forcePrimary);
-
-            // Signal our thread to do something
-            NextTask = TaskSignal.DriveToCall;
-        }
-
-        public override void Dispose()
-        {
-            // Now Dispose
-            if (!IsDisposed)
-            {
-                // ALWAYS CALL BASE FIRST
-                base.Dispose();
-
-                // Close fiber
-                AILogicFiber?.Abort();
-
-                if (VehicleBlip?.IsValid() ?? false)
-                    VehicleBlip?.Delete();
-
-                if (PoliceCar?.IsValid() ?? false)
-                    PoliceCar?.Delete();
+                // Set component variation
+                Officer.SetVariation(id, drawId, textId);
             }
-        }
 
-        /// <summary>
-        /// Clears the current call, DOES NOT SIGNAL DISPATCH
-        /// </summary>
-        /// <remarks>
-        /// This method is called by <see cref="Dispatch"/> for the Player ONLY.
-        /// AI units call it themselves
-        /// </remarks>
-        internal override void CompleteCall(CallCloseFlag flag)
-        {
-            if (flag == CallCloseFlag.Completed)
+            // Randomize props?
+            if (virtualAI.PedMeta.RandomizeProps)
             {
-                Status = OfficerStatus.MealBreak;
-                NextTask = TaskSignal.TakeABreak;
+                Officer.RandomizeProps();
+            }
+
+            // Set props
+            foreach (var prop in virtualAI.PedMeta.Props)
+            {
+                // Extract ids
+                int id = (int)prop.Key;
+                int drawId = prop.Value.Item1;
+                int textId = prop.Value.Item2;
+
+                // Set component variation
+                Officer.SetPropIndex(id, drawId, textId, true);
+            }
+
+            // Give officer thier weapons!
+            if (virtualAI.HandGun != null)
+            {
+                HandGun = GiveOfficerWeapon(virtualAI.HandGun);
+            }
+
+            if (virtualAI.LongGun != null)
+            {
+                LongGun = GiveOfficerWeapon(virtualAI.LongGun);
+            }
+
+            // Give non-lethals
+            NonLethalWeapons = new Dictionary<string, WeaponDescriptor>();
+            foreach (string weapon in virtualAI.NonLethalWeapons)
+            {
+                NonLethalWeapons.Add(weapon, GiveOfficerWeapon(weapon));
+            }
+
+            // Spawn vehicle @todo Make positioning better
+            Vector3Extensions.GetVehicleSpawnPointTowardsStartPoint(pos, 50, false, out SpawnPoint sp);
+            if (sp != null && sp != Vector3.Zero)
+            {
+                PoliceCar = new Vehicle(virtualAI.VehicleMeta.Model, sp.Position, sp.Heading);
             }
             else
             {
-                Status = OfficerStatus.Available;
-                NextTask = TaskSignal.Cruise;
-                SetBlipColor(OfficerStatusColor.Available);
+                PoliceCar = new Vehicle(virtualAI.VehicleMeta.Model, pos, 1);
             }
 
-            // Ensure siren is off
-            PoliceCar.IsSirenOn = false;
-            Assignment = null;
+            // Setup vehicle
+            PoliceCar.MakePersistent();
+            PoliceCar.SetLivery(virtualAI.VehicleMeta.LiveryIndex);
 
-            // Tell dispatch we are done here
-            Dispatch.RegisterCallComplete(CurrentCall);
-            Log.Debug($"OfficerUnit {CallSign} of {Agency.FullName} completed call '{CurrentCall.ScenarioInfo.Name}' with flag: {flag}");
+            // Extras
+            if (virtualAI.VehicleMeta.Extras.Count > 0)
+            {
+                foreach (var extra in virtualAI.VehicleMeta.Extras)
+                {
+                    PoliceCar.SetExtraEnabled(extra.Key, extra.Value);
+                }
+            }
 
-            // Call base
-            base.CompleteCall(flag);
+            // Place officer inside his vehicle and create blip
+            Officer.WarpIntoVehicle(PoliceCar, -1);
+            SetBlipColor(OfficerStatusColor.Available);
+                
+            // Save
+            VirtualUnit = virtualAI;
+
+            // Load model
+            Officer.Model.Load();
+            PoliceCar.Model.Load();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="meta"></param>
+        /// <returns></returns>
+        private WeaponDescriptor GiveOfficerWeapon(WeaponMeta meta)
+        {
+            var name = meta.Name;
+            var desc = Officer.Inventory.GiveNewWeapon(name, 30, false);
+
+            // Attach components
+            foreach (var comp in meta.Components)
+            {
+                Officer.Inventory.AddComponentToWeapon(desc.Asset, comp);
+            }
+
+            return desc;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        private WeaponDescriptor GiveOfficerWeapon(string name)
+        {
+            return Officer.Inventory.GiveNewWeapon(name, 30, false);
         }
 
         /// <summary>
         /// Gets the position of this <see cref="OfficerUnit"/>
         /// </summary>
         /// <returns></returns>
-        public override Vector3 GetPosition()
+        public Vector3 GetPosition()
         {
             return Officer.Position;
         }
@@ -257,7 +291,7 @@ namespace AgencyDispatchFramework.Simulation
                 else
                 {
                     // Log
-                    Log.Debug($"PoliceCar is invalid for unit {CallSign} of {Agency.FullName}... Creating a new one");
+                    Log.Debug($"PoliceCar is invalid for unit {VirtualUnit.CallSign} of {VirtualUnit.Agency.FullName}... Creating a new one");
 
                     // Determine spawn point
                     var oldCar = PoliceCar;
@@ -290,7 +324,7 @@ namespace AgencyDispatchFramework.Simulation
                 if (!Officer.Exists())
                 {
                     // Log
-                    Log.Debug($"Officer is invalid for unit {CallSign} of {Agency.FullName}... Creating a new one");
+                    Log.Debug($"Officer is invalid for unit {VirtualUnit.CallSign} of {VirtualUnit.Agency.FullName}... Creating a new one");
 
                     // Tell the old Ped to piss off
                     Officer.Dismiss();
@@ -320,117 +354,6 @@ namespace AgencyDispatchFramework.Simulation
             PoliceCar.Heading = heading;
         }
 
-        /// <summary>
-        /// Drives the <see cref="Officer"/> to the current <see cref="PriorityCall"/>
-        /// assigned. Must be used in a <see cref="GameFiber"/> as this method is a
-        /// blocking method
-        /// </summary>
-        private void DriveToCall()
-        {
-            // Close this task
-            NextTask = TaskSignal.None;
-            Log.Debug($"OfficerUnit {CallSign} of {Agency.FullName} responding to call '{CurrentCall.ScenarioInfo.Name}'");
-
-            // Ensure officer is in police cruiser
-            EnsureInPoliceCar();
-
-            // Assign vars
-            var task = PoliceCar.Driver.Tasks;
-            Task drivingTask = default(Task);
-            var sp = CurrentCall.Location as SpawnPoint;
-            bool parkingNicely = (sp != null);
-            bool isParking = false;
-
-            // Repond code 3?
-            if (CurrentCall.ScenarioInfo.ResponseCode == ResponseCode.Code3)
-            {
-                // Turn on sirens
-                SetBlipColor(OfficerStatusColor.DispatchedCode3);
-                PoliceCar.IsSirenOn = true;
-                PoliceCar.IsSirenSilent = false;
-
-                // Find close location
-                parkingNicely = false;
-                var loc = World.GetNextPositionOnStreet(CurrentCall.Location.Position.Around(15));
-                drivingTask = task.DriveToPosition(loc, Code3TravelSpeed, VehicleDrivingFlags.Emergency);
-            }
-            else
-            {
-                // Find close location
-                SetBlipColor(OfficerStatusColor.DispatchedCode2);
-                var loc = World.GetNextPositionOnStreet(CurrentCall.Location.Position.Around(15));
-                drivingTask = task.DriveToPosition(loc, Code2TravelSpeed, VehicleDrivingFlags.Normal);
-            }
-
-            // Run checks while officer is enroute
-            while (drivingTask.IsActive)
-            {
-                // Check for assignment changes
-                if (NextTask != TaskSignal.None)
-                    return; // Return
-
-                // Are we still alive?
-                if (Officer.IsDead)
-                    return;
-
-                // Distance check
-                /*
-                if (parkingNicely && !isParking)
-                {
-                    if (Officer.Position.TravelDistanceTo(CurrentCall.Location.Position) < 75)
-                    {
-                        task.Clear();
-                        isParking = true;
-                        drivingTask = task.ParkVehicle(CurrentCall.Location.Position, sp.Heading);
-                    }
-                }
-                */
-
-                // Allow other threads to do something
-                GameFiber.Yield();
-            }
-
-            // Teleport car to parking spot because AI sucks at parking
-            SetPoliceCarPosition(CurrentCall.Location.Position, sp.Heading);
-
-            // Signal
-            NextTask = TaskSignal.DoScene;
-        }
-
-        /// <summary>
-        /// Processes the officer on scene
-        /// </summary>
-        private void ProcessScene()
-        {
-            // Debug
-            var span = World.DateTime - LastStatusChange;
-            var mins = Math.Round(span.TotalMinutes, 0);
-            Log.Debug($"OfficerUnit {CallSign} of {Agency.FullName} arrived on scene after {mins} game minutes");
-
-            // Telll dispatch we are on scene
-            Dispatch.RegisterOnScene(this, CurrentCall);
-            PoliceCar.IsSirenSilent = true;
-            SetBlipColor(OfficerStatusColor.OnScene);
-
-            // Tell officer to get out of patrol car after 1 second
-            GameFiber.Wait(1000);
-
-            // Do another sanity check
-            SanityCheck();
-            PoliceCar.Driver.Tasks.LeaveVehicle(LeaveVehicleFlags.LeaveDoorOpen);
-            PoliceCar.IsSirenSilent = true;
-            SetBlipColor(OfficerStatusColor.OnScene);
-
-            var random = new CryptoRandom();
-            int timeToComplete = random.Next(CurrentCall.ScenarioInfo.SimulationTime);
-
-            var gameSpan = TimeSpan.FromMinutes(timeToComplete);
-            var realSeconds = (int)TimeScale.ToRealTime(gameSpan).TotalSeconds;
-            GameFiber.Wait(1000 * realSeconds);
-
-            // Complete call
-            CompleteCall(CallCloseFlag.Completed);
-        }
 
         /// <summary>
         /// Drives the <see cref="Officer"/> around aimlessly. 
@@ -445,42 +368,21 @@ namespace AgencyDispatchFramework.Simulation
         }
 
         /// <summary>
-        /// Makes the <see cref="OfficerUnit"/> take a 30 minute break
+        /// Disposes and releases this <see cref="Ped"/>
         /// </summary>
-        private void TakeBreak()
+        public void Dispose()
         {
-            NextTask = TaskSignal.None;
-            Status = OfficerStatus.MealBreak;
-            SetBlipColor(OfficerStatusColor.OnBreak);
-            Officer.Tasks.CruiseWithVehicle(PoliceCar, 10, VehicleDrivingFlags.Normal);
-
-            // 30 in game minutes
-            var time = (int)TimeScale.RealSecondsFromGameSeconds(30 * 60);
-            GameFiber.Wait(1000 * time);
-
-            // Make available again
-            SetBlipColor(OfficerStatusColor.Available);
-            Status = OfficerStatus.Available;
-        }
-
-        internal override void AssignToCallWithRandomCompletion(PriorityCall call)
-        {
-            // Assign ourselves
-            base.AssignToCall(call, true);
-
-            var random = new CryptoRandom();
-            var onScene = random.Next(1, 100) > 20;
-
-            if (onScene)
+            // Now Dispose
+            if (!IsDisposed)
             {
-                call.CallStatus = CallStatus.OnScene;
+                // Close fiber
+                AILogicFiber?.Abort();
 
-                // Signal
-                NextTask = TaskSignal.DoScene;
-            }
-            else
-            {
-                NextTask = TaskSignal.DriveToCall;
+                if (VehicleBlip?.Exists() ?? false)
+                    VehicleBlip?.Delete();
+
+                if (PoliceCar?.Exists() ?? false)
+                    PoliceCar?.Delete();
             }
         }
 

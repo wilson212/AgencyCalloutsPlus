@@ -33,6 +33,11 @@ namespace AgencyDispatchFramework.Simulation
         public Dictionary<PedPropIndex, Tuple<int, int>> Props { get; internal set; }
 
         /// <summary>
+        /// A bool indicating whether to randomize props
+        /// </summary>
+        public bool RandomizeProps { get; internal set; } = true;
+
+        /// <summary>
         /// Creates a new instance
         /// </summary>
         public OfficerModelMeta(int probability, Model model)

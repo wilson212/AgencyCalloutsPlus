@@ -23,16 +23,13 @@ namespace AgencyDispatchFramework.Simulation
         /// <summary>
         /// Gets a bool indicating whether this unit is existing in game
         /// </summary>
-        private bool IsSpawned { get; set; }
+        private bool IsSpawned => (PersistentAI != null && !PersistentAI.IsDisposed);
 
         /// <summary>
-        /// 
+        /// If this <see cref="AIOfficerUnit"/> is persistant in the <see cref="World"/>, it's
+        /// instance is accessible here.
         /// </summary>
-        private Vehicle SpawnedVehicle { get; set; }
-        /// <summary>
-        /// 
-        /// </summary>
-        private Ped SpawnedPed { get; set; }
+        private PersistentAIOfficerUnit PersistentAI { get; set; }
 
         /// <summary>
         /// Gets the meta data required to spawn this officer <see cref="Ped"/> in the game world.
@@ -94,65 +91,33 @@ namespace AgencyDispatchFramework.Simulation
             var birthday = rnd.NextDateTime(now.AddYears(-50), now.AddYears(-22));
             var name = RandomNameGenerator.Generate(gender);
 
+            // Set persona
+            Persona = new Persona(name.Forename, name.Surname, gender, birthday, model)
+            {
+                Wanted = false // Ensure this is always false
+            };
+
             // Set meta properties
             PedMeta = meta;
             VehicleMeta = vehicle;
             HandGun = handGunMeta;
             LongGun = longGunMeta;
             NonLethalWeapons = vehicleSet.NonLethalWeapons.ToArray();
-
-            // Create persona and set callsign
-            Persona = new Persona(name.Forename, name.Surname, gender, birthday, model)
-            {
-                Wanted = false // Ensure this is always false
-            };
         }
 
         /// <summary>
         /// Spawns this <see cref="AIOfficerUnit"/> into the <see cref="World"/> if not already, 
         /// and returns the <see cref="Ped"/> and <see cref="Vehicle"/> locations
         /// </summary>
-        public void Spawn()
+        public PersistentAIOfficerUnit Spawn()
         {
             // @todo 
-            if (IsSpawned)
+            if (!IsSpawned)
             {
-
+                PersistentAI = new PersistentAIOfficerUnit(this);
             }
-            else
-            {
-                // Get location @todo Make better
-                var pos = Position;
 
-                // Spawn from persona
-                SpawnedPed = Persona.CreatePed(Persona, pos);
-
-                // Set component variations
-                foreach (var comp in PedMeta.Components)
-                {
-                    // Extract ids
-                    int id = (int)comp.Key;
-                    int drawId = comp.Value.Item1;
-                    int textId = comp.Value.Item2;
-
-                    // Set component variation
-                    SpawnedPed.SetVariation(id, drawId, textId);
-                }
-
-                // Set props or randomize
-                foreach (var prop in PedMeta.Props)
-                {
-                    // Extract ids
-                    int id = (int)prop.Key;
-                    int drawId = prop.Value.Item1;
-                    int textId = prop.Value.Item2;
-
-                    // Set component variation
-                    SpawnedPed.SetPropIndex(id, drawId, textId, true);
-                }
-
-                // @todo Spawn vehicle
-            }
+            return PersistentAI;
         }
 
         /// <summary>
