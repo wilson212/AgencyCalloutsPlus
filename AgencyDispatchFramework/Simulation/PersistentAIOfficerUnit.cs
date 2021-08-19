@@ -63,7 +63,7 @@ namespace AgencyDispatchFramework.Simulation
         /// <summary>
         /// Gets the <see cref="PoliceCar"/>'s <see cref="Blip"/>
         /// </summary>
-        public  Blip VehicleBlip { get; private set; }
+        public Blip VehicleBlip { get; private set; }
 
         /// <summary>
         /// 
@@ -178,6 +178,7 @@ namespace AgencyDispatchFramework.Simulation
         /// 
         /// </summary>
         /// <param name="meta"></param>
+        /// <seealso cref="https://docs.ragepluginhook.net/html/M_Rage_PedInventory_AddComponentToWeapon.htm"/>
         /// <returns></returns>
         private WeaponDescriptor GiveOfficerWeapon(WeaponMeta meta)
         {
@@ -197,6 +198,7 @@ namespace AgencyDispatchFramework.Simulation
         /// 
         /// </summary>
         /// <param name="name"></param>
+        /// <seealso cref="https://docs.ragepluginhook.net/html/M_Rage_PedInventory_AddComponentToWeapon.htm"/>
         /// <returns></returns>
         private WeaponDescriptor GiveOfficerWeapon(string name)
         {

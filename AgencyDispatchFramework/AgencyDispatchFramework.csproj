@@ -90,6 +90,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="API\BackupType.cs" />
+    <Compile Include="API\PersistantBackup.cs" />
+    <Compile Include="API\VoiceCommands.cs" />
     <Compile Include="Conversation\CommunicationElement.cs" />
     <Compile Include="Conversation\SequenceCollection.cs" />
     <Compile Include="Conversation\PedResponseEventHandler.cs" />
@@ -641,10 +644,10 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Callouts\Scenarios.txt" />
-    <Content Include="GameScenarios.txt" />
-    <Content Include="Integration\STP.txt" />
-    <Content Include="PedMetadata.txt" />
-    <Content Include="Todo.txt" />
+    <Content Include="Documentation\GameScenarios.txt" />
+    <Content Include="Documentation\StopThePed.txt" />
+    <Content Include="Documentation\PedMetadata.txt" />
+    <Content Include="Documentation\Todo.txt" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="AgencyDispatchFramework.ini">

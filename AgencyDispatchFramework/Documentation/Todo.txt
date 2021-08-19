@@ -3,10 +3,11 @@
 	- Finish adding "Add x location" for each location types in the plugin menu
 	- Code scenarios for callouts
 	- Plan on the implementation of AmbientEvents as well as AiOfficerEvents
+	- Finish implementing an interface for UltimateBackup to use
  
 
 General Information:
-	ALL GameFiber(s) in this Mod:
+	ALL GameFiber(s) created in this Mod:
 		Always Running:
 			- GameWorld.WorldWatchingFiber (2000): Used to check weather and time of day changes, as well as perform dispatching logic
 			- Dispatch.AISimulationFiber (1000): Used to move around and process AI unit Logic, and handle the dispatch radio
@@ -19,7 +20,7 @@ General Information:
 			- AnimationSequence (variable): Used to play a sequence of animations, one right after another
 
 
- Location types:
+ Planned Location types:
 	- RoadShoulder: Used for pullovers, and simple accidents
 	- Road: Used for more serious accidents where Peds wont pull off the road. Used to spawn moving vehicles for crimes
 	- Intersection: Used for crimes that happen in an intersection
@@ -39,7 +40,8 @@ Event planning:
 				or participate in the event without requiring a "Press {insertbuttonhere} to accept"
 			- An event keeps playing until a player moves out of range
 		AiOfficerEvent:
-			- 
+			- These are virtual events that happen in memory, but lead to a Callout
+
 	- 3 Difference Callout Sources:
 		- Incoming 911 call from civilian (Callout)
 		- AI officer scripted event turned into a CalloutScenario (AiOfficerEvent) (Think "shots fired at officers" during a traffic stop)
