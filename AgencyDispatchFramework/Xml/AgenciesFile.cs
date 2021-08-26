@@ -194,7 +194,7 @@ namespace AgencyDispatchFramework.Xml
                     }
 
                     // Create unit
-                    var unit = new SpecializedUnit(unitType);
+                    var unit = new SpecializedUnit(unitType, agency);
 
                     // Get derives attribute
                     if (Enum.TryParse(unitNode.GetAttribute("derives"), out UnitType unitDerives))
@@ -218,6 +218,9 @@ namespace AgencyDispatchFramework.Xml
                             unit.SupervisorSets.AddRange(sets);
                         }
                     }
+
+                    // Add unit to agency
+                    agency.AddUnit(unit);
                 }
 
                 // Try and parse funding level
@@ -262,7 +265,7 @@ namespace AgencyDispatchFramework.Xml
                 }
 
                 // Create vehicle info
-                var set = new VehicleSet();
+                var set = new VehicleSet(probability);
 
                 // Try and extract vehicles
                 if (!TryExtractVehicles(vn, set, agency))

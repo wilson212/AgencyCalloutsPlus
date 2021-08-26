@@ -1,0 +1,16 @@
+﻿Agency Dispatch Framework AI Officer Events List
+
+Description:
+	These are virtual events that happen in memory, but lead to a Callout. As virtual
+	AI officer units preform calls, these types events have a chance at happening
+
+File Format:
+ - Event Name
+	- Scenario Name [type] [locationType {?flags}]
+
+- OfficerNeedsAssistance
+	- ResistingArrest						[Traffic] [RoadShoulder]
+	- RefusingFieldSobrietyTest				[Traffic] [RoadShoulder]
+	- FelonyStop							[Traffic] [RoadShoulder]
+	- HotPursuit							[Traffic] [Road]
+	- ShotsFired							[Violent] [RoadShoulder, Residence, Business]

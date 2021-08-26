@@ -27,6 +27,11 @@ namespace AgencyDispatchFramework.Dispatching
         public Agency Agency { get; set; }
 
         /// <summary>
+        /// Contains a list of all active on duty officers
+        /// </summary>
+        protected List<OfficerUnit> OnDutyOfficers { get; set; }
+
+        /// <summary>
         /// Gets a list of calls this instance is responsible for handling
         /// </summary>
         public HashSet<PriorityCall> CallQueue { get; set; }
@@ -56,6 +61,7 @@ namespace AgencyDispatchFramework.Dispatching
             Agency = agency ?? throw new ArgumentNullException(nameof(agency));
             CallQueue = new HashSet<PriorityCall>(12);
             RaisedCalls = new HashSet<PriorityCall>();
+            OnDutyOfficers = new List<OfficerUnit>();
         }
 
         /// <summary>

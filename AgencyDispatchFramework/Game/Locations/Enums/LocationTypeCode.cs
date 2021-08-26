@@ -3,6 +3,7 @@
     public enum LocationTypeCode
     {
         SpawnPoint,
+        Road,
         RoadShoulder,
         Intersection,
         Residence,

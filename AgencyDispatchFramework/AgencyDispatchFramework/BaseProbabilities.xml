@@ -1,9 +1,25 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <Probabilities>
   <Crime>
+    <!-- 
+      Defines the probabilities of the following crime levels.
+      Every 6 hours in game, the Crime level has the opportunity
+      to change to a different level.
+    -->
     <CrimeLevels>
+      <CrimeLevel key="None" value="6" />
       <CrimeLevel key="VeryLow" value="12" />
+      <CrimeLevel key="Low" value="20" />
+      <CrimeLevel key="Moderate" value="30" />
+      <CrimeLevel key="High" value="20" />
+      <CrimeLevel key="VeryHigh" value="12" />
     </CrimeLevels>
+
+    <!-- 
+      Defines the base probabilities of the following crime types.
+      These probabilities, if defined in a locations xml file, will
+      overwrite any values defined here.
+    -->
     <Probabilities>
       <Robbery>
         <Morning clear="10" overcast="10" rain="10" snow="10" storm="10" />

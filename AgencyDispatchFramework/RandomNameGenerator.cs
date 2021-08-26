@@ -6,6 +6,9 @@ using System.Xml;
 
 namespace AgencyDispatchFramework
 {
+    /// <summary>
+    /// A class used to generate random first and last names from the Names.xml file
+    /// </summary>
     public static class RandomNameGenerator
     {
         /// <summary>
@@ -92,6 +95,9 @@ namespace AgencyDispatchFramework
 
                 // Extract names
                 LastNames = (from XmlNode x in names select x.InnerText).ToArray();
+
+                // Flag
+                IsLoaded = true;
             }
         }
 

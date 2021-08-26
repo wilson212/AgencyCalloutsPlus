@@ -97,9 +97,11 @@
     <Compile Include="Conversation\SequenceCollection.cs" />
     <Compile Include="Conversation\PedResponseEventHandler.cs" />
     <Compile Include="Conversation\Question.cs" />
+    <Compile Include="Dispatching\Agency\EmsAgency.cs" />
+    <Compile Include="Dispatching\Agency\FireAgency.cs" />
     <Compile Include="Dispatching\Agency\SheriffAgency.cs" />
     <Compile Include="Dispatching\Enums\CallSignStyle.cs" />
-    <Compile Include="Dispatching\NumberStyleCallsign.cs" />
+    <Compile Include="Dispatching\CallSigns\NumberStyleCallsign.cs" />
     <Compile Include="Dispatching\Assignments\BusinessCheck.cs" />
     <Compile Include="Dispatching\Assignments\FelonyTrafficStop.cs" />
     <Compile Include="Dispatching\Assignments\PrisonerTransport.cs" />
@@ -119,7 +121,7 @@
     <Compile Include="Dispatching\Enums\DispatchPriority.cs" />
     <Compile Include="Dispatching\Enums\UnitType.cs" />
     <Compile Include="Dispatching\Dispatchers\PoliceDispatcher.cs" />
-    <Compile Include="Dispatching\LAPDStyleCallsign.cs" />
+    <Compile Include="Dispatching\CallSigns\LAPDStyleCallsign.cs" />
     <Compile Include="Dispatching\RadioMessage.cs" />
     <Compile Include="Dispatching\Delegates\ScenarioListUpdateHandler.cs" />
     <Compile Include="Dispatching\Enums\ResponseCode.cs" />
@@ -134,6 +136,7 @@
     <Compile Include="Dispatching\Assignments\Pursuit.cs" />
     <Compile Include="Dispatching\Assignments\TrafficAccident.cs" />
     <Compile Include="Dispatching\Assignments\StandardTrafficStop.cs" />
+    <Compile Include="Dispatching\ShiftRotation.cs" />
     <Compile Include="Events\AiOfficerEvent.cs" />
     <Compile Include="Events\AmbientEventHandler.cs" />
     <Compile Include="Events\Ambient\DrunkDriver.cs" />
@@ -149,8 +152,10 @@
     <Compile Include="Game\AnimationMeta.cs" />
     <Compile Include="Game\AnimationSequence.cs" />
     <Compile Include="Game\AnimationData.cs" />
+    <Compile Include="Simulation\WorldStateCrimeReport.cs" />
     <Compile Include="Game\Enums\PedComponent.cs" />
     <Compile Include="Game\Enums\PedPropIndex.cs" />
+    <Compile Include="Game\Locations\Road.cs" />
     <Compile Include="Integration\UltimateBackupAPI.cs" />
     <Compile Include="Linq\ExpressionResult.cs" />
     <Compile Include="Extensions\CharExtensions.cs" />
@@ -197,7 +202,7 @@
     <Compile Include="Extensions\XmlExtensions.cs" />
     <Compile Include="Integration\StopThePedAPI.cs" />
     <Compile Include="Callouts\AgencyCallout.cs" />
-    <Compile Include="Dispatching\Agency\CityPoliceAgency.cs" />
+    <Compile Include="Dispatching\Agency\PoliceAgency.cs" />
     <Compile Include="Dispatching\Agency\HighwayPatrolAgency.cs" />
     <Compile Include="Dispatching\PriorityCallDescription.cs" />
     <Compile Include="Dispatching\Enums\CallCloseFlag.cs" />
@@ -303,6 +308,7 @@
     <Compile Include="WorldStateMultipliers.cs" />
     <Compile Include="WorldStateProbabilityGenerator.cs" />
     <Compile Include="Game\TimeScale.cs" />
+    <Compile Include="WorldStateSpawnable.cs" />
     <Compile Include="Xml\AgenciesFile.cs" />
     <Compile Include="Xml\CalloutMetaFile.cs" />
     <Compile Include="Xml\DialogueFile.cs" />
@@ -336,6 +342,7 @@
     <Content Include="AgencyDispatchFramework\Callouts\DomesticViolence\ReportsOfArguingThreats\Victim.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="AgencyDispatchFramework\Districts.xml" />
     <Content Include="AgencyDispatchFramework\Examples\Dialogue.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -643,7 +650,8 @@
     <Content Include="AgencyDispatchFramework\Vehicles.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Callouts\Scenarios.txt" />
+    <Content Include="Documentation\AiOfficerEvents.txt" />
+    <Content Include="Documentation\Scenarios.txt" />
     <Content Include="Documentation\GameScenarios.txt" />
     <Content Include="Documentation\StopThePed.txt" />
     <Content Include="Documentation\PedMetadata.txt" />

@@ -63,11 +63,6 @@ namespace AgencyDispatchFramework.Dispatching
         public StaffLevel StaffLevel { get; protected set; }
 
         /// <summary>
-        /// Gets the optimum patrol count based on <see cref="TimePeriod" />
-        /// </summary>
-        internal Dictionary<TimePeriod, int> OptimumPatrols { get; set; }
-
-        /// <summary>
         /// Contains a list of zones in this jurisdiction
         /// </summary>
         internal WorldZone[] Zones { get; set; }
@@ -80,17 +75,12 @@ namespace AgencyDispatchFramework.Dispatching
         /// <summary>
         /// 
         /// </summary>
-        private Dictionary<UnitType, SpecializedUnit> Units { get; set; }
-
-        /// <summary>
-        /// Contains a list of all active on duty officers
-        /// </summary>
-        public OfficerUnit[] OnDutyOfficers => OfficersByShift[GameWorld.CurrentTimePeriod].ToArray();
+        protected Dictionary<UnitType, SpecializedUnit> Units { get; set; }
 
         /// <summary>
         /// 
         /// </summary>
-        internal Dictionary<TimePeriod, List<OfficerUnit>> OfficersByShift { get; set; }
+        internal Dictionary<ShiftRotation, List<OfficerUnit>> OfficersByShift { get; set; }
 
         /// <summary>
         /// Gets or sets the <see cref="Dispatching.Dispatcher"/> for this <see cref="Agency"/>
@@ -182,7 +172,7 @@ namespace AgencyDispatchFramework.Dispatching
             switch (type)
             {
                 case AgencyType.CityPolice:
-                    return new CityPoliceAgency(sname, name, staffing, signStyle);
+                    return new PoliceAgency(sname, name, staffing, signStyle);
                 case AgencyType.CountySheriff:
                 case AgencyType.StateParks:
                     return new SheriffAgency(sname, name, staffing, signStyle);
@@ -273,11 +263,16 @@ namespace AgencyDispatchFramework.Dispatching
         internal abstract Dispatcher CreateDispatcher();
 
         /// <summary>
+        /// Assigns this agency within the jurisdiction of all the <see cref="Zones"/>
+        /// </summary>
+        protected abstract void AssignZones();
+
+        /// <summary>
         /// Calculates the optimum patrols for this agencies jurisdiction
         /// </summary>
         /// <param name="zoneNames"></param>
         /// <returns></returns>
-        protected abstract Dictionary<TimePeriod, int> GetOptimumUnitCounts(WorldZone[] zones);
+        protected abstract void CalculateAgencySize();
 
         /// <summary>
         /// Enables simulation on this <see cref="Agency"/> in the game
@@ -287,17 +282,24 @@ namespace AgencyDispatchFramework.Dispatching
             // Saftey
             if (IsActive) return;
 
+            // Calculate agency size
+            CalculateAgencySize();
+
             // Get our zones of jurisdiction, and ensure each zone has the primary agency set
             Zones = WorldZone.GetZonesByName(ZoneNames, out int loaded);
 
             // Load officers
-            OfficersByShift = new Dictionary<TimePeriod, List<OfficerUnit>>();
+            OfficersByShift = new Dictionary<ShiftRotation, List<OfficerUnit>>();
+            foreach (ShiftRotation period in Enum.GetValues(typeof(ShiftRotation)))
+            {
+                OfficersByShift.Add(period, new List<OfficerUnit>());
+            }
 
             // Create dispatcher
             Dispatcher = CreateDispatcher();
 
-            // Get our patrol counts
-            OptimumPatrols = GetOptimumUnitCounts(Zones);
+            // Create AI officer units
+            CreateOfficerUnits();
 
             // Register for TimeOfDay changes!
             GameWorld.OnTimePeriodChanged += GameWorld_OnTimeOfDayChanged;
@@ -325,41 +327,66 @@ namespace AgencyDispatchFramework.Dispatching
         }
 
         /// <summary>
-        /// Creates a new <see cref="AIOfficerUnit"/> and adds them to the roster
+        /// Creates the <see cref="AIOfficerUnit"/>s and assigns them to <see cref="ShiftRotation"/>s
         /// </summary>
-        /// <param name="supervisor"></param>
-        protected virtual AIOfficerUnit CreateOfficerUnit(bool supervisor, UnitType primaryType, TimePeriod shiftStart)
+        protected virtual void CreateOfficerUnits()
         {
-            // Ensure unit type is supported
-            if (!Units.ContainsKey(primaryType))
+            // Define which units create supervisors
+            var supervisorUnits = new[] { UnitType.Patrol, UnitType.Traffic };
+            
+            // For each unit type!
+            foreach (SpecializedUnit unit in Units.Values)
             {
-                return null;
-            }
+                // Get shift counts
+                var shiftCounts = unit.CalculateShiftCount();
+                var unitName = Enum.GetName(typeof(UnitType), unit.UnitType);
 
-            // Grab specialized unit
-            var unit = Units[primaryType];
-            var generator = (supervisor) ? unit.SupervisorSets : unit.OfficerSets;
+                // Create officers for every shift
+                foreach (var shift in OfficersByShift.Keys.ToArray())
+                {
+                    var shiftName = Enum.GetName(typeof(ShiftRotation), shift);
+                    var aiPatrolCount = shiftCounts[shift];
+                    var toCreate = aiPatrolCount;
 
-            // Grab vehicle set
-            if (!generator.TrySpawn(out VehicleSet vehicleSet))
-            {
-                return null;
-            }
+                    // Calculate sergeants, needs at least 3 units on shift
+                    if (supervisorUnits.Contains(unit.UnitType) && aiPatrolCount > 2)
+                    {
+                        // Subtract an officer unit
+                        toCreate -= 1;
 
-            // Come up with a unique callsign for this unit
-            try
-            {
-                var callSign = GetNextCallSign(supervisor, primaryType);
-                var officer = new AIOfficerUnit(vehicleSet, this, callSign);
+                        // Create instance
+                        var officer = unit.CreateOfficerUnit(true, shift);
+                        if (unit == null) break;
 
-                // Return the officer unit
-                return officer;
+                        // Add officer by shift
+                        OfficersByShift[shift].Add(officer);
+                    }
+
+                    // Create officer units
+                    for (int i = 0; i < toCreate; i++)
+                    {
+                        // Create instance
+                        var officer = unit.CreateOfficerUnit(false, shift);
+                        if (unit == null) break;
+
+                        // Add officer by shift
+                        OfficersByShift[shift].Add(officer);
+                    }
+
+                    // Log for debugging
+                    Log.Debug($"Loaded {aiPatrolCount} Virtual AI officer units for agency '{FullName}' for unit {unitName} on {shiftName} shift");
+                }
             }
-            catch (Exception e)
-            {
-                Log.Exception(e);
-                return null;
-            }
+        }
+
+        /// <summary>
+        /// Adds the unit to the list
+        /// </summary>
+        /// <param name="unit"></param>
+        internal void AddUnit(SpecializedUnit unit)
+        {
+            if (!Units.ContainsKey(unit.UnitType))
+                Units.Add(unit.UnitType, unit);
         }
 
         /// <summary>
@@ -373,17 +400,6 @@ namespace AgencyDispatchFramework.Dispatching
             var playerUnit = new PlayerOfficerUnit(Rage.Game.LocalPlayer, this, callSign);
 
             return playerUnit;
-        }
-
-        /// <summary>
-        /// Gets the next unique <see cref="CallSign"/> for this department
-        /// </summary>
-        /// <param name="unitType"></param>
-        /// <returns></returns>
-        protected CallSign GetNextCallSign(bool supervisor, UnitType unitType)
-        {
-            // @todo
-            return null;
         }
 
         /// <summary>

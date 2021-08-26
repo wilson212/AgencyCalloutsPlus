@@ -1,4 +1,5 @@
 ﻿using AgencyDispatchFramework.Dispatching.Assignments;
+using AgencyDispatchFramework.Game;
 using LSPD_First_Response.Engine.Scripting.Entities;
 using Rage;
 using System;
@@ -89,12 +90,23 @@ namespace AgencyDispatchFramework.Dispatching
         protected Vector3 Position { get; set; }
 
         /// <summary>
+        /// 
+        /// </summary>
+        internal Range<int> ShiftHours { get; set; }
+
+        /// <summary>
+        /// Gets the <see cref="ShiftRotation"/> for this <see cref="OfficerUnit"/>
+        /// </summary>
+        internal ShiftRotation Shift { get; private set; }
+
+        /// <summary>
         /// Creates a new instance of <see cref="OfficerUnit"/> for an AI unit
         /// </summary>
-        internal OfficerUnit(Agency agency, CallSign callSign)
+        internal OfficerUnit(Agency agency, CallSign callSign, ShiftRotation shift)
         {
             Agency = agency;
             CallSign = callSign;
+            Shift = shift;
         }
 
         /// <summary>
@@ -131,6 +143,23 @@ namespace AgencyDispatchFramework.Dispatching
         internal virtual void OnTick(DateTime gameTime)
         {
 
+        }
+
+        /// <summary>
+        /// Returns whether this <see cref="OfficerUnit"/> is on shift based
+        /// off the passed <see cref="TimeSpan.Hours"/>
+        /// </summary>
+        /// <param name="time"></param>
+        /// <returns></returns>
+        public virtual bool IsOnShift(TimeSpan time)
+        {
+            switch (Shift)
+            {
+                default:
+                case ShiftRotation.Day: return (time.Hours >= 6 && time.Hours < 16);
+                case ShiftRotation.Night: return (time.Hours >= 22 || time.Hours < 8);
+                case ShiftRotation.Swing: return time.Hours.InRange(14, 24);
+            }
         }
 
         /// <summary>

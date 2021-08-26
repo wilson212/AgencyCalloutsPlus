@@ -61,7 +61,7 @@ namespace AgencyDispatchFramework.Simulation
         /// </summary>
         /// <param name="startPosition"></param>
         /// <param name="unitString"></param>
-        internal AIOfficerUnit(VehicleSet vehicleSet, Agency agency, CallSign callSign) : base(agency, callSign)
+        internal AIOfficerUnit(VehicleSet vehicleSet, Agency agency, CallSign callSign, ShiftRotation shift, bool isSupervisor) : base(agency, callSign, shift)
         {
             // Grab officer Meta
             if (!vehicleSet.OfficerMetas.TrySpawn(out OfficerModelMeta meta))
@@ -88,7 +88,7 @@ namespace AgencyDispatchFramework.Simulation
             // Create a persona
             string model = meta.Model.ToString();
             Gender gender = model.Contains("_f_") ? Gender.Female : Gender.Male;
-            var birthday = rnd.NextDateTime(now.AddYears(-50), now.AddYears(-22));
+            var birthday = rnd.NextDateTime(now.AddYears(-55), now.AddYears((isSupervisor) ? -30 : -22));
             var name = RandomNameGenerator.Generate(gender);
 
             // Set persona

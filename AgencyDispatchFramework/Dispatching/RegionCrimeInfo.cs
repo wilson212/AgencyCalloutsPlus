@@ -18,11 +18,6 @@
         public int MinCrimeCalls { get; set; }
 
         /// <summary>
-        /// Gets the optimum number of patrols to handle the crime load
-        /// </summary>
-        public int OptimumPatrols { get; set; }
-
-        /// <summary>
         /// Gets the average number of calls per In game hour
         /// </summary>
         public double AverageCallsPerGameHour => (AverageCrimeCalls / 6d);

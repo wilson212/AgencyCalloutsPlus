@@ -206,7 +206,6 @@ namespace AgencyDispatchFramework.Dispatching
             {
                 // Create info struct
                 var crimeInfo = new RegionCrimeInfo();
-                double optimumPatrols = 0;
 
                 // Determine our overall crime numbers by adding each zones
                 // individual crime statistics
@@ -217,7 +216,6 @@ namespace AgencyDispatchFramework.Dispatching
                         // Get average calls per period
                         var calls = zone.AverageCalls[period];
                         crimeInfo.AverageCrimeCalls += calls;
-                        optimumPatrols += GetOptimumPatrolCountForZone(calls, zone.Size, zone.Population);
                     }
                 }
 
@@ -227,9 +225,6 @@ namespace AgencyDispatchFramework.Dispatching
                     int realTimeMsPerCall = (int)(hourGameTimeToMSRealTime / crimeInfo.AverageCallsPerGameHour);
                     crimeInfo.AverageMillisecondsPerCall = realTimeMsPerCall;
                 }
-
-                // Set numbers
-                crimeInfo.OptimumPatrols = (int)Math.Ceiling(optimumPatrols);
 
                 // Add period statistics
                 RegionCrimeInfoByTimePeriod[period] = crimeInfo;
@@ -397,52 +392,6 @@ namespace AgencyDispatchFramework.Dispatching
             // Now get time difference
             var untilNextChange = target - gt;
             return untilNextChange;
-        }
-
-        /// <summary>
-        /// Determines the optimal number of patrols this zone should have based
-        /// on <see cref="ZoneSize"/>, <see cref="API.Population"/> and
-        /// <see cref="API.CrimeLevel"/> of crimes
-        /// </summary>
-        /// <param name="averageCalls"></param>
-        /// <param name="Size"></param>
-        /// <param name="Population"></param>
-        /// <returns></returns>
-        internal static double GetOptimumPatrolCountForZone(int averageCalls, ZoneSize Size, Population Population)
-        {
-            double baseCount = Math.Max(1, averageCalls / 4d);
-
-            switch (Size)
-            {
-                case ZoneSize.VerySmall:
-                case ZoneSize.Small:
-                    baseCount--;
-                    break;
-                case ZoneSize.Medium:
-                case ZoneSize.Large:
-                    break;
-                case ZoneSize.VeryLarge:
-                case ZoneSize.Massive:
-                    baseCount += 1;
-                    break;
-            }
-
-            switch (Population)
-            {
-                default: // None
-                    return 0;
-                case Population.Scarce:
-                    baseCount *= 0.75;
-                    // No adjustment
-                    break;
-                case Population.Moderate:
-                    break;
-                case Population.Dense:
-                    baseCount *= 1.25;
-                    break;
-            }
-
-            return Math.Max(0.25d, baseCount);
         }
 
         /// <summary>

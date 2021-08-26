@@ -24,7 +24,7 @@ namespace AgencyDispatchFramework
         /// </summary>
         public WorldStateMultipliers(int baseProbability = 1)
         {
-            BaseProbability = baseProbability;
+            BaseProbability = Math.Max(baseProbability, 1);
             Probabilities = new Dictionary<Tuple<TimePeriod, WeatherCatagory>, int>(20);
             foreach (TimePeriod period in Enum.GetValues(typeof(TimePeriod)))
             {
@@ -33,6 +33,18 @@ namespace AgencyDispatchFramework
                     Probabilities.Add(new Tuple<TimePeriod, WeatherCatagory>(period, catagory), 0);
                 }
             }
+        }
+
+        /// <summary>
+        /// Sets the probability of a <see cref="TimePeriod"/> and <see cref="Weather"/> combination
+        /// </summary>
+        /// <param name="period"></param>
+        /// <param name="catagory"></param>
+        /// <param name="value"></param>
+        public void SetProbability(TimePeriod period, Weather weather, int value)
+        {
+            var key = new Tuple<TimePeriod, WeatherCatagory>(period, GetWeatherCatagory(weather));
+            Probabilities[key] = value;
         }
 
         /// <summary>
@@ -53,7 +65,22 @@ namespace AgencyDispatchFramework
         /// <returns></returns>
         public int Calculate()
         {
-            var key = new Tuple<TimePeriod, WeatherCatagory>(GameWorld.CurrentTimePeriod, GetWeatherCatagory());
+            var key = new Tuple<TimePeriod, WeatherCatagory>(
+                GameWorld.CurrentTimePeriod, 
+                GetWeatherCatagory(GameWorld.CurrentWeather)
+            );
+            return BaseProbability * Probabilities[key];
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="period"></param>
+        /// <param name="weather"></param>
+        /// <returns></returns>
+        public int Calculate(TimePeriod period, Weather weather)
+        {
+            var key = new Tuple<TimePeriod, WeatherCatagory>(period, GetWeatherCatagory(weather));
             return BaseProbability * Probabilities[key];
         }
 
@@ -61,10 +88,10 @@ namespace AgencyDispatchFramework
         /// Converts a <see cref="Weather"/> to a <see cref="WeatherCatagory"/>
         /// </summary>
         /// <returns></returns>
-        private WeatherCatagory GetWeatherCatagory()
+        private WeatherCatagory GetWeatherCatagory(Weather weather)
         {
             // Weather
-            switch (GameWorld.CurrentWeather)
+            switch (weather)
             {
                 default:
                 case Weather.Clear:

@@ -14,7 +14,7 @@ namespace AgencyDispatchFramework.Game.Locations
         public float Heading { get; protected set; }
 
         /// <summary>
-        /// Gets the <see cref="AgencyDispatchFramework.API.LocationType"/>
+        /// Gets the <see cref="AgencyDispatchFramework.Game.Locations.LocationTypeCode"/>
         /// </summary>
         public override LocationTypeCode LocationType => LocationTypeCode.SpawnPoint;
 

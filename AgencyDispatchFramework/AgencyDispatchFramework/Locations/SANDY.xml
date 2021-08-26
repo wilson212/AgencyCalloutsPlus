@@ -43,12 +43,6 @@
         <Evening clear="10" overcast="10" rain="10" snow="10" storm="10" />
         <Night clear="10" overcast="10" rain="10" snow="10" storm="10" />
       </Disturbance>
-      <Statutory possible="false">
-        <Morning clear="10" overcast="10" rain="10" snow="10" storm="10" />
-        <Day clear="10" overcast="10" rain="10" snow="10" storm="10" />
-        <Evening clear="10" overcast="10" rain="10" snow="10" storm="10" />
-        <Night clear="10" overcast="10" rain="10" snow="10" storm="10" />
-      </Statutory>
       <Traffic possible="true">
         <Morning clear="10" overcast="10" rain="15" snow="18" storm="12" />
         <Day clear="10" overcast="10" rain="15" snow="18" storm="12" />
@@ -92,5 +86,13 @@
         </Positions>
       </Location>
     </RoadShoulders>
+    <Roads>
+      <Location coordinates="1744.697, 3668.555, 33.64974" heading="118.858" nodeId="1230">
+        <Street>Zancudo Ave</Street>
+        <Hint>near Lolita Ave</Hint>
+        <Speed>25</Speed>
+        <Flags>TwoLaneRoad</Flags>
+      </Location>
+    </Roads>
   </Locations>
 </SANDY>

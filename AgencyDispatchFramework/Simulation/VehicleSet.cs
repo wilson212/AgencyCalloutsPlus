@@ -1,11 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace AgencyDispatchFramework.Simulation
 {
     /// <summary>
     /// An object that provides an interface to spawn meta data used to create <see cref="AIOfficerUnit"/>s
     /// </summary>
-    public class VehicleSet : ISpawnable
+    public class VehicleSet : ISpawnable, ICloneable
     {
         /// <summary>
         /// Gets the chance that this meta will be used in a <see cref="ProbabilityGenerator{T}"/>
@@ -40,13 +41,25 @@ namespace AgencyDispatchFramework.Simulation
         /// <summary>
         /// Creates a new instance of <see cref="VehicleSet"/>
         /// </summary>
-        public VehicleSet()
+        public VehicleSet(int probability)
         {
+            Probability = probability;
             VehicleMetas = new ProbabilityGenerator<VehicleModelMeta>();
             OfficerMetas = new ProbabilityGenerator<OfficerModelMeta>();
             HandGunMetas = new ProbabilityGenerator<WeaponMeta>();
             LongGunMetas = new ProbabilityGenerator<WeaponMeta>();
             NonLethalWeapons = new HashSet<string>();
+        }
+
+        public object Clone()
+        {
+            var clone = new VehicleSet(Probability);
+            clone.VehicleMetas.AddRange(VehicleMetas.GetItems());
+            clone.OfficerMetas.AddRange(OfficerMetas.GetItems());
+            clone.HandGunMetas.AddRange(HandGunMetas.GetItems());
+            clone.LongGunMetas.AddRange(LongGunMetas.GetItems());
+            clone.NonLethalWeapons = new HashSet<string>(NonLethalWeapons);
+            return clone;
         }
     }
 }

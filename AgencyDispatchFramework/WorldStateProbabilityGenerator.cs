@@ -1,5 +1,6 @@
 ﻿using AgencyDispatchFramework.Game;
 using System;
+using System.Linq;
 
 namespace AgencyDispatchFramework
 {
@@ -25,6 +26,11 @@ namespace AgencyDispatchFramework
         /// Indicates whether this instance is disposed
         /// </summary>
         public bool Disposed { get; private set; }
+
+        /// <summary>
+        /// The Cumulative Probability of all the spawnable objects
+        /// </summary>
+        public int CumulativeProbability => Generator.CumulativeProbability;
 
         /// <summary>
         /// Creates a new instance of <see cref="WorldStateProbabilityGenerator{T}"/>
@@ -101,6 +107,24 @@ namespace AgencyDispatchFramework
         }
 
         /// <summary>
+        /// Gets the <see cref="WorldStateMultipliers"/> of an item based on the predicate
+        /// </summary>
+        /// <param name="predicate">The condition to apply</param>
+        internal WorldStateSpawnable<T>[] GetItems()
+        {
+            return Generator.GetItems().ToArray();
+        }
+
+        /// <summary>
+        /// Gets the <see cref="WorldStateMultipliers"/> of an item based on the predicate
+        /// </summary>
+        /// <param name="predicate">The condition to apply</param>
+        public WorldStateMultipliers[] GetMultipliersWhere(Func<WorldStateSpawnable<T>, bool> predicate)
+        {
+            return Generator.GetItems().Where(predicate).Select(x => x.Multipliers).ToArray();
+        }
+
+        /// <summary>
         /// Disposes the current instance
         /// </summary>
         public void Dispose()
@@ -133,24 +157,5 @@ namespace AgencyDispatchFramework
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void GameWorld_OnTimePeriodChanged(TimePeriod oldPeriod, TimePeriod period) => Rebuild();
-
-        /// <summary>
-        /// An internal wrapper class that inherits the <see cref="ISpawnable"/> interface
-        /// </summary>
-        /// <typeparam name="U"></typeparam>
-        private class WorldStateSpawnable<U> : ISpawnable
-        {
-            public int Probability => Multipliers.Calculate();
-
-            public U Item { get; set; }
-
-            public WorldStateMultipliers Multipliers { get; set; }
-
-            public WorldStateSpawnable(U item, WorldStateMultipliers multipliers)
-            {
-                Item = item;
-                Multipliers = multipliers;
-            }
-        }
     }
 }

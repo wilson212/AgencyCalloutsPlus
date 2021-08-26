@@ -146,6 +146,11 @@ namespace AgencyDispatchFramework
         public static OfficerUnit PlayerUnit { get; private set; }
 
         /// <summary>
+        /// Gets the current <see cref="ShiftRotation"/>
+        /// </summary>
+        internal static ShiftRotation CurrentShift { get; set; }
+
+        /// <summary>
         /// Our call Queue, seperated into 4 priority queues
         /// </summary>
         /// <remarks>

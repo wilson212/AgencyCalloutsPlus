@@ -30,7 +30,7 @@ namespace AgencyDispatchFramework
         /// <summary>
         /// The Cumulative Probability of all the spawnable objects
         /// </summary>
-        public int CumulativeProbability { get; set; }
+        public int CumulativeProbability { get; private set; }
 
         /// <summary>
         /// Creates a new instance of <see cref="ProbabilityGenerator{T}"/>

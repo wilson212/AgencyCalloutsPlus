@@ -1,6 +1,7 @@
 ﻿using AgencyDispatchFramework.Dispatching;
 using AgencyDispatchFramework.Extensions;
 using AgencyDispatchFramework.Game.Locations;
+using AgencyDispatchFramework.Simulation;
 using AgencyDispatchFramework.Xml;
 using System;
 using System.Collections.Generic;
@@ -235,6 +236,18 @@ namespace AgencyDispatchFramework.Game
         {
             // Get random location
             return GetRandomLocationFromPool(Residences, filters, inactiveOnly);
+        }
+
+        /// <summary>
+        /// Gets the <see cref="WorldStateCrimeReport"/> of this <see cref="WorldZone"/> based on the 
+        /// specified <see cref="TimePeriod"/> and <see cref="Game.Weather"/>
+        /// </summary>
+        /// <param name="period"></param>
+        /// <param name="weather"></param>
+        /// <returns></returns>
+        public WorldStateCrimeReport GetCrimeReport(TimePeriod period, Weather weather)
+        {
+            return new WorldStateCrimeReport(period, weather, this);
         }
 
         /// <summary>

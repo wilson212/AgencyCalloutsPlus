@@ -153,13 +153,10 @@ namespace AgencyDispatchFramework.Simulation
             PoliceCar.MakePersistent();
             PoliceCar.SetLivery(virtualAI.VehicleMeta.LiveryIndex);
 
-            // Extras
-            if (virtualAI.VehicleMeta.Extras.Count > 0)
+            // Set Extras
+            foreach (var extra in virtualAI.VehicleMeta.Extras)
             {
-                foreach (var extra in virtualAI.VehicleMeta.Extras)
-                {
-                    PoliceCar.SetExtraEnabled(extra.Key, extra.Value);
-                }
+                PoliceCar.SetExtraEnabled(extra.Key, extra.Value);
             }
 
             // Place officer inside his vehicle and create blip

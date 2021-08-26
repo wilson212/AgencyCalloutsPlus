@@ -51,7 +51,7 @@ namespace AgencyDispatchFramework.Dispatching
                 foreach (var call in calls)
                 {
                     // Create officer pool, grouped by dispatching priority
-                    var officerPool = CreateOfficerPriorityPool(Agency.OnDutyOfficers, call);
+                    var officerPool = CreateOfficerPriorityPool(call);
 
                     /******************************************************
                      * Immediate Emergency Calls
@@ -208,11 +208,11 @@ namespace AgencyDispatchFramework.Dispatching
         /// </summary>
         /// <param name="priority"></param>
         /// <returns></returns>
-        private static Dictionary<DispatchPriority, List<OfficerUnit>> CreateOfficerPriorityPool(OfficerUnit[] officers, PriorityCall call)
+        private Dictionary<DispatchPriority, List<OfficerUnit>> CreateOfficerPriorityPool(PriorityCall call)
         {
             // Create a new list
             var availableOfficers = new List<OfficerUnit>();
-            foreach (var officer in officers)
+            foreach (var officer in OnDutyOfficers)
             {
                 // Special checks for the player
                 if (!officer.IsAIUnit)
