@@ -1,0 +1,58 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Probabilities>
+  <Crime>
+    <CrimeLevels>
+      <CrimeLevel key="VeryLow" value="12" />
+    </CrimeLevels>
+    <Probabilities>
+      <Robbery>
+        <Morning clear="10" overcast="10" rain="10" snow="10" storm="10" />
+        <Day clear="10" overcast="10" rain="10" snow="10" storm="10" />
+        <Evening clear="10" overcast="10" rain="10" snow="10" storm="10" />
+        <Night clear="10" overcast="10" rain="10" snow="10" storm="10" />
+      </Robbery>
+      <Property>
+        <Morning clear="10" overcast="10" rain="10" snow="10" storm="10" />
+        <Day clear="10" overcast="10" rain="10" snow="10" storm="10" />
+        <Evening clear="10" overcast="10" rain="10" snow="10" storm="10" />
+        <Night clear="10" overcast="10" rain="10" snow="10" storm="10" />
+      </Property>
+      <Drugs>
+        <Morning clear="10" overcast="10" rain="10" snow="10" storm="10" />
+        <Day clear="10" overcast="10" rain="10" snow="10" storm="10" />
+        <Evening clear="10" overcast="10" rain="10" snow="10" storm="10" />
+        <Night clear="10" overcast="10" rain="10" snow="10" storm="10" />
+      </Drugs>
+      <Gang>
+        <Morning clear="10" overcast="10" rain="10" snow="10" storm="10" />
+        <Day clear="10" overcast="10" rain="10" snow="10" storm="10" />
+        <Evening clear="10" overcast="10" rain="10" snow="10" storm="10" />
+        <Night clear="10" overcast="10" rain="10" snow="10" storm="10" />
+      </Gang>
+      <Disturbance>
+        <Morning clear="10" overcast="10" rain="10" snow="10" storm="10" />
+        <Day clear="10" overcast="10" rain="10" snow="10" storm="10" />
+        <Evening clear="10" overcast="10" rain="10" snow="10" storm="10" />
+        <Night clear="10" overcast="10" rain="10" snow="10" storm="10" />
+      </Disturbance>
+      <Traffic>
+        <Morning clear="10" overcast="10" rain="15" snow="18" storm="12" />
+        <Day clear="10" overcast="10" rain="15" snow="18" storm="12" />
+        <Evening clear="10" overcast="10" rain="15" snow="18" storm="12" />
+        <Night clear="10" overcast="10" rain="15" snow="18" storm="12" />
+      </Traffic>
+      <Violent>
+        <Morning clear="10" overcast="10" rain="10" snow="10" storm="10" />
+        <Day clear="10" overcast="10" rain="10" snow="10" storm="10" />
+        <Evening clear="10" overcast="10" rain="10" snow="10" storm="10" />
+        <Night clear="10" overcast="10" rain="10" snow="10" storm="10" />
+      </Violent>
+      <Other>
+        <Morning clear="10" overcast="10" rain="10" snow="10" storm="10" />
+        <Day clear="10" overcast="10" rain="10" snow="10" storm="10" />
+        <Evening clear="10" overcast="10" rain="10" snow="10" storm="10" />
+        <Night clear="10" overcast="10" rain="10" snow="10" storm="10" />
+      </Other>
+    </Probabilities>
+  </Crime>
+</Probabilities>
