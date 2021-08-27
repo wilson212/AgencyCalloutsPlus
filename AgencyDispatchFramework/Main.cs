@@ -3,6 +3,7 @@ using AgencyDispatchFramework.Game;
 using AgencyDispatchFramework.Game.Locations;
 using AgencyDispatchFramework.Integration;
 using AgencyDispatchFramework.NativeUI;
+using AgencyDispatchFramework.Simulation;
 using LSPD_First_Response.Mod.API;
 using Rage;
 using RAGENativeUI;
@@ -193,7 +194,7 @@ namespace AgencyDispatchFramework
                     VehicleInfo.Initialize();
 
                     // Load peds (this will only initialize once per game session)
-                    PedInfo.Initialize();
+                    GamePed.Initialize();
 
                     // Check for and initialize API classes
                     ComputerPlusAPI.Initialize();

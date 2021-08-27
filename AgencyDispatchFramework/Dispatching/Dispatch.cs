@@ -2,6 +2,8 @@
 using AgencyDispatchFramework.Game;
 using AgencyDispatchFramework.Game.Locations;
 using AgencyDispatchFramework.NativeUI;
+using AgencyDispatchFramework.Scripting;
+using AgencyDispatchFramework.Simulation;
 using LSPD_First_Response.Mod.API;
 using LSPD_First_Response.Mod.Callouts;
 using Rage;

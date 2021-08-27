@@ -1,4 +1,6 @@
-﻿namespace AgencyDispatchFramework.Dispatching
+﻿using AgencyDispatchFramework.Simulation;
+
+namespace AgencyDispatchFramework.Dispatching
 {
     /// <summary>
     /// Event fired when a <see cref="Dispatcher"/> needs additional resources to complete a call

@@ -1,0 +1,27 @@
+﻿Agency Dispatch Framework Namespacing Directives
+
+Description:
+	This file describes what each namespace inside the framework is used ford
+
+Namespaces:
+	- API
+		- Provides interfaces for other plugins to use.
+	- Conversation
+		- Contains classes that are used with the Ped Dialogue system.
+	- Dispatching
+		- Contains all classes repsonbile for dispatching the player to callouts.
+	- Extensions
+		- Provides extension methods to be used by ADF and any other plugin.
+	- Game
+		- Contains classes that directly provide information for, or access the
+		  GTA V game world.
+	- Integration
+		- Opposite of the API namespace, contains interfaces to access other plugins.
+	- NativeUI
+		- Contains all RageNativeUI menus, including the in  game CAD screen.
+	- Scripting
+		- Contains all classes that provide logic for Events and Callouts.
+	- Simulation
+		- Contains all classes responsible to handling AI officer units.
+	- XML
+		- Contains classes to load and parse all XML files and data for ADF.

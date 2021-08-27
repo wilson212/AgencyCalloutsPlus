@@ -1,0 +1,11 @@
+﻿ALL GameFiber(s) created in this Mod:
+		Always Running:
+			- GameWorld.WorldWatchingFiber (2000): Used to check weather and time of day changes, as well as perform dispatching logic
+			- Dispatch.AISimulationFiber (1000): Used to move around and process AI unit Logic, and handle the dispatch radio
+			- RegionCrimeGenerator (variable): Used to take incoming calls, and add them to Dispatch
+			- Mod RageMenu (1): Used to handle menu processing for the RageNativeUI menu of the mod
+		Sometimes Running:
+			- CalloutInteractionMenu (1): Used to handle menu processing for a RageNativeUI used by a Callout
+			- Scanner (variable): Used to handle scanner audio messages from dispatch
+			- SubTitleQueue (variable): Used to properly display multiple simultaneous subtitles without overlap or interuption
+			- AnimationSequence (variable): Used to play a sequence of animations, one right after another

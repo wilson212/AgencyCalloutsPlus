@@ -354,7 +354,7 @@ namespace AgencyDispatchFramework.Game
 
             // Grab all peds in the specified variant group
             ped = default(Ped);
-            var groupPeds = PedInfo.PedModelsByVariant[group];
+            var groupPeds = GamePed.PedModelsByVariant[group];
             if (groupPeds.Count == 0)
             {
                 Log.Warning($"GameWorld.SpawnPedAtPosition(): PedVariantGroup named {group} has no peds in it");

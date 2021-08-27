@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <CalloutMeta>
   <Author>Wilson212</Author>
-  <Controller>AgencyDispatchFramework.Callouts.DomesticViolence.Controller</Controller>
+  <Controller>AgencyDispatchFramework.Scripting.Callouts.DomesticViolence.Controller</Controller>
   <Scenarios>
 
     <ReportsOfArguingThreats>

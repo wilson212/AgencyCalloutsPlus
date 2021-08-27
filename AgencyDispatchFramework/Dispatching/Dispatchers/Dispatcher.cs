@@ -1,4 +1,5 @@
-﻿using System;
+﻿using AgencyDispatchFramework.Simulation;
+using System;
 using System.Collections.Generic;
 
 namespace AgencyDispatchFramework.Dispatching
